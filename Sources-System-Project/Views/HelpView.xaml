@@ -1,0 +1,220 @@
+<UserControl x:Class="Sources.Views.HelpView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:viewmodels="clr-namespace:Sources.ViewModels"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1100"
+             d:DataContext="{d:DesignInstance Type=viewmodels:HelpViewModel}"
+             Background="Transparent">
+
+    <UserControl.Resources>
+        <!-- Unified accent color for icons/numbers -->
+        <SolidColorBrush x:Key="HelpAccent" Color="#D4AF37"/>
+        <SolidColorBrush x:Key="HelpAccentLight" Color="#F5E6B8"/>
+        <SolidColorBrush x:Key="TipBgLight" Color="#1AD4AF37"/>
+        <SolidColorBrush x:Key="StepBgLight" Color="#0A1A2844"/>
+    </UserControl.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ═══════ Header ═══════ -->
+        <Border Grid.Row="0" 
+                Background="{DynamicResource CardBackground}" 
+                CornerRadius="14"
+                Padding="28,22"
+                BorderBrush="{DynamicResource BorderColor}"
+                BorderThickness="1">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="20" Direction="-90" RenderingBias="Quality" Opacity="0.08" ShadowDepth="2"/>
+            </Border.Effect>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Logo circle -->
+                <Border Width="56" Height="56" CornerRadius="28" 
+                        Background="#1AD4AF37">
+                    <materialDesign:PackIcon Kind="BookOpenPageVariant" 
+                                           Width="30" Height="30" 
+                                           Foreground="{StaticResource HelpAccent}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                </Border>
+                
+                <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                    <TextBlock Text="{DynamicResource TitleHelp}" 
+                               FontSize="26" 
+                               FontWeight="Bold" 
+                               Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="{DynamicResource HelpSubtitle}" 
+                               FontSize="13" 
+                               Foreground="{DynamicResource TextSecondary}"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ═══════ Main Content ═══════ -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="270"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- ─── Sidebar: Topics List ─── -->
+            <Border Grid.Column="0" 
+                    Background="{DynamicResource CardBackground}" 
+                    CornerRadius="14"
+                    BorderBrush="{DynamicResource BorderColor}"
+                    BorderThickness="1">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="20" Direction="-90" RenderingBias="Quality" Opacity="0.08" ShadowDepth="2"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Section Header -->
+                    <Border Padding="20,16" 
+                            BorderBrush="{DynamicResource BorderColor}" 
+                            BorderThickness="0,0,0,1">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FormatListBulleted" 
+                                                     Width="20" Height="20" 
+                                                     Foreground="{StaticResource HelpAccent}"
+                                                     VerticalAlignment="Center"
+                                                     Margin="0,0,10,0"/>
+                            <TextBlock Text="{DynamicResource TitleHelpTopics}" 
+                                       FontSize="17" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="{DynamicResource TextPrimary}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Topics ListBox -->
+                    <ListBox Grid.Row="1"
+                             x:Name="TopicsList"
+                             ItemsSource="{Binding Topics}"
+                             SelectedItem="{Binding SelectedTopic}"
+                             Margin="8,8,8,8"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             HorizontalContentAlignment="Stretch"
+                             SelectionChanged="TopicsList_SelectionChanged">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                                <Setter Property="Padding" Value="16,12"/>
+                                <Setter Property="Margin" Value="2"/>
+                                <Setter Property="Cursor" Value="Hand"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListBoxItem">
+                                            <Border x:Name="Bd" 
+                                                    Background="{TemplateBinding Background}" 
+                                                    CornerRadius="10" 
+                                                    Padding="{TemplateBinding Padding}"
+                                                    Margin="2">
+                                                <ContentPresenter/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Bd" Property="Background" Value="#0AD4AF37"/>
+                                                </Trigger>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter TargetName="Bd" Property="Background" Value="#20D4AF37"/>
+                                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource HelpAccent}"/>
+                                                    <Setter TargetName="Bd" Property="BorderThickness" Value="0,0,3,0"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <Border Width="32" Height="32" CornerRadius="8" Background="#0AD4AF37">
+                                        <materialDesign:PackIcon Kind="{Binding IconKind}" 
+                                                                 Width="18" Height="18" 
+                                                                 Foreground="{StaticResource HelpAccent}"
+                                                                 HorizontalAlignment="Center"
+                                                                 VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <TextBlock Grid.Column="2" 
+                                               Text="{Binding DisplayTitle}" 
+                                               VerticalAlignment="Center" 
+                                               FontSize="14"
+                                               FontWeight="Medium"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               TextTrimming="CharacterEllipsis"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+
+            <!-- ─── Main Content Panel ─── -->
+            <Border Grid.Column="2" 
+                    Background="{DynamicResource CardBackground}" 
+                    CornerRadius="14"
+                    BorderBrush="{DynamicResource BorderColor}"
+                    BorderThickness="1">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="20" Direction="-90" RenderingBias="Quality" Opacity="0.08" ShadowDepth="2"/>
+                </Border.Effect>
+                
+                <ScrollViewer VerticalScrollBarVisibility="Auto" 
+                              HorizontalScrollBarVisibility="Disabled"
+                              Padding="0">
+                    <StackPanel x:Name="ContentPanel" Margin="32,28,32,28">
+                        <!-- Dynamic Title -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <Border Width="40" Height="40" CornerRadius="10" Background="#20D4AF37" Margin="0,0,14,0">
+                                <materialDesign:PackIcon x:Name="ContentIcon" Kind="InformationOutline" 
+                                                         Width="22" Height="22" 
+                                                         Foreground="{StaticResource HelpAccent}"
+                                                         HorizontalAlignment="Center"
+                                                         VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock x:Name="ContentTitle" 
+                                       Text="" 
+                                       FontSize="24" FontWeight="Bold" 
+                                       Foreground="{StaticResource HelpAccent}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        
+                        <Border Height="2" Background="{StaticResource HelpAccent}" Opacity="0.3" CornerRadius="1" Margin="0,10,0,20"/>
+
+                        <!-- Rich Content Area -->
+                        <StackPanel x:Name="RichContentArea"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

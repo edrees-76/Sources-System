@@ -1,0 +1,314 @@
+<Window x:Class="Sources.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        Title="{DynamicResource AppTitleHeader}"
+        WindowState="Maximized"
+        MinWidth="1200" MinHeight="700"
+        Background="{DynamicResource WindowBackground}">
+
+    <Grid>
+        <!-- الواجهة الرئيسية مع الشريط الجانبي -->
+        <DockPanel>
+
+            <!-- ─── الشريط الجانبي ─── -->
+            <Border DockPanel.Dock="Left" x:Name="SidebarBorder" 
+                    Width="260"
+                    Background="{StaticResource SidebarGradient}" 
+                    BorderBrush="{StaticResource GoldBrush}" 
+                    BorderThickness="0,0,1,0">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsSidebarCollapsed}" Value="True">
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="Width" To="80" Duration="0:0:0.3">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <QuadraticEase EasingMode="EaseInOut"/>
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </DataTrigger.EnterActions>
+                                <DataTrigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="Width" To="260" Duration="0:0:0.3">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <QuadraticEase EasingMode="EaseInOut"/>
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </DataTrigger.ExitActions>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <DockPanel>
+                    <!-- الترويسة: شعار المنظومة -->
+                    <Grid DockPanel.Dock="Top" Margin="0,10,0,8">
+                        <StackPanel x:Name="LogoArea" HorizontalAlignment="Center" FlowDirection="LeftToRight">
+                            <Image Source="pack://siteoforigin:,,,/Assets/sources_sidebar_logo.png" 
+                                   RenderOptions.BitmapScalingMode="HighQuality"
+                                   HorizontalAlignment="Center">
+                                <Image.Style>
+                                    <Style TargetType="Image">
+                                        <Setter Property="Width" Value="100"/>
+                                        <Setter Property="Height" Value="100"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsSidebarCollapsed}" Value="True">
+                                                <Setter Property="Width" Value="40"/>
+                                                <Setter Property="Height" Value="40"/>
+                                                <Setter Property="Margin" Value="0,10,0,0"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Image.Style>
+                                <Image.Effect>
+                                    <DropShadowEffect BlurRadius="15" ShadowDepth="0" Color="#D4AF37" Opacity="0.15"/>
+                                </Image.Effect>
+                            </Image>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- معلومات المستخدم والخروج (أسفل) -->
+                    <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,1,0,0" Padding="10,8">
+                        <StackPanel>
+                            <DockPanel Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}">
+                                <Button DockPanel.Dock="Left" Command="{Binding LogoutCommand}" Foreground="#EF4444" Background="Transparent"
+                                        BorderThickness="0" Cursor="Hand" HorizontalAlignment="Left" FontWeight="SemiBold">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="Logout" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBlock Text="{DynamicResource MenuLogout}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <StackPanel HorizontalAlignment="Right">
+                                    <TextBlock Text="{Binding CurrentUserName}" Foreground="{StaticResource GoldLightBrush}" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Right"/>
+                                    <TextBlock Text="{Binding CurrentUserRole}" Foreground="{StaticResource GoldBrush}" FontSize="11" HorizontalAlignment="Right" Opacity="0.8"/>
+                                </StackPanel>
+                            </DockPanel>
+                            
+                            <Button Style="{StaticResource MaterialDesignIconButton}"
+                                    Command="{Binding LogoutCommand}"
+                                    Foreground="#EF4444" 
+                                    Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource BoolToVis}}"
+                                    HorizontalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Logout" Width="24" Height="24"/>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- قائمة التنقل -->
+                    <ScrollViewer VerticalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="0,4,0,0">
+                            <Button Style="{StaticResource SidebarButton}" Command="{Binding NavigateToCommand}" CommandParameter="Dashboard">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="ViewDashboard" Width="20" Height="20" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource MenuDashboard}" Margin="12,0,0,0" VerticalAlignment="Center"
+                                             Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource SidebarButton}" Command="{Binding NavigateToCommand}" CommandParameter="Radioisotopes"
+                                    Visibility="{Binding CanSeeRadioisotopes, Converter={StaticResource BoolToVis}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Atom" Width="20" Height="20" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource MenuRadioisotopes}" Margin="12,0,0,0" VerticalAlignment="Center"
+                                             Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource SidebarButton}" Command="{Binding NavigateToCommand}" CommandParameter="Sources"
+                                    Visibility="{Binding CanSeeSources, Converter={StaticResource BoolToVis}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Radioactive" Width="20" Height="20" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource MenuSources}" Margin="12,0,0,0" VerticalAlignment="Center"
+                                             Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource SidebarButton}" Command="{Binding NavigateToCommand}" CommandParameter="Locations"
+                                    Visibility="{Binding CanSeeLocations, Converter={StaticResource BoolToVis}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="MapMarker" Width="20" Height="20" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource MenuLocations}" Margin="12,0,0,0" VerticalAlignment="Center"
+                                             Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource SidebarButton}" Command="{Binding NavigateToCommand}" CommandParameter="Borrowing"
+                                    Visibility="{Binding CanSeeBorrowing, Converter={StaticResource BoolToVis}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="BookArrowRight" Width="20" Height="20" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource MenuBorrowing}" Margin="12,0,0,0" VerticalAlignment="Center"
+                                             Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource SidebarButton}" Command="{Binding NavigateToCommand}" CommandParameter="Reports"
+                                    Visibility="{Binding CanSeeReports, Converter={StaticResource BoolToVis}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="FileChart" Width="20" Height="20" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource MenuReports}" Margin="12,0,0,0" VerticalAlignment="Center"
+                                             Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource SidebarButton}" Command="{Binding NavigateToCommand}" CommandParameter="Users"
+                                    Visibility="{Binding CanSeeUsers, Converter={StaticResource BoolToVis}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="AccountGroup" Width="20" Height="20" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource MenuUsers}" Margin="12,0,0,0" VerticalAlignment="Center"
+                                             Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource SidebarButton}" Command="{Binding NavigateToCommand}" CommandParameter="ActivityCalculator"
+                                    Visibility="{Binding CanSeeCalculator, Converter={StaticResource BoolToVis}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Calculator" Width="20" Height="20" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource MenuActivityCalculator}" Margin="12,0,0,0" VerticalAlignment="Center"
+                                             Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource SidebarButton}" Command="{Binding NavigateToCommand}" CommandParameter="Help"
+                                    Visibility="{Binding CanSeeHelp, Converter={StaticResource BoolToVis}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="HelpCircleOutline" Width="20" Height="20" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource MenuHelp}" Margin="12,0,0,0" VerticalAlignment="Center"
+                                             Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Border Height="1" Background="{DynamicResource BorderColor}" Margin="24,4"/>
+
+                            <Button Style="{StaticResource SidebarButton}" Command="{Binding NavigateToCommand}" CommandParameter="Settings"
+                                    Visibility="{Binding CanSeeSettings, Converter={StaticResource BoolToVis}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Cog" Width="20" Height="20" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource MenuSettings}" Margin="12,0,0,0" VerticalAlignment="Center"
+                                             Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- زر تبديل الثيم -->
+                            <Button Style="{StaticResource SidebarButton}" Command="{Binding ToggleThemeCommand}" Margin="0,0,0,0" ToolTip="{DynamicResource MenuToggleTheme}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Brightness6" Width="20" Height="20" VerticalAlignment="Center"/>
+                                    <!-- Only icon as per user request -->
+                                </StackPanel>
+                            </Button>
+
+                            <!-- زر حول المنظومة -->
+                            <Button Style="{StaticResource SidebarButton}" Command="{Binding NavigateToCommand}" CommandParameter="AboutSystem" Margin="0,0,0,8">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="InformationOutline" Width="20" Height="20" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource MenuAbout}" Margin="12,0,0,0" VerticalAlignment="Center"
+                                             Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+
+            <!-- ─── المحتوى الرئيسي ─── -->
+            <DockPanel Background="{DynamicResource MainBackground}">
+                <!-- ترويسة المحتوى مع زر تصغير القائمة -->
+                <Grid DockPanel.Dock="Top" Margin="24,24,24,10">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <Button Style="{StaticResource MaterialDesignIconButton}"
+                                Command="{Binding ToggleSidebarCommand}"
+                                Margin="0,0,16,0"
+                                Foreground="{DynamicResource TextSecondary}"
+                                ToolTip="{DynamicResource ToolTipCollapseSidebar}">
+                            <materialDesign:PackIcon Kind="Menu" Width="24" Height="24"/>
+                        </Button>
+                        <TextBlock Text="{Binding CurrentViewName, Converter={StaticResource ViewNameToTitle}}" 
+                                 Style="{StaticResource PageTitle}"
+                                 VerticalAlignment="Center" Margin="0"/>
+                    </StackPanel>
+
+                    <!-- ترويسة المحتوى: الجرس ومعلومات المستخدم -->
+                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- جرس التنبيهات -->
+                        <materialDesign:PopupBox Style="{StaticResource MaterialDesignMultiFloatingActionPopupBox}"
+                                               PlacementMode="BottomAndAlignRightEdges"
+                                               ToolTip="{DynamicResource ToolTipNotifications}"
+                                               Margin="0,0,16,0">
+                            <materialDesign:PopupBox.ToggleContent>
+                                <Grid>
+                                    <materialDesign:PackIcon Kind="Bell" Width="24" Height="24" Foreground="{DynamicResource TextSecondary}"/>
+                                    <Border Background="#EF4444" CornerRadius="10" Width="18" Height="18"
+                                            VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,-8,-8,0"
+                                            Visibility="{Binding UnreadNotificationsCount, Converter={StaticResource NullToVis}}">
+                                        <TextBlock Text="{Binding UnreadNotificationsCount}" FontSize="10" Foreground="White" 
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold"/>
+                                    </Border>
+                                </Grid>
+                            </materialDesign:PopupBox.ToggleContent>
+
+                            <Border Width="380" MinHeight="100" Background="{DynamicResource CardBackground}" CornerRadius="12" 
+                                    BorderThickness="1" BorderBrush="{DynamicResource GoldBrush}" 
+                                    materialDesign:ElevationAssist.Elevation="Dp3">
+                                <DockPanel LastChildFill="True">
+                                    <Border DockPanel.Dock="Top" Background="{StaticResource SidebarGradient}" CornerRadius="12,12,0,0" Padding="16,12">
+                                        <Grid>
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="BellRing" Width="20" Height="20" Foreground="{StaticResource GoldBrush}" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{DynamicResource TitleNotifications}" Foreground="White" FontWeight="Bold" FontSize="15" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <Button HorizontalAlignment="Right" Style="{StaticResource MaterialDesignFlatButton}" 
+                                                    Foreground="{StaticResource GoldBrush}"
+                                                    Content="{DynamicResource BtnMarkAllRead}" Command="{Binding MarkAllNotificationsAsReadCommand}"
+                                                    Padding="8,0" Height="28" FontSize="11" FontWeight="SemiBold"/>
+                                        </Grid>
+                                    </Border>
+                                    
+                                    <ScrollViewer MinHeight="50" MaxHeight="450" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                        <ItemsControl ItemsSource="{Binding Notifications}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderColor}" Padding="16,14"
+                                                            Background="{Binding IsRead, Converter={StaticResource BoolToValue}, ConverterParameter=Transparent|#08D4AF37}"
+                                                            Cursor="Hand">
+                                                        <Border.InputBindings>
+                                                            <MouseBinding Gesture="LeftClick" 
+                                                                          Command="{Binding DataContext.MarkNotificationAsReadCommand, RelativeSource={RelativeSource AncestorType=materialDesign:PopupBox}}"
+                                                                          CommandParameter="{Binding}"/>
+                                                        </Border.InputBindings>
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            
+                                                            <materialDesign:PackIcon Kind="AlertCircle" Width="22" Height="22" 
+                                                                                   Foreground="{Binding Severity, Converter={StaticResource SeverityToColor}}"
+                                                                                   VerticalAlignment="Top" Margin="0,2,14,0"/>
+                                                            
+                                                            <StackPanel Grid.Column="1">
+                                                                <TextBlock Text="{Binding Message}" TextWrapping="Wrap" 
+                                                                           Foreground="White" FontSize="13.5" LineHeight="18"/>
+                                                                <TextBlock Text="{Binding CreatedAt, StringFormat=G}" 
+                                                                           Foreground="{StaticResource GoldLightBrush}" FontSize="10.5" Margin="0,6,0,0" Opacity="0.7"/>
+                                                            </StackPanel>
+
+                                                            <!-- Unread Indicator Dot -->
+                                                            <Ellipse Grid.Column="2" Width="8" Height="8" Fill="{StaticResource GoldBrush}" 
+                                                                     VerticalAlignment="Center" Margin="8,0,0,0"
+                                                                     Visibility="{Binding IsRead, Converter={StaticResource InverseBoolToVis}}"/>
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </DockPanel>
+                            </Border>
+                        </materialDesign:PopupBox>
+                    </StackPanel>
+                </Grid>
+
+                <ContentControl Content="{Binding CurrentView}"/>
+            </DockPanel>
+        </DockPanel>
+    </Grid>
+</Window>

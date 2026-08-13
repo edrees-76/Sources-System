@@ -1,0 +1,547 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <!-- App Info -->
+    <system:String x:Key="AppTitleHeader">Sources System — Radioactive Source Tracking</system:String>
+    <system:String x:Key="AppTitle">Sources System</system:String>
+
+    <!-- Sidebar Menu -->
+    <system:String x:Key="MenuDashboard">Dashboard</system:String>
+    <system:String x:Key="MenuRadioisotopes">Radioisotopes</system:String>
+    <system:String x:Key="MenuSources">Radioactive Sources</system:String>
+    <system:String x:Key="MenuLocations">Locations</system:String>
+    <system:String x:Key="MenuBorrowing">Source Borrowing</system:String>
+    <system:String x:Key="MenuReports">Reports</system:String>
+    <system:String x:Key="MenuUsers">Users</system:String>
+    <system:String x:Key="MenuSettings">Settings</system:String>
+    <system:String x:Key="MenuToggleTheme">Toggle Theme</system:String>
+    <system:String x:Key="MenuAbout">About System</system:String>
+    <system:String x:Key="MenuLogout">Logout</system:String>
+
+    <!-- About System -->
+    <system:String x:Key="AboutTitle">About System &#38; Designer</system:String>
+    <system:String x:Key="AboutSystemTitle">About Sources System</system:String>
+    <system:String x:Key="AboutSystemDesc">Sources is a smart, integrated software solution aimed at strict control and precise tracking of radioactive sources and isotopes. The system provides advanced tools for calculating radioactivity, managing the movement of sources, and linking them to users and locations.</system:String>
+    <system:String x:Key="AboutCapabilitiesTitle">Technical Capabilities</system:String>
+    <system:String x:Key="AboutCapabilities1">• Modern, interactive UI with Full Dark/Light mode support.</system:String>
+    <system:String x:Key="AboutCapabilities2">• Secure and reliable database management system for storage and retrieval.</system:String>
+    <system:String x:Key="AboutCapabilities3">• Bilingual interface (Arabic/English) allowing instant switching.</system:String>
+    <system:String x:Key="AboutCapabilities4">• Built-in radioactivity calculator based on decay laws.</system:String>
+    <system:String x:Key="AboutFeaturesTitle">Management Features</system:String>
+    <system:String x:Key="AboutFeatures1">• Comprehensive tracking of movement for all sources.</system:String>
+    <system:String x:Key="AboutFeatures2">• Extract and export statistical reports in PDF and Excel formats.</system:String>
+    <system:String x:Key="AboutFeatures3">• User management with custom roles and permissions.</system:String>
+    <system:String x:Key="AboutFeatures4">• Early warning system for expired sources.</system:String>
+    <system:String x:Key="AboutDesignerTitle">Designer &#38; Developer Info</system:String>
+    <system:String x:Key="AboutRights">All Rights Reserved © 2026 Sources</system:String>
+    <system:String x:Key="AboutSidebarDesc">Designed to comply with radiation control requirements and operate highly efficiently on computers without needing heavy resources.</system:String>
+
+    <!-- Backup Settings -->
+    <system:String x:Key="TabGeneral">General</system:String>
+    <system:String x:Key="TabBackup">Backup</system:String>
+    <system:String x:Key="BackupTitle">Backup</system:String>
+    <system:String x:Key="BackupLocationTitle">Backup Location</system:String>
+    <system:String x:Key="BackupLocationDesc">Choose the folder where backups will be saved</system:String>
+    <system:String x:Key="BtnBrowse">Browse</system:String>
+    <system:String x:Key="BrowseBackupTitle">Select Backup Folder</system:String>
+    <system:String x:Key="AutoBackupTitle">Automatic Backup</system:String>
+    <system:String x:Key="EnableAutoBackup">Enable Auto Backup</system:String>
+    <system:String x:Key="BackupFrequency">Backup Frequency</system:String>
+    <system:String x:Key="FreqDaily">Daily</system:String>
+    <system:String x:Key="FreqWeekly">Weekly</system:String>
+    <system:String x:Key="FreqMonthly">Monthly</system:String>
+    <system:String x:Key="ManualBackupTitle">Manual Backup &#38; Restore</system:String>
+    <system:String x:Key="BtnCreateBackup">Create Backup Now</system:String>
+    <system:String x:Key="BtnRestoreBackup">Restore from Backup</system:String>
+    <system:String x:Key="BtnSaveSettings">Save Settings</system:String>
+    <system:String x:Key="MsgSettingsSaved">Settings saved successfully</system:String>
+    <system:String x:Key="MsgSelectBackupPath">Please select a backup path first</system:String>
+    <system:String x:Key="MsgCreatingBackup">Creating backup...</system:String>
+    <system:String x:Key="MsgBackupError">An unexpected error occurred during backup</system:String>
+    <system:String x:Key="RestoreBackupTitle">Restore Backup</system:String>
+    <system:String x:Key="MsgRestoreWarning">Warning: This will replace all current data with the selected backup. Are you sure you want to continue?</system:String>
+    <system:String x:Key="MsgRestoringBackup">Restoring backup...</system:String>
+    <system:String x:Key="MsgRestoreError">An error occurred during restoration</system:String>
+    <system:String x:Key="NoBackupsYet">No backups yet</system:String>
+    <system:String x:Key="LastBackupLabel">Last backup:</system:String>
+
+    <!-- Common UI -->
+    <system:String x:Key="BtnAdd">Add New</system:String>
+    <system:String x:Key="BtnEdit">Edit</system:String>
+    <system:String x:Key="BtnDelete">Delete</system:String>
+    <system:String x:Key="BtnRefresh">Refresh</system:String>
+    <system:String x:Key="BtnSearch">Search</system:String>
+    <system:String x:Key="PlaceholderSearch">Search...</system:String>
+
+    <!-- Login Screen -->
+    <system:String x:Key="LoginTitle">Login</system:String>
+    <system:String x:Key="LoginSubtitle">Welcome to Sources Radioactive Source Tracking System</system:String>
+    <system:String x:Key="BrandNameAr">مصادر</system:String>
+    <system:String x:Key="BrandNameEn">SOURCES</system:String>
+    <system:String x:Key="LabelUsername">Username</system:String>
+    <system:String x:Key="LabelPassword">Password</system:String>
+    <system:String x:Key="BtnLogin">Login to System</system:String>
+    <system:String x:Key="LabelRememberMe">Remember Me</system:String>
+    <system:String x:Key="TextDesignedBy">Designed &amp; Developed by</system:String>
+    <system:String x:Key="TextAllRightsReserved">All rights reserved 2026</system:String>
+    <system:String x:Key="LoginWelcome">Welcome with ease and security</system:String>
+
+    <!-- Settings Page -->
+    <system:String x:Key="SettingsTitle">Settings</system:String>
+    <system:String x:Key="SettingsSubtitle">Customize application appearance and user preferences</system:String>
+    <system:String x:Key="AppearanceTitle">Appearance</system:String>
+    <system:String x:Key="DarkMode">Dark Mode</system:String>
+    <system:String x:Key="DarkModeDescription">Switch between light and dark themes</system:String>
+    <system:String x:Key="LanguageTitle">Language</system:String>
+    <system:String x:Key="SystemInfoTitle">System Information</system:String>
+    <system:String x:Key="SystemInfoName">Name:</system:String>
+    <system:String x:Key="SystemInfoVersion">Version:</system:String>
+    <system:String x:Key="SystemInfoStandard">Standard:</system:String>
+    <system:String x:Key="MsgThemeChanged">Theme changed successfully</system:String>
+    <system:String x:Key="MsgLanguageChanged">Language changed successfully</system:String>
+    <system:String x:Key="MsgRestartRequiredForLang">Please logout and login again (or restart the app) to fully apply layout direction changes.</system:String>
+    <system:String x:Key="TitleLanguageChange">Language Change</system:String>
+
+    <!-- Dashboard Page -->
+    <system:String x:Key="StrategicDashboardTitle">National Strategic Dashboard</system:String>
+    <system:String x:Key="StrategicDashboardSubtitle">Vision Implementation Review &amp; Radioactive Source Status</system:String>
+    <system:String x:Key="DashboardTitle">Dashboard</system:String>
+    <system:String x:Key="DashboardSubtitle">Overview of radioactive sources and activity</system:String>
+    <system:String x:Key="CardTotalSources">Registered Sources</system:String>
+    <system:String x:Key="CardTotalActivity">Total Radioactive Activity</system:String>
+    <system:String x:Key="ChartSourceActivity">Sources vs. Radioactive Activity</system:String>
+    <system:String x:Key="ChartIsotopeDistribution">Radioisotope Distribution</system:String>
+    <system:String x:Key="ChartDecayCurve">Temporal Decay Curve</system:String>
+    <system:String x:Key="TableSourceActivity">Sources &amp; Current Activity Table</system:String>
+    <system:String x:Key="SelectSourceForDecay">Select source for decay curve:</system:String>
+    <system:String x:Key="SelectSourceHint">Top 5 sources</system:String>
+    <system:String x:Key="TotalSources">Total Sources</system:String>
+
+    <!-- New keys for Redesigned Dashboard -->
+    <system:String x:Key="LabelChangeFromYesterday">Change from yesterday</system:String>
+    <system:String x:Key="LabelTotalActivity">Total Activity</system:String>
+    <system:String x:Key="StatusStored">Stored</system:String>
+    <system:String x:Key="StatusActionRequired">Requires Action</system:String>
+    <system:String x:Key="CurrentDateMarker">Current Date</system:String>
+    <system:String x:Key="ColStartDate">Start Date</system:String>
+    <system:String x:Key="TotalActivityBq">Radioactive Activity (Bq)</system:String>
+
+    <system:String x:Key="AxisActivityBq">Activity (Bq)</system:String>
+    <system:String x:Key="AxisSourceCode">Source Code</system:String>
+    <system:String x:Key="AxisDate">Date (Month-Year)</system:String>
+    <system:String x:Key="IsotopesInUse">Isotopes in Use</system:String>
+    <system:String x:Key="StorageLocations">Storage &amp; Use Locations</system:String>
+    <system:String x:Key="RiskIndicator">Risk Indicator (&gt; 1 GBq)</system:String>
+    <system:String x:Key="SourcesCountSuffix">Sources</system:String>
+    <system:String x:Key="ExpiredCalibrations">Expired Calibrations</system:String>
+    <system:String x:Key="ProactiveMonitoring">Proactive Monitoring</system:String>
+    <system:String x:Key="DecayIndicator">Temporal Decay Indicator</system:String>
+    <system:String x:Key="IsotopeDistribution">Radioisotope Distribution</system:String>
+    <system:String x:Key="RecentTransactionsTitle">Latest Source Borrowings</system:String>
+    <system:String x:Key="ColBorrowerName">Borrower Name</system:String>
+    <system:String x:Key="ColStatusAction">Status</system:String>
+    <system:String x:Key="ColExpectedReturn">Expected Return</system:String>
+
+    <!-- Radioisotopes Page -->
+    <system:String x:Key="LabelSearchIsotope">🔍 Search here for isotope name or symbol</system:String>
+    <system:String x:Key="LabelExamplePrefix"> (e.g., </system:String>
+    <system:String x:Key="IsotopeExample">Cs-137</system:String>
+    <system:String x:Key="LabelExampleSuffix">)</system:String>
+    <system:String x:Key="HintSearchIsotope">Type here for real-time search...</system:String>
+    <system:String x:Key="ToolTipRefreshIsotopes">Refresh isotopes list</system:String>
+    <system:String x:Key="BtnAddIsotope">➕ Add New Isotope</system:String>
+    <system:String x:Key="BtnEditIsotope">✏️ Edit Isotope</system:String>
+    <system:String x:Key="ColNo">No.</system:String>
+    <system:String x:Key="ColArabicName">Name</system:String>
+    <system:String x:Key="ColSymbol">Symbol</system:String>
+    <system:String x:Key="ColRadiationType">Radiation Type</system:String>
+    <system:String x:Key="ColHalfLife">Half-Life</system:String>
+    <system:String x:Key="ColEnergyKeV">Energy (keV)</system:String>
+    <system:String x:Key="ColYield">Yield</system:String>
+    <system:String x:Key="CtxEdit">Edit</system:String>
+    <system:String x:Key="CtxDelete">Delete</system:String>
+    <system:String x:Key="AddRadioisotopeDataTitle">➕ Add Radioisotope Data</system:String>
+    <system:String x:Key="EditRadioisotopeDataTitle">✏️ Edit Radioisotope Data</system:String>
+    <system:String x:Key="Step1Identity">Step 1: Isotope Identity</system:String>
+    <system:String x:Key="FieldSymbolReq">Radioactive Symbol *</system:String>
+    <system:String x:Key="FieldNameEngReq">Name (English) *</system:String>
+    <system:String x:Key="FieldNameAr">Arabic Name</system:String>
+    <system:String x:Key="Step2Technical">Step 2: Technical Properties</system:String>
+    <system:String x:Key="FieldEnergy">Energy (keV)</system:String>
+    <system:String x:Key="FieldYield">Yield</system:String>
+    <system:String x:Key="FieldHalfLifeReq">Half-Life *</system:String>
+    <system:String x:Key="FieldTimeUnit">Time Unit</system:String>
+    <system:String x:Key="FieldTechnicalNotes">Technical Notes</system:String>
+    <system:String x:Key="BtnPrevious">Previous</system:String>
+    <system:String x:Key="BtnNext">Next</system:String>
+    <system:String x:Key="BtnSave">💾 Save</system:String>
+    <system:String x:Key="BtnCancel">❌ Cancel</system:String>
+    <system:String x:Key="LabelStep">Step </system:String>
+    <system:String x:Key="LabelOf">of </system:String>
+
+    <!-- Sources Page -->
+    <system:String x:Key="SourcesManagementTitle">Radioactive Sources Management</system:String>
+    <system:String x:Key="SourcesManagementSubtitle">View and manage all radioactive sources registered in the system</system:String>
+    <system:String x:Key="BtnAddSource">➕ Add New Source</system:String>
+    <system:String x:Key="LabelTotalActivityStats">Total Sources Activity Statistics:</system:String>
+    <system:String x:Key="HintSearchSources">Search for code, serial, or isotope...</system:String>
+    <system:String x:Key="ToolTipRefreshActivity">Refresh Radioactive Activity</system:String>
+    <system:String x:Key="FilterAllStatuses">All Statuses</system:String>
+    <system:String x:Key="StatusInUse">In Use</system:String>
+    <system:String x:Key="StatusStorage">In Storage</system:String>
+    <system:String x:Key="StatusWaste">Waste</system:String>
+    <system:String x:Key="StatusTransfer">In Transfer</system:String>
+    <system:String x:Key="BtnReset">Reset</system:String>
+    <system:String x:Key="ColSourceImage">Source Image</system:String>
+    <system:String x:Key="ColSourceCode">Source Code</system:String>
+    <system:String x:Key="ColRadioisotopes">Radioisotopes</system:String>
+    <system:String x:Key="ColSerialNumber">Serial Number</system:String>
+    <system:String x:Key="ColInitialActivity">Initial Activity</system:String>
+    <system:String x:Key="ColCurrentActivity">Current Activity</system:String>
+    <system:String x:Key="ColActivityUnit">Activity Unit</system:String>
+    <system:String x:Key="ColStorageLocation">Storage Location</system:String>
+    <system:String x:Key="ColSourceStatus">Source Status</system:String>
+    <system:String x:Key="ColCalibrationDate">Calibration / Mfg Date</system:String>
+    <system:String x:Key="ColActions">Actions</system:String>
+    <system:String x:Key="ToolTipViewDetails">View Details</system:String>
+    <system:String x:Key="AddSourceTitle">☢️ Add New Source</system:String>
+    <system:String x:Key="EditSourceTitle">✏️ Edit Source Data</system:String>
+    <system:String x:Key="Step1Definition">Step 1: Source Definition</system:String>
+    <system:String x:Key="FieldSourceCodeReq">Source Code *</system:String>
+    <system:String x:Key="FieldSourceStatusReq">Source Status *</system:String>
+    <system:String x:Key="FieldSerialNumber">Serial Number</system:String>
+    <system:String x:Key="FieldModel">Model</system:String>
+    <system:String x:Key="FieldManufacturer">Manufacturer</system:String>
+    <system:String x:Key="Step2Radiological">Step 2: Radiological Properties</system:String>
+    <system:String x:Key="LabelIsMultiIsotope">Does this source contain multiple radioisotopes?</system:String>
+    <system:String x:Key="FieldRadioisotopeReq">Radioisotope *</system:String>
+    <system:String x:Key="FieldInitialActivityReq">Initial Activity *</system:String>
+    <system:String x:Key="BtnAddIsotopeEntry">+ Add New Isotope to Source</system:String>
+    <system:String x:Key="FieldInitialUnitReq">Initial Activity Unit *</system:String>
+    <system:String x:Key="FieldCurrentUnitReq">Standard Display Unit *</system:String>
+    <system:String x:Key="Step3Logistics">Step 3: Logistics &amp; Image Preview</system:String>
+    <system:String x:Key="FieldCalibrationDateReq">Calibration / Mfg Date *</system:String>
+    <system:String x:Key="FieldCurrentLocationReq">Current Location *</system:String>
+    <system:String x:Key="BtnPickImage">📷 Click here to pick source image</system:String>
+    <system:String x:Key="LabelImageTip">Prefer using clear images of the data plate - Required size: (500 x 500 px)</system:String>
+    <system:String x:Key="FieldAdditionalNotes">Additional Notes</system:String>
+    <system:String x:Key="HintAdditionalNotes">Add any notes here...</system:String>
+    <system:String x:Key="BtnSaveData">💾 Save Data</system:String>
+
+    <!-- Users Page -->
+    <system:String x:Key="UsersManagementTitle">Personnel and Users Management</system:String>
+    <system:String x:Key="UsersManagementSubtitle">Control access permissions and manage Sources accounts</system:String>
+
+    <system:String x:Key="RoleAdmin">System Administrator</system:String>
+    <system:String x:Key="RoleUser">User</system:String>
+    <system:String x:Key="BtnAddUser">➕ Add New User</system:String>
+    <system:String x:Key="ColFullName">Full Name</system:String>
+    <system:String x:Key="ColUsername">Username</system:String>
+    <system:String x:Key="ColRole">Role / Permission</system:String>
+    <system:String x:Key="ColEmail">Email</system:String>
+    <system:String x:Key="ColActive">Active</system:String>
+    <system:String x:Key="UserDataTitle">User Details</system:String>
+    <system:String x:Key="FieldFullNameReq">Full Name *</system:String>
+    <system:String x:Key="FieldUsernameReq">Username *</system:String>
+    <system:String x:Key="FieldPassword">Password</system:String>
+    <system:String x:Key="FieldEmail">Email Address</system:String>
+    <system:String x:Key="FieldRoleReq">Role *</system:String>
+    <system:String x:Key="FieldIsActive">Active Account</system:String>
+    <system:String x:Key="LabelIsEditor">Edit Permission</system:String>
+    <system:String x:Key="LabelPermissions">Section Access Permissions</system:String>
+    <system:String x:Key="ColStatus">Status</system:String>
+    <system:String x:Key="ColDate">Date</system:String>
+    <system:String x:Key="ColDetails">Details</system:String>
+    <system:String x:Key="BtnToggleFreeze">Freeze / Activate</system:String>
+    <system:String x:Key="UserStatsTotal">Total Users</system:String>
+    <system:String x:Key="UserStatsActive">Active Accounts</system:String>
+    <system:String x:Key="UserStatsAdmins">Administrators</system:String>
+    <system:String x:Key="TabAuditLog">Audit Log &amp; Activities</system:String>
+    <system:String x:Key="FilterByUser">Filter by User</system:String>
+    <system:String x:Key="FilterFromDate">From Date</system:String>
+    <system:String x:Key="FilterToDate">To Date</system:String>
+    <system:String x:Key="BtnClearFilters">Clear Filters</system:String>
+    <system:String x:Key="StatActivitiesToday">Today's Activities</system:String>
+    <system:String x:Key="StatModificationsToday">Today's Modifications</system:String>
+    <system:String x:Key="StatMostActiveUser">Most Active</system:String>
+    <system:String x:Key="PermRadioisotopes">Radioisotopes</system:String>
+    <system:String x:Key="PermSources">Radioactive Sources</system:String>
+    <system:String x:Key="PermLocations">Locations</system:String>
+    <system:String x:Key="PermBorrowing">Borrowing</system:String>
+    <system:String x:Key="PermReports">Reports</system:String>
+    <system:String x:Key="PermUsers">Users Management</system:String>
+    <system:String x:Key="PermSettings">Settings</system:String>
+    <system:String x:Key="PermCalculator">Activity Calculator</system:String>
+
+    <!-- Locations Page -->
+    <system:String x:Key="LocationsManagementTitle">Locations Map Management</system:String>
+    <system:String x:Key="LocationsManagementSubtitle">Define and track storage and operation sites for radioactive sources</system:String>
+    <system:String x:Key="BtnAddLocation">➕ Add New Location</system:String>
+    <system:String x:Key="ColLocationName">Location Name</system:String>
+    <system:String x:Key="ColType">Type</system:String>
+    <system:String x:Key="ColBuilding">Building</system:String>
+    <system:String x:Key="ColRoom">Room</system:String>
+    <system:String x:Key="ColResponsible">Responsible Person</system:String>
+    <system:String x:Key="LocationDataTitle">Location Details</system:String>
+    <system:String x:Key="FieldNameReq">Location Name *</system:String>
+    <system:String x:Key="FieldType">Type</system:String>
+    <system:String x:Key="FieldBuilding">Building</system:String>
+    <system:String x:Key="FieldRoom">Room</system:String>
+    <system:String x:Key="FieldResponsible">Responsible Person</system:String>
+
+    <!-- Reports Page -->
+    <system:String x:Key="ReportsCenterTitle">Strategic Reports Center</system:String>
+    <system:String x:Key="ReportsCenterSubtitle">Extract and analyze radioactive source data for accurate decision making</system:String>
+    <system:String x:Key="BtnInventoryReport">📋 Inventory Report</system:String>
+    <system:String x:Key="BtnBorrowingReport">🔄 Borrowing Report</system:String>
+    <system:String x:Key="BtnActivityReport">☢ Activity Report</system:String>
+    <system:String x:Key="BtnLowActivityReport">⚠ Low Activity Alert</system:String>
+    <system:String x:Key="BtnCalibrationReport">📅 Calibration Alerts</system:String>
+    <system:String x:Key="BtnExportPdf">Export PDF</system:String>
+    <system:String x:Key="BtnExportExcel">Export Excel</system:String>
+    <system:String x:Key="ColCode">Code</system:String>
+    <system:String x:Key="ColIsotope">Isotope</system:String>
+    <system:String x:Key="ColUnit">Unit</system:String>
+    <system:String x:Key="ColLocation">Location</system:String>
+    <system:String x:Key="ColOperation">Operation</system:String>
+    <system:String x:Key="ColUser">User</system:String>
+    <system:String x:Key="ColFrom">From</system:String>
+    <system:String x:Key="ColTo">To</system:String>
+    <system:String x:Key="ColCalibration">Calibration</system:String>
+
+    <system:String x:Key="ColRequestDate">Request Date</system:String>
+    
+    <!-- Borrowing Page -->
+    <system:String x:Key="BorrowingLogTitle">Source Borrowing Log</system:String>
+    <system:String x:Key="BorrowingLogSubtitle">Track borrowing requests and assignments for radioactive sources</system:String>
+    <system:String x:Key="LabelFromPeriod">Period From:</system:String>
+    <system:String x:Key="LabelToPeriod">To:</system:String>
+    <system:String x:Key="BtnUpdateLog">Update Log</system:String>
+    <system:String x:Key="ColBorrower">Borrower</system:String>
+    <system:String x:Key="ColBorrowDate">Borrowing Date</system:String>
+    <system:String x:Key="ColPurpose">Purpose</system:String>
+    <system:String x:Key="ColReturnDate">Return Date</system:String>
+    <system:String x:Key="ActiveBorrows">Active Borrows</system:String>
+    <system:String x:Key="DueSoon">Due Soon</system:String>
+    <system:String x:Key="ColExpectedReturnDate">Expected Return</system:String>
+    <system:String x:Key="ColActualReturnDate">Actual Return</system:String>
+    <system:String x:Key="ColApprover">Approver</system:String>
+    <system:String x:Key="ColReturner">Returned By</system:String>
+    <system:String x:Key="ColNotes">Notes</system:String>
+
+    <!-- Alert Dialog -->
+    <system:String x:Key="AlertTitle">Alert</system:String>
+    <system:String x:Key="BtnOk">OK</system:String>
+    <system:String x:Key="BtnYes">Yes</system:String>
+
+    <!-- Alert Types -->
+    <system:String x:Key="AlertWarning">Warning</system:String>
+    <system:String x:Key="AlertError">Error</system:String>
+    <system:String x:Key="AlertConfirmation">Confirmation</system:String>
+
+
+
+
+
+
+
+
+
+    <system:String x:Key="BtnNo">No</system:String>
+
+    <!-- Statuses -->
+    <system:String x:Key="StatusActive">Active</system:String>
+    <system:String x:Key="StatusDecayed">Decayed</system:String>
+    <system:String x:Key="StatusDisposed">Disposed</system:String>
+    <system:String x:Key="StatusInTransit">In Transit</system:String>
+    <system:String x:Key="StatusLost">Lost</system:String>
+
+    <!-- Transactions -->
+    <system:String x:Key="TransTransfer">Transfer</system:String>
+    <system:String x:Key="TransReceive">Receive</system:String>
+    <system:String x:Key="TransDispose">Dispose</system:String>
+    <system:String x:Key="TransReturn">Return</system:String>
+
+    <!-- Navigation Titles -->
+    <system:String x:Key="NavDashboard">Dashboard</system:String>
+    <system:String x:Key="NavRadioisotopes">Radioisotopes</system:String>
+    <system:String x:Key="NavSources">Radioactive Sources</system:String>
+    <system:String x:Key="NavLocations">Locations &amp; Storage</system:String>
+    <system:String x:Key="NavTransactions">Source Borrowing</system:String>
+    <system:String x:Key="NavReports">Reports Center</system:String>
+    <system:String x:Key="NavUsers">Users Management</system:String>
+    <system:String x:Key="NavSettings">System Settings</system:String>
+
+    <!-- Common / UI labels -->
+    <system:String x:Key="LabelNone">None / N/A</system:String>
+    <system:String x:Key="LabelTime">Time</system:String>
+    <system:String x:Key="LabelActivity">Activity</system:String>
+    <system:String x:Key="LabelUnspecified">Unspecified</system:String>
+    <system:String x:Key="PageStatusFormat">Page {0} of {1} | Total Items: {2}</system:String>
+
+    <!-- Messages / Alerts -->
+    <system:String x:Key="MsgNoSearchSource">No radioactive source matches your search.</system:String>
+    <system:String x:Key="TitleSearchResult">Search Result</system:String>
+    <system:String x:Key="MsgErrSourceCodeReq">Please enter the Source Code.</system:String>
+    <system:String x:Key="MsgErrCalibrationDateReq">Please enter the Calibration Date.</system:String>
+    <system:String x:Key="MsgErrUnitReq">Please select the current display unit.</system:String>
+    <system:String x:Key="MsgErrStatusReq">Please select the source status.</system:String>
+    <system:String x:Key="MsgErrLocationReq">Please select the source location.</system:String>
+    <system:String x:Key="MsgErrIsotopeReq">Please select the radioisotope for the source.</system:String>
+    <system:String x:Key="MsgErrInitialActivityReq">Please enter a valid positive initial activity value.</system:String>
+    <system:String x:Key="MsgErrInitialUnitReq">Please select the initial activity unit.</system:String>
+    <system:String x:Key="MsgErrMixIsotopeReq">Please add at least one isotope to the mixture.</system:String>
+    <system:String x:Key="MsgErrMixIsotopeItemReq">Please select the isotope for each row in the mixture list.</system:String>
+    <system:String x:Key="MsgErrMixActivityReq">Please enter a positive activity value for each isotope in the mixture.</system:String>
+    <system:String x:Key="MsgErrMixUnitReq">Please select the unit for each isotope in the mixture.</system:String>
+
+    <!-- Details Labels -->
+    <system:String x:Key="LabelSourceCode">Source Code:</system:String>
+    <system:String x:Key="LabelIsotope">Radioisotope:</system:String>
+    <system:String x:Key="LabelActivityDetails">Activity details per isotope:</system:String>
+    <system:String x:Key="LabelCurrentActivity">Current Activity:</system:String>
+    <system:String x:Key="LabelSerialNumber">Serial Number:</system:String>
+    <system:String x:Key="LabelLocation">Location:</system:String>
+    <system:String x:Key="LabelCalibrationDate">Calibration/Manufacturing Date:</system:String>
+    <system:String x:Key="LabelStatus">Status:</system:String>
+    <system:String x:Key="LabelManufacturer">Manufacturer:</system:String>
+    <system:String x:Key="LabelNotes">Notes:</system:String>
+    <system:String x:Key="TitleSourceDetails">Source Details</system:String>
+    <system:String x:Key="TitleSelectImage">Select Source Image</system:String>
+
+    <!-- Login Page -->
+    <system:String x:Key="MsgErrUsernameReq">Please enter username</system:String>
+    <system:String x:Key="MsgErrPasswordReq">Please enter password</system:String>
+    <system:String x:Key="LogActionLogin">Login</system:String>
+    <system:String x:Key="MsgErrGeneral">Error: {0}</system:String>
+    <system:String x:Key="MsgErrDashboardLoad">Error loading dashboard</system:String>
+    <system:String x:Key="MsgErrFillRequired">Please fill all required fields</system:String>
+    <system:String x:Key="MsgErrExportPdf">Error exporting PDF: {0}</system:String>
+    <system:String x:Key="MsgErrExportExcel">Error exporting Excel: {0}</system:String>
+    <system:String x:Key="MsgErrLocationNameReq">Please enter a location name</system:String>
+
+    <!-- Settings Feedback -->
+    <system:String x:Key="MsgThemeDark">Dark mode enabled</system:String>
+    <system:String x:Key="MsgThemeLight">Light mode enabled</system:String>
+    <system:String x:Key="MsgLangArabic">Arabic language set</system:String>
+    <system:String x:Key="MsgLangEnglish">Language set to English</system:String>
+
+    <!-- Main Navigation / Session -->
+    <system:String x:Key="MsgErrSavePending">Please save or cancel changes before navigating to another section.</system:String>
+    <system:String x:Key="TitlePendingChanges">Alert: Unsaved Changes</system:String>
+    <system:String x:Key="MsgConfirmLogout">Are you sure you want to logout?</system:String>
+    <system:String x:Key="TitleLogout">Confirm Logout</system:String>
+    <system:String x:Key="ToolTipCollapseSidebar">Collapse/Expand Sidebar</system:String>
+    <system:String x:Key="LabelIsotopeSymbol">Isotope</system:String>
+    <system:String x:Key="MsgErrImageLoad">Failed to load image: {0}</system:String>
+
+
+
+
+
+
+    <!-- Notifications UI -->
+    <system:String x:Key="TitleNotifications">System Notifications</system:String>
+    <system:String x:Key="ToolTipNotifications">Alerts &amp; Notifications</system:String>
+    <system:String x:Key="BtnMarkAllRead">Mark all as read</system:String>
+    <system:String x:Key="MsgNoNotifications">No new notifications</system:String>
+
+    <system:String x:Key="MenuActivityCalculator">Activity Calculator</system:String>
+    <system:String x:Key="MenuHelp">Help &amp; Guide</system:String>
+    
+    <!-- Help View Strings -->
+    <system:String x:Key="TitleHelp">System User Guide</system:String>
+    <system:String x:Key="TitleHelpTopics">Topics</system:String>
+    <system:String x:Key="HelpSubtitle">A comprehensive guide to help you navigate and use all system features effectively</system:String>
+    
+    <!-- Help Topics -->
+    <system:String x:Key="HelpTopicIntroTitle">1. Introduction</system:String>
+    <system:String x:Key="HelpTopicIntroContent">Welcome to the Sources System.&#xA;&#xA;This system is designed to seamlessly manage and track radioactive sources. Using this guide, you will learn how to navigate the system, manage inventory, handle borrowing requests, and generate comprehensive reports.&#xA;&#xA;Use the sidebar on the right to navigate between different system modules. The top bar contains your notifications bell and the ability to collapse the sidebar for more screen space.</system:String>
+
+    <system:String x:Key="HelpTopicDashboardTitle">2. Dashboard</system:String>
+    <system:String x:Key="HelpTopicDashboardContent">The Dashboard provides a high-level overview of the entire system.&#xA;&#xA;Key Features:&#xA;• KPI Cards: Displays the total number of sources, active vs. stored breakdown, and total current activity.&#xA;• Recent Alerts: Highlights items requiring immediate attention (e.g., sources needing calibration or overdue returns).&#xA;• Activity Charts: Visualizes the distribution of source activities over time and by isotope.</system:String>
+
+    <system:String x:Key="HelpTopicRadioisotopesTitle">3. Radioisotopes</system:String>
+    <system:String x:Key="HelpTopicRadioisotopesContent">The Radioisotopes module allows you to manage the types of radioactive materials used in your facility.&#xA;&#xA;Features:&#xA;• Add New: Click 'Add Isotope', enter the symbol (e.g., Cs-137), atomic number, mass number, and half-life.&#xA;• Edit/Delete: Use the action buttons next to each isotope in the list to modify or remove records.</system:String>
+
+    <system:String x:Key="HelpTopicSourcesTitle">4. Sources Inventory</system:String>
+    <system:String x:Key="HelpTopicSourcesContent">The core of the Sources system. Here you track all physical radioactive sources.&#xA;&#xA;Adding a Source:&#xA;1. Navigate to the Sources section and click 'Add Source'.&#xA;2. Fill in the required fields: Source Code, Isotope, Initial Activity and its Unit, Manufacturer, and Location.&#xA;3. The system automatically calculates the Current Activity based on the isotope's half-life.&#xA;&#xA;Managing Sources:&#xA;• Use the 'Edit' button to update details like Status (Active, Stored, Disposed).&#xA;• View complete tracking history by clicking on the source details.</system:String>
+
+    <system:String x:Key="HelpTopicBorrowingTitle">5. Borrowing System</system:String>
+    <system:String x:Key="HelpTopicBorrowingContent">Manage the checkout and return of radioactive sources.&#xA;&#xA;Creating a Request:&#xA;• Go to the Borrowing section and click 'New Request'.&#xA;• Select the source, the borrower's name, the purpose of use, and the expected return date.&#xA;&#xA;Approvals &amp; Returns:&#xA;• Supervisors can 'Approve' or 'Reject' pending requests.&#xA;• Once a source is returned, it must be marked as 'Returned' to update the primary inventory status.</system:String>
+
+    <system:String x:Key="HelpTopicReportsTitle">6. Analytics &amp; Reports</system:String>
+    <system:String x:Key="HelpTopicReportsContent">Generate official documents summarizing system data.&#xA;&#xA;Available Reports:&#xA;• General Report: A comprehensive report combining all data below.&#xA;• Inventory Report: Full list of all registered sources.&#xA;• Borrowing Report: History of all source checkouts and returns.&#xA;• Low Activity / Calibration: Lists sources that have decayed significantly or require imminent recalibration.&#xA;&#xA;Exporting:&#xA;Click the PDF or Excel buttons at the top of the screen to download the currently viewed report.</system:String>
+
+    <system:String x:Key="HelpTopicSettingsTitle">7. Settings &amp; Users</system:String>
+    <system:String x:Key="HelpTopicSettingsContent">System Administration and Configuration.&#xA;&#xA;User Management:&#xA;• Create new accounts and assign roles (Admin, Supervisor, User).&#xA;• Roles determine which sections of the application are accessible.&#xA;&#xA;System Settings:&#xA;• Backup &amp; Restore database ensuring data integrity.&#xA;• Toggle Application Theme (Light/Dark mode) and Language.</system:String>
+
+    <system:String x:Key="CalcTitle">Radioactivity Activity Calculator</system:String>
+    <system:String x:Key="CalcSubtitle">Calculate activity using nuclear decay laws</system:String>
+    <system:String x:Key="CalcFieldIsotope">Select Radioisotope (optional)</system:String>
+    <system:String x:Key="CalcFieldInitialActivity">Initial Activity (A₀) *</system:String>
+    <system:String x:Key="CalcFieldInputUnit">Input Unit</system:String>
+    <system:String x:Key="CalcFieldHalfLife">Half-life (T½) *</system:String>
+    <system:String x:Key="CalcFieldTimeUnit">Time Unit</system:String>
+    <system:String x:Key="CalcFieldCalibrationDate">Calibration/Manufacture Date *</system:String>
+    <system:String x:Key="CalcFieldCalculationDate">Calculation Date *</system:String>
+    <system:String x:Key="CalcFieldOutputUnit">Output Unit</system:String>
+    <system:String x:Key="CalcBtnCalculate">⛛ Calculate</system:String>
+    <system:String x:Key="CalcBtnReset">🔄 Reset</system:String>
+    <system:String x:Key="CalcBtnCopy">📋 Copy</system:String>
+    <system:String x:Key="CalcResultElapsed">Elapsed Time</system:String>
+    <system:String x:Key="CalcResultDecayConstant">Decay Constant (λ)</system:String>
+    <system:String x:Key="CalcResultActivity">Current Activity A(t)</system:String>
+    <system:String x:Key="CalcFormulaTitle">Reference Formulas</system:String>
+    <system:String x:Key="CalcErrInvalidInput">Please enter valid positive numeric values.</system:String>
+    <system:String x:Key="CalcErrDateOrder">Calculation date must be after calibration date.</system:String>
+    <system:String x:Key="CalcHintActivity">Example: 100</system:String>
+    <system:String x:Key="CalcHintHalfLife">Example: 30.17</system:String>
+    <system:String x:Key="CalcRadioFromDB">Stored Isotopes</system:String>
+    <system:String x:Key="CalcRadioManual">Manual Input</system:String>
+
+    <!-- Borrowing View Missing Keys -->
+    <system:String x:Key="BorrowingManagementTitle">Borrowing Management</system:String>
+    <system:String x:Key="BorrowingManagementSubtitle">Manage source borrowing requests and returns</system:String>
+    <system:String x:Key="AddNewBorrowRequest">New Borrow Request</system:String>
+    <system:String x:Key="PendingRequests">Pending Requests</system:String>
+    <system:String x:Key="DeliveredSources">Delivered Sources</system:String>
+    <system:String x:Key="OverdueRequests">Overdue Requests</system:String>
+    <system:String x:Key="SearchBorrowHint">Search by borrower or source...</system:String>
+    <system:String x:Key="FilterByStatus">Filter by Status</system:String>
+    <system:String x:Key="SourceCode">Source Code</system:String>
+    <system:String x:Key="BorrowerName">Borrower Name</system:String>
+    <system:String x:Key="ExpectedReturn">Expected Return</system:String>
+    <system:String x:Key="Status">Status</system:String>
+    <system:String x:Key="Actions">Actions</system:String>
+    <system:String x:Key="OpenActionDialog">Actions</system:String>
+    <system:String x:Key="NavBorrowing">Source Borrowing</system:String>
+    <system:String x:Key="NavActivityCalculator">Activity Calculator</system:String>
+    <system:String x:Key="NavHelp">Help &amp; Guide</system:String>
+    <system:String x:Key="NavAboutSystem">About System</system:String>
+    <system:String x:Key="SelectSource">Select Source</system:String>
+    <system:String x:Key="SelectBorrower">Select Borrower</system:String>
+    <system:String x:Key="BorrowPurpose">Borrow Purpose</system:String>
+    <system:String x:Key="Cancel">Cancel</system:String>
+    <system:String x:Key="SubmitRequest">Submit Request</system:String>
+    <system:String x:Key="RequestActions">Request Actions</system:String>
+    <system:String x:Key="RejectionReasonHint">Rejection Reason (Optional)</system:String>
+    <system:String x:Key="Reject">Reject</system:String>
+    <system:String x:Key="Approve">Approve</system:String>
+    <system:String x:Key="MarkDelivered">Mark as Delivered</system:String>
+    <system:String x:Key="SelectedReturnedBy">Received By</system:String>
+    <system:String x:Key="MarkReturned">Confirm Return</system:String>
+    <system:String x:Key="Close">Close</system:String>
+    <system:String x:Key="ExportExcel">Export Excel</system:String>
+    <system:String x:Key="ExportPdf">Export PDF</system:String>
+
+    <!-- Source Status Hints -->
+    <system:String x:Key="StatusHintsTitle">📋 Status Guide:</system:String>
+    <system:String x:Key="StatusHintInUse">• In Use: Source is currently installed in a device or in active use.</system:String>
+    <system:String x:Key="StatusHintStorage">• In Storage: Source is stored and available for borrowing or use.</system:String>
+    <system:String x:Key="StatusHintWaste">• Waste: Source has been disposed of or awaiting disposal.</system:String>
+    <system:String x:Key="StatusHintTransfer">• In Transit: Source is being transported.</system:String>
+
+    <system:String x:Key="ColAddedBy">Added By</system:String>
+</ResourceDictionary>

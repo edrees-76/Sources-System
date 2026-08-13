@@ -1,0 +1,156 @@
+<UserControl x:Class="Sources.Views.LoginView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+
+    <Grid Background="White">
+        <Grid.ColumnDefinitions>
+            <!-- القسم الأيمن (خلفية كحلية وشعار ذهبي) - تم التكبير بناءً على طلب المستخدم -->
+            <ColumnDefinition Width="1.5*"/>
+            <!-- القسم الأيسر (النموذج الأبيض) -->
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- الجانب الأيمن: الرسوميات والشعار (Navy Blue & Gold) -->
+        <Border Grid.Column="0" Background="#0B1320" ClipToBounds="True">
+            <Grid>
+                <Image Source="pack://siteoforigin:,,,/Assets/sources_login_branding.jpg" 
+                       Stretch="UniformToFill"
+                       HorizontalAlignment="Center" 
+                       VerticalAlignment="Center"
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
+
+                <!-- اسم المنظومة (Wordmark) أسفل شارة الشعار مباشرة -->
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,190,0,0">
+                    <TextBlock Text="{DynamicResource BrandNameAr}"
+                               FontSize="44" FontWeight="Bold" Foreground="#D4AF37"
+                               TextAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock.Effect>
+                            <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.6" Color="Black"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
+                    <TextBlock Text="{DynamicResource BrandNameEn}"
+                               FontSize="16" FontWeight="SemiBold" Foreground="#9FB2CC"
+                               TextAlignment="Center" HorizontalAlignment="Center"
+                               FlowDirection="LeftToRight"
+                               Margin="0,2,0,0"/>
+                </StackPanel>
+
+                <!-- الجانب الأيمن: الجملة التعريفية (Branding Overlay) -->
+                <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,80">
+                    <TextBlock Text="{DynamicResource LoginSubtitle}" 
+                               FontSize="18" FontWeight="SemiBold" Foreground="#D4AF37"
+                               TextWrapping="Wrap" TextAlignment="Center" MaxWidth="600">
+                        <TextBlock.Effect>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.8" Color="Black"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- الجانب الأيسر: نموذج تسجيل الدخول + شعار المصمم (مضغوط لضمان ظهور كافة البيانات) -->
+        <Border Grid.Column="1" Background="#FAFAFC" Padding="25">
+                <!-- تصميم موحد ومضغوط للجانب الأيسر - تم تحديث المسميات والترتيب بناءً على صورة المرجع -->
+                <StackPanel VerticalAlignment="Center" MaxWidth="450" HorizontalAlignment="Center">
+                    <TextBlock Text="{DynamicResource LoginTitle}" FontSize="34" FontWeight="Bold" Foreground="#0B1320" Margin="0,0,0,30" HorizontalAlignment="Center"/>
+
+                    <!-- رسالة خطأ -->
+                    <Border Background="#FEF2F2" BorderBrush="#F87171" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,15"
+                            Visibility="{Binding HasError, Converter={StaticResource BoolToVis}}">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <materialDesign:PackIcon Kind="AlertCircleOutline" Foreground="#DC2626" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding ErrorMessage}" Foreground="#DC2626" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- حقول الإدخال -->
+                    <TextBlock Text="{DynamicResource LabelUsername}" FontSize="13" FontWeight="SemiBold" Foreground="#111827" Margin="0,0,0,6"/>
+                    <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                             FontSize="14" Padding="16,10" Margin="0,0,0,15"
+                             BorderBrush="#D1D5DB" Background="White"/>
+
+                    <TextBlock Text="{DynamicResource LabelPassword}" FontSize="13" FontWeight="SemiBold" Foreground="#111827" Margin="0,0,0,6"/>
+                    <Grid Margin="0,0,0,12">
+                        <!-- حقل كلمة المرور العادي (مخفي) -->
+                        <PasswordBox Style="{StaticResource MaterialDesignOutlinedPasswordBox}"
+                                     FontSize="14" Padding="45,10,16,10"
+                                     BorderBrush="#D1D5DB" Background="White"
+                                     Visibility="{Binding IsPasswordVisible, Converter={StaticResource InverseBoolToVis}}"
+                                     materialDesign:PasswordBoxAssist.Password="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        
+                        <!-- حقل كلمة المرور الظاهر (عند الضغط على العين) -->
+                        <TextBox Text="{Binding Password, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                 FontSize="14" Padding="45,10,16,10"
+                                 BorderBrush="#D1D5DB" Background="White"
+                                 Visibility="{Binding IsPasswordVisible, Converter={StaticResource BoolToVis}}"/>
+
+                        <!-- زر العين للتبديل - تم نقله للجهة الصحيحة (اليمين) بناءً على ملاحظة المستخدم -->
+                        <Button Style="{StaticResource MaterialDesignIconButton}"
+                                Command="{Binding TogglePasswordVisibilityCommand}"
+                                HorizontalAlignment="Right" VerticalAlignment="Center" 
+                                Margin="0,0,8,0" Width="30" Height="30"
+                                Foreground="#9CA3AF">
+                            <materialDesign:PackIcon Kind="{Binding IsPasswordVisible, Converter={StaticResource PasswordEyeIconConverter}}" 
+                                                     Width="20" Height="20"/>
+                        </Button>
+                    </Grid>
+
+                    <!-- خيارات التسجيل -->
+                    <Grid Margin="0,0,0,25">
+                        <CheckBox Content="{DynamicResource LabelRememberMe}" Foreground="#4B5563" FontSize="13" FontWeight="SemiBold"
+                                  IsChecked="{Binding RememberMe}" HorizontalAlignment="Right"/>
+                        
+                        <TextBlock Text="هل نسيت كلمة المرور؟" Foreground="#0B1320" FontSize="12" FontWeight="SemiBold"
+                                   HorizontalAlignment="Left" VerticalAlignment="Center" Cursor="Hand" Visibility="Collapsed"/>
+                    </Grid>
+
+                    <!-- زر تسجيل الدخول - تحديث النص بناءً على المرجع -->
+                    <Button Command="{Binding LoginCommand}" IsDefault="True"
+                            Background="#0B1320" BorderBrush="#0B1320" Foreground="#D4AF37"
+                            HorizontalAlignment="Stretch" Height="52" FontSize="19" FontWeight="Bold"
+                            Content="{DynamicResource BtnLogin}"
+                            IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolToVis}}">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="8"/>
+                            </Style>
+                        </Button.Resources>
+                        <Button.Effect>
+                            <DropShadowEffect BlurRadius="12" ShadowDepth="4" Opacity="0.3" Color="#0B1320"/>
+                        </Button.Effect>
+                    </Button>
+
+                    <ProgressBar IsIndeterminate="True" Margin="0,10,0,0" Foreground="#D4AF37"
+                                 Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}"/>
+
+                    <!-- تذييل الصفحة: تصميم وتنفيذ + الشعار مجمعين أفقياً (تم تكبير الشعار بناءً على طلب المستخدم) -->
+                    <StackPanel Margin="0,30,0,0" HorizontalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,12">
+                            <TextBlock Text="{DynamicResource TextDesignedBy}" 
+                                       Foreground="#0B1320" 
+                                       FontSize="16" 
+                                       FontWeight="Bold" 
+                                       VerticalAlignment="Center" 
+                                       Margin="15,0,0,0"/>
+                            
+                            <Image Source="pack://siteoforigin:,,,/Assets/designer_logo.png" 
+                                   MaxWidth="160" Height="Auto" 
+                                   RenderOptions.BitmapScalingMode="HighQuality">
+                                <Image.Effect>
+                                    <DropShadowEffect BlurRadius="8" ShadowDepth="0" Color="Black" Opacity="0.1"/>
+                                </Image.Effect>
+                            </Image>
+                        </StackPanel>
+                        
+                        <TextBlock Text="{DynamicResource TextAllRightsReserved}" 
+                                   FontSize="11" 
+                                   Foreground="#9CA3AF" 
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

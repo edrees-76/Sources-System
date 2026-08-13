@@ -1,0 +1,262 @@
+using System;
+using System.Globalization;
+using System.Windows;
+using System.Windows.Data;
+using System.Windows.Media;
+using System.IO;
+using System.Windows.Controls;
+
+namespace Sources.Converters;
+
+// ─── تحويل القيمة المنطقية إلى ظهور/إخفاء ───
+public class BoolToVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        => value is true ? Visibility.Visible : Visibility.Collapsed;
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => value is Visibility.Visible;
+}
+
+public class InverseBoolToVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        => value is true ? Visibility.Collapsed : Visibility.Visible;
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => value is Visibility.Collapsed;
+}
+
+// ─── تحويل القيمة المنطقية إلى قيمتين مختلفتين (نصوص غالباً) ───
+public class BoolToValueConverter : IValueConverter
+{
+    public object? Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (parameter is not string paramString) return null;
+        var parts = paramString.Split('|');
+        if (parts.Length < 2) return null;
+
+        return value is true ? parts[0] : parts[1];
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}
+
+// ─── تحويل الحالة إلى لون ───
+public class StatusToColorConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return value?.ToString() switch
+        {
+            "Active" => new SolidColorBrush(Color.FromRgb(76, 175, 80)),      // أخضر
+            "Decayed" => new SolidColorBrush(Color.FromRgb(255, 152, 0)),     // برتقالي
+            "Disposed" => new SolidColorBrush(Color.FromRgb(158, 158, 158)),  // رمادي
+            "InTransit" => new SolidColorBrush(Color.FromRgb(33, 150, 243)), // أزرق
+            "Lost" => new SolidColorBrush(Color.FromRgb(244, 67, 54)),       // أحمر
+            _ => new SolidColorBrush(Color.FromRgb(158, 158, 158))
+        };
+    }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}
+
+// ─── تحويل الحالة إلى نص عربي ───
+public class StatusToArabicConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        string? key = value?.ToString() switch
+        {
+            "Active" => "StatusActive",
+            "Decayed" => "StatusDecayed",
+            "Disposed" => "StatusDisposed",
+            "InTransit" => "StatusInTransit",
+            "Lost" => "StatusLost",
+            _ => null
+        };
+
+        if (key != null && Application.Current.Resources.Contains(key))
+            return Application.Current.FindResource(key);
+
+        return value?.ToString() ?? "";
+    }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}
+
+// ─── تحويل نوع المعاملة إلى عربي ───
+public class TransactionTypeToArabicConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        string? key = value?.ToString() switch
+        {
+            "Transfer" => "TransTransfer",
+            "Receive" => "TransReceive",
+            "Dispose" => "TransDispose",
+            "Return" => "TransReturn",
+            _ => null
+        };
+
+        if (key != null && Application.Current.Resources.Contains(key))
+            return Application.Current.FindResource(key);
+
+        return value?.ToString() ?? "";
+    }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}
+
+// ─── تنسيق الأرقام العلمية ───
+public class ScientificNotationConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is double d)
+        {
+            if (d == 0) return "0";
+            if (Math.Abs(d) >= 1e6 || Math.Abs(d) < 0.01)
+                return d.ToString("0.####E+0");
+            return d.ToString("N4");
+        }
+        return value?.ToString() ?? "";
+    }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}
+
+// ─── BindingProxy للربط من DataGrid ───
+public class BindingProxy : Freezable
+{
+    protected override Freezable CreateInstanceCore() => new BindingProxy();
+    public static readonly DependencyProperty DataProperty =
+        DependencyProperty.Register("Data", typeof(object), typeof(BindingProxy), new UIPropertyMetadata(null));
+    public object Data
+    {
+        get => GetValue(DataProperty);
+        set => SetValue(DataProperty, value);
+    }
+}
+// ─── تحويل حالة رؤية كلمة المرور إلى أيقونة العين ───
+public class PasswordEyeIconConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        => value is true ? "EyeOff" : "Eye";
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}
+
+// ─── تحويل اسم الواجهة إلى عنوان عربي ───
+public class ViewNameToTitleConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        string? key = value?.ToString() switch
+        {
+            "Dashboard" => "NavDashboard",
+            "Radioisotopes" => "NavRadioisotopes",
+            "Sources" => "NavSources",
+            "Locations" => "NavLocations",
+            "Borrowing" => "NavBorrowing",
+            "Transactions" => "NavTransactions",
+            "Reports" => "NavReports",
+            "Users" => "NavUsers",
+            "ActivityCalculator" => "NavActivityCalculator",
+            "Help" => "NavHelp",
+            "AboutSystem" => "NavAboutSystem",
+            "Settings" => "NavSettings",
+            _ => null
+        };
+
+        if (key != null && Application.Current.Resources.Contains(key))
+            return Application.Current.FindResource(key);
+
+        return "Sources";
+    }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}
+
+// ─── تحويل القيمة الفارغة (Null) إلى ظهور/إخفاء ───
+public class NullToVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        bool isNullOrEmpty = value == null || (value is string s && string.IsNullOrWhiteSpace(s));
+        bool inverse = parameter?.ToString() == "Inverse";
+
+        if (inverse)
+            return isNullOrEmpty ? Visibility.Visible : Visibility.Collapsed;
+        
+        return isNullOrEmpty ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}
+
+// ─── تحويل المسار النسبي إلى مسار مطلق ───
+public class RelativePathToAbsolutePathConverter : IValueConverter
+{
+    public object? Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value == null || string.IsNullOrWhiteSpace(value.ToString()))
+            return null;
+
+        string relativePath = value.ToString()!;
+        if (Path.IsPathRooted(relativePath))
+            return relativePath;
+
+        return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, relativePath);
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}
+// ─── تحويل المساواة إلى ظهور/إخفاء (لخطوات المعالج) ───
+public class EqualityToVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value == null || parameter == null) return Visibility.Collapsed;
+        
+        bool isEqual = value.ToString() == parameter.ToString();
+        return isEqual ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}
+
+// ─── محول الفهرس (Index Converter) لترقيم الأسطر ───
+public class IndexConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is DataGridRow row)
+        {
+            return (row.GetIndex() + 1).ToString();
+        }
+        return "0";
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}
+
+// ─── تحويل درجة الخطورة إلى لون ───
+public class SeverityToColorConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return value?.ToString() switch
+        {
+            "Critical" => new SolidColorBrush(Color.FromRgb(244, 67, 54)), // أحمر
+            "Warning" => new SolidColorBrush(Color.FromRgb(255, 152, 0)),  // برتقالي
+            "Info" => new SolidColorBrush(Color.FromRgb(33, 150, 243)),     // أزرق
+            _ => new SolidColorBrush(Color.FromRgb(158, 158, 158))
+        };
+    }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}

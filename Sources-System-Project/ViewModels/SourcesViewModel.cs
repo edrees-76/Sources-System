@@ -1,0 +1,653 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Sources.Models;
+using Sources.Services;
+using Sources.Helpers;
+using Sources.Data;
+using Sources.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using Microsoft.Win32;
+
+namespace Sources.ViewModels;
+
+/// <summary>
+/// نموذج مساعد لإدخال نظير داخل مصدر متعدد النظائر
+/// </summary>
+public partial class IsotopeEntryViewModel : ObservableObject
+{
+    [ObservableProperty] private Guid? _radioisotopeId;
+    [ObservableProperty] private double _initialActivity;
+    [ObservableProperty] private string _initialActivityText = string.Empty;
+    [ObservableProperty] private Guid? _activityUnitId;
+
+    partial void OnInitialActivityTextChanged(string value)
+    {
+        if (double.TryParse(value, out double result))
+        {
+            InitialActivity = result;
+        }
+    }
+
+    public SourceIsotope ToSourceIsotope()
+    {
+        return new SourceIsotope
+        {
+            RadioisotopeId = RadioisotopeId!.Value,
+            InitialActivityValue = InitialActivity,
+            ActivityUnitId = ActivityUnitId,
+        };
+    }
+}
+
+public partial class SourcesViewModel : ObservableObject, IEditableViewModel
+{
+    private readonly ISourceService _sourceService;
+    private readonly IRadioisotopeService _isotopeService;
+    private readonly ILocationService _locationService;
+    private readonly IReportingService _reportingService;
+
+    [ObservableProperty] private ObservableCollection<Source> _sources = new();
+    [ObservableProperty] private ObservableCollection<Radioisotope> _radioisotopes = new();
+    [ObservableProperty] private ObservableCollection<ActivityUnit> _activityUnits = new();
+    [ObservableProperty] private ObservableCollection<Location> _locations = new();
+    [ObservableProperty] private Source? _selectedSource;
+    [ObservableProperty] private string _searchText = string.Empty;
+    [ObservableProperty] private string _statusFilter = "All";
+    [ObservableProperty] private bool _hasMessage;
+    [ObservableProperty] private bool _isEditing;
+    [ObservableProperty] private string _message = string.Empty;
+
+    // ─── خصائص التقسيم إلى صفحات (Pagination) ───
+    [ObservableProperty] private int _currentPage = 1;
+    [ObservableProperty] private int _pageSize = 16;
+    [ObservableProperty] private int _totalPages = 1;
+    [ObservableProperty] private ObservableCollection<Source> _pagedSources = new();
+    [ObservableProperty] private string _pageStatusText = string.Empty;
+
+    public double TotalActivityValue => Sources.Sum(s => s.CurrentActivityValue * (s.CurrentActivityUnit?.ConversionToBq ?? 1));
+
+    [ObservableProperty] private ObservableCollection<TotalActivityItem> _totalActivityItems = new();
+
+    // حقول النموذج
+    [ObservableProperty] private string _editSourceCode = string.Empty;
+    [ObservableProperty] private Guid? _editRadioisotopeId;
+    [ObservableProperty] private string _editSerialNumber = string.Empty;
+    [ObservableProperty] private string _editManufacturer = string.Empty;
+    [ObservableProperty] private string _editModel = string.Empty;
+    [ObservableProperty] private double _editInitialActivity;
+    [ObservableProperty] private string _editInitialActivityText = string.Empty;
+    [ObservableProperty] private Guid? _editInitialUnitId;
+    [ObservableProperty] private DateTime _editCalibrationDate = DateTime.Now;
+    [ObservableProperty] private Guid? _editCurrentUnitId;
+    [ObservableProperty] private Guid? _editLocationId;
+    [ObservableProperty] private string _editStatus = "Active";
+
+    partial void OnEditInitialActivityTextChanged(string value)
+    {
+        if (double.TryParse(value, out double result))
+        {
+            EditInitialActivity = result;
+        }
+    }
+    [ObservableProperty] private string _editNotes = string.Empty;
+    [ObservableProperty] private string? _editImagePath;
+    [ObservableProperty] private bool _isNew;
+    [ObservableProperty] private int _currentStep = 1;
+    public int TotalSteps => 3;
+
+    // ─── حقول النظائر المتعددة ───
+    [ObservableProperty] private bool _isMultiIsotope;
+    [ObservableProperty] private ObservableCollection<IsotopeEntryViewModel> _isotopeEntries = new();
+
+    private Guid? _editingId;
+
+    public SourcesViewModel(ISourceService sourceService, IRadioisotopeService isotopeService, ILocationService locationService, IReportingService reportingService)
+    {
+        _sourceService = sourceService;
+        _isotopeService = isotopeService;
+        _locationService = locationService;
+        _reportingService = reportingService;
+        _ = LoadDataAsync();
+    }
+
+    [RelayCommand]
+    public async Task RefreshAsync()
+    {
+        await Task.Run(() => 
+        {
+            _sourceService.UpdateAllCurrentActivities();
+        });
+        await LoadDataAsync();
+    }
+
+    [RelayCommand]
+    public async Task LoadDataAsync()
+    {
+        // عرض مؤشر تحميل إذا لزم الأمر (يمكن إضافة خاصية IsBusy لاحقاً)
+        
+        // إجراء الحسابات والتحميل في خيط معالج خلفي لمنع تجمد الواجهة
+        await Task.Run(() => 
+        {
+            _sourceService.UpdateAllCurrentActivities();
+        });
+
+        var allSources = _sourceService.GetAllSources();
+
+        // تطبيق الفلاتر
+        if (!string.IsNullOrWhiteSpace(SearchText))
+        {
+            var searchLower = SearchText.ToLower();
+            allSources = allSources.Where(s =>
+                (s.SourceCode?.ToLower().Contains(searchLower) ?? false) ||
+                (s.Radioisotope?.Name?.ToLower().Contains(searchLower) ?? false) ||
+                (s.Radioisotope?.Symbol?.ToLower().Contains(searchLower) ?? false) ||
+                (s.SerialNumber?.ToLower().Contains(searchLower) ?? false) ||
+                (s.DisplayIsotopes?.ToLower().Contains(searchLower) ?? false) ||
+                (s.Location?.LocationName?.ToLower().Contains(searchLower) ?? false) ||
+                (s.Manufacturer?.ToLower().Contains(searchLower) ?? false) ||
+                (s.Model?.ToLower().Contains(searchLower) ?? false) ||
+                (s.Status?.ToLower().Contains(searchLower) ?? false) ||
+                s.CalibrationDate.ToString("yyyy-MM-dd").Contains(searchLower) ||
+                s.InitialActivityValue.ToString().Contains(searchLower) ||
+                s.CurrentActivityValue.ToString().Contains(searchLower)
+            ).ToList();
+        }
+
+        if (StatusFilter == "Active")
+        {
+            allSources = allSources.Where(s => s.Status == "Active" || s.Status == "InUse" || s.Status == "Storage").ToList();
+        }
+        else if (StatusFilter != "All")
+        {
+            allSources = allSources.Where(s => s.Status == StatusFilter).ToList();
+        }
+
+        Sources = new ObservableCollection<Source>(allSources);
+        OnPropertyChanged(nameof(TotalActivityValue));
+        
+        // تحديث معلومات الصفحات
+        CurrentPage = 1;
+        UpdatePagination();
+
+        // تنبيه المستخدم إذا لم توجد نتائج بعد البحث
+        if (Sources.Count == 0 && !string.IsNullOrWhiteSpace(SearchText))
+        {
+            DialogHelper.ShowInfo(TranslationHelper.GetString("MsgNoSearchSource"), TranslationHelper.GetString("TitleSearchResult"));
+        }
+
+        Radioisotopes = new ObservableCollection<Radioisotope>(_isotopeService.GetAll());
+        Locations = new ObservableCollection<Location>(_locationService.GetAll());
+
+        // تحميل وحدات النشاط
+        using var db = App.CreateDbContext();
+        ActivityUnits = new ObservableCollection<ActivityUnit>(db.ActivityUnits.OrderBy(u => u.UnitName).ToList());
+
+        // تحديث إجمالي النشاط بجميع الوحدات (بعد تحميل الوحدات)
+        UpdateTotalActivityItems();
+    }
+
+    [RelayCommand]
+    private void AddNew()
+    {
+        IsNew = true;
+        _editingId = null;
+        ClearForm();
+        CurrentStep = 1;
+        IsEditing = true;
+    }
+
+    private void ClearForm()
+    {
+        EditSourceCode = string.Empty;
+        EditRadioisotopeId = null;
+        EditSerialNumber = string.Empty;
+        EditManufacturer = string.Empty;
+        EditModel = string.Empty;
+        EditInitialActivity = 0;
+        EditInitialActivityText = string.Empty;
+        EditInitialUnitId = ActivityUnits.FirstOrDefault()?.Id;
+        EditCalibrationDate = DateTime.Now;
+        EditCurrentUnitId = ActivityUnits.FirstOrDefault()?.Id;
+        EditLocationId = Locations.FirstOrDefault()?.Id;
+        EditStatus = "Active";
+        EditNotes = string.Empty;
+        IsMultiIsotope = false;
+        EditImagePath = null;
+        IsotopeEntries.Clear();
+    }
+
+    [RelayCommand]
+    private async Task ResetSearchAsync()
+    {
+        SearchText = string.Empty;
+        StatusFilter = "All";
+        await LoadDataAsync();
+    }
+    
+    [RelayCommand]
+    private async Task SearchAsync()
+    {
+        await LoadDataAsync();
+    }
+    
+
+    [RelayCommand]
+    private void EditSource(Source source)
+    {
+        if (source == null) return;
+        SelectedSource = source;
+        IsNew = false;
+        _editingId = source.Id;
+        EditSourceCode = source.SourceCode;
+        EditRadioisotopeId = SelectedSource.RadioisotopeId;
+        EditSerialNumber = SelectedSource.SerialNumber ?? "";
+        EditManufacturer = SelectedSource.Manufacturer ?? "";
+        EditModel = SelectedSource.Model ?? "";
+        EditInitialActivity = SelectedSource.InitialActivityValue;
+        EditInitialActivityText = SelectedSource.InitialActivityValue.ToString();
+        EditInitialUnitId = SelectedSource.InitialActivityUnitId;
+        EditCalibrationDate = SelectedSource.CalibrationDate;
+        EditCurrentUnitId = SelectedSource.CurrentActivityUnitId;
+        EditLocationId = SelectedSource.LocationId;
+        EditStatus = SelectedSource.Status;
+        EditNotes = SelectedSource.Notes ?? "";
+        EditImagePath = SelectedSource.ImagePath;
+        CurrentStep = 1;
+
+        // تحميل النظائر المتعددة
+        IsMultiIsotope = SelectedSource.HasDetailedIsotopes;
+        IsotopeEntries.Clear();
+        if (SelectedSource.HasDetailedIsotopes && SelectedSource.SourceIsotopes.Any())
+        {
+            foreach (var si in SelectedSource.SourceIsotopes)
+            {
+                IsotopeEntries.Add(new IsotopeEntryViewModel
+                {
+                    RadioisotopeId = si.RadioisotopeId,
+                    InitialActivity = si.InitialActivityValue ?? 0,
+                    InitialActivityText = (si.InitialActivityValue ?? 0).ToString(),
+                    ActivityUnitId = si.ActivityUnitId
+                });
+            }
+        }
+
+        IsEditing = true;
+    }
+
+    [RelayCommand]
+    private async Task SaveAsync()
+    {
+        try
+        {
+            // 1. التحقق من الحقول الأساسية العامة (دائماً مطلوبة)
+            if (string.IsNullOrWhiteSpace(EditSourceCode))
+            {
+                ShowMessage(TranslationHelper.GetString("MsgErrSourceCodeReq"));
+                return;
+            }
+            if (EditCalibrationDate == default)
+            {
+                ShowMessage(TranslationHelper.GetString("MsgErrCalibrationDateReq"));
+                return;
+            }
+            if (EditCurrentUnitId == null)
+            {
+                ShowMessage(TranslationHelper.GetString("MsgErrUnitReq"));
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(EditStatus))
+            {
+                ShowMessage(TranslationHelper.GetString("MsgErrStatusReq"));
+                return;
+            }
+            if (EditLocationId == null)
+            {
+                ShowMessage(TranslationHelper.GetString("MsgErrLocationReq"));
+                return;
+            }
+
+            // 2. التحقق بناءً على نوع المصدر (مفرد أم خليط)
+            if (!IsMultiIsotope)
+            {
+                // مصدر مفرد
+                if (EditRadioisotopeId == null)
+                {
+                    ShowMessage(TranslationHelper.GetString("MsgErrIsotopeReq"));
+                    return;
+                }
+                if (string.IsNullOrWhiteSpace(EditInitialActivityText) || EditInitialActivity <= 0)
+                {
+                    ShowMessage(TranslationHelper.GetString("MsgErrInitialActivityReq"));
+                    return;
+                }
+                if (EditInitialUnitId == null)
+                {
+                    ShowMessage(TranslationHelper.GetString("MsgErrInitialUnitReq"));
+                    return;
+                }
+            }
+            else
+            {
+                // مصدر متعدد النظائر (خليط)
+                if (!IsotopeEntries.Any())
+                {
+                    ShowMessage(TranslationHelper.GetString("MsgErrMixIsotopeReq"));
+                    return;
+                }
+                if (IsotopeEntries.Any(e => e.RadioisotopeId == null))
+                {
+                    ShowMessage(TranslationHelper.GetString("MsgErrMixIsotopeItemReq"));
+                    return;
+                }
+                if (IsotopeEntries.Any(e => string.IsNullOrWhiteSpace(e.InitialActivityText) || e.InitialActivity <= 0))
+                {
+                    ShowMessage(TranslationHelper.GetString("MsgErrMixActivityReq"));
+                    return;
+                }
+                if (IsotopeEntries.Any(e => e.ActivityUnitId == null))
+                {
+                    ShowMessage(TranslationHelper.GetString("MsgErrMixUnitReq"));
+                    return;
+                }
+            }
+
+            // للمصادر المتعددة: RadioisotopeId = أول نظير (للتوافق مع قاعدة البيانات)
+            var primaryIsotopeId = IsMultiIsotope
+                ? IsotopeEntries.First().RadioisotopeId!.Value
+                : EditRadioisotopeId!.Value;
+
+            var source = new Source
+            {
+                Id = IsNew ? Guid.NewGuid() : _editingId!.Value,
+                SourceCode = EditSourceCode,
+                RadioisotopeId = primaryIsotopeId,
+                SerialNumber = EditSerialNumber,
+                Manufacturer = EditManufacturer,
+                Model = EditModel,
+                InitialActivityValue = EditInitialActivity,
+                InitialActivityUnitId = EditInitialUnitId!.Value,
+                CalibrationDate = EditCalibrationDate,
+                CurrentActivityUnitId = EditCurrentUnitId.Value,
+                LocationId = EditLocationId,
+                Status = EditStatus,
+                Notes = EditNotes,
+                HasDetailedIsotopes = IsMultiIsotope,
+                ImagePath = EditImagePath
+            };
+
+            // تجميع النظائر المتعددة
+            List<SourceIsotope>? isotopes = null;
+            if (IsMultiIsotope && IsotopeEntries.Any())
+            {
+                isotopes = IsotopeEntries.Select(e => e.ToSourceIsotope()).ToList();
+            }
+
+            var result = IsNew ? _sourceService.CreateSource(source, isotopes) : _sourceService.UpdateSource(source, isotopes);
+            ShowMessage(result.Message);
+            if (result.Success)
+            {
+                IsEditing = false;
+                await LoadDataAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowMessage(TranslationHelper.GetFormat("MsgErrGeneral", ex.Message));
+        }
+    }
+
+    [RelayCommand]
+    private async Task ExportToPdfAsync()
+    {
+        var sfd = new SaveFileDialog { Filter = "PDF Files (*.pdf)|*.pdf", FileName = $"Inventory_{DateTime.Now:yyyyMMdd}" };
+        if (sfd.ShowDialog() == true)
+        {
+            try 
+            { 
+                await _reportingService.GenerateInventoryReportPdfAsync(Sources, sfd.FileName, "تقرير جرد المصادر المشعة");
+                FileHelper.OpenFile(sfd.FileName);
+            }
+            catch (Exception ex) { DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrExportPdf", ex.Message)); }
+        }
+    }
+
+    [RelayCommand]
+    private async Task ExportToExcelAsync()
+    {
+        var sfd = new SaveFileDialog { Filter = "Excel Files (*.xlsx)|*.xlsx", FileName = $"Inventory_{DateTime.Now:yyyyMMdd}" };
+        if (sfd.ShowDialog() == true)
+        {
+            try 
+            { 
+                await _reportingService.GenerateInventoryReportExcelAsync(Sources, sfd.FileName, "جرد المصادر");
+                FileHelper.OpenFile(sfd.FileName);
+            }
+            catch (Exception ex) { DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrExportExcel", ex.Message)); }
+        }
+    }
+
+    [RelayCommand]
+    private async Task DeleteSourceAsync(Source source)
+    {
+        if (source == null) return;
+        var result = _sourceService.DeleteSource(source.Id);
+        ShowMessage(result.Message);
+        if (result.Success) await LoadDataAsync();
+    }
+
+    [RelayCommand]
+    private void ViewSourceDetails(Source source)
+    {
+        if (source == null) return;
+        // استخدام LRE (\u202A) و PDF (\u202C) لضمان الاتجاه من اليسار لليمين للنصوص اللاتينية/الأرقام داخل الواجهة العربية
+        string lre = "\u202A";
+        string pdf = "\u202C";
+        
+        string details = $"{TranslationHelper.GetString("LabelSourceCode")} {lre}{source.SourceCode}{pdf}\n" +
+                         $"{TranslationHelper.GetString("LabelIsotope")} {lre}{source.DisplayIsotopes}{pdf}\n";
+
+        if (source.HasDetailedIsotopes && source.SourceIsotopes != null && source.SourceIsotopes.Any())
+        {
+            details += $"{TranslationHelper.GetString("LabelActivityDetails")}\n";
+            foreach (var si in source.SourceIsotopes)
+            {
+                // استخدام رمز الوحدة المتاح أو الوحدة الأساسية للمصدر كبديل
+                string unitSymbol = si.ActivityUnit?.UnitSymbol 
+                                 ?? source.InitialActivityUnit?.UnitSymbol 
+                                 ?? "Bq";
+                
+                details += $"  - {lre}{si.Radioisotope?.Symbol ?? TranslationHelper.GetString("LabelIsotopeSymbol")}: {si.CurrentActivityValue:N4} {unitSymbol}{pdf}\n";
+            }
+        }
+        else
+        {
+            details += $"{TranslationHelper.GetString("LabelCurrentActivity")} {lre}{source.CurrentActivityValue:N4} {source.CurrentActivityUnit?.UnitSymbol}{pdf}\n";
+        }
+
+        details += $"{TranslationHelper.GetString("LabelSerialNumber")} {lre}{source.SerialNumber ?? "N/A"}{pdf}\n" +
+                  $"{TranslationHelper.GetString("LabelLocation")} {lre}{source.Location?.LocationName ?? "N/A"}{pdf}\n" +
+                  $"{TranslationHelper.GetString("LabelCalibrationDate")} {lre}{source.CalibrationDate:yyyy-MM-dd}{pdf}\n" +
+                  $"{TranslationHelper.GetString("LabelStatus")} {source.ArabicStatus}\n" +
+                  $"{TranslationHelper.GetString("LabelManufacturer")} {lre}{source.Manufacturer ?? "N/A"}{pdf}\n" +
+                  $"{TranslationHelper.GetString("LabelNotes")} {source.Notes ?? "N/A"}";
+
+        DialogHelper.ShowInfo(details, TranslationHelper.GetString("TitleSourceDetails"), source.ImagePath);
+    }
+
+    [RelayCommand]
+    private void CancelEdit()
+    {
+        IsEditing = false;
+        ClearForm();
+    }
+
+
+    // ─── أوامر النظائر المتعددة ───
+    [RelayCommand]
+    private void AddIsotopeEntry()
+    {
+        var entry = new IsotopeEntryViewModel
+        {
+            ActivityUnitId = ActivityUnits.FirstOrDefault()?.Id
+        };
+        IsotopeEntries.Add(entry);
+    }
+
+    [RelayCommand]
+    private void RemoveIsotopeEntry(IsotopeEntryViewModel entry)
+    {
+        IsotopeEntries.Remove(entry);
+    }
+
+    private void ShowMessage(string msg)
+    {
+        Message = msg;
+        HasMessage = true;
+    }
+
+    [RelayCommand]
+    private void PickImage()
+    {
+        var openFileDialog = new OpenFileDialog
+        {
+            Filter = "Image Files (*.jpg;*.jpeg;*.png;*.bmp)|*.jpg;*.jpeg;*.png;*.bmp",
+            Title = TranslationHelper.GetString("TitleSelectImage")
+        };
+
+        if (openFileDialog.ShowDialog() == true)
+        {
+            try
+            {
+                string sourceFile = openFileDialog.FileName;
+                string extension = Path.GetExtension(sourceFile);
+                string fileName = $"{Guid.NewGuid()}{extension}";
+                string destinationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "SourceImages");
+                
+                if (!Directory.Exists(destinationPath))
+                    Directory.CreateDirectory(destinationPath);
+
+                string finalPath = Path.Combine(destinationPath, fileName);
+                File.Copy(sourceFile, finalPath, true);
+
+                // حفظ المسار النسبي لسهولة النقل مع توحيد الفواصل لتكون '/'
+                EditImagePath = Path.Combine("Assets", "SourceImages", fileName).Replace("\\", "/");
+            }
+            catch (Exception ex)
+            {
+                DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrImageLoad", ex.Message));
+            }
+        }
+    }
+    [RelayCommand]
+    private void NextStep()
+    {
+        if (CurrentStep < TotalSteps) CurrentStep++;
+    }
+
+    [RelayCommand]
+    private void PreviousStep()
+    {
+        if (CurrentStep > 1) CurrentStep--;
+    }
+
+    // ─── أوامر التنقل بين الصفحات ───
+    [RelayCommand]
+    private void NextPage()
+    {
+        if (CurrentPage < TotalPages)
+        {
+            CurrentPage++;
+            UpdatePagedSources();
+        }
+    }
+
+    [RelayCommand]
+    private void PreviousPage()
+    {
+        if (CurrentPage > 1)
+        {
+            CurrentPage--;
+            UpdatePagedSources();
+        }
+    }
+
+    private void UpdatePagination()
+    {
+        TotalPages = (int)Math.Ceiling((double)Sources.Count / PageSize);
+        if (TotalPages == 0) TotalPages = 1;
+        if (CurrentPage > TotalPages) CurrentPage = TotalPages;
+        UpdatePagedSources();
+    }
+
+    private void UpdatePagedSources()
+    {
+        var items = Sources.Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
+        PagedSources = new ObservableCollection<Source>(items);
+        PageStatusText = TranslationHelper.GetFormat("PageStatusFormat", CurrentPage, TotalPages, Sources.Count);
+    }
+
+
+    /// <summary>
+    /// تحديث إجمالي النشاط بجميع الوحدات المتاحة
+    /// </summary>
+    private void UpdateTotalActivityItems()
+    {
+        try
+        {
+            // حساب الإجمالي بالـ Bq (تحويل كل مصدر من وحدته إلى Bq)
+            double totalBq = 0;
+            foreach (var source in Sources)
+            {
+                var unit = source.CurrentActivityUnit;
+                if (unit != null)
+                    totalBq += source.CurrentActivityValue * unit.ConversionToBq;
+                else
+                    totalBq += source.CurrentActivityValue;
+            }
+
+            // تحويل الإجمالي إلى جميع الوحدات المتاحة
+            var items = new ObservableCollection<TotalActivityItem>();
+            foreach (var unit in ActivityUnits)
+            {
+                double convertedValue = totalBq / unit.ConversionToBq;
+                items.Add(new TotalActivityItem
+                {
+                    UnitSymbol = unit.UnitSymbol,
+                    Value = convertedValue,
+                    DisplayValue = FormatActivityValue(convertedValue, unit.UnitSymbol)
+                });
+            }
+
+            TotalActivityItems = items;
+        }
+        catch (Exception)
+        {
+            // في حالة خطأ، عرض القيمة الافتراضية
+        }
+    }
+
+    private string FormatActivityValue(double value, string unitSymbol)
+    {
+        if (value == 0) return $"0 {unitSymbol}";
+        if (Math.Abs(value) >= 1e9) return $"{value:E3} {unitSymbol}";
+        if (Math.Abs(value) >= 1e6) return $"{value:N0} {unitSymbol}";
+        if (Math.Abs(value) >= 1000) return $"{value:N2} {unitSymbol}";
+        if (Math.Abs(value) >= 1) return $"{value:N4} {unitSymbol}";
+        return $"{value:E3} {unitSymbol}";
+    }
+}
+
+/// <summary>
+/// نموذج لعرض إجمالي النشاط بوحدة معينة
+/// </summary>
+public class TotalActivityItem
+{
+    public string UnitSymbol { get; set; } = string.Empty;
+    public double Value { get; set; }
+    public string DisplayValue { get; set; } = string.Empty;
+}
+

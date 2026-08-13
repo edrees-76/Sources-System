@@ -1,0 +1,183 @@
+<Window x:Class="Sources.Views.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        Title="تسجيل الدخول | مصادر" 
+        Width="540"
+        MinHeight="680"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanResize"
+        Background="Transparent"
+        FlowDirection="RightToLeft"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+    <Grid>
+        <!-- Opaque Navy Background -->
+        <Border Background="#0B1320" />
+
+        <!-- Blurred Backdrop Background Image (visible when window is maximized/resized) -->
+        <Image Source="pack://siteoforigin:,,,/Assets/sources_backdrop.jpg" Stretch="UniformToFill" Opacity="0.45">
+            <Image.Effect>
+                <BlurEffect Radius="22" RenderingBias="Quality" />
+            </Image.Effect>
+        </Image>
+        
+        <!-- Dark Tint Overlay -->
+        <Border Background="#990B1320" />
+
+        <!-- Centered Main Login Card -->
+        <Border Background="White" CornerRadius="16" BorderBrush="#D4AF37" BorderThickness="1.5"
+                Width="540" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="25" Color="Black" Opacity="0.4" ShadowDepth="4"/>
+            </Border.Effect>
+            
+            <Grid Margin="24">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" /> <!-- Window Controls -->
+                    <RowDefinition Height="Auto" /> <!-- Header Section -->
+                    <RowDefinition Height="Auto" /> <!-- Fields & Login Button -->
+                    <RowDefinition Height="Auto" /> <!-- Credits -->
+                </Grid.RowDefinitions>
+
+                <!-- Window Controls -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,10">
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Width="30" Height="30" Padding="0" Click="MinimizeButton_Click" ToolTip="تصغير">
+                        <materialDesign:PackIcon Kind="WindowMinimize" Foreground="#707070" Width="18" Height="18" />
+                    </Button>
+                    <Button x:Name="BtnMaximize" Style="{StaticResource MaterialDesignFlatButton}" Width="30" Height="30" Padding="0" Click="MaximizeButton_Click" ToolTip="تكبير" Margin="5,0,0,0">
+                        <materialDesign:PackIcon x:Name="IconMaximize" Kind="WindowMaximize" Foreground="#707070" Width="18" Height="18" />
+                    </Button>
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Width="30" Height="30" Padding="0" Click="CloseButton_Click" ToolTip="إغلاق" Margin="5,0,0,0">
+                        <materialDesign:PackIcon Kind="Close" Foreground="#C62828" Width="18" Height="18" />
+                    </Button>
+                </StackPanel>
+
+                <!-- Header Section (Vertical Sequential Layout from Top to Bottom) -->
+                <StackPanel Grid.Row="1" HorizontalAlignment="Center" Margin="0,0,0,16">
+                    
+                    <!-- 1. شعار مركز البحوث النووية (مكبر وبدون حلقة محيطة) -->
+                    <Image Source="pack://siteoforigin:,,,/Assets/tnrc_3d_final.png" 
+                           Width="125" Height="125" 
+                           RenderOptions.BitmapScalingMode="HighQuality" 
+                           HorizontalAlignment="Center" Margin="0,0,0,8">
+                        <Image.Effect>
+                            <DropShadowEffect BlurRadius="14" Color="#D4AF37" Opacity="0.35" ShadowDepth="2"/>
+                        </Image.Effect>
+                    </Image>
+
+                    <!-- 2. عنوان المركز -->
+                    <TextBlock Text="مركز البحوث النووية - تاجوراء" FontSize="21" FontWeight="Bold" Foreground="#0B1320" HorizontalAlignment="Center" TextAlignment="Center" />
+
+                    <!-- 3. الاختصار الإنجليزي TNRC -->
+                    <TextBlock Text="TNRC" FontSize="16" FontWeight="Bold" Foreground="#D4AF37" HorizontalAlignment="Center" TextAlignment="Center" FlowDirection="LeftToRight" Margin="0,2,0,14" />
+
+                    <!-- 4. شعار منظومة SOURCES / مصادر (أيقونة الدرع مساوية كلياً لشعار المركز في الحجم 125x125) -->
+                    <Image Source="pack://siteoforigin:,,,/Assets/sources_shield_only.png" 
+                           Width="125" Height="125" 
+                           RenderOptions.BitmapScalingMode="HighQuality" 
+                           HorizontalAlignment="Center" Margin="0,0,0,8">
+                        <Image.Effect>
+                            <DropShadowEffect BlurRadius="12" Color="Black" Opacity="0.15" ShadowDepth="1"/>
+                        </Image.Effect>
+                    </Image>
+
+                    <!-- 5. عنوان المنظومة: منظومة مصادر / SOURCES -->
+                    <TextBlock HorizontalAlignment="Center" TextAlignment="Center" Margin="0,0,0,3">
+                        <Run Text="منظومة مصادر / " FontSize="21" FontWeight="Bold" Foreground="#0B1320"/>
+                        <Run Text="SOURCES" FontSize="21" FontWeight="Bold" Foreground="#D4AF37" FlowDirection="LeftToRight"/>
+                    </TextBlock>
+
+                    <!-- 6. الجملة التعريفية الخاصة بالمنظومة -->
+                    <TextBlock Text="منظومة إدارة وتتبع المصادر والنظائر المشعة" FontSize="13" Foreground="#556B82" HorizontalAlignment="Center" TextAlignment="Center" />
+
+                </StackPanel>
+
+                <!-- 7. Input Fields & Form (بقية المحتويات بنفس الترتيب الحالي) -->
+                <StackPanel Grid.Row="2" Margin="10,0,10,12">
+                    <!-- اسم المستخدم -->
+                    <TextBlock Text="اسم المستخدم" FontSize="14" FontWeight="Bold" Foreground="#0B1320" Margin="0,0,0,6" />
+                    <TextBox x:Name="TxtUsername" 
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                             materialDesign:HintAssist.Hint="أدخل اسم المستخدم" 
+                             materialDesign:HintAssist.IsFloating="False"
+                             MinHeight="54"
+                             Padding="14,0,14,0"
+                             FontSize="15"
+                             Foreground="#0B1320"
+                             Margin="0,0,0,14"
+                             KeyDown="TxtUsername_KeyDown"
+                             VerticalContentAlignment="Center" />
+
+                    <!-- كلمة المرور -->
+                    <TextBlock Text="كلمة المرور" FontSize="14" FontWeight="Bold" Foreground="#0B1320" Margin="0,0,0,6" />
+                    <Grid Margin="0,0,0,14">
+                        <PasswordBox x:Name="TxtPassword" 
+                                     Style="{StaticResource MaterialDesignOutlinedPasswordBox}"
+                                     materialDesign:HintAssist.Hint="أدخل كلمة المرور" 
+                                     materialDesign:HintAssist.IsFloating="False"
+                                     MinHeight="54"
+                                     Padding="14,0,45,0"
+                                     FontSize="15"
+                                     Foreground="#0B1320"
+                                     KeyDown="TxtPassword_KeyDown"
+                                     VerticalContentAlignment="Center" />
+                        <TextBox x:Name="TxtPasswordReveal" 
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                 materialDesign:HintAssist.Hint="أدخل كلمة المرور" 
+                                 materialDesign:HintAssist.IsFloating="False"
+                                 MinHeight="54"
+                                 Padding="14,0,45,0"
+                                 FontSize="15"
+                                 Foreground="#0B1320"
+                                 Visibility="Collapsed"
+                                 KeyDown="TxtPassword_KeyDown"
+                                 VerticalContentAlignment="Center" />
+                        <Button x:Name="BtnRevealPassword" Click="BtnRevealPassword_Click"
+                                Style="{StaticResource MaterialDesignToolButton}"
+                                HorizontalAlignment="Right" VerticalAlignment="Center"
+                                Margin="0,0,10,0" Width="30" Height="30" Padding="0">
+                            <materialDesign:PackIcon x:Name="IconRevealPassword" Kind="Eye" Width="20" Height="20" Foreground="#0B1320" />
+                        </Button>
+                    </Grid>
+
+                    <!-- خيار "تذكرني" -->
+                    <CheckBox x:Name="ChkRememberMe" 
+                              Content="تذكرني" 
+                              FontSize="14"
+                              FontWeight="SemiBold"
+                              Foreground="#0B1320"
+                              Margin="0,0,0,10" 
+                              HorizontalAlignment="Right" />
+                    
+                    <!-- Error Message Block -->
+                    <TextBlock x:Name="TxtError" Text="" Foreground="#C62828" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,12" Visibility="Collapsed" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
+
+                    <!-- زر "تسجيل الدخول" -->
+                    <Button x:Name="BtnLogin" 
+                            Content="تسجيل الدخول" 
+                            Style="{StaticResource MaterialDesignRaisedButton}" 
+                            Background="#0B1320" 
+                            Foreground="#D4AF37"
+                            BorderBrush="#D4AF37"
+                            BorderThickness="1.5"
+                            Height="48" 
+                            FontSize="16"
+                            FontWeight="Bold"
+                            Margin="0,6,0,10" 
+                            Click="BtnLogin_Click"/>
+                </StackPanel>
+
+                <!-- 8. بيانات التصميم والتطوير الحالية أسفل النافذة -->
+                <StackPanel Grid.Row="3" Margin="0,0,0,0">
+                    <Separator Background="#E0E0E0" Margin="0,0,0,8" />
+                    <TextBlock Text="تصميم و تطوير و تنفيذ" FontSize="12" FontWeight="SemiBold" Foreground="#556B82" HorizontalAlignment="Center" />
+                    <TextBlock Text="م . ادريس فتح الله الهرى" FontSize="13" FontWeight="Bold" Foreground="#0B1320" HorizontalAlignment="Center" Margin="0,3,0,0" />
+                    <TextBlock Text="م . رضا المريمى" FontSize="13" FontWeight="Bold" Foreground="#0B1320" HorizontalAlignment="Center" Margin="0,3,0,0" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

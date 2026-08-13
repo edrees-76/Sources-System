@@ -1,0 +1,413 @@
+<UserControl x:Class="Sources.Views.RadioisotopesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:converters="clr-namespace:Sources.Converters">
+    <UserControl.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVis"/>
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVis"/>
+    </UserControl.Resources>
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="1">
+            <!-- المشهد 1: صفحة قائمة النظائر والبحث (يختفي عند التحرير) -->
+            <Grid Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVis}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <Grid Grid.Row="0" Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Vertical" HorizontalAlignment="Right" Margin="0,0,24,0">
+                        <TextBlock FontSize="12" Foreground="{DynamicResource TextPrimary}" FontWeight="SemiBold" Margin="0,0,8,6">
+                            <Run Text="{DynamicResource LabelSearchIsotope}"/>
+                            <Run Text="{DynamicResource LabelExamplePrefix}"/>
+                            <Run Text="{DynamicResource IsotopeExample}"/>
+                            <Run Text="{DynamicResource LabelExampleSuffix}"/>
+                        </TextBlock>
+                        <Border Background="{DynamicResource CardBackground}" CornerRadius="12" 
+                                BorderBrush="{DynamicResource SidebarHover}" BorderThickness="1.5" 
+                                MaxWidth="600" MinWidth="400" Padding="12,4">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" x:Name="SearchBox"
+                                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
+                                         materialDesign:HintAssist.Hint="{DynamicResource HintSearchIsotope}"
+                                         materialDesign:TextFieldAssist.DecorationVisibility="Collapsed"
+                                         materialDesign:TextFieldAssist.HasClearButton="True"
+                                         BorderThickness="0" Background="Transparent" 
+                                         VerticalAlignment="Center" VerticalContentAlignment="Center"
+                                         FontSize="15" Foreground="{DynamicResource TextPrimary}"
+                                         CaretBrush="{DynamicResource SidebarForeground}"/>
+                                <Button Grid.Column="1" Command="{Binding LoadDataCommand}" 
+                                        Style="{StaticResource MaterialDesignIconButton}" 
+                                        ToolTip="{DynamicResource ToolTipRefreshIsotopes}" Padding="0" Width="36" Height="36">
+                                    <materialDesign:PackIcon Kind="Magnify" Foreground="{DynamicResource SidebarForeground}" 
+                                                             Width="26" Height="26" VerticalAlignment="Center"/>
+                                </Button>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- أزرار الإجراءات -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <Button Content="{DynamicResource BtnAddIsotope}" Style="{DynamicResource PrimaryButton}" Command="{Binding AddNewCommand}" Margin="0,0,12,0" Padding="20,0">
+                            <Button.Effect>
+                                <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.2" Color="{DynamicResource GoldColor}"/>
+                            </Button.Effect>
+                        </Button>
+                        <Button Content="{DynamicResource BtnEditIsotope}" 
+                                Command="{Binding EditCommand}" Width="160" Height="40">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter Property="Opacity" Value="0.5"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+
+                <!-- الجدول -->
+                <Border Grid.Row="1" Style="{StaticResource ContentCard}">
+                <DataGrid ItemsSource="{Binding Radioisotopes}" SelectedItem="{Binding Selected}" Style="{DynamicResource ModernDataGrid}" CanUserResizeColumns="False">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="{DynamicResource ColNo}" Binding="{Binding No}" Width="40" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColArabicName}" Binding="{Binding DisplayName}" Width="150" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColSymbol}" Binding="{Binding DisplaySymbol}" Width="80" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColRadiationType}" Binding="{Binding RadiationType}" Width="100" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColHalfLife}" Binding="{Binding DisplayHalfLife}" Width="130" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColEnergyKeV}" Binding="{Binding Energy, StringFormat=\{0:0.##\}}" Width="110" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColYield}" Binding="{Binding Yield, StringFormat=P1}" Width="80" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColAddedBy}" Binding="{Binding AddedBy}" Width="120" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColNotes}" Binding="{Binding DisplayNotes}" Width="*" ElementStyle="{StaticResource NotesCellStyle}"/>
+                    </DataGrid.Columns>
+                    <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="{DynamicResource CtxEdit}" Command="{Binding EditCommand}"/>
+                            <MenuItem Header="{DynamicResource CtxDelete}" Command="{Binding DeleteCommand}"/>
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
+                </DataGrid>
+            </Border>
+        </Grid>
+
+            <!-- المشهد 2: صفحة نموذج إضافة / تعديل نظير (ملء الشاشة، تظهر عند التحرير) -->
+            <ScrollViewer Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}" 
+                          VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <ScrollViewer.InputBindings>
+                    <KeyBinding Key="Enter" Command="{Binding SaveCommand}"/>
+                    <KeyBinding Key="Escape" Command="{Binding CancelEditCommand}"/>
+                </ScrollViewer.InputBindings>
+                <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        Background="{DynamicResource CardBackground}"
+                        CornerRadius="8"
+                        BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
+                        Margin="0,0,0,24">
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- ─── شريط العنوان الذهبي ─── -->
+                        <Border Grid.Row="0" CornerRadius="8,8,0,0" Padding="20,12">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#D4AF37" Offset="0"/>
+                                    <GradientStop Color="#C5962E" Offset="0.5"/>
+                                    <GradientStop Color="#B8860B" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <!-- أيقونة داخل دائرة -->
+                                <Border Grid.Column="0" Width="46" Height="46" CornerRadius="23" 
+                                        Background="#33FFFFFF" Margin="0,0,14,0">
+                                    <materialDesign:PackIcon Kind="Atom" Width="28" Height="28" 
+                                                             Foreground="#1A1A2E" 
+                                                             VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                </Border>
+                                
+                                <!-- العنوان -->
+                                 <TextBlock Grid.Column="1">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="FontSize" Value="20"/>
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                            <Setter Property="Foreground" Value="#1A1A2E"/>
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                            <Setter Property="Text" Value="{DynamicResource EditRadioisotopeDataTitle}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsNew}" Value="True">
+                                                    <Setter Property="Text" Value="{DynamicResource AddRadioisotopeDataTitle}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                
+                                <!-- زر الإغلاق -->
+                                <Button Grid.Column="2" Command="{Binding CancelEditCommand}"
+                                        Style="{StaticResource MaterialDesignIconButton}"
+                                        Width="35" Height="35" Padding="0">
+                                    <materialDesign:PackIcon Kind="Close" Foreground="#1A1A2E" Width="20" Height="20"/>
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <!-- ─── محتوى النموذج ─── -->
+                        <Border Grid.Row="1" Padding="24,10,24,10">
+                            <Grid MaxWidth="700" VerticalAlignment="Top">
+                                <!-- Step 1: Identity -->
+                                <StackPanel Visibility="{Binding CurrentStep, Converter={StaticResource EqualityToVis}, ConverterParameter=1}">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                                        <materialDesign:PackIcon Kind="Atom" Width="22" Height="22" Foreground="{StaticResource GoldBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBlock Text="{DynamicResource Step1Identity}" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource GoldBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    
+                                    <!-- Sub-Card: Symbol & Type -->
+                                    <Border BorderBrush="#33D4AF37" BorderThickness="1" CornerRadius="10" Padding="15,10" Margin="0,0,0,8" Background="{DynamicResource InputBackground}">
+                                        <UniformGrid Columns="2">
+                                            <StackPanel Margin="0,0,12,0">
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                    <materialDesign:PackIcon Kind="Radioactive" Width="16" Height="16" Foreground="{StaticResource GoldBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                    <TextBlock Text="{DynamicResource FieldSymbolReq}" FontSize="11" Foreground="{DynamicResource TextPrimary}"/>
+                                                </StackPanel>
+                                                <TextBox Text="{Binding EditSymbol}" TabIndex="1"
+                                                         Style="{StaticResource FormTextBox}" 
+                                                         materialDesign:HintAssist.Hint="مثال: Cs-137"/>
+                                            </StackPanel>
+                                            <StackPanel>
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                    <materialDesign:PackIcon Kind="RadioactiveCircle" Width="16" Height="16" Foreground="{StaticResource GoldBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                    <TextBlock Text="{DynamicResource ColRadiationType}" FontSize="11" Foreground="{DynamicResource TextPrimary}"/>
+                                                </StackPanel>
+                                                <ComboBox SelectedValue="{Binding EditRadiationType}" SelectedValuePath="Content" TabIndex="2"
+                                                          FlowDirection="LeftToRight" HorizontalContentAlignment="Right"
+                                                          Style="{StaticResource FormComboBox}">
+                                                    <ComboBoxItem Content="Alpha (α)" Foreground="{DynamicResource TextPrimary}"/>
+                                                    <ComboBoxItem Content="Beta (β)" Foreground="{DynamicResource TextPrimary}"/>
+                                                    <ComboBoxItem Content="Gamma (γ)" Foreground="{DynamicResource TextPrimary}"/>
+                                                    <ComboBoxItem Content="Neutron (n)" Foreground="{DynamicResource TextPrimary}"/>
+                                                    <ComboBoxItem Content="Positron (β+)" Foreground="{DynamicResource TextPrimary}"/>
+                                                    <ComboBoxItem Content="X-Ray" Foreground="{DynamicResource TextPrimary}"/>
+                                                </ComboBox>
+                                            </StackPanel>
+                                        </UniformGrid>
+                                    </Border>
+
+                                    <!-- Sub-Card: Names -->
+                                    <Border BorderBrush="#33D4AF37" BorderThickness="1" CornerRadius="10" Padding="15,10" Background="{DynamicResource InputBackground}">
+                                        <UniformGrid Columns="2">
+                                            <StackPanel Margin="0,0,12,0">
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                    <materialDesign:PackIcon Kind="Translate" Width="16" Height="16" Foreground="{StaticResource GoldBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                    <TextBlock Text="{DynamicResource FieldNameEngReq}" FontSize="11" Foreground="{DynamicResource TextPrimary}"/>
+                                                </StackPanel>
+                                                <TextBox Text="{Binding EditName}" TabIndex="3"
+                                                         Style="{StaticResource FormTextBox}"
+                                                         materialDesign:HintAssist.Hint="مثال: Cesium-137"/>
+                                            </StackPanel>
+                                            <StackPanel>
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                    <materialDesign:PackIcon Kind="FormatText" Width="16" Height="16" Foreground="{StaticResource GoldBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                    <TextBlock Text="{DynamicResource FieldNameAr}" FontSize="11" Foreground="{DynamicResource TextPrimary}"/>
+                                                </StackPanel>
+                                                <TextBox Text="{Binding EditArabicName}" TabIndex="4"
+                                                         Style="{StaticResource FormTextBox}"
+                                                         materialDesign:HintAssist.Hint="مثال: سيزيوم-137"/>
+                                            </StackPanel>
+                                        </UniformGrid>
+                                    </Border>
+                                </StackPanel>
+
+                                <!-- Step 2: Technical Details -->
+                                <StackPanel Visibility="{Binding CurrentStep, Converter={StaticResource EqualityToVis}, ConverterParameter=2}">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                        <materialDesign:PackIcon Kind="ChartLineVariant" Width="22" Height="22" Foreground="{StaticResource GoldBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBlock Text="{DynamicResource Step2Technical}" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource GoldBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+
+                                    <!-- Sub-Card: Energy & Yield -->
+                                    <Border BorderBrush="#33D4AF37" BorderThickness="1" CornerRadius="10" Padding="15,10" Margin="0,0,0,8" Background="{DynamicResource InputBackground}">
+                                        <UniformGrid Columns="2">
+                                            <StackPanel Margin="0,0,12,0">
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                    <materialDesign:PackIcon Kind="Flash" Width="16" Height="16" Foreground="{StaticResource GoldBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                    <TextBlock Text="{DynamicResource FieldEnergy}" FontSize="12" Foreground="{DynamicResource TextPrimary}"/>
+                                                </StackPanel>
+                                                <TextBox Text="{Binding EditEnergyText, UpdateSourceTrigger=LostFocus}" TabIndex="5"
+                                                         Style="{StaticResource FormTextBox}"
+                                                         materialDesign:HintAssist.Hint="مثال: 661.7"/>
+                                            </StackPanel>
+                                            <StackPanel>
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                    <materialDesign:PackIcon Kind="PercentOutline" Width="16" Height="16" Foreground="{StaticResource GoldBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                    <TextBlock Text="{DynamicResource FieldYield}" FontSize="12" Foreground="{DynamicResource TextPrimary}"/>
+                                                </StackPanel>
+                                                <TextBox Text="{Binding EditYieldText, UpdateSourceTrigger=LostFocus}" TabIndex="6"
+                                                         Style="{StaticResource FormTextBox}"
+                                                         materialDesign:HintAssist.Hint="مثال: 0.85"/>
+                                            </StackPanel>
+                                        </UniformGrid>
+                                    </Border>
+
+                                    <!-- Sub-Card: Half-Life -->
+                                    <Border BorderBrush="#33D4AF37" BorderThickness="1" CornerRadius="10" Padding="15,10" Margin="0,0,0,8" Background="{DynamicResource InputBackground}">
+                                        <UniformGrid Columns="2">
+                                            <StackPanel Margin="0,0,12,0">
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                    <materialDesign:PackIcon Kind="TimerSandEmpty" Width="16" Height="16" Foreground="{StaticResource GoldBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                    <TextBlock Text="{DynamicResource FieldHalfLifeReq}" FontSize="11" Foreground="{DynamicResource TextPrimary}"/>
+                                                </StackPanel>
+                                                <TextBox Text="{Binding EditHalfLifeText, UpdateSourceTrigger=LostFocus}" TabIndex="7"
+                                                         Style="{StaticResource FormTextBox}"
+                                                         materialDesign:HintAssist.Hint="مثال: 30.17"/>
+                                            </StackPanel>
+                                            <StackPanel>
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                    <materialDesign:PackIcon Kind="Clock" Width="16" Height="16" Foreground="{StaticResource GoldBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                     <TextBlock Text="{DynamicResource FieldTimeUnit}" FontSize="11" Foreground="{DynamicResource TextPrimary}"/>
+                                                </StackPanel>
+                                                <ComboBox SelectedValue="{Binding EditHalfLifeUnit}" SelectedValuePath="Content"
+                                                          Style="{StaticResource FormComboBox}">
+                                                    <ComboBoxItem Content="seconds"/>
+                                                    <ComboBoxItem Content="minutes"/>
+                                                    <ComboBoxItem Content="hours"/>
+                                                    <ComboBoxItem Content="days"/>
+                                                    <ComboBoxItem Content="years"/>
+                                                </ComboBox>
+                                            </StackPanel>
+                                        </UniformGrid>
+                                    </Border>
+
+                                    <!-- Sub-Card: Notes -->
+                                    <Border BorderBrush="#33D4AF37" BorderThickness="1" CornerRadius="10" Padding="15,10" Background="{DynamicResource InputBackground}">
+                                        <UniformGrid Columns="2">
+                                            <StackPanel Margin="0,0,12,0">
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                    <materialDesign:PackIcon Kind="NoteOutline" Width="16" Height="16" Foreground="{StaticResource GoldBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                    <TextBlock Text="{DynamicResource FieldTechnicalNotes}" FontSize="11" Foreground="{DynamicResource TextPrimary}"/>
+                                                </StackPanel>
+                                                <TextBox Text="{Binding EditNotes}" Style="{StaticResource FormTextBox}"
+                                                         AcceptsReturn="True" MinLines="4" MaxLines="4" TextWrapping="Wrap"
+                                                         materialDesign:HintAssist.Hint="ملاحظات (عربي)..."/>
+                                            </StackPanel>
+                                            <StackPanel>
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                    <materialDesign:PackIcon Kind="Translate" Width="16" Height="16" Foreground="{StaticResource GoldBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                    <TextBlock Text="Notes (English)" FontSize="11" Foreground="{DynamicResource TextPrimary}" FlowDirection="LeftToRight"/>
+                                                </StackPanel>
+                                                <TextBox Text="{Binding EditEnglishNotes}" Style="{StaticResource FormTextBox}"
+                                                         AcceptsReturn="True" MinLines="4" MaxLines="4" TextWrapping="Wrap"
+                                                         FlowDirection="LeftToRight" HorizontalContentAlignment="Left"
+                                                         materialDesign:HintAssist.Hint="Add English notes here..."/>
+                                            </StackPanel>
+                                        </UniformGrid>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- ─── شريط الأزرار السفلي (Footer) ─── -->
+                        <Border Grid.Row="2" Background="{DynamicResource CardBackground}" 
+                                CornerRadius="0,0,8,8" Padding="24,14"
+                                BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,1,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/> <!-- Buttons -->
+                                    <ColumnDefinition Width="*"/>    <!-- Spacer -->
+                                    <ColumnDefinition Width="Auto"/> <!-- Step Info -->
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                    <!-- Previous Button -->
+                                    <Button Content="{DynamicResource BtnPrevious}" Style="{DynamicResource SecondaryButton}" 
+                                            Command="{Binding PreviousStepCommand}"
+                                            Width="100" Height="42" Margin="0,0,12,0"
+                                            Visibility="{Binding CurrentStep, Converter={StaticResource EqualityToVis}, ConverterParameter=2}"/>
+                                    
+                                    <!-- Next Button -->
+                                    <Button Content="{DynamicResource BtnNext}" Style="{DynamicResource PrimaryButton}" 
+                                            Command="{Binding NextStepCommand}"
+                                            Width="100" Height="42" Margin="0,0,12,0"
+                                            Visibility="{Binding CurrentStep, Converter={StaticResource EqualityToVis}, ConverterParameter=1}"/>
+
+                                    <!-- Save Button (Only on Step 2) -->
+                                    <Button Content="{DynamicResource BtnSave}" Style="{DynamicResource PrimaryButton}" 
+                                            Command="{Binding SaveCommand}" IsDefault="True" 
+                                            Width="120" Height="42" Margin="0,0,12,0"
+                                            Visibility="{Binding CurrentStep, Converter={StaticResource EqualityToVis}, ConverterParameter=2}"/>
+
+                                    <Button Content="{DynamicResource BtnCancel}" Style="{DynamicResource SecondaryButton}" 
+                                            Command="{Binding CancelEditCommand}" IsCancel="True" 
+                                            Width="100" Height="42"/>
+                                </StackPanel>
+
+                                <!-- Step Indicator -->
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal">
+                                    <TextBlock Text="{DynamicResource LabelStep}" FontSize="14" Foreground="{DynamicResource TextSecondary}"/>
+                                    <TextBlock Text="{Binding CurrentStep}" FontWeight="Bold" Foreground="{StaticResource GoldBrush}" Margin="4,0"/>
+                                    <TextBlock Text="{DynamicResource LabelOf}" FontSize="14" Foreground="{DynamicResource TextSecondary}"/>
+                                    <TextBlock Text="{Binding TotalSteps}" FontSize="14" Foreground="{DynamicResource TextSecondary}"/>
+                                    
+                                    <!-- Progress Dots -->
+                                    <StackPanel Orientation="Horizontal" Margin="15,0,0,0">
+                                        <Border Width="8" Height="8" CornerRadius="4" Margin="2,0"
+                                                Background="#444444">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="#444444"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding CurrentStep}" Value="1">
+                                                            <Setter Property="Background" Value="{StaticResource GoldBrush}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                        </Border>
+                                        <Border Width="8" Height="8" CornerRadius="4" Margin="2,0">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="#444444"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding CurrentStep}" Value="2">
+                                                            <Setter Property="Background" Value="{StaticResource GoldBrush}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                        </Border>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</UserControl>

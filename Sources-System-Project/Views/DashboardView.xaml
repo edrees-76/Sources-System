@@ -1,0 +1,197 @@
+<UserControl x:Class="Sources.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:converters="clr-namespace:Sources.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="900" d:DesignWidth="1200">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>      <!-- Row 0: Top Cards & Activity -->
+            <RowDefinition Height="16"/>        <!-- Spacer -->
+            <RowDefinition Height="*"/>         <!-- Row 2: Sources DataGrid -->
+            <RowDefinition Height="16"/>        <!-- Spacer -->
+            <RowDefinition Height="300"/>       <!-- Row 4: Bottom Charts -->
+        </Grid.RowDefinitions>
+
+        <!-- ============================================== -->
+        <!-- Row 0: Total Sources & Total Activity          -->
+        <!-- ============================================== -->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" MinWidth="220"/>  <!-- Total Sources -->
+                <ColumnDefinition Width="16"/>                   <!-- Spacer -->
+                <ColumnDefinition Width="*"/>                    <!-- Total Activity Bar -->
+            </Grid.ColumnDefinitions>
+
+            <!-- Card 1: Total Sources Count -->
+            <Border Grid.Column="0" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="15" MinHeight="100">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <!-- Header -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,4">
+                        <materialDesign:PackIcon Kind="DatabaseOutline" Width="20" Height="20" Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource TotalSources}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <!-- Big Number -->
+                    <TextBlock Grid.Row="1" Text="{Binding TotalSources}" FontSize="36" FontWeight="Bold" 
+                               Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <!-- Total Activity Bar (Sources-page style) -->
+            <Border Grid.Column="2" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="20,12" 
+                    BorderBrush="{DynamicResource GoldBrush}" BorderThickness="0,0,4,0">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="12" Opacity="0.1" ShadowDepth="3"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Label and Icon -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
+                        <materialDesign:PackIcon Kind="ChartBoxOutline" Width="24" Height="24" Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource LabelTotalActivityStats}" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                    </StackPanel>
+
+                    <!-- Activity Values in Gold Badges -->
+                    <ItemsControl Grid.Column="1" ItemsSource="{Binding TotalActivityItems}" VerticalAlignment="Center" HorizontalAlignment="Left">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{StaticResource GoldBrush}" CornerRadius="6" Padding="12,5" Margin="0,0,10,5">
+                                    <TextBlock Text="{Binding DisplayValue}" FontWeight="Bold" FontSize="13" Foreground="#121212" VerticalAlignment="Center" FlowDirection="LeftToRight"/>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ============================================== -->
+        <!-- Row 2: Sources DataGrid (matching SourcesView) -->
+        <!-- ============================================== -->
+        <Border Grid.Row="2" Style="{DynamicResource ContentCard}" VerticalAlignment="Stretch">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,12">
+                    <materialDesign:PackIcon Kind="TableLarge" Width="22" Height="22" Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center"/>
+                    <TextBlock Text="{DynamicResource TableSourceActivity}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                </StackPanel>
+                
+                <!-- DataGrid: Same columns as SourcesView.xaml -->
+                <DataGrid Grid.Row="1" ItemsSource="{Binding DashboardSources}" Style="{DynamicResource ModernDataGrid}"
+                          HeadersVisibility="Column" AutoGenerateColumns="False" IsReadOnly="True"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                          ColumnWidth="*" VerticalAlignment="Stretch">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="{DynamicResource ColSerialNumber}" Binding="{Binding SerialNumber}" Width="Auto" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding SourceCode}" Width="Auto" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColRadioisotopes}" Binding="{Binding DisplayIsotopes}" Width="1.2*" ElementStyle="{StaticResource WrappingCenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityDisplay}" Width="Auto" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColActivityUnit}" Binding="{Binding CurrentActivityUnit.UnitSymbol}" Width="Auto" ElementStyle="{StaticResource CenterAligned}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+
+        <!-- ============================================== -->
+        <!-- Row 4: Bottom Charts (Bar + Decay Curve)       -->
+        <!-- ============================================== -->
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>    <!-- Bar Chart -->
+                <ColumnDefinition Width="16"/>   <!-- Spacer -->
+                <ColumnDefinition Width="*"/>    <!-- Decay Curve -->
+            </Grid.ColumnDefinitions>
+
+            <!-- Bar Chart -->
+            <Border Grid.Column="0" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="12">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,8">
+                        <materialDesign:PackIcon Kind="ChartBar" Width="20" Height="20" Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource ChartSourceActivity}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    
+                    <Grid Grid.Row="1" FlowDirection="LeftToRight">
+                        <lvc:CartesianChart Series="{Binding SourceActivityBarSeries}"
+                                           XAxes="{Binding BarXAxes}" YAxes="{Binding BarYAxes}"
+                                           DrawMargin="{Binding ChartDrawMargin}"
+                                           DrawMarginFrame="{Binding BarDrawMarginFrame}"
+                                           LegendPosition="Hidden" TooltipTextPaint="{Binding ChartTextPaint}" TooltipBackgroundPaint="{Binding ChartTooltipBackgroundPaint}"/>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!-- Decay Curve -->
+            <Border Grid.Column="2" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="12">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <Grid Grid.Row="0" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <!-- Combobox (Right side in RTL = Col 0) -->
+                        <ComboBox Grid.Column="0" ItemsSource="{Binding AvailableSources}" SelectedItem="{Binding SelectedDecaySource}"
+                                  DisplayMemberPath="SourceCode" Width="120" Style="{StaticResource FormComboBox}"
+                                  materialDesign:HintAssist.Hint="{DynamicResource SelectSourceHint}" Padding="4" Height="28" FontSize="11"/>
+                        
+                        <!-- Title Centered -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="ChartLine" Width="20" Height="20" Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource ChartDecayCurve}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        
+                        <!-- Balance spacer -->
+                        <TextBlock Grid.Column="2" Width="120"/>
+                    </Grid>
+
+                    <Grid Grid.Row="1" FlowDirection="LeftToRight">
+                        <lvc:CartesianChart Series="{Binding ActivityDecaySeries}"
+                                           XAxes="{Binding DecayXAxes}" YAxes="{Binding DecayYAxes}"
+                                           DrawMargin="{Binding ChartDrawMargin}"
+                                           DrawMarginFrame="{Binding DecayDrawMarginFrame}"
+                                           LegendPosition="Hidden" TooltipTextPaint="{Binding ChartTextPaint}" TooltipBackgroundPaint="{Binding ChartTooltipBackgroundPaint}"/>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

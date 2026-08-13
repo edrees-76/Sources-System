@@ -1,0 +1,19 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ─── الوضع الفاتح ─── -->
+    <SolidColorBrush x:Key="WindowBackground" Color="#F5F7FA"/>
+    <SolidColorBrush x:Key="CardBackground" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="SidebarBackground" Color="#1B3B6F"/>
+    <SolidColorBrush x:Key="SidebarForeground" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="SidebarHover" Color="#2A5A9E"/>
+    <SolidColorBrush x:Key="SidebarActive" Color="#1152d4"/>
+    <SolidColorBrush x:Key="TextPrimary" Color="#1A1A2E"/>
+    <SolidColorBrush x:Key="TextSecondary" Color="#6B7280"/>
+    <SolidColorBrush x:Key="BorderColor" Color="#E5E7EB"/>
+    <SolidColorBrush x:Key="DataGridHeader" Color="#F0F4F8"/>
+    <SolidColorBrush x:Key="DataGridAltRow" Color="#FAFBFC"/>
+    <SolidColorBrush x:Key="InputBackground" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="ChartBackground" Color="#FFFFFF"/>
+
+</ResourceDictionary>

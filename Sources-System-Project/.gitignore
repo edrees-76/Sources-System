@@ -1,0 +1,16 @@
+bin/
+obj/
+Publish/
+Setup/
+.agents/
+.vs/
+*.user
+*.suo
+*.log
+*.txt
+*.db
+*.sqlite
+*.db-shm
+*.db-wal
+MASAR.db
+sources.db

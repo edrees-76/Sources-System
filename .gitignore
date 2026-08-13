@@ -1,0 +1,28 @@
+# Build & Output Directories
+**/bin/
+**/obj/
+**/Publish/
+**/Setup/
+**/.vs/
+**/.agents/
+**/.idea/
+
+# User & Log files
+*.user
+*.suo
+*.log
+*.tmp
+
+# Database files
+*.db
+*.sqlite
+*.db-shm
+*.db-wal
+**/MASAR.db
+**/sources.db
+**/app.db
+
+# Archives & Temporary binaries
+*.zip
+*.7z
+*.rar

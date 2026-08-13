@@ -1,0 +1,545 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <!-- App Info -->
+    <system:String x:Key="AppTitleHeader">منظومة مصادر — Radioactive Source Tracking System</system:String>
+    <system:String x:Key="AppTitle">منظومة مصادر</system:String>
+
+    <!-- Sidebar Menu -->
+    <system:String x:Key="MenuDashboard">لوحة التحكم</system:String>
+    <system:String x:Key="MenuRadioisotopes">النظائر المشعة</system:String>
+    <system:String x:Key="MenuSources">المصادر المشعة</system:String>
+    <system:String x:Key="MenuLocations">المواقع</system:String>
+    <system:String x:Key="MenuBorrowing">استعارة المصادر</system:String>
+    <system:String x:Key="MenuReports">التقارير</system:String>
+    <system:String x:Key="MenuUsers">المستخدمين</system:String>
+    <system:String x:Key="MenuSettings">الإعدادات</system:String>
+    <system:String x:Key="MenuToggleTheme">تبديل المظهر</system:String>
+    <system:String x:Key="MenuAbout">حول المنظومة</system:String>
+    <system:String x:Key="MenuLogout">خروج</system:String>
+
+    <!-- About System -->
+    <system:String x:Key="AboutTitle">عن المنظومة والمُصمم</system:String>
+    <system:String x:Key="AboutSystemTitle">عن منظومة مصادر (Sources)</system:String>
+    <system:String x:Key="AboutSystemDesc">مصادر هي حل برمجي ذكي ومتكامل يهدف إلى الرقابة الصارمة والتتبع الدقيق للمصادر والنظائر المشعة. توفر المنظومة أدوات متقدمة لحساب النشاط الإشعاعي، إدارة حركة المصادر، وربطها بالمستخدمين والمواقع.</system:String>
+    <system:String x:Key="AboutCapabilitiesTitle">المميزات التقنية</system:String>
+    <system:String x:Key="AboutCapabilities1">• واجهة مستخدم حديثة وتفاعلية بدعم الوضعين الداكن والفاتح.</system:String>
+    <system:String x:Key="AboutCapabilities2">• نظام إدارة قواعد بيانات آمن وموثوق للحفظ والاسترجاع.</system:String>
+    <system:String x:Key="AboutCapabilities3">• واجهة ثنائية اللغة (عربي/إنجليزي) تتيح التبديل الفوري.</system:String>
+    <system:String x:Key="AboutCapabilities4">• حاسبة مدمجة للنشاط الإشعاعي بناءً على قوانين التحلل.</system:String>
+    <system:String x:Key="AboutFeaturesTitle">إمكانيات الإدارة</system:String>
+    <system:String x:Key="AboutFeatures1">• تتبع شامل لحركة جميع المصادر وربطها بالعهد.</system:String>
+    <system:String x:Key="AboutFeatures2">• استخراج وتصدير التقارير الإحصائية بصيغ PDF و Excel.</system:String>
+    <system:String x:Key="AboutFeatures3">• إدارة المستخدمين بصلاحيات وأدوار مخصصة.</system:String>
+    <system:String x:Key="AboutFeatures4">• نظام تنبيهات مبكر للمصادر منتهية الصلاحية.</system:String>
+    <system:String x:Key="AboutDesignerTitle">معلومات المُصمم والمطور</system:String>
+    <system:String x:Key="AboutRights">جميع الحقوق محفوظة © 2026 مصادر</system:String>
+    <system:String x:Key="AboutSidebarDesc">تم التصميم ليتوافق مع متطلبات الرقابة الإشعاعية ويعمل بكفاءة عالية على أجهزة الكمبيوتر دون الحاجة لموارد كبيرة.</system:String>
+
+    <!-- Backup Settings -->
+    <system:String x:Key="TabGeneral">العام</system:String>
+    <system:String x:Key="TabBackup">النسخ الاحتياطي</system:String>
+    <system:String x:Key="BackupTitle">النسخ الاحتياطي</system:String>
+    <system:String x:Key="BackupLocationTitle">مكان حفظ النسخ الاحتياطي</system:String>
+    <system:String x:Key="BackupLocationDesc">اختر المجلد الذي تريد حفظ النسخ الاحتياطية فيه</system:String>
+    <system:String x:Key="BtnBrowse">استعراض</system:String>
+    <system:String x:Key="BrowseBackupTitle">اختر مجلد الحفظ الاحتياطي</system:String>
+    <system:String x:Key="AutoBackupTitle">النسخ الاحتياطي التلقائي</system:String>
+    <system:String x:Key="EnableAutoBackup">تفعيل النسخ التلقائي</system:String>
+    <system:String x:Key="BackupFrequency">تكرار النسخ</system:String>
+    <system:String x:Key="FreqDaily">يومي</system:String>
+    <system:String x:Key="FreqWeekly">أسبوعي</system:String>
+    <system:String x:Key="FreqMonthly">شهري</system:String>
+    <system:String x:Key="ManualBackupTitle">النسخ والاستعادة اليدوية</system:String>
+    <system:String x:Key="BtnCreateBackup">إنشاء نسخة احتياطية الآن</system:String>
+    <system:String x:Key="BtnRestoreBackup">استعادة نسخة احتياطية</system:String>
+    <system:String x:Key="BtnSaveSettings">حفظ الإعدادات</system:String>
+    <system:String x:Key="MsgSettingsSaved">تم حفظ الإعدادات بنجاح</system:String>
+    <system:String x:Key="MsgSelectBackupPath">يرجى تحديد مسار الحفظ أولاً</system:String>
+    <system:String x:Key="MsgCreatingBackup">جاري إنشاء نسخة احتياطية...</system:String>
+    <system:String x:Key="MsgBackupError">حدث خطأ غير متوقع أثناء النسخ الاحتياطي</system:String>
+    <system:String x:Key="RestoreBackupTitle">استعادة نسخة احتياطية</system:String>
+    <system:String x:Key="MsgRestoreWarning">تحذير: ستقوم هذه العملية باستبدال جميع البيانات الحالية ببيانات النسخة الاحتياطية المختارة. هل أنت متأكد من الاستمرار؟</system:String>
+    <system:String x:Key="MsgRestoringBackup">جاري استعادة النسخة الاحتياطية...</system:String>
+    <system:String x:Key="MsgRestoreError">حدث خطأ أثناء الاستعادة</system:String>
+    <system:String x:Key="NoBackupsYet">لا توجد نسخ احتياطية بعد</system:String>
+    <system:String x:Key="LastBackupLabel">آخر نسخة احتياطية:</system:String>
+
+    <!-- Common UI -->
+    <system:String x:Key="BtnRefresh">تحديث</system:String>
+    <system:String x:Key="BtnSearch">بحث</system:String>
+    <system:String x:Key="PlaceholderSearch">بحث...</system:String>
+
+    <!-- Login Screen -->
+    <system:String x:Key="LoginTitle">تسجيل الدخول</system:String>
+    <system:String x:Key="LoginSubtitle">أهلاً بك في منظومة مصادر لتتبع المصادر المشعة</system:String>
+    <system:String x:Key="BrandNameAr">مصادر</system:String>
+    <system:String x:Key="BrandNameEn">SOURCES</system:String>
+    <system:String x:Key="LabelUsername">اسم المستخدم</system:String>
+    <system:String x:Key="LabelPassword">كلمة المرور</system:String>
+    <system:String x:Key="BtnLogin">دخول للمنظومة</system:String>
+    <system:String x:Key="LabelRememberMe">تذكرني</system:String>
+    <system:String x:Key="TextDesignedBy">تصميم وتنفيذ</system:String>
+    <system:String x:Key="TextAllRightsReserved">جميع الحقوق محفوظة 2026</system:String>
+    <system:String x:Key="LoginWelcome">مرحباً بكل سهولة وأمان</system:String>
+
+    <!-- Settings Page -->
+    <system:String x:Key="SettingsTitle">الإعدادات</system:String>
+    <system:String x:Key="SettingsSubtitle">تخصيص مظهر النظام وتفضيلات المستخدم</system:String>
+    <system:String x:Key="AppearanceTitle">المظهر</system:String>
+    <system:String x:Key="DarkMode">الوضع الداكن</system:String>
+    <system:String x:Key="DarkModeDescription">التبديل بين الوضع الفاتح والداكن</system:String>
+    <system:String x:Key="LanguageTitle">اللغة</system:String>
+    <system:String x:Key="SystemInfoTitle">معلومات النظام</system:String>
+    <system:String x:Key="SystemInfoName">الاسم:</system:String>
+    <system:String x:Key="SystemInfoVersion">الإصدار:</system:String>
+    <system:String x:Key="SystemInfoStandard">المعيار:</system:String>
+    <system:String x:Key="MsgThemeChanged">تم تغيير المظهر بنجاح</system:String>
+    <system:String x:Key="MsgLanguageChanged">تم تغيير اللغة بنجاح</system:String>
+    <system:String x:Key="MsgRestartRequiredForLang">يرجى تسجيل الخروج والدخول مرة أخرى (أو إعادة تشغيل البرنامج) لتطبيق تغييرات اتجاه الواجهة بشكل كامل.</system:String>
+    <system:String x:Key="TitleLanguageChange">تغيير لغة الواجهة</system:String>
+
+    <!-- Dashboard Page -->
+    <system:String x:Key="StrategicDashboardTitle">اللوحة الاستراتيجية للتنمية الوطنية</system:String>
+    <system:String x:Key="StrategicDashboardSubtitle">مراجعة تنفيذ الرؤية وحالة المصادر الإشعاعية</system:String>
+    <system:String x:Key="DashboardTitle">لوحة القيادة</system:String>
+    <system:String x:Key="DashboardSubtitle">نظرة شاملة على المصادر المشعة والنشاط الإشعاعي</system:String>
+    <system:String x:Key="CardTotalSources">عدد المصادر المسجلة</system:String>
+    <system:String x:Key="CardTotalActivity">إجمالي النشاط الإشعاعي</system:String>
+    <system:String x:Key="ChartSourceActivity">المصادر المشعة مقابل النشاط الإشعاعي</system:String>
+    <system:String x:Key="ChartIsotopeDistribution">توزيع النظائر المشعة</system:String>
+    <system:String x:Key="ChartDecayCurve">مؤشر التحلل الزمني</system:String>
+    <system:String x:Key="TableSourceActivity">جدول المصادر والنشاط الإشعاعي الحالي</system:String>
+    <system:String x:Key="SelectSourceForDecay">اختر مصدراً لعرض منحنى التحلل:</system:String>
+    <system:String x:Key="SelectSourceHint">أعلى 5 مصادر</system:String>
+    <system:String x:Key="TotalSources">عدد المصادر</system:String>
+    <system:String x:Key="TotalActivityBq">النشاط الإشعاعي (Bq)</system:String>
+
+    <!-- New keys for Redesigned Dashboard -->
+    <system:String x:Key="LabelChangeFromYesterday">التغير عن اليوم السابق</system:String>
+    <system:String x:Key="LabelTotalActivity">إجمالي النشاط</system:String>
+    <system:String x:Key="StatusStored">مخزن</system:String>
+    <system:String x:Key="StatusActionRequired">يحتاج إجراء</system:String>
+    <system:String x:Key="CurrentDateMarker">Current Date</system:String>
+    <system:String x:Key="ColStartDate">تاريخ البدء</system:String>
+
+    <system:String x:Key="AxisActivityBq">النشاط (Bq)</system:String>
+    <system:String x:Key="AxisSourceCode">كود المصدر</system:String>
+    <system:String x:Key="AxisDate">التاريخ (شهر-سنة)</system:String>
+    <system:String x:Key="IsotopesInUse">النظائر قيد الاستخدام</system:String>
+    <system:String x:Key="StorageLocations">مواقع الاستخدام والتخزين</system:String>
+    <system:String x:Key="RiskIndicator">مؤشر الخطورة (> 1 GBq)</system:String>
+    <system:String x:Key="SourcesCountSuffix">مصادر</system:String>
+    <system:String x:Key="ExpiredCalibrations">معايرات منتهية</system:String>
+    <system:String x:Key="ProactiveMonitoring">مراقبة استباقية</system:String>
+    <system:String x:Key="DecayIndicator">مؤشر التحلل الزمني</system:String>
+    <system:String x:Key="IsotopeDistribution">توزيع النظائر المشعة</system:String>
+    <system:String x:Key="RecentTransactionsTitle">أحدث طلبات استعارة المصادر الإشعاعية</system:String>
+    <system:String x:Key="ColBorrowerName">المستعير</system:String>
+    <system:String x:Key="ColStatusAction">الحالة</system:String>
+    <system:String x:Key="ColExpectedReturn">تاريخ الإرجاع المتوقع</system:String>
+
+    <!-- Radioisotopes Page -->
+    <system:String x:Key="LabelSearchIsotope">🔍 ابحث هنا عن اسم النظير أو رمزه</system:String>
+    <system:String x:Key="LabelExamplePrefix"> (مثل: </system:String>
+    <system:String x:Key="IsotopeExample">Cs-137</system:String>
+    <system:String x:Key="LabelExampleSuffix">)</system:String>
+    <system:String x:Key="HintSearchIsotope">اكتب هنا للبحث اللحظي...</system:String>
+    <system:String x:Key="ToolTipRefreshIsotopes">تحديث قائمة النظائر</system:String>
+    <system:String x:Key="BtnAddIsotope">➕ إضافة نظير جديد</system:String>
+    <system:String x:Key="BtnEditIsotope">✏️ تعديل النظير</system:String>
+    <system:String x:Key="ColNo">ت</system:String>
+    <system:String x:Key="ColArabicName">الاسم</system:String>
+    <system:String x:Key="ColSymbol">الرمز</system:String>
+    <system:String x:Key="ColRadiationType">نوع الإشعاع</system:String>
+    <system:String x:Key="ColHalfLife">نصف العمر</system:String>
+    <system:String x:Key="ColEnergyKeV">الطاقة (keV)</system:String>
+    <system:String x:Key="ColYield">الاحتمالية</system:String>
+    <system:String x:Key="CtxEdit">تعديل</system:String>
+    <system:String x:Key="CtxDelete">حذف</system:String>
+    <system:String x:Key="AddRadioisotopeDataTitle">➕ إضافة بيانات النظير المشع</system:String>
+    <system:String x:Key="EditRadioisotopeDataTitle">✏️ تعديل بيانات النظير المشع</system:String>
+    <system:String x:Key="Step1Identity">خطوة 1: هوية النظير</system:String>
+    <system:String x:Key="FieldSymbolReq">الرمز المشع *</system:String>
+    <system:String x:Key="FieldNameEngReq">الاسم (English) *</system:String>
+    <system:String x:Key="FieldNameAr">الاسم بالعربي</system:String>
+    <system:String x:Key="Step2Technical">خطوة 2: الخصائص الفنية</system:String>
+    <system:String x:Key="FieldEnergy">الطاقة (keV)</system:String>
+    <system:String x:Key="FieldYield">الاحتمالية (Yield)</system:String>
+    <system:String x:Key="FieldHalfLifeReq">نصف العمر *</system:String>
+    <system:String x:Key="FieldTimeUnit">وحدة الزمن</system:String>
+    <system:String x:Key="FieldTechnicalNotes">ملاحظات فنية</system:String>
+    <system:String x:Key="BtnPrevious">السابق</system:String>
+    <system:String x:Key="BtnNext">التالي</system:String>
+    <system:String x:Key="BtnSave">💾 حفظ</system:String>
+    <system:String x:Key="BtnCancel">❌ إلغاء</system:String>
+    <system:String x:Key="LabelStep">الخطوة </system:String>
+    <system:String x:Key="LabelOf">من </system:String>
+
+    <!-- Sources Page -->
+    <system:String x:Key="SourcesManagementTitle">إدارة المصادر المشعة</system:String>
+    <system:String x:Key="SourcesManagementSubtitle">عرض وإدارة جميع المصادر المشعة المسجلة في النظام</system:String>
+    <system:String x:Key="BtnAddSource">➕ إضافة مصدر جديد</system:String>
+    <system:String x:Key="LabelTotalActivityStats">إحصائيات إجمالي نشاط المصادر:</system:String>
+    <system:String x:Key="HintSearchSources">البحث عن كود، مسلسل، أو نظير...</system:String>
+    <system:String x:Key="ToolTipRefreshActivity">تحديث النشاط الإشعاعي</system:String>
+    <system:String x:Key="FilterAllStatuses">جميع الحالات</system:String>
+    <system:String x:Key="StatusInUse">قيد الاستخدام</system:String>
+    <system:String x:Key="StatusStorage">في المخزن</system:String>
+    <system:String x:Key="StatusWaste">نفايات</system:String>
+    <system:String x:Key="StatusTransfer">قيد النقل</system:String>
+    <system:String x:Key="BtnReset">تعيين</system:String>
+    <system:String x:Key="ColSourceImage">صورة المصدر</system:String>
+    <system:String x:Key="ColSourceCode">كود المصدر</system:String>
+    <system:String x:Key="ColRadioisotopes">النظائر المشعة</system:String>
+    <system:String x:Key="ColSerialNumber">الرقم التسلسلي</system:String>
+    <system:String x:Key="ColInitialActivity">النشاط الابتدائي</system:String>
+    <system:String x:Key="ColCurrentActivity">النشاط الحالي</system:String>
+    <system:String x:Key="ColActivityUnit">وحدة النشاط</system:String>
+    <system:String x:Key="ColStorageLocation">موقع التخزين</system:String>
+    <system:String x:Key="ColSourceStatus">حالة المصدر</system:String>
+    <system:String x:Key="ColCalibrationDate">تاريخ المعايرة / الصنع</system:String>
+    <system:String x:Key="ColActions">إجراءات</system:String>
+    <system:String x:Key="ToolTipViewDetails">عرض التفاصيل</system:String>
+    <system:String x:Key="AddSourceTitle">☢️ إضافة مصدر جديد</system:String>
+    <system:String x:Key="EditSourceTitle">✏️ تعديل بيانات المصدر</system:String>
+    <system:String x:Key="Step1Definition">خطوة 1: تعريف المصدر</system:String>
+    <system:String x:Key="FieldSourceCodeReq">كود المصدر *</system:String>
+    <system:String x:Key="FieldSourceStatusReq">حالة المصدر *</system:String>
+    <system:String x:Key="FieldSerialNumber">الرقم التسلسلي</system:String>
+    <system:String x:Key="FieldModel">الموديل (Model)</system:String>
+    <system:String x:Key="FieldManufacturer">الشركة المصنعة</system:String>
+    <system:String x:Key="Step2Radiological">خطوة 2: الخصائص الإشعاعية</system:String>
+    <system:String x:Key="LabelIsMultiIsotope">هل هذا المصدر يحتوي على عدة نظائر مشعة؟</system:String>
+    <system:String x:Key="FieldRadioisotopeReq">النظير المشع *</system:String>
+    <system:String x:Key="FieldInitialActivityReq">النشاط الابتدائي *</system:String>
+    <system:String x:Key="BtnAddIsotopeEntry">+ إضافة نظير جديد للمصدر</system:String>
+    <system:String x:Key="FieldInitialUnitReq">وحدة النشاط الابتدائي *</system:String>
+    <system:String x:Key="FieldCurrentUnitReq">وحدة العرض المعتمدة *</system:String>
+    <system:String x:Key="Step3Logistics">خطوة 3: اللوجستيات ومعاينة الصورة</system:String>
+    <system:String x:Key="FieldCalibrationDateReq">تاريخ المعايرة / الصنع *</system:String>
+    <system:String x:Key="FieldCurrentLocationReq">المكان الحالي *</system:String>
+    <system:String x:Key="BtnPickImage">📷 اضغط هنا لاختيار صورة المصدر</system:String>
+    <system:String x:Key="LabelImageTip">يفضل استخدام صور واضحة للوحة البيانات - المقاس المطلوب: ( 500 × 500 بكسل )</system:String>
+    <system:String x:Key="FieldAdditionalNotes">ملاحظات إضافية</system:String>
+    <system:String x:Key="HintAdditionalNotes">أضف أي ملاحظات هنا...</system:String>
+    <system:String x:Key="BtnSaveData">💾 حفظ البيانات</system:String>
+
+    <!-- Users Page -->
+    <system:String x:Key="UsersManagementTitle">إدارة الكوادر والمستخدمين</system:String>
+    <system:String x:Key="UsersManagementSubtitle">التحكم في صلاحيات الوصول وإدارة حسابات مصادر</system:String>
+    
+    <system:String x:Key="RoleAdmin">مدير النظام</system:String>
+    <system:String x:Key="RoleUser">مستخدم</system:String>
+    <system:String x:Key="BtnAddUser">➕ إضافة مستخدم جديد</system:String>
+    <system:String x:Key="ColFullName">الاسم الكامل</system:String>
+    <system:String x:Key="ColUsername">اسم المستخدم</system:String>
+    <system:String x:Key="ColRole">الصلاحية</system:String>
+    <system:String x:Key="ColEmail">البريد</system:String>
+    <system:String x:Key="ColActive">نشط</system:String>
+    <system:String x:Key="FieldFullNameReq">الاسم الكامل *</system:String>
+    <system:String x:Key="FieldUsernameReq">اسم المستخدم *</system:String>
+    <system:String x:Key="FieldPassword">كلمة المرور</system:String>
+    <system:String x:Key="FieldEmail">البريد الإلكتروني</system:String>
+    <system:String x:Key="FieldRoleReq">الصلاحية *</system:String>
+    <system:String x:Key="FieldIsActive">حساب نشط</system:String>
+    <system:String x:Key="LabelIsEditor">صلاحية التعديل</system:String>
+    <system:String x:Key="LabelPermissions">صلاحيات الوصول للأقسام</system:String>
+    <system:String x:Key="ColStatus">الحالة</system:String>
+    <system:String x:Key="ColDate">التاريخ</system:String>
+    <system:String x:Key="ColDetails">التفاصيل</system:String>
+    <system:String x:Key="BtnToggleFreeze">تجميد / تنشيط</system:String>
+    <system:String x:Key="UserStatsTotal">إجمالي المستخدمين</system:String>
+    <system:String x:Key="UserStatsActive">الحسابات النشطة</system:String>
+    <system:String x:Key="UserStatsAdmins">المديرون</system:String>
+    <system:String x:Key="TabAuditLog">سجل التدقيق والنشاطات</system:String>
+    <system:String x:Key="FilterByUser">تصفية حسب المستخدم</system:String>
+    <system:String x:Key="FilterFromDate">من تاريخ</system:String>
+    <system:String x:Key="FilterToDate">إلى تاريخ</system:String>
+    <system:String x:Key="BtnClearFilters">مسح الفلاتر</system:String>
+    <system:String x:Key="StatActivitiesToday">نشاطات اليوم</system:String>
+    <system:String x:Key="StatModificationsToday">تعديلات اليوم</system:String>
+    <system:String x:Key="StatMostActiveUser">الأكثر نشاطاً</system:String>
+    <system:String x:Key="PermRadioisotopes">النظائر المشعة</system:String>
+    <system:String x:Key="PermSources">المصادر المشعة</system:String>
+    <system:String x:Key="PermLocations">المواقع</system:String>
+    <system:String x:Key="PermBorrowing">الاستعارة</system:String>
+    <system:String x:Key="PermReports">التقارير</system:String>
+    <system:String x:Key="PermUsers">إدارة المستخدمين</system:String>
+    <system:String x:Key="PermSettings">الإعدادات</system:String>
+    <system:String x:Key="PermCalculator">حاسبة النشاط</system:String>
+
+    <!-- Locations Page -->
+    <system:String x:Key="LocationsManagementTitle">إدارة خارطة المواقع</system:String>
+    <system:String x:Key="LocationsManagementSubtitle">تخصيص ومتابعة مواقع تخزين وتشغيل المصادر الإشعاعية</system:String>
+    <system:String x:Key="BtnAddLocation">➕ إضافة موقع جديد</system:String>
+    <system:String x:Key="ColLocationName">اسم الموقع</system:String>
+    <system:String x:Key="ColType">النوع</system:String>
+    <system:String x:Key="ColBuilding">المبنى</system:String>
+    <system:String x:Key="ColRoom">الغرفة</system:String>
+    <system:String x:Key="ColResponsible">المسؤول</system:String>
+    <system:String x:Key="LocationDataTitle">بيانات الموقع</system:String>
+    <system:String x:Key="FieldNameReq">اسم الموقع *</system:String>
+    <system:String x:Key="FieldType">النوع</system:String>
+    <system:String x:Key="FieldBuilding">المبنى</system:String>
+    <system:String x:Key="FieldRoom">الغرفة</system:String>
+    <system:String x:Key="FieldResponsible">المسؤول</system:String>
+
+    <!-- Reports Page -->
+    <system:String x:Key="ReportsCenterTitle">مركز التقارير الاستراتيجية</system:String>
+    <system:String x:Key="ReportsCenterSubtitle">استخراج وتحليل بيانات المصادر المشعة لاتخاذ قرارات دقيقة</system:String>
+    <system:String x:Key="BtnInventoryReport">📋 تقرير الجرد</system:String>
+    <system:String x:Key="BtnBorrowingReport">🔄 تقرير الاستعارة</system:String>
+    <system:String x:Key="BtnActivityReport">☢ تقرير النشاط</system:String>
+    <system:String x:Key="BtnLowActivityReport">⚠ المصادر المنخفضة</system:String>
+    <system:String x:Key="BtnCalibrationReport">📅 تنبيهات المعايرة</system:String>
+    <system:String x:Key="BtnExportPdf">تصدير PDF</system:String>
+    <system:String x:Key="BtnExportExcel">تصدير Excel</system:String>
+    <system:String x:Key="ColCode">الكود</system:String>
+    <system:String x:Key="ColIsotope">النظير</system:String>
+    <system:String x:Key="ColUnit">الوحدة</system:String>
+    <system:String x:Key="ColLocation">الموقع</system:String>
+    <system:String x:Key="ColOperation">العملية</system:String>
+    <system:String x:Key="ColUser">المستخدم</system:String>
+    <system:String x:Key="ColFrom">من</system:String>
+    <system:String x:Key="ColTo">إلى</system:String>
+    <system:String x:Key="ColCalibration">المعايرة</system:String>
+
+    <system:String x:Key="ColRequestDate">تاريخ الطلب</system:String>
+    
+    <!-- Borrowing Page -->
+    <system:String x:Key="BorrowingLogTitle">سجل استعارة المصادر</system:String>
+    <system:String x:Key="BorrowingLogSubtitle">متابعة طلبات واستعارة المصادر الإشعاعية بين الكوادر والمواقع</system:String>
+    <system:String x:Key="LabelFromPeriod">الفترة من:</system:String>
+    <system:String x:Key="LabelToPeriod">إلى:</system:String>
+    <system:String x:Key="BtnUpdateLog">تحديث السجل</system:String>
+    <system:String x:Key="ColBorrower">المستعير</system:String>
+    <system:String x:Key="ColBorrowDate">تاريخ الاستعارة</system:String>
+    <system:String x:Key="ColPurpose">الغرض</system:String>
+    <system:String x:Key="ColReturnDate">تاريخ الارجاع</system:String>
+    <system:String x:Key="ActiveBorrows">الاستعارات النشطة</system:String>
+    <system:String x:Key="DueSoon">موعد الإرجاع قريباً</system:String>
+    <system:String x:Key="ColExpectedReturnDate">الإرجاع المتوقع</system:String>
+    <system:String x:Key="ColActualReturnDate">الإرجاع الفعلي</system:String>
+    <system:String x:Key="ColApprover">المعتمِد</system:String>
+    <system:String x:Key="ColReturner">أرجعه</system:String>
+    <system:String x:Key="ColNotes">ملاحظات</system:String>
+
+    <!-- Alert Dialog -->
+    <system:String x:Key="AlertTitle">تنبيه</system:String>
+    <system:String x:Key="BtnOk">موافق</system:String>
+    <system:String x:Key="BtnYes">نعم</system:String>
+    <system:String x:Key="BtnNo">لا</system:String>
+
+    <!-- Alert Types -->
+    <system:String x:Key="AlertWarning">تحذير</system:String>
+    <system:String x:Key="AlertError">خطأ</system:String>
+    <system:String x:Key="AlertConfirmation">تأكيد</system:String>
+
+
+
+
+
+
+
+
+
+
+    <!-- Statuses -->
+    <system:String x:Key="StatusActive">نشط</system:String>
+    <system:String x:Key="StatusDecayed">متحلل</system:String>
+    <system:String x:Key="StatusDisposed">تم التخلص</system:String>
+    <system:String x:Key="StatusInTransit">قيد النقل</system:String>
+    <system:String x:Key="StatusLost">مفقود</system:String>
+
+    <!-- Transactions -->
+    <system:String x:Key="TransTransfer">نقل</system:String>
+    <system:String x:Key="TransReceive">استلام</system:String>
+    <system:String x:Key="TransDispose">تخلص</system:String>
+    <system:String x:Key="TransReturn">إرجاع</system:String>
+
+    <!-- Navigation Titles -->
+    <system:String x:Key="NavDashboard">لوحة التحكم</system:String>
+    <system:String x:Key="NavRadioisotopes">النظائر المشعة</system:String>
+    <system:String x:Key="NavSources">المصادر المشعة</system:String>
+    <system:String x:Key="NavLocations">المواقع والمخازن</system:String>
+    <system:String x:Key="NavTransactions">استعارة المصادر</system:String>
+    <system:String x:Key="NavReports">مركز التقارير</system:String>
+    <system:String x:Key="NavUsers">إدارة المستخدمين</system:String>
+    <system:String x:Key="NavSettings">إعدادات النظام</system:String>
+
+    <!-- Common / UI labels -->
+    <system:String x:Key="LabelNone">لا يوجد</system:String>
+    <system:String x:Key="LabelTime">الزمن</system:String>
+    <system:String x:Key="LabelActivity">النشاط</system:String>
+    <system:String x:Key="LabelUnspecified">غير محدد</system:String>
+    <system:String x:Key="PageStatusFormat">الصفحة {0} من {1} | إجمالي العناصر: {2}</system:String>
+
+    <!-- Messages / Alerts -->
+    <system:String x:Key="MsgNoSearchSource">لا يوجد مصدر مشع مطابق لعملية البحث.</system:String>
+    <system:String x:Key="TitleSearchResult">نتيجة البحث</system:String>
+    <system:String x:Key="MsgErrSourceCodeReq">الرجاء إدخال رقم/كود المصدر (Source Code).</system:String>
+    <system:String x:Key="MsgErrCalibrationDateReq">الرجاء إدخال تاريخ المعايرة (Calibration Date).</system:String>
+    <system:String x:Key="MsgErrUnitReq">الرجاء إختيار وحدة العرض الحالية (Current Display Unit).</system:String>
+    <system:String x:Key="MsgErrStatusReq">الرجاء إختيار حالة المصدر (Status).</system:String>
+    <system:String x:Key="MsgErrLocationReq">الرجاء إختيار موقع المصدر (Location).</system:String>
+    <system:String x:Key="MsgErrIsotopeReq">الرجاء اختيار النظير المشع للمصدر.</system:String>
+    <system:String x:Key="MsgErrInitialActivityReq">الرجاء إدخال قيمة 'النشاط الابتدائي' والتأكد من أنها قيمة صحيحة وموجبة.</system:String>
+    <system:String x:Key="MsgErrInitialUnitReq">الرجاء اختيار 'وحدة النشاط الابتدائي'.</system:String>
+    <system:String x:Key="MsgErrMixIsotopeReq">الرجاء إضافة نظير واحد على الأقل للخليط.</system:String>
+    <system:String x:Key="MsgErrMixIsotopeItemReq">الرجاء اختيار النظير لكل صف في قائمة نظائر الخليط.</system:String>
+    <system:String x:Key="MsgErrMixActivityReq">الرجاء تعبئة قيمة 'النشاط' الإشعاعي لكل نظير في الخليط والتأكد من أنها موجبة.</system:String>
+    <system:String x:Key="MsgErrMixUnitReq">الرجاء اختيار 'الوحدة' لكل نظير في الخليط.</system:String>
+
+    <!-- Details Labels -->
+    <system:String x:Key="LabelSourceCode">كود المصدر:</system:String>
+    <system:String x:Key="LabelIsotope">النظير:</system:String>
+    <system:String x:Key="LabelActivityDetails">تفاصيل النشاط لكل نظير:</system:String>
+    <system:String x:Key="LabelCurrentActivity">النشاط الحالي:</system:String>
+    <system:String x:Key="LabelSerialNumber">الرقم التسلسلي:</system:String>
+    <system:String x:Key="LabelLocation">الموقع:</system:String>
+    <system:String x:Key="LabelCalibrationDate">تاريخ المعايرة او الصنع:</system:String>
+    <system:String x:Key="LabelStatus">الحالة:</system:String>
+    <system:String x:Key="LabelManufacturer">الشركة المصنعة:</system:String>
+    <system:String x:Key="LabelNotes">ملاحظات:</system:String>
+    <system:String x:Key="TitleSourceDetails">تفاصيل المصدر</system:String>
+    <system:String x:Key="TitleSelectImage">اختر صورة للمصدر</system:String>
+
+    <!-- Login Page -->
+    <system:String x:Key="MsgErrUsernameReq">الرجاء إدخال اسم المستخدم</system:String>
+    <system:String x:Key="MsgErrPasswordReq">الرجاء إدخال كلمة المرور</system:String>
+    <system:String x:Key="LogActionLogin">تسجيل دخول</system:String>
+    <system:String x:Key="MsgErrGeneral">خطأ: {0}</system:String>
+    <system:String x:Key="MsgErrDashboardLoad">خطأ في تحميل لوحة التحكم</system:String>
+    <system:String x:Key="MsgErrFillRequired">الرجاء ملء جميع الحقول المطلوبة</system:String>
+    <system:String x:Key="MsgErrExportPdf">خطأ أثناء تصدير PDF: {0}</system:String>
+    <system:String x:Key="MsgErrExportExcel">خطأ أثناء تصدير Excel: {0}</system:String>
+    <system:String x:Key="MsgErrLocationNameReq">الرجاء إدخال اسم الموقع</system:String>
+
+    <!-- Settings Feedback -->
+    <system:String x:Key="MsgThemeDark">تم تفعيل الوضع الداكن</system:String>
+    <system:String x:Key="MsgThemeLight">تم تفعيل الوضع الفاتح</system:String>
+    <system:String x:Key="MsgLangArabic">تم تعيين اللغة العربية</system:String>
+    <system:String x:Key="MsgLangEnglish">Language set to English</system:String>
+
+    <!-- Main Navigation / Session -->
+    <system:String x:Key="MsgErrSavePending">يرجى حفظ التغييرات أو إلغاؤها قبل الانتقال إلى قسم آخر.</system:String>
+    <system:String x:Key="TitlePendingChanges">تنبيه: نافذة مفتوحة</system:String>
+    <system:String x:Key="MsgConfirmLogout">هل أنت متأكد أنك تريد تسجيل الخروج؟</system:String>
+    <system:String x:Key="TitleLogout">تأكيد الخروج</system:String>
+    <system:String x:Key="ToolTipCollapseSidebar">تصغير/توسعة القائمة</system:String>
+    <system:String x:Key="LabelIsotopeSymbol">نظير</system:String>
+    <system:String x:Key="MsgErrImageLoad">فشل تحميل الصورة: {0}</system:String>
+
+
+
+
+
+
+    <!-- Notifications UI -->
+    <system:String x:Key="TitleNotifications">تنبيهات النظام</system:String>
+    <system:String x:Key="ToolTipNotifications">التنبيهات والإشعارات</system:String>
+    <system:String x:Key="BtnMarkAllRead">تعليم الكل كمقروء</system:String>
+    <system:String x:Key="MsgNoNotifications">لا توجد تنبيهات جديدة</system:String>
+
+    <!-- Activity Calculator -->
+    <system:String x:Key="MenuActivityCalculator">حاسبة النشاط</system:String>
+    <system:String x:Key="MenuHelp">المساعدة والدليل</system:String>
+    
+    <!-- Help View Strings -->
+    <system:String x:Key="TitleHelp">دليل مستخدم المنظومة</system:String>
+    <system:String x:Key="TitleHelpTopics">المواضيع</system:String>
+    <system:String x:Key="HelpSubtitle">دليل شامل يساعدك على التنقل واستخدام جميع ميزات المنظومة بفعالية</system:String>
+
+    <!-- Help Topics (Arabic) -->
+    <system:String x:Key="HelpTopicIntroTitle">1. مقدمة عن النظام</system:String>
+    <system:String x:Key="HelpTopicIntroContent">مرحباً بك في منظومة مصادر.&#xA;&#xA;تم تصميم هذا النظام لإدارة وتتبع المصادر المشعة بشكل احترافي وسلس. من خلال هذا الدليل، ستتعلم كيفية التنقل بين أقسام المنظومة، إدارة الجرد، التعامل مع طلبات الاستعارة، واستخراج التقارير الشاملة.&#xA;&#xA;استخدم القائمة الجانبية للتنقل بين وحدات النظام المختلفة. يحتوي الشريط العلوي على جرس التنبيهات وزر طي القائمة الجانبية لتوفير مساحة عرض أكبر.</system:String>
+
+    <system:String x:Key="HelpTopicDashboardTitle">2. لوحة القيادة</system:String>
+    <system:String x:Key="HelpTopicDashboardContent">توفر لوحة القيادة نظرة عامة وشاملة لحالة النظام بأكمله.&#xA;&#xA;أهم الخصائص:&#xA;• بطاقات المؤشرات (KPI): تعرض إجمالي عدد المصادر، تفصيل النشط والمخزن، وإجمالي النشاط الإشعاعي.&#xA;• التنبيهات الحديثة: تسلط الضوء على العناصر التي تتطلب تدخلاً فورياً (مثل المصادر التي تحتاج لمعايرة أو الاستعارات المتأخرة).&#xA;• الرسوم البيانية: تعرض توزيع النشاط الإشعاعي بمرور الوقت وتوزيع النظائر المشعة.</system:String>
+
+    <system:String x:Key="HelpTopicRadioisotopesTitle">3. النظائر المشعة</system:String>
+    <system:String x:Key="HelpTopicRadioisotopesContent">تتيح لك وحدة النظائر المشعة إدارة أنواع المواد المشعة المستخدمة في منشأتك.&#xA;&#xA;طريقة الاستخدام:&#xA;• الإضافة: اضغط على "إضافة نظير جديد"، وأدخل الرمز (مثل Cs-137)، والاسم، وعمر النصف.&#xA;• التعديل/الحذف: استخدم أزرار الإجراءات بجانب كل نظير في القائمة لتعديل البيانات أو حذفها.</system:String>
+
+    <system:String x:Key="HelpTopicSourcesTitle">4. جرد المصادر</system:String>
+    <system:String x:Key="HelpTopicSourcesContent">هذا القسم هو قلب منظومة مصادر، حيث يتم تتبع جميع المصادر المشعة الفعلية.&#xA;&#xA;إضافة مصدر:&#xA;1. انتقل لقسم المصادر واضغط على "إضافة مصدر جديد".&#xA;2. قم بتعبئة الحقول المطلوبة: الرقم التشغيلي، النظير، النشاط الابتدائي ووحدته، والجهة المصنعة، وموقع التخزين.&#xA;3. يقوم النظام تلقائياً بحساب "النشاط الحالي" بناءً على عمر النصف التابع للنظير.&#xA;&#xA;إدارة المصادر:&#xA;• استخدم زر "تعديل" لتغيير الحالة (مستخدم، مخزن، نفايات).&#xA;• لعرض السجل الكامل للمصدر، اضغط على تفاصيل المصدر.</system:String>
+
+    <system:String x:Key="HelpTopicBorrowingTitle">5. نظام الاستعارة</system:String>
+    <system:String x:Key="HelpTopicBorrowingContent">إدارة طلبات استلام وإرجاع المصادر المشعة بين طاقم العمل.&#xA;&#xA;إنشاء طلب:&#xA;• اذهب إلى قسم الاستعارة واضغط على "طلب استعارة جديد".&#xA;• اختر المصدر، اسم المستعير، الغرض من الاستخدام، وتاريخ الإرجاع المتوقع.&#xA;&#xA;الموافقات والإرجاع:&#xA;• يستطيع المشرف "الموافقة" أو "الرفض" للطلبات المعلقة.&#xA;• بمجرد إعادة المصدر، يجب تسجيله كـ "مرتجع" ليعود النظام لحالته الطبيعية ويتم تحديث موقع المصدر الرئيسي.</system:String>
+
+    <system:String x:Key="HelpTopicReportsTitle">6. التقارير والأنظمة</system:String>
+    <system:String x:Key="HelpTopicReportsContent">استخراج مستندات رسمية تلخص بيانات النظام بشكل دقيق.&#xA;&#xA;التقارير المتاحة:&#xA;• التقرير العام: تقرير شامل يدمج جميع التقارير في ملف واحد.&#xA;• تقرير الجرد: قائمة كاملة بجميع المصادر المسجلة.&#xA;• تقرير الاستعارة: سجل تاريخي لجميع عمليات الصرف والإرجاع.&#xA;• منخفض النشاط / المعايرة: يسرد المصادر التي اضمحلت بشكل كبير أو تحتاج لمعايرة.&#xA;&#xA;التصدير:&#xA;اضغط على أزرار PDF أو Excel أعلى الشاشة لتحميل التقرير المعروض حالياً.</system:String>
+
+    <system:String x:Key="HelpTopicSettingsTitle">7. الإعدادات والمستخدمين</system:String>
+    <system:String x:Key="HelpTopicSettingsContent">إدارة النظام وتهيئته الخاصة.&#xA;&#xA;إدارة المستخدمين:&#xA;• إنشاء حسابات جديدة وتحديد الصلاحيات (مدير النظام، مستخدم).&#xA;• تحدد الصلاحيات الأقسام التي يمكن للمستخدم الوصول إليها.&#xA;&#xA;إعدادات النظام:&#xA;• النسخ الاحتياطي: أخذ نسخة احتياطية من قواعد البيانات لضمان عدم فقدان البيانات.&#xA;• تغيير سمة التطبيق (الوضع الداكن / الفاتح) وتغيير لغة العرض المطابقة للنظام.</system:String>
+
+    <system:String x:Key="CalcTitle">حاسبة النشاط الإشعاعي</system:String>
+    <system:String x:Key="CalcSubtitle">حساب النشاط باستخدام قوانين التحلل النووي</system:String>
+    <system:String x:Key="CalcFieldIsotope">اختر النظير المشع (اختياري)</system:String>
+    <system:String x:Key="CalcFieldInitialActivity">النشاط الأولي (A₀) *</system:String>
+    <system:String x:Key="CalcFieldInputUnit">وحدة الإدخال</system:String>
+    <system:String x:Key="CalcFieldHalfLife">نصف العمر (T½) *</system:String>
+    <system:String x:Key="CalcFieldTimeUnit">وحدة الزمن</system:String>
+    <system:String x:Key="CalcFieldCalibrationDate">تاريخ الصنع/المعايرة *</system:String>
+    <system:String x:Key="CalcFieldCalculationDate">تاريخ الحساب *</system:String>
+    <system:String x:Key="CalcFieldOutputUnit">وحدة الخرج</system:String>
+    <system:String x:Key="CalcBtnCalculate">⛛ حساب</system:String>
+    <system:String x:Key="CalcBtnReset">🔄 مسح</system:String>
+    <system:String x:Key="CalcBtnCopy">📋 نسخ</system:String>
+    <system:String x:Key="CalcResultElapsed">الفترة المنقضية</system:String>
+    <system:String x:Key="CalcResultDecayConstant">ثابت التحلل (λ)</system:String>
+    <system:String x:Key="CalcResultActivity">النشاط الحالي A(t)</system:String>
+    <system:String x:Key="CalcFormulaTitle">المعادلات المرجعية</system:String>
+    <system:String x:Key="CalcErrInvalidInput">يرجى إدخال قيم رقمية صحيحة وموجبة.</system:String>
+    <system:String x:Key="CalcErrDateOrder">تاريخ الحساب يجب أن يكون بعد تاريخ المعايرة.</system:String>
+    <system:String x:Key="CalcHintActivity">مثال: 100</system:String>
+    <system:String x:Key="CalcHintHalfLife">مثال: 30.17</system:String>
+    <system:String x:Key="CalcRadioFromDB">اختيار من المخزون</system:String>
+    <system:String x:Key="CalcRadioManual">إدخال يدوي</system:String>
+
+    <!-- Borrowing View Missing Keys -->
+    <system:String x:Key="BorrowingManagementTitle">إدارة الاستعارة</system:String>
+    <system:String x:Key="BorrowingManagementSubtitle">إدارة طلبات استعارة المصادر وإرجاعها</system:String>
+    <system:String x:Key="AddNewBorrowRequest">طلب استعارة جديد</system:String>
+    <system:String x:Key="PendingRequests">طلبات قيد الانتظار</system:String>
+    <system:String x:Key="DeliveredSources">مصادر مُسلمة</system:String>
+    <system:String x:Key="OverdueRequests">طلبات متأخرة</system:String>
+    <system:String x:Key="SearchBorrowHint">ابحث باسم المستعير أو المصدر...</system:String>
+    <system:String x:Key="FilterByStatus">تصفية حسب الحالة</system:String>
+    <system:String x:Key="SourceCode">كود المصدر</system:String>
+    <system:String x:Key="BorrowerName">اسم المستعير</system:String>
+    <system:String x:Key="ExpectedReturn">تاريخ الإرجاع المتوقع</system:String>
+    <system:String x:Key="Status">الحالة</system:String>
+    <system:String x:Key="Actions">إجراءات</system:String>
+    <system:String x:Key="OpenActionDialog">إجراءات</system:String>
+    <system:String x:Key="NavBorrowing">استعارة المصادر</system:String>
+    <system:String x:Key="NavActivityCalculator">حاسبة النشاط</system:String>
+    <system:String x:Key="NavHelp">المساعدة والدليل</system:String>
+    <system:String x:Key="NavAbout">حول المنظومة</system:String>
+    <system:String x:Key="NavAboutSystem">حول المنظومة</system:String>
+    <system:String x:Key="SelectSource">اختر المصدر</system:String>
+    <system:String x:Key="SelectBorrower">اختر المستعير</system:String>
+    <system:String x:Key="BorrowPurpose">الغرض من الاستعارة</system:String>
+    <system:String x:Key="Cancel">إلغاء</system:String>
+    <system:String x:Key="SubmitRequest">تقديم الطلب</system:String>
+    <system:String x:Key="RequestActions">إجراءات الطلب</system:String>
+    <system:String x:Key="RejectionReasonHint">سبب الرفض (إن وجد)</system:String>
+    <system:String x:Key="Reject">رفض</system:String>
+    <system:String x:Key="Approve">موافقة</system:String>
+    <system:String x:Key="MarkDelivered">تسليم المصدر</system:String>
+    <system:String x:Key="SelectedReturnedBy">مُستَلم من قِبل</system:String>
+    <system:String x:Key="MarkReturned">تأكيد الاسترجاع</system:String>
+    <system:String x:Key="Close">إغلاق</system:String>
+    <system:String x:Key="ExportExcel">تصدير Excel</system:String>
+    <system:String x:Key="ExportPdf">تصدير PDF</system:String>
+
+    <!-- تلميحات حالات المصدر -->
+    <system:String x:Key="StatusHintsTitle">📋 دليل الحالات:</system:String>
+    <system:String x:Key="StatusHintInUse">• قيد الاستخدام: المصدر مُركب حالياً في جهاز أو قيد الاستخدام الفعلي.</system:String>
+    <system:String x:Key="StatusHintStorage">• في المخزن: المصدر مخزّن وجاهز للاستعارة أو الاستخدام.</system:String>
+    <system:String x:Key="StatusHintWaste">• في النفايات: تم التخلص من المصدر أو في انتظار التخلص.</system:String>
+    <system:String x:Key="StatusHintTransfer">• قيد النقل: المصدر في طريقه إلى موقع آخر.</system:String>
+
+    <system:String x:Key="ColAddedBy">أُضيف بواسطة</system:String>
+</ResourceDictionary>

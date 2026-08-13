@@ -1,0 +1,19 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ─── الوضع الداكن (صناعي فخم - كحلي وذهبي) ─── -->
+    <SolidColorBrush x:Key="WindowBackground" Color="#0B1320"/> <!-- كحلي داكن جداً للخلفية -->
+    <SolidColorBrush x:Key="CardBackground" Color="#121D31"/>  <!-- كحلي للبطاقات -->
+    <SolidColorBrush x:Key="SidebarBackground" Color="#080E18"/> <!-- كحلي قاتم للشريط الجانبي -->
+    <SolidColorBrush x:Key="SidebarForeground" Color="#D4AF37"/> <!-- ذهبي للأيقونات/النصوص -->
+    <SolidColorBrush x:Key="SidebarHover" Color="#1A2844"/>    <!-- تأثير المرور (Hover) -->
+    <SolidColorBrush x:Key="SidebarActive" Color="#233554"/>   <!-- العنصر النشط -->
+    <SolidColorBrush x:Key="TextPrimary" Color="#F3EAD3"/>     <!-- أبيض مائل للذهبي -->
+    <SolidColorBrush x:Key="TextSecondary" Color="#8B95A5"/>   <!-- رمادي مزرق للنصوص الثانوية -->
+    <SolidColorBrush x:Key="BorderColor" Color="#D4AF37"/>     <!-- حدود ذهبية -->
+    <SolidColorBrush x:Key="DataGridHeader" Color="#0F1829"/>  <!-- رأس الجدول -->
+    <SolidColorBrush x:Key="DataGridAltRow" Color="#152136"/>  <!-- الصف البديل -->
+    <SolidColorBrush x:Key="InputBackground" Color="#0B1320"/> <!-- خلفية الحقول -->
+    <SolidColorBrush x:Key="ChartBackground" Color="#121D31"/> <!-- خلفية الرسوم -->
+
+</ResourceDictionary>
