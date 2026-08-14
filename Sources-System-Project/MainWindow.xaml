@@ -114,7 +114,8 @@
                     Height="88"
                     Background="{StaticResource SidebarGradient}"
                     BorderBrush="{StaticResource GoldBrush}"
-                    BorderThickness="0,1,0,0">
+                    BorderThickness="0,1,0,0"
+                    ClipToBounds="False">
                 <Border.Style>
                     <Style TargetType="Border">
                         <Style.Triggers>
@@ -177,8 +178,9 @@
                     <ScrollViewer Grid.Column="1"
                                   HorizontalScrollBarVisibility="Disabled"
                                   VerticalScrollBarVisibility="Disabled"
-                                  VerticalAlignment="Center">
-                        <UniformGrid Rows="1" VerticalAlignment="Center" Margin="0,4,0,0">
+                                  VerticalAlignment="Center"
+                                  ClipToBounds="False">
+                        <UniformGrid Rows="1" VerticalAlignment="Center" Margin="0,14,0,0">
 
                             <!-- لوحة التحكم -->
                             <Button Style="{StaticResource BottomNavItem}"
