@@ -35,12 +35,12 @@
                     <Border Grid.Column="0" Width="50" Height="50" CornerRadius="25"
                             Background="#33FFFFFF" Margin="0,0,16,0">
                         <materialDesign:PackIcon Kind="Calculator" Width="28" Height="28"
-                                                 Foreground="#1A1A2E"
+                                                 Foreground="White"
                                                  VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Border>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="{DynamicResource CalcTitle}" FontSize="22" FontWeight="Bold" Foreground="#1A1A2E"/>
-                        <TextBlock Text="{DynamicResource CalcSubtitle}" FontSize="13" Foreground="#80000000" Margin="0,3,0,0"/>
+                        <TextBlock Text="{DynamicResource CalcTitle}" FontSize="22" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock Text="{DynamicResource CalcSubtitle}" FontSize="13" Foreground="White" Opacity="0.85" Margin="0,3,0,0"/>
                     </StackPanel>
                 </Grid>
             </Border>

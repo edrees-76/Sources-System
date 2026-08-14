@@ -100,8 +100,8 @@
                             </DataGrid.Columns>
                         </DataGrid>
 
-                        <!-- 4. المعايرة -->
-                        <TextBlock Text="4. تنبيهات المعايرة" FontSize="18" FontWeight="SemiBold" Foreground="Red" Margin="0,0,0,8"/>
+                        <!-- 4. تنبيهات انخفاض النشاط -->
+                        <TextBlock Text="4. تنبيهات انخفاض النشاط" FontSize="18" FontWeight="SemiBold" Foreground="Red" Margin="0,0,0,8"/>
                         <DataGrid ItemsSource="{Binding CalibrationData}" Style="{StaticResource ModernDataGrid}" MaxHeight="350" Margin="0,0,0,16">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
@@ -167,7 +167,7 @@
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <!-- تقرير تنبيهات المعايرة -->
+                <!-- تقرير تنبيهات انخفاض النشاط -->
                 <DataGrid ItemsSource="{Binding CalibrationData}" Style="{StaticResource ModernDataGrid}"
                           Visibility="{Binding SelectedReport, Converter={StaticResource EqualityToVis}, ConverterParameter=CalibrationReport}">
                     <DataGrid.Columns>

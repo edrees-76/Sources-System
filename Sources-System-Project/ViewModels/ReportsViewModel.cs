@@ -65,14 +65,11 @@ public partial class ReportsViewModel : ObservableObject
                 LowActivityData = new ObservableCollection<Source>(_sourceService.GetLowActivitySources(LowActivityThreshold));
                 break;
             case "CalibrationReport":
-                // تصفية المصادر النشطة التي انتهت معايرتها أو تقترب من الانتهاء (استخدام العتبة الديناميكية)
-                var today = DateTime.Now;
-                var calibThreshold = _settingsService.GetSetting("CalibrationThresholdDays", 730);
-                
+                // تصفية المصادر التي تجاوزت 5 أضعاف نصف العمر (T½)
                 CalibrationData = new ObservableCollection<Source>(
-                    allSources.Where(s => (s.Status == "Active" || s.Status == "Storage" || s.Status == "Borrowed") && s.CalibrationDate != default &&
-                                         (today - s.CalibrationDate).TotalDays >= (calibThreshold - 60)) 
-                              .OrderBy(s => s.CalibrationDate));
+                    allSources.Where(s => (s.Status == "Active" || s.Status == "Storage" || s.Status == "Borrowed") &&
+                                         CalculateMaxHalfLivesElapsed(s) >= 5.0)
+                              .OrderByDescending(s => CalculateMaxHalfLivesElapsed(s)));
                 break;
             case "GeneralReport":
                 InventoryData = new ObservableCollection<Source>(allSources);
@@ -80,12 +77,10 @@ public partial class ReportsViewModel : ObservableObject
                 ActivityData = new ObservableCollection<Source>(allSources.Where(s => s.Status == "Active" || s.Status == "Storage" || s.Status == "Borrowed"));
                 LowActivityData = new ObservableCollection<Source>(_sourceService.GetLowActivitySources(LowActivityThreshold));
                 
-                var t = DateTime.Now;
-                var cThreshold = _settingsService.GetSetting("CalibrationThresholdDays", 730);
                 CalibrationData = new ObservableCollection<Source>(
-                    allSources.Where(s => (s.Status == "Active" || s.Status == "Storage" || s.Status == "Borrowed") && s.CalibrationDate != default &&
-                                         (t - s.CalibrationDate).TotalDays >= (cThreshold - 60)) 
-                              .OrderBy(s => s.CalibrationDate));
+                    allSources.Where(s => (s.Status == "Active" || s.Status == "Storage" || s.Status == "Borrowed") &&
+                                         CalculateMaxHalfLivesElapsed(s) >= 5.0)
+                              .OrderByDescending(s => CalculateMaxHalfLivesElapsed(s)));
                 break;
         }
     }
@@ -190,4 +185,52 @@ public partial class ReportsViewModel : ObservableObject
             }
         }
     }
+
+    // ───────────── دالة مساعدة: احتساب أعلى عدد فترات نصف عمر منقضية ─────────────
+    private static double CalculateMaxHalfLivesElapsed(Source source)
+    {
+        double max = -1;
+
+        if (source.HasDetailedIsotopes &&
+            source.SourceIsotopes != null &&
+            source.SourceIsotopes.Any(si => si.Radioisotope != null))
+        {
+            foreach (var si in source.SourceIsotopes.Where(si => si.Radioisotope != null))
+            {
+                var isotope = si.Radioisotope!;
+                var calibDate = si.CalibrationDate ?? source.CalibrationDate;
+                if (calibDate == default) continue;
+
+                double halfLifeSec = ConvertHalfLifeToSeconds(isotope.HalfLife, isotope.HalfLifeUnit);
+                if (halfLifeSec <= 0) continue;
+
+                double elapsed = Math.Max(0, (DateTime.Now - calibDate).TotalSeconds);
+                double hl = elapsed / halfLifeSec;
+                if (hl > max) max = hl;
+            }
+        }
+        else if (source.Radioisotope != null && source.CalibrationDate != default)
+        {
+            double halfLifeSec = ConvertHalfLifeToSeconds(
+                source.Radioisotope.HalfLife, source.Radioisotope.HalfLifeUnit);
+            if (halfLifeSec > 0)
+            {
+                double elapsed = Math.Max(0, (DateTime.Now - source.CalibrationDate).TotalSeconds);
+                max = elapsed / halfLifeSec;
+            }
+        }
+
+        return max;
+    }
+
+    private static double ConvertHalfLifeToSeconds(double value, string? unit) =>
+        unit?.ToLower() switch
+        {
+            "seconds" => value,
+            "minutes" => value * 60,
+            "hours"   => value * 3600,
+            "days"    => value * 86400,
+            "years"   => value * 365.25 * 86400,
+            _         => value * 365.25 * 86400
+        };
 }

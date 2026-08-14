@@ -60,20 +60,20 @@
                     </Grid.ColumnDefinitions>
                     
                     <Border Grid.Column="0" Width="42" Height="42" CornerRadius="21" 
-                            Background="{DynamicResource GoldBrush}" Opacity="0.15" Margin="0,0,12,0"/>
+                            Background="White" Opacity="0.2" Margin="0,0,12,0"/>
                     <materialDesign:PackIcon x:Name="AlertIcon" Grid.Column="0" Kind="Information" 
-                                              Width="30" Height="30" Foreground="{DynamicResource GoldBrush}"
+                                              Width="30" Height="30" Foreground="White"
                                               VerticalAlignment="Center" HorizontalAlignment="Center"
                                               Margin="6,0,18,0"/>
                     
                     <TextBlock x:Name="TitleText" Grid.Column="1" Text="{DynamicResource AlertTitle}" 
-                               FontSize="18" FontWeight="Bold" Foreground="{DynamicResource GoldBrush}"
+                               FontSize="18" FontWeight="Bold" Foreground="White"
                                VerticalAlignment="Center"/>
                     
                     <Button Grid.Column="2" Click="CloseButton_Click"
                             Style="{DynamicResource MaterialDesignIconButton}"
                             Width="30" Height="30" Padding="0">
-                        <materialDesign:PackIcon Kind="Close" Foreground="{DynamicResource TextSecondary}" Width="18" Height="18"/>
+                        <materialDesign:PackIcon Kind="Close" Foreground="White" Width="18" Height="18"/>
                     </Button>
                 </Grid>
             </Border>
@@ -121,10 +121,10 @@
                             Width="100" Style="{StaticResource PrimaryButton}" Visibility="Collapsed"/>
                     
                     <Button x:Name="NoButton" Content="{DynamicResource BtnNo}" Click="NoButton_Click"
-                            Width="100" Style="{StaticResource SecondaryButton}" Margin="12,0,0,0" Visibility="Collapsed"/>
+                            Width="100" Style="{StaticResource SecondaryButton}" Foreground="White" BorderBrush="#55FFFFFF" Margin="12,0,0,0" Visibility="Collapsed"/>
 
                     <Button x:Name="CancelButton" Content="{DynamicResource BtnCancel}" Click="CancelButton_Click"
-                            IsCancel="True" Width="100" Style="{StaticResource SecondaryButton}" Margin="12,0,0,0" Visibility="Collapsed"/>
+                            IsCancel="True" Width="100" Style="{StaticResource SecondaryButton}" Foreground="White" BorderBrush="#55FFFFFF" Margin="12,0,0,0" Visibility="Collapsed"/>
                 </StackPanel>
             </Border>
         </Grid>

@@ -37,61 +37,113 @@ public class AlertService : IAlertService
             .Include(s => s.InitialActivityUnit)
             .Include(s => s.CurrentActivityUnit)
             .Include(s => s.Location)
+            .Include(s => s.SourceIsotopes)
+                .ThenInclude(si => si.Radioisotope)
             .Where(s => s.Status == "Active" || s.Status == "InUse" || s.Status == "Storage")
             .ToList();
 
-        // جلب الإعدادات الديناميكية
-        var calibThreshold = _settingsService.GetSetting("CalibrationThresholdDays", 730);
-        var lowActivityThreshold = _settingsService.GetSetting("LowActivityThresholdPercent", 10.0);
-
         foreach (var source in activeSources)
         {
-            if (source.Radioisotope == null || source.InitialActivityUnit == null) continue;
+            // ─── تنبيه انخفاض النشاط الإشعاعي (قانون التحلل: 5 إلى 6 أضعاف نصف العمر T½) ───
+            double maxHalfLivesElapsed = -1;
+            string worstIsotopeSymbol = string.Empty;
 
-            // ─── تنبيه 1: معايرة انتهت أو قاربت على الانتهاء ───
-            var calibrationAge = (DateTime.Now - source.CalibrationDate).TotalDays;
-            if (calibrationAge > calibThreshold)
+            if (source.HasDetailedIsotopes && source.SourceIsotopes != null && source.SourceIsotopes.Any(si => si.Radioisotope != null))
             {
-                alerts.Add(new AlertNotification
+                foreach (var si in source.SourceIsotopes.Where(si => si.Radioisotope != null))
                 {
-                    AlertType = "CalibrationDue",
-                    Severity = "Critical",
-                    Message = $"المصدر {source.SourceCode} يحتاج إعادة معايرة (انتهت منذ {(int)(calibrationAge - calibThreshold)} يوم)",
-                    SourceId = source.Id
-                });
+                    var isotope = si.Radioisotope!;
+                    var calibDate = si.CalibrationDate ?? source.CalibrationDate;
+                    if (calibDate == default) continue;
+
+                    var halfLifeSec = ConvertToSeconds(isotope.HalfLife, isotope.HalfLifeUnit);
+                    if (halfLifeSec <= 0) continue;
+
+                    var elapsedSec = (DateTime.Now - calibDate).TotalSeconds;
+                    if (elapsedSec < 0) elapsedSec = 0;
+
+                    var halfLives = elapsedSec / halfLifeSec;
+                    if (halfLives > maxHalfLivesElapsed)
+                    {
+                        maxHalfLivesElapsed = halfLives;
+                        worstIsotopeSymbol = isotope.Symbol;
+                    }
+                }
             }
-            else if (calibrationAge > (calibThreshold - 60)) // تنبيه قبل 60 يوم
+            else if (source.Radioisotope != null && source.CalibrationDate != default)
             {
-                alerts.Add(new AlertNotification
+                var isotope = source.Radioisotope;
+                var halfLifeSec = ConvertToSeconds(isotope.HalfLife, isotope.HalfLifeUnit);
+                if (halfLifeSec > 0)
                 {
-                    AlertType = "CalibrationDue",
-                    Severity = "Warning",
-                    Message = $"المصدر {source.SourceCode} يقترب من موعد إعادة المعايرة (متبقي {(int)(calibThreshold - calibrationAge)} يوم)",
-                    SourceId = source.Id
-                });
+                    var elapsedSec = (DateTime.Now - source.CalibrationDate).TotalSeconds;
+                    if (elapsedSec < 0) elapsedSec = 0;
+
+                    maxHalfLivesElapsed = elapsedSec / halfLifeSec;
+                    worstIsotopeSymbol = isotope.Symbol;
+                }
             }
 
-            // ─── تنبيه 2: اضمحلال عالي / نشاط منخفض ───
-            var currentBq = _decayService.CalculateCurrentActivityForSource(source, source.Radioisotope, source.InitialActivityUnit);
-            var initialBq = source.InitialActivityValue * source.InitialActivityUnit.ConversionToBq;
-            var currentPercent = initialBq > 0 ? (currentBq / initialBq) * 100 : 0;
-
-            if (currentPercent <= lowActivityThreshold)
+            if (maxHalfLivesElapsed >= 6.0)
             {
+                var symbolPart = string.IsNullOrEmpty(worstIsotopeSymbol) ? "" : $" ({worstIsotopeSymbol})";
                 alerts.Add(new AlertNotification
                 {
                     AlertType = "LowActivity",
-                    Severity = currentPercent <= (lowActivityThreshold / 2) ? "Critical" : "Warning",
-                    Message = $"المصدر {source.SourceCode} ({source.Radioisotope.Symbol}) وصل لنشاط منخفض بنسبة {currentPercent:F1}%",
+                    Severity = "Critical",
+                    Message = $"المصدر {source.SourceCode}{symbolPart}: انخفاض حرج في النشاط الإشعاعي (انقضى {maxHalfLivesElapsed:F1} فترة نصف عمر)",
+                    SourceId = source.Id
+                });
+            }
+            else if (maxHalfLivesElapsed >= 5.0)
+            {
+                var symbolPart = string.IsNullOrEmpty(worstIsotopeSymbol) ? "" : $" ({worstIsotopeSymbol})";
+                alerts.Add(new AlertNotification
+                {
+                    AlertType = "LowActivity",
+                    Severity = "Warning",
+                    Message = $"المصدر {source.SourceCode}{symbolPart}: اقتراب انخفاض النشاط الإشعاعي (انقضى {maxHalfLivesElapsed:F1} فترة نصف عمر من أصل 6)",
                     SourceId = source.Id
                 });
             }
         }
 
-        // حفظ التنبيهات الجديدة (بدون تكرار)
+        // تنظيف أي تنبيهات ملغاة من النوع القديم (CalibrationDue أو نص المعايرة)
+        var obsoleteAlerts = db.AlertNotifications
+            .Where(a => a.AlertType == "CalibrationDue" || a.Message.Contains("معايرة"))
+            .ToList();
+        if (obsoleteAlerts.Any())
+        {
+            db.AlertNotifications.RemoveRange(obsoleteAlerts);
+        }
+
+        // تنظيف تنبيهات المصادر التي لم تعد في حالة نشاط منخفض
+        var currentAlertSourceIds = alerts.Select(a => a.SourceId).Where(id => id.HasValue).Select(id => id!.Value).ToHashSet();
+        var resolvedAlerts = db.AlertNotifications
+            .Where(a => a.SourceId.HasValue && !currentAlertSourceIds.Contains(a.SourceId.Value))
+            .ToList();
+        if (resolvedAlerts.Any())
+        {
+            db.AlertNotifications.RemoveRange(resolvedAlerts);
+        }
+
+        // حفظ التنبيهات الجديدة وتحديث القائم منها
         SaveNewAlerts(db, alerts);
 
         return GetActiveAlerts();
+    }
+
+    private static double ConvertToSeconds(double value, string? unit)
+    {
+        return unit?.ToLower() switch
+        {
+            "seconds" => value,
+            "minutes" => value * 60,
+            "hours" => value * 3600,
+            "days" => value * 86400,
+            "years" => value * 365.25 * 86400,
+            _ => value * 365.25 * 86400 // افتراضي: سنوات
+        };
     }
 
     private void SaveNewAlerts(AppDbContext db, List<AlertNotification> alerts)
@@ -102,10 +154,16 @@ public class AlertService : IAlertService
 
         foreach (var alert in alerts)
         {
-            // لا نضيف تنبيه مكرر لنفس المصدر ونفس النوع
-            if (!existingAlerts.Any(e => e.SourceId == alert.SourceId && e.AlertType == alert.AlertType))
+            var existing = existingAlerts.FirstOrDefault(e => e.SourceId == alert.SourceId && e.AlertType == alert.AlertType);
+            if (existing == null)
             {
                 db.AlertNotifications.Add(alert);
+            }
+            else
+            {
+                // تحديث مستوى الخطورة والرسالة إن تغيرت
+                existing.Severity = alert.Severity;
+                existing.Message = alert.Message;
             }
         }
 

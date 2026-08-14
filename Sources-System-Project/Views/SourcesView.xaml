@@ -72,8 +72,8 @@
                         
                         <!-- التسمية والأيقونة -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
-                            <materialDesign:PackIcon Kind="ChartBoxOutline" Width="24" Height="24" Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource LabelTotalActivityStats}" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                            <materialDesign:PackIcon Kind="ChartBoxOutline" Width="24" Height="24" Foreground="White" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource LabelTotalActivityStats}" FontWeight="Bold" FontSize="14" Foreground="White" VerticalAlignment="Center" Margin="10,0,0,0"/>
                         </StackPanel>
 
                         <!-- الوحدات المحولة -->
@@ -86,7 +86,7 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Border Background="{StaticResource GoldBrush}" CornerRadius="6" Padding="12,5" Margin="0,0,10,5">
-                                        <TextBlock Text="{Binding DisplayValue}" FontWeight="Bold" FontSize="13" Foreground="#121212" VerticalAlignment="Center" FlowDirection="LeftToRight"/>
+                                        <TextBlock Text="{Binding DisplayValue}" FontWeight="Bold" FontSize="13" Foreground="White" VerticalAlignment="Center" FlowDirection="LeftToRight"/>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
@@ -255,12 +255,12 @@
                                 <Border Grid.Column="0" Width="46" Height="46" CornerRadius="23" 
                                         Background="#33FFFFFF" Margin="0,0,14,0">
                                     <materialDesign:PackIcon Kind="Radioactive" Width="28" Height="28" 
-                                                             Foreground="#1A1A2E" 
+                                                             Foreground="White" 
                                                              VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                 </Border>
                                 
                                 <!-- العنوان -->
-                                <TextBlock Grid.Column="1" FontSize="20" FontWeight="Bold" Foreground="#1A1A2E" VerticalAlignment="Center">
+                                <TextBlock Grid.Column="1" FontSize="20" FontWeight="Bold" Foreground="White" VerticalAlignment="Center">
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="Text" Value="{DynamicResource EditSourceTitle}"/>
@@ -277,7 +277,7 @@
                                 <Button Grid.Column="2" Command="{Binding CancelEditCommand}"
                                         Style="{StaticResource MaterialDesignIconButton}"
                                         Width="35" Height="35" Padding="0">
-                                    <materialDesign:PackIcon Kind="Close" Foreground="#1A1A2E" Width="20" Height="20"/>
+                                    <materialDesign:PackIcon Kind="Close" Foreground="White" Width="20" Height="20"/>
                                 </Button>
                             </Grid>
                         </Border>

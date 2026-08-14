@@ -279,7 +279,7 @@ namespace Sources.Services
             await Task.Run(() =>
             {
                 using var workbook = new XLWorkbook();
-                var worksheet = workbook.Worksheets.Add("تنبيهات المعايرة");
+                var worksheet = workbook.Worksheets.Add("تنبيهات انخفاض النشاط");
                 worksheet.RightToLeft = true;
 
                 string[] headers = { "رقم المصدر", "النظير", "تاريخ آخر معايرة", "الحالة", "النشاط الحالي", "المسؤول" };
@@ -325,7 +325,7 @@ namespace Sources.Services
                         {
                             row.RelativeItem().Column(column =>
                             {
-                                column.Item().Text("نظام مسار - تقرير تنبيهات المعايرة").FontSize(22).SemiBold().FontColor(Colors.Red.Medium);
+                                column.Item().Text("منظومة مصادر — تقرير تنبيهات انخفاض النشاط").FontSize(22).SemiBold().FontColor(Colors.Red.Medium);
                                 column.Item().Text($"تاريخ الاستخراج: {DateTime.Now:yyyy/MM/dd HH:mm}").FontSize(12).FontColor(Colors.Grey.Darken2);
                             });
                         });
@@ -446,8 +446,8 @@ namespace Sources.Services
                 }
                 wsLowAct.Columns().AdjustToContents();
 
-                // 4. Calibration Sheet
-                var wsCalib = workbook.Worksheets.Add("تنبيهات المعايرة");
+                // 4. Low Activity Alerts Sheet
+                var wsCalib = workbook.Worksheets.Add("تنبيهات انخفاض النشاط");
                 wsCalib.RightToLeft = true;
                 string[] calibHeaders = { "رقم المصدر", "النظير", "تاريخ آخر معايرة", "الحالة", "النشاط الحالي", "المسؤول" };
                 for (int i = 0; i < calibHeaders.Length; i++)
@@ -546,8 +546,8 @@ namespace Sources.Services
                             column.Item().PaddingTop(20).PaddingBottom(10).Text("3. تقرير المصادر منخفضة النشاط الإشعاعي").FontSize(16).SemiBold().FontColor(Colors.Blue.Medium);
                             column.Item().Element(c => ComposeContentInventory(c, lowActivity)); // Can reuse inventory format
 
-                            // 4. Calibration Section
-                            column.Item().PaddingTop(20).PaddingBottom(10).Text("4. تنبيهات المعايرة").FontSize(16).SemiBold().FontColor(Colors.Red.Medium);
+                            // 4. Calibration / Low Activity Alert Section
+                            column.Item().PaddingTop(20).PaddingBottom(10).Text("4. تنبيهات انخفاض النشاط").FontSize(16).SemiBold().FontColor(Colors.Red.Medium);
                             column.Item().Table(table =>
                             {
                                 table.ColumnsDefinition(columns =>

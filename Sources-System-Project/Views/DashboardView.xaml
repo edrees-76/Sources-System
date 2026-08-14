@@ -10,15 +10,19 @@
              d:DesignHeight="900" d:DesignWidth="1200">
     <Grid Margin="16">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>      <!-- Row 0: Top Cards & Activity -->
+            <RowDefinition Height="Auto"/>      <!-- Row 0: Top Cards &amp; Activity -->
             <RowDefinition Height="16"/>        <!-- Spacer -->
-            <RowDefinition Height="*"/>         <!-- Row 2: Sources DataGrid -->
+            <RowDefinition Height="Auto"/>      <!-- Row 2: Low Activity Alert + Borrow Summary -->
             <RowDefinition Height="16"/>        <!-- Spacer -->
-            <RowDefinition Height="300"/>       <!-- Row 4: Bottom Charts -->
+            <RowDefinition Height="*"/>         <!-- Row 4: Sources DataGrid -->
+            <RowDefinition Height="16"/>        <!-- Spacer -->
+            <RowDefinition Height="300"/>       <!-- Row 6: Bottom Charts -->
+            <RowDefinition Height="16"/>        <!-- Spacer -->
+            <RowDefinition Height="Auto"/>      <!-- Row 8: Low Activity Sources Table -->
         </Grid.RowDefinitions>
 
         <!-- ============================================== -->
-        <!-- Row 0: Total Sources & Total Activity          -->
+        <!-- Row 0: Total Sources &amp; Total Activity          -->
         <!-- ============================================== -->
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
@@ -49,7 +53,7 @@
             </Border>
 
             <!-- Total Activity Bar (Sources-page style) -->
-            <Border Grid.Column="2" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="20,12" 
+            <Border Grid.Column="2" Background="{DynamicResource SidebarBackground}" CornerRadius="12" Padding="20,12" 
                     BorderBrush="{DynamicResource GoldBrush}" BorderThickness="0,0,4,0">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="12" Opacity="0.1" ShadowDepth="3"/>
@@ -62,11 +66,11 @@
                     
                     <!-- Label and Icon -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
-                        <materialDesign:PackIcon Kind="ChartBoxOutline" Width="24" Height="24" Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center"/>
-                        <TextBlock Text="{DynamicResource LabelTotalActivityStats}" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        <materialDesign:PackIcon Kind="ChartBoxOutline" Width="24" Height="24" Foreground="White" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource LabelTotalActivityStats}" FontWeight="Bold" FontSize="14" Foreground="White" VerticalAlignment="Center" Margin="10,0,0,0"/>
                     </StackPanel>
 
-                    <!-- Activity Values in Gold Badges -->
+                    <!-- Activity Values in Badges -->
                     <ItemsControl Grid.Column="1" ItemsSource="{Binding TotalActivityItems}" VerticalAlignment="Center" HorizontalAlignment="Left">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -76,7 +80,7 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Background="{StaticResource GoldBrush}" CornerRadius="6" Padding="12,5" Margin="0,0,10,5">
-                                    <TextBlock Text="{Binding DisplayValue}" FontWeight="Bold" FontSize="13" Foreground="#121212" VerticalAlignment="Center" FlowDirection="LeftToRight"/>
+                                    <TextBlock Text="{Binding DisplayValue}" FontWeight="Bold" FontSize="13" Foreground="White" VerticalAlignment="Center" FlowDirection="LeftToRight"/>
                                 </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -86,9 +90,205 @@
         </Grid>
 
         <!-- ============================================== -->
-        <!-- Row 2: Sources DataGrid (matching SourcesView) -->
+        <!-- Row 2: NEW — Low Activity Alert + Borrow Card  -->
         <!-- ============================================== -->
-        <Border Grid.Row="2" Style="{DynamicResource ContentCard}" VerticalAlignment="Stretch">
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>   <!-- Low Activity Alert Card -->
+                <ColumnDefinition Width="16"/>  <!-- Spacer -->
+                <ColumnDefinition Width="*"/>   <!-- Borrow Summary Card -->
+            </Grid.ColumnDefinitions>
+
+            <!-- ═══ الجزء 1: بطاقة تنبيهات انخفاض النشاط ═══ -->
+            <Border Grid.Column="0" CornerRadius="12" Padding="18,14">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+                        <Setter Property="Effect">
+                            <Setter.Value>
+                                <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
+                            </Setter.Value>
+                        </Setter>
+                        <!-- حدة حمراء جانبية عند وجود تنبيهات -->
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding HasLowActivityAlerts}" Value="True">
+                                <Setter Property="BorderBrush" Value="#C25B4A"/>
+                                <Setter Property="BorderThickness" Value="0,0,4,0"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="12"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="10"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="RadioactiveOff" Width="22" Height="22" VerticalAlignment="Center">
+                            <materialDesign:PackIcon.Style>
+                                <Style TargetType="materialDesign:PackIcon">
+                                    <Setter Property="Foreground" Value="{DynamicResource GoldBrush}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasLowActivityAlerts}" Value="True">
+                                            <Setter Property="Foreground" Value="#C25B4A"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </materialDesign:PackIcon.Style>
+                        </materialDesign:PackIcon>
+                        <StackPanel Margin="10,0,0,0">
+                            <TextBlock Text="{DynamicResource CardLowActivityTitle}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock Text="{DynamicResource CardLowActivitySubtitle}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Alert Numbers — يظهر فقط عند وجود تنبيهات -->
+                    <Grid Grid.Row="2" Visibility="{Binding HasLowActivityAlerts, Converter={StaticResource BoolToVis}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <!-- Critical -->
+                        <Border Grid.Column="0" Background="#1AC25B4A" CornerRadius="10" Padding="12,10">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding LowActivityCriticalCount}" FontSize="32" FontWeight="Bold"
+                                           Foreground="#C25B4A" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource LabelCritical}" FontSize="11" FontWeight="SemiBold"
+                                           Foreground="#C25B4A" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <!-- Warning -->
+                        <Border Grid.Column="2" Background="#1AE0A93E" CornerRadius="10" Padding="12,10">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding LowActivityWarningCount}" FontSize="32" FontWeight="Bold"
+                                           Foreground="#E0A93E" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource LabelWarning}" FontSize="11" FontWeight="SemiBold"
+                                           Foreground="#E0A93E" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- رسالة "ضمن الحدود الآمنة" — تظهر فقط عندما لا توجد تنبيهات -->
+                    <Border Grid.Row="2" Background="#1A3FAE7A" CornerRadius="10" Padding="12,14"
+                            Visibility="{Binding HasLowActivityAlerts, Converter={StaticResource InverseBoolToVis}}">
+                        <TextBlock Text="{DynamicResource LabelAllSafe}" FontSize="13" FontWeight="SemiBold"
+                                   Foreground="#3FAE7A" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+                    </Border>
+
+                    <!-- رابط التقرير -->
+                    <TextBlock Grid.Row="4" Text="{DynamicResource BtnViewLowActivityReport}"
+                               FontSize="11" Foreground="{DynamicResource GoldBrush}" 
+                               HorizontalAlignment="Left" Cursor="Hand" TextDecorations="Underline">
+                        <TextBlock.InputBindings>
+                            <MouseBinding Gesture="LeftClick" Command="{Binding NavigateToLowActivityReportCommand}"/>
+                        </TextBlock.InputBindings>
+                    </TextBlock>
+                </Grid>
+            </Border>
+
+            <!-- ═══ الجزء 2: بطاقة ملخص الاستعارات ═══ -->
+            <Border Grid.Column="2" CornerRadius="12" Padding="18,14">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+                        <Setter Property="Effect">
+                            <Setter.Value>
+                                <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding BorrowSummary.HasAny}" Value="True">
+                                <Setter Property="BorderBrush" Value="{DynamicResource GoldBrush}"/>
+                                <Setter Property="BorderThickness" Value="0,0,4,0"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="12"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="10"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="SwapHorizontalCircleOutline" Width="22" Height="22"
+                                                 Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource CardBorrowSummaryTitle}" FontSize="14" FontWeight="Bold"
+                                   Foreground="{DynamicResource TextPrimary}" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Borrow Numbers — يظهر عند وجود استعارات نشطة -->
+                    <Grid Grid.Row="2" Visibility="{Binding BorrowSummary.HasAny, Converter={StaticResource BoolToVis}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="8"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="8"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <!-- Overdue -->
+                        <Border Grid.Column="0" Background="#1AC25B4A" CornerRadius="10" Padding="8,10">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding BorrowSummary.OverdueCount}" FontSize="28" FontWeight="Bold"
+                                           Foreground="#C25B4A" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource LabelOverdue}" FontSize="10" FontWeight="SemiBold"
+                                           Foreground="#C25B4A" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <!-- Due Soon -->
+                        <Border Grid.Column="2" Background="#1AE0A93E" CornerRadius="10" Padding="8,10">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding BorrowSummary.DueSoonCount}" FontSize="28" FontWeight="Bold"
+                                           Foreground="#E0A93E" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource LabelDueSoon}" FontSize="10" FontWeight="SemiBold"
+                                           Foreground="#E0A93E" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <!-- Active (all borrowed) -->
+                        <Border Grid.Column="4" Background="#1A1F5A66" CornerRadius="10" Padding="8,10">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding BorrowSummary.ActiveCount}" FontSize="28" FontWeight="Bold"
+                                           Foreground="{DynamicResource GoldBrush}" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource LabelActiveBorrows}" FontSize="10" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource GoldBrush}" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- رسالة "لا استعارات" -->
+                    <Border Grid.Row="2" Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="12,14"
+                            Visibility="{Binding BorrowSummary.HasAny, Converter={StaticResource InverseBoolToVis}}">
+                        <TextBlock Text="{DynamicResource LabelNoBorrows}" FontSize="13"
+                                   Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"
+                                   TextWrapping="Wrap" TextAlignment="Center"/>
+                    </Border>
+
+                    <!-- رابط إدارة الاستعارات -->
+                    <TextBlock Grid.Row="4" Text="{DynamicResource BtnViewBorrowing}"
+                               FontSize="11" Foreground="{DynamicResource GoldBrush}"
+                               HorizontalAlignment="Left" Cursor="Hand" TextDecorations="Underline">
+                        <TextBlock.InputBindings>
+                            <MouseBinding Gesture="LeftClick" Command="{Binding NavigateToBorrowingCommand}"/>
+                        </TextBlock.InputBindings>
+                    </TextBlock>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ============================================== -->
+        <!-- Row 4: Sources DataGrid (matching SourcesView) -->
+        <!-- ============================================== -->
+        <Border Grid.Row="4" Style="{DynamicResource ContentCard}" VerticalAlignment="Stretch">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -117,9 +317,9 @@
         </Border>
 
         <!-- ============================================== -->
-        <!-- Row 4: Bottom Charts (Bar + Decay Curve)       -->
+        <!-- Row 6: Bottom Charts (Bar + Decay Curve)       -->
         <!-- ============================================== -->
-        <Grid Grid.Row="4">
+        <Grid Grid.Row="6">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>    <!-- Bar Chart -->
                 <ColumnDefinition Width="16"/>   <!-- Spacer -->
@@ -193,5 +393,149 @@
                 </Grid>
             </Border>
         </Grid>
+
+        <!-- ============================================== -->
+        <!-- Row 8: NEW — جدول مصادر منخفضة النشاط         -->
+        <!-- ============================================== -->
+        <Border Grid.Row="8" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="18,14" Margin="0,0,0,8">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
+            </Border.Effect>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>  <!-- Title row -->
+                    <RowDefinition Height="6"/>     <!-- Spacer -->
+                    <RowDefinition Height="Auto"/>  <!-- Column headers -->
+                    <RowDefinition Height="4"/>     <!-- Spacer -->
+                    <RowDefinition Height="Auto"/>  <!-- Data rows or empty state -->
+                    <RowDefinition Height="Auto"/>  <!-- View All footer -->
+                </Grid.RowDefinitions>
+
+                <!-- Header Row with "View All" link -->
+                <Grid Grid.Row="0">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="AlertOctagonOutline" Width="22" Height="22"
+                                                 Foreground="#C25B4A" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource LowActivityTableTitle}" FontSize="14" FontWeight="Bold"
+                                   Foreground="{DynamicResource TextPrimary}" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <!-- "عرض الكل" — يظهر فقط عند وجود أكثر من 5 مصادر -->
+                    <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center"
+                               Text="{DynamicResource BtnViewAllLowActivity}"
+                               FontSize="11" Foreground="{DynamicResource GoldBrush}" Cursor="Hand"
+                               TextDecorations="Underline"
+                               Visibility="{Binding HasMoreLowActivitySources, Converter={StaticResource BoolToVis}}">
+                        <TextBlock.InputBindings>
+                            <MouseBinding Gesture="LeftClick" Command="{Binding NavigateToLowActivityReportCommand}"/>
+                        </TextBlock.InputBindings>
+                    </TextBlock>
+                </Grid>
+
+                <!-- رأس الأعمدة — يظهر فقط عند وجود بيانات -->
+                <Grid Grid.Row="2" Margin="12,0">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding LowActivitySources.Count}" Value="0">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="100"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{DynamicResource ColSourceCode}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}"/>
+                    <TextBlock Grid.Column="1" Text="{DynamicResource ColRadioisotopes}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}"/>
+                    <TextBlock Grid.Column="2" Text="{DynamicResource ColHalfLivesElapsed}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" TextAlignment="Center"/>
+                    <TextBlock Grid.Column="3" Text="{DynamicResource ColSeverityBadge}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" TextAlignment="Center"/>
+                </Grid>
+
+                <!-- الحالة الفارغة — يظهر عند عدم وجود مصادر -->
+                <Border Grid.Row="4" CornerRadius="8" Padding="16,12">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding LowActivitySources.Count}" Value="0">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <TextBlock Text="{DynamicResource LabelNoLowActivity}" FontSize="13"
+                               Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"
+                               TextWrapping="Wrap" TextAlignment="Center"/>
+                </Border>
+
+                <!-- الجدول — يظهر عند وجود بيانات -->
+                <ItemsControl Grid.Row="4" ItemsSource="{Binding LowActivitySources}">
+                    <ItemsControl.Style>
+                        <Style TargetType="ItemsControl">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding LowActivitySources.Count}" Value="0">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ItemsControl.Style>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1" Padding="12,10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition Width="100"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0" Text="{Binding SourceCode}"
+                                               FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               VerticalAlignment="Center"/>
+
+                                    <TextBlock Grid.Column="1" Text="{Binding IsotopeSymbol}"
+                                               FontSize="13" Foreground="{DynamicResource TextSecondary}"
+                                               VerticalAlignment="Center" FlowDirection="LeftToRight"/>
+
+                                    <TextBlock Grid.Column="2" Text="{Binding HalfLivesDisplay}"
+                                               FontSize="13" FontWeight="SemiBold" FontFamily="Consolas, Courier New"
+                                               Foreground="{Binding SeverityColor, Converter={StaticResource HexToBrush}}"
+                                               VerticalAlignment="Center" FlowDirection="LeftToRight"
+                                               HorizontalAlignment="Center"/>
+
+                                    <!-- Severity Badge -->
+                                    <Border Grid.Column="3" CornerRadius="6" Padding="10,4"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            Background="{Binding SeverityBadgeBackground, Converter={StaticResource HexToBrush}}">
+                                        <TextBlock Text="{Binding SeverityLabel}"
+                                                   FontSize="11" FontWeight="Bold"
+                                                   Foreground="{Binding SeverityColor, Converter={StaticResource HexToBrush}}"
+                                                   HorizontalAlignment="Center"/>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- رابط "عرض الكل" في الأسفل -->
+                <TextBlock Grid.Row="5" Margin="0,8,0,0"
+                           HorizontalAlignment="Center" Cursor="Hand"
+                           Visibility="{Binding HasMoreLowActivitySources, Converter={StaticResource BoolToVis}}">
+                    <Hyperlink Command="{Binding NavigateToLowActivityReportCommand}"
+                               Foreground="{DynamicResource GoldBrush}">
+                        <Run Text="{DynamicResource BtnViewAllLowActivity}"/>
+                    </Hyperlink>
+                </TextBlock>
+            </Grid>
+        </Border>
+
     </Grid>
 </UserControl>

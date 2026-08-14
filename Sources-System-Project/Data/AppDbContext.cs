@@ -142,6 +142,8 @@ public class AppDbContext : DbContext
         try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_AuditLogs_ActionDate ON AuditLogs(ActionDate);"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_AuditLogs_UserId ON AuditLogs(UserId);"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_AlertNotifications_IsRead ON AlertNotifications(IsRead);"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "DELETE FROM AlertNotifications WHERE AlertType = 'CalibrationDue' OR Message LIKE '%معايرة%';"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "DELETE FROM AppSettings WHERE Key = 'CalibrationThresholdDays';"; cmd.ExecuteNonQuery(); } catch { }
 
         // ─── مرحلة 7: جدول استعارة المصادر ───
         cmd.CommandText = @"
@@ -381,7 +383,6 @@ public class AppDbContext : DbContext
         if (!AppSettings.Any())
         {
             AppSettings.AddRange(
-                new AppSetting { Key = "CalibrationThresholdDays", Value = "730", Description = "فترة صلاحية المعايرة بالأيام (الافتراضي سنتين)" },
                 new AppSetting { Key = "LowActivityThresholdPercent", Value = "10", Description = "عتبة النشاط المنخفض كنسبة مئوية من النشاط الابتدائي" },
                 new AppSetting { Key = "NotificationCheckIntervalMinutes", Value = "60", Description = "الفترة الزمنية للتحقق من التنبيهات تلقائياً" }
             );

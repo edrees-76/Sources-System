@@ -260,3 +260,24 @@ public class SeverityToColorConverter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         => throw new NotImplementedException();
 }
+
+// ─── تحويل سلسلة Hex (#AARRGGBB | #RRGGBB) إلى SolidColorBrush ───
+public class HexStringToBrushConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        try
+        {
+            var hex = value?.ToString();
+            if (string.IsNullOrWhiteSpace(hex)) return new SolidColorBrush(Colors.Transparent);
+            var c = (Color)ColorConverter.ConvertFromString(hex);
+            return new SolidColorBrush(c);
+        }
+        catch
+        {
+            return new SolidColorBrush(Colors.Transparent);
+        }
+    }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}

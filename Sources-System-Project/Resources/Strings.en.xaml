@@ -134,7 +134,7 @@
     <system:String x:Key="StorageLocations">Storage &amp; Use Locations</system:String>
     <system:String x:Key="RiskIndicator">Risk Indicator (&gt; 1 GBq)</system:String>
     <system:String x:Key="SourcesCountSuffix">Sources</system:String>
-    <system:String x:Key="ExpiredCalibrations">Expired Calibrations</system:String>
+    <system:String x:Key="ExpiredCalibrations">Critically Low Activity</system:String>
     <system:String x:Key="ProactiveMonitoring">Proactive Monitoring</system:String>
     <system:String x:Key="DecayIndicator">Temporal Decay Indicator</system:String>
     <system:String x:Key="IsotopeDistribution">Radioisotope Distribution</system:String>
@@ -142,6 +142,29 @@
     <system:String x:Key="ColBorrowerName">Borrower Name</system:String>
     <system:String x:Key="ColStatusAction">Status</system:String>
     <system:String x:Key="ColExpectedReturn">Expected Return</system:String>
+
+    <!-- ── Low Activity Alert Card (Part 1) ── -->
+    <system:String x:Key="CardLowActivityTitle">Low Radioactive Activity Alerts</system:String>
+    <system:String x:Key="CardLowActivitySubtitle">Sources that exceeded 5 half-lives (T½)</system:String>
+    <system:String x:Key="LabelCritical">Critical ≥ 6 T½</system:String>
+    <system:String x:Key="LabelWarning">Warning 5–6 T½</system:String>
+    <system:String x:Key="LabelAllSafe">✅ All sources are within safe limits</system:String>
+    <system:String x:Key="BtnViewLowActivityReport">View Low Activity Report →</system:String>
+
+    <!-- ── Borrow Summary Card (Part 2) ── -->
+    <system:String x:Key="CardBorrowSummaryTitle">Borrowing Summary</system:String>
+    <system:String x:Key="LabelOverdue">Overdue</system:String>
+    <system:String x:Key="LabelDueSoon">Due Soon (7 days)</system:String>
+    <system:String x:Key="LabelActiveBorrows">Active</system:String>
+    <system:String x:Key="LabelNoBorrows">No active borrowings currently</system:String>
+    <system:String x:Key="BtnViewBorrowing">Manage Borrowings →</system:String>
+
+    <!-- ── Low Activity Sources Table (Part 3) ── -->
+    <system:String x:Key="LowActivityTableTitle">Low Activity Sources (≥ 5 T½)</system:String>
+    <system:String x:Key="ColHalfLivesElapsed">Half-Lives Elapsed</system:String>
+    <system:String x:Key="ColSeverityBadge">Severity</system:String>
+    <system:String x:Key="LabelNoLowActivity">No low-activity sources found ✅</system:String>
+    <system:String x:Key="BtnViewAllLowActivity">View All in Reports →</system:String>
 
     <!-- Radioisotopes Page -->
     <system:String x:Key="LabelSearchIsotope">🔍 Search here for isotope name or symbol</system:String>
@@ -297,7 +320,7 @@
     <system:String x:Key="BtnBorrowingReport">🔄 Borrowing Report</system:String>
     <system:String x:Key="BtnActivityReport">☢ Activity Report</system:String>
     <system:String x:Key="BtnLowActivityReport">⚠ Low Activity Alert</system:String>
-    <system:String x:Key="BtnCalibrationReport">📅 Calibration Alerts</system:String>
+    <system:String x:Key="BtnCalibrationReport">📅 Low Activity Alerts</system:String>
     <system:String x:Key="BtnExportPdf">Export PDF</system:String>
     <system:String x:Key="BtnExportExcel">Export Excel</system:String>
     <system:String x:Key="ColCode">Code</system:String>
@@ -460,7 +483,7 @@
     <system:String x:Key="HelpTopicIntroContent">Welcome to the Sources System.&#xA;&#xA;This system is designed to seamlessly manage and track radioactive sources. Using this guide, you will learn how to navigate the system, manage inventory, handle borrowing requests, and generate comprehensive reports.&#xA;&#xA;Use the sidebar on the right to navigate between different system modules. The top bar contains your notifications bell and the ability to collapse the sidebar for more screen space.</system:String>
 
     <system:String x:Key="HelpTopicDashboardTitle">2. Dashboard</system:String>
-    <system:String x:Key="HelpTopicDashboardContent">The Dashboard provides a high-level overview of the entire system.&#xA;&#xA;Key Features:&#xA;• KPI Cards: Displays the total number of sources, active vs. stored breakdown, and total current activity.&#xA;• Recent Alerts: Highlights items requiring immediate attention (e.g., sources needing calibration or overdue returns).&#xA;• Activity Charts: Visualizes the distribution of source activities over time and by isotope.</system:String>
+    <system:String x:Key="HelpTopicDashboardContent">The Dashboard provides a high-level overview of the entire system.&#xA;&#xA;Key Features:&#xA;• KPI Cards: Displays the total number of sources, active vs. stored breakdown, and total current activity.&#xA;• Recent Alerts: Highlights items requiring immediate attention (e.g., sources with low activity after 6 half-lives or overdue returns).&#xA;• Activity Charts: Visualizes the distribution of source activities over time and by isotope.</system:String>
 
     <system:String x:Key="HelpTopicRadioisotopesTitle">3. Radioisotopes</system:String>
     <system:String x:Key="HelpTopicRadioisotopesContent">The Radioisotopes module allows you to manage the types of radioactive materials used in your facility.&#xA;&#xA;Features:&#xA;• Add New: Click 'Add Isotope', enter the symbol (e.g., Cs-137), atomic number, mass number, and half-life.&#xA;• Edit/Delete: Use the action buttons next to each isotope in the list to modify or remove records.</system:String>
@@ -472,7 +495,7 @@
     <system:String x:Key="HelpTopicBorrowingContent">Manage the checkout and return of radioactive sources.&#xA;&#xA;Creating a Request:&#xA;• Go to the Borrowing section and click 'New Request'.&#xA;• Select the source, the borrower's name, the purpose of use, and the expected return date.&#xA;&#xA;Approvals &amp; Returns:&#xA;• Supervisors can 'Approve' or 'Reject' pending requests.&#xA;• Once a source is returned, it must be marked as 'Returned' to update the primary inventory status.</system:String>
 
     <system:String x:Key="HelpTopicReportsTitle">6. Analytics &amp; Reports</system:String>
-    <system:String x:Key="HelpTopicReportsContent">Generate official documents summarizing system data.&#xA;&#xA;Available Reports:&#xA;• General Report: A comprehensive report combining all data below.&#xA;• Inventory Report: Full list of all registered sources.&#xA;• Borrowing Report: History of all source checkouts and returns.&#xA;• Low Activity / Calibration: Lists sources that have decayed significantly or require imminent recalibration.&#xA;&#xA;Exporting:&#xA;Click the PDF or Excel buttons at the top of the screen to download the currently viewed report.</system:String>
+    <system:String x:Key="HelpTopicReportsContent">Generate official documents summarizing system data.&#xA;&#xA;Available Reports:&#xA;• General Report: A comprehensive report combining all data below.&#xA;• Inventory Report: Full list of all registered sources.&#xA;• Borrowing Report: History of all source checkouts and returns.&#xA;• Low Activity Alerts: Lists sources that have decayed significantly or passed 6 half-lives.&#xA;&#xA;Exporting:&#xA;Click the PDF or Excel buttons at the top of the screen to download the currently viewed report.</system:String>
 
     <system:String x:Key="HelpTopicSettingsTitle">7. Settings &amp; Users</system:String>
     <system:String x:Key="HelpTopicSettingsContent">System Administration and Configuration.&#xA;&#xA;User Management:&#xA;• Create new accounts and assign roles (Admin, Supervisor, User).&#xA;• Roles determine which sections of the application are accessible.&#xA;&#xA;System Settings:&#xA;• Backup &amp; Restore database ensuring data integrity.&#xA;• Toggle Application Theme (Light/Dark mode) and Language.</system:String>

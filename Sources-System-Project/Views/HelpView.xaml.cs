@@ -358,8 +358,8 @@ public partial class HelpView : UserControl
 
         p.Children.Add(MakeExampleBlock(
             ar ? "مثال: قراءة بطاقة المؤشرات" : "Example: Reading the KPI Card",
-            ar ? "إذا ظهرت البطاقة:\n  المصادر المسجلة: 45\n  النشطة: 38  |  المخزنة: 5  |  تحتاج إجراء: 2\nفهذا يعني أن لديك مصدرين يحتاجان لمراجعة فورية (معايرة أو تخلص)."
-               : "If the card shows:\n  Registered Sources: 45\n  Active: 38  |  Stored: 5  |  Requires Action: 2\nThis means 2 sources need your immediate review (calibration or disposal)."));
+            ar ? "إذا ظهرت البطاقة:\n  المصادر المسجلة: 45\n  النشطة: 38  |  المخزنة: 5  |  تحتاج إجراء: 2\nفهذا يعني أن لديك مصدرين يحتاجان لمراجعة فورية (انخفاض النشاط الإشعاعي بعد مرور 6 فترات نصف عمر أو تخلص)."
+               : "If the card shows:\n  Registered Sources: 45\n  Active: 38  |  Stored: 5  |  Requires Action: 2\nThis means 2 sources need your immediate review (low activity after 6 half-lives or disposal)."));
 
         p.Children.Add(MakeSectionHeader("ChartLine", ar ? "الرسوم البيانية" : "Charts"));
 
@@ -369,8 +369,8 @@ public partial class HelpView : UserControl
             15));
 
         p.Children.Add(MakeTipBlock(
-            ar ? "💡 نصيحة: راقب مؤشر \"يحتاج إجراء\" يومياً — إذا زاد العدد فتحقق من تنبيهات المعايرة والمصادر منخفضة النشاط."
-               : "💡 Tip: Monitor the 'Requires Action' indicator daily — if the count increases, check calibration alerts and low activity sources."));
+            ar ? "💡 نصيحة: راقب مؤشر \"يحتاج إجراء\" يومياً — إذا زاد العدد فتحقق من تنبيهات انخفاض النشاط والمصادر منخفضة النشاط."
+               : "💡 Tip: Monitor the 'Requires Action' indicator daily — if the count increases, check low activity alerts and decayed sources."));
 
         p.Children.Add(MakeSectionHeader("Table", ar ? "جدول أحدث الاستعارات" : "Recent Borrowings Table"));
 
@@ -515,7 +515,7 @@ public partial class HelpView : UserControl
             ar ? "🔄 تقرير الاستعارة: السجل التاريخي لعمليات الصرف والإرجاع" : "🔄 Borrowing Report: Historical log of checkouts and returns",
             ar ? "☢ تقرير النشاط: عرض النشاط الإشعاعي الحالي لكل مصدر" : "☢ Activity Report: Current radioactive activity for each source",
             ar ? "⚠ تقرير المصادر المنخفضة: المصادر التي اضمحل نشاطها بشكل كبير" : "⚠ Low Activity Report: Sources with significantly decayed activity",
-            ar ? "📅 تنبيهات المعايرة: المصادر القريبة أو المتجاوزة لتاريخ المعايرة" : "📅 Calibration Alerts: Sources near or past calibration date",
+            ar ? "📅 تنبيهات انخفاض النشاط: المصادر التي انخفض نشاطها الإشعاعي بعد مرور 6 فترات نصف عمر" : "📅 Low Activity Alerts: Sources with decayed activity after 6 half-lives",
             ar ? "📑 التقرير العام الشامل: يجمع كل التقارير أعلاه في ملف واحد" : "📑 General Report: Combines all above reports in a single file"));
 
         p.Children.Add(MakeSectionHeader("Download", ar ? "تصدير التقارير" : "Exporting Reports"));

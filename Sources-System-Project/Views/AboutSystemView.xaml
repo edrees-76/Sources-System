@@ -46,7 +46,7 @@
                     </Image>
                     
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="مركز البحوث النووية - تاجوراء" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource GoldBrush}"/>
+                        <TextBlock Text="مركز البحوث النووية - تاجوراء" FontSize="22" FontWeight="Bold" Foreground="White"/>
                         <TextBlock Text="TNRC | Tajoura Nuclear Research Center" FontSize="13" FontWeight="Bold" Foreground="White" Opacity="0.9" FlowDirection="LeftToRight" Margin="0,3,0,0"/>
                     </StackPanel>
                 </StackPanel>

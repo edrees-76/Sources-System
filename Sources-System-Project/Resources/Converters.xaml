@@ -16,5 +16,6 @@
     <converters:EqualityToVisibilityConverter x:Key="EqualityToVis"/>
     <converters:IndexConverter x:Key="IndexConverter"/>
     <converters:SeverityToColorConverter x:Key="SeverityToColor"/>
+    <converters:HexStringToBrushConverter x:Key="HexToBrush"/>
     
 </ResourceDictionary>

@@ -131,7 +131,7 @@
     <system:String x:Key="StorageLocations">مواقع الاستخدام والتخزين</system:String>
     <system:String x:Key="RiskIndicator">مؤشر الخطورة (> 1 GBq)</system:String>
     <system:String x:Key="SourcesCountSuffix">مصادر</system:String>
-    <system:String x:Key="ExpiredCalibrations">معايرات منتهية</system:String>
+    <system:String x:Key="ExpiredCalibrations">نشاط منخفض جداً</system:String>
     <system:String x:Key="ProactiveMonitoring">مراقبة استباقية</system:String>
     <system:String x:Key="DecayIndicator">مؤشر التحلل الزمني</system:String>
     <system:String x:Key="IsotopeDistribution">توزيع النظائر المشعة</system:String>
@@ -139,6 +139,29 @@
     <system:String x:Key="ColBorrowerName">المستعير</system:String>
     <system:String x:Key="ColStatusAction">الحالة</system:String>
     <system:String x:Key="ColExpectedReturn">تاريخ الإرجاع المتوقع</system:String>
+
+    <!-- ── بطاقة تنبيهات انخفاض النشاط (الجزء 1) ── -->
+    <system:String x:Key="CardLowActivityTitle">تنبيهات انخفاض النشاط الإشعاعي</system:String>
+    <system:String x:Key="CardLowActivitySubtitle">مصادر تجاوزت 5 أضعاف نصف العمر (T½)</system:String>
+    <system:String x:Key="LabelCritical">حرج ≥ 6 T½</system:String>
+    <system:String x:Key="LabelWarning">تحذير 5–6 T½</system:String>
+    <system:String x:Key="LabelAllSafe">✅ جميع المصادر ضمن الحدود الآمنة</system:String>
+    <system:String x:Key="BtnViewLowActivityReport">عرض تقرير انخفاض النشاط ←</system:String>
+
+    <!-- ── بطاقة ملخص الاستعارات (الجزء 2) ── -->
+    <system:String x:Key="CardBorrowSummaryTitle">ملخص الاستعارات</system:String>
+    <system:String x:Key="LabelOverdue">متأخرة</system:String>
+    <system:String x:Key="LabelDueSoon">قريبة الإرجاع (7 أيام)</system:String>
+    <system:String x:Key="LabelActiveBorrows">نشطة</system:String>
+    <system:String x:Key="LabelNoBorrows">لا توجد استعارات نشطة حالياً</system:String>
+    <system:String x:Key="BtnViewBorrowing">إدارة الاستعارات ←</system:String>
+
+    <!-- ── جدول مصادر منخفضة النشاط (الجزء 3) ── -->
+    <system:String x:Key="LowActivityTableTitle">مصادر منخفضة النشاط (≥ 5 T½)</system:String>
+    <system:String x:Key="ColHalfLivesElapsed">فترات نصف العمر</system:String>
+    <system:String x:Key="ColSeverityBadge">مستوى الخطورة</system:String>
+    <system:String x:Key="LabelNoLowActivity">لا توجد مصادر منخفضة النشاط حالياً ✅</system:String>
+    <system:String x:Key="BtnViewAllLowActivity">عرض الكل في التقارير ←</system:String>
 
     <!-- Radioisotopes Page -->
     <system:String x:Key="LabelSearchIsotope">🔍 ابحث هنا عن اسم النظير أو رمزه</system:String>
@@ -293,7 +316,7 @@
     <system:String x:Key="BtnBorrowingReport">🔄 تقرير الاستعارة</system:String>
     <system:String x:Key="BtnActivityReport">☢ تقرير النشاط</system:String>
     <system:String x:Key="BtnLowActivityReport">⚠ المصادر المنخفضة</system:String>
-    <system:String x:Key="BtnCalibrationReport">📅 تنبيهات المعايرة</system:String>
+    <system:String x:Key="BtnCalibrationReport">📅 تنبيهات انخفاض النشاط</system:String>
     <system:String x:Key="BtnExportPdf">تصدير PDF</system:String>
     <system:String x:Key="BtnExportExcel">تصدير Excel</system:String>
     <system:String x:Key="ColCode">الكود</system:String>
@@ -457,7 +480,7 @@
     <system:String x:Key="HelpTopicIntroContent">مرحباً بك في منظومة مصادر.&#xA;&#xA;تم تصميم هذا النظام لإدارة وتتبع المصادر المشعة بشكل احترافي وسلس. من خلال هذا الدليل، ستتعلم كيفية التنقل بين أقسام المنظومة، إدارة الجرد، التعامل مع طلبات الاستعارة، واستخراج التقارير الشاملة.&#xA;&#xA;استخدم القائمة الجانبية للتنقل بين وحدات النظام المختلفة. يحتوي الشريط العلوي على جرس التنبيهات وزر طي القائمة الجانبية لتوفير مساحة عرض أكبر.</system:String>
 
     <system:String x:Key="HelpTopicDashboardTitle">2. لوحة القيادة</system:String>
-    <system:String x:Key="HelpTopicDashboardContent">توفر لوحة القيادة نظرة عامة وشاملة لحالة النظام بأكمله.&#xA;&#xA;أهم الخصائص:&#xA;• بطاقات المؤشرات (KPI): تعرض إجمالي عدد المصادر، تفصيل النشط والمخزن، وإجمالي النشاط الإشعاعي.&#xA;• التنبيهات الحديثة: تسلط الضوء على العناصر التي تتطلب تدخلاً فورياً (مثل المصادر التي تحتاج لمعايرة أو الاستعارات المتأخرة).&#xA;• الرسوم البيانية: تعرض توزيع النشاط الإشعاعي بمرور الوقت وتوزيع النظائر المشعة.</system:String>
+    <system:String x:Key="HelpTopicDashboardContent">توفر لوحة القيادة نظرة عامة وشاملة لحالة النظام بأكمله.&#xA;&#xA;أهم الخصائص:&#xA;• بطاقات المؤشرات (KPI): تعرض إجمالي عدد المصادر، تفصيل النشط والمخزن، وإجمالي النشاط الإشعاعي.&#xA;• التنبيهات الحديثة: تسلط الضوء على العناصر التي تتطلب تدخلاً فورياً (مثل المصادر التي انخفض نشاطها الإشعاعي بعد مرور 6 فترات نصف عمر أو الاستعارات المتأخرة).&#xA;• الرسوم البيانية: تعرض توزيع النشاط الإشعاعي بمرور الوقت وتوزيع النظائر المشعة.</system:String>
 
     <system:String x:Key="HelpTopicRadioisotopesTitle">3. النظائر المشعة</system:String>
     <system:String x:Key="HelpTopicRadioisotopesContent">تتيح لك وحدة النظائر المشعة إدارة أنواع المواد المشعة المستخدمة في منشأتك.&#xA;&#xA;طريقة الاستخدام:&#xA;• الإضافة: اضغط على "إضافة نظير جديد"، وأدخل الرمز (مثل Cs-137)، والاسم، وعمر النصف.&#xA;• التعديل/الحذف: استخدم أزرار الإجراءات بجانب كل نظير في القائمة لتعديل البيانات أو حذفها.</system:String>
@@ -469,7 +492,7 @@
     <system:String x:Key="HelpTopicBorrowingContent">إدارة طلبات استلام وإرجاع المصادر المشعة بين طاقم العمل.&#xA;&#xA;إنشاء طلب:&#xA;• اذهب إلى قسم الاستعارة واضغط على "طلب استعارة جديد".&#xA;• اختر المصدر، اسم المستعير، الغرض من الاستخدام، وتاريخ الإرجاع المتوقع.&#xA;&#xA;الموافقات والإرجاع:&#xA;• يستطيع المشرف "الموافقة" أو "الرفض" للطلبات المعلقة.&#xA;• بمجرد إعادة المصدر، يجب تسجيله كـ "مرتجع" ليعود النظام لحالته الطبيعية ويتم تحديث موقع المصدر الرئيسي.</system:String>
 
     <system:String x:Key="HelpTopicReportsTitle">6. التقارير والأنظمة</system:String>
-    <system:String x:Key="HelpTopicReportsContent">استخراج مستندات رسمية تلخص بيانات النظام بشكل دقيق.&#xA;&#xA;التقارير المتاحة:&#xA;• التقرير العام: تقرير شامل يدمج جميع التقارير في ملف واحد.&#xA;• تقرير الجرد: قائمة كاملة بجميع المصادر المسجلة.&#xA;• تقرير الاستعارة: سجل تاريخي لجميع عمليات الصرف والإرجاع.&#xA;• منخفض النشاط / المعايرة: يسرد المصادر التي اضمحلت بشكل كبير أو تحتاج لمعايرة.&#xA;&#xA;التصدير:&#xA;اضغط على أزرار PDF أو Excel أعلى الشاشة لتحميل التقرير المعروض حالياً.</system:String>
+    <system:String x:Key="HelpTopicReportsContent">استخراج مستندات رسمية تلخص بيانات النظام بشكل دقيق.&#xA;&#xA;التقارير المتاحة:&#xA;• التقرير العام: تقرير شامل يدمج جميع التقارير في ملف واحد.&#xA;• تقرير الجرد: قائمة كاملة بجميع المصادر المسجلة.&#xA;• تقرير الاستعارة: سجل تاريخي لجميع عمليات الصرف والإرجاع.&#xA;• تنبيهات انخفاض النشاط: يسرد المصادر التي اضمحلت بشكل كبير أو انخفض نشاطها الإشعاعي بعد مرور 6 فترات نصف عمر.&#xA;&#xA;التصدير:&#xA;اضغط على أزرار PDF أو Excel أعلى الشاشة لتحميل التقرير المعروض حالياً.</system:String>
 
     <system:String x:Key="HelpTopicSettingsTitle">7. الإعدادات والمستخدمين</system:String>
     <system:String x:Key="HelpTopicSettingsContent">إدارة النظام وتهيئته الخاصة.&#xA;&#xA;إدارة المستخدمين:&#xA;• إنشاء حسابات جديدة وتحديد الصلاحيات (مدير النظام، مستخدم).&#xA;• تحدد الصلاحيات الأقسام التي يمكن للمستخدم الوصول إليها.&#xA;&#xA;إعدادات النظام:&#xA;• النسخ الاحتياطي: أخذ نسخة احتياطية من قواعد البيانات لضمان عدم فقدان البيانات.&#xA;• تغيير سمة التطبيق (الوضع الداكن / الفاتح) وتغيير لغة العرض المطابقة للنظام.</system:String>

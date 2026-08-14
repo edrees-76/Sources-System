@@ -38,6 +38,32 @@ public class LegendItem
     public string Color { get; set; } = "#FFFFFF";
 }
 
+/// <summary>
+/// صف مصدر منخفض النشاط في الجدول المضغوط بلوحة القيادة
+/// </summary>
+public class LowActivitySourceRow
+{
+    public string SourceCode { get; set; } = string.Empty;
+    public string IsotopeSymbol { get; set; } = string.Empty;
+    public double HalfLivesElapsed { get; set; }
+    public string HalfLivesDisplay { get; set; } = string.Empty; // "5.3 T½"
+    public string Severity { get; set; } = "Warning"; // "Warning" | "Critical"
+    public string SeverityColor { get; set; } = "#E0A93E";          // foreground hex
+    public string SeverityBadgeBackground { get; set; } = "#1AE0A93E"; // badge bg (10% alpha)
+    public string SeverityLabel { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// ملخص بيانات الاستعارات للبطاقة في لوحة القيادة
+/// </summary>
+public class DashboardBorrowSummary
+{
+    public int OverdueCount { get; set; }
+    public int DueSoonCount { get; set; }
+    public int ActiveCount { get; set; }
+    public bool HasAny => OverdueCount > 0 || DueSoonCount > 0 || ActiveCount > 0;
+}
+
 public partial class DashboardViewModel : ObservableObject
 {
     private readonly ISourceService _sourceService;
@@ -87,6 +113,19 @@ public partial class DashboardViewModel : ObservableObject
 
     // ─── مصادر لوحة القيادة (نفس كائنات Source كصفحة المصادر) ───
     [ObservableProperty] private ObservableCollection<Source> _dashboardSources = new();
+
+    // ─── الجزء 1: بطاقة تنبيهات انخفاض النشاط ───
+    [ObservableProperty] private int _lowActivityCriticalCount;
+    [ObservableProperty] private int _lowActivityWarningCount;
+    [ObservableProperty] private bool _hasLowActivityAlerts;   // false → رسالة "ضمن الحدود الآمنة"
+
+    // ─── الجزء 2: بطاقة ملخص الاستعارات ───
+    [ObservableProperty] private DashboardBorrowSummary _borrowSummary = new();
+
+    // ─── الجزء 3: جدول مصادر منخفضة النشاط ───
+    [ObservableProperty] private ObservableCollection<LowActivitySourceRow> _lowActivitySources = new();
+    [ObservableProperty] private bool _hasMoreLowActivitySources;  // true → عرض "عرض الكل"
+    [ObservableProperty] private int _totalLowActivityCount;
 
     // ─── دهان نصوص التلميحات ───
     public SolidColorPaint ChartTextPaint => GetAxisPaint();
@@ -222,6 +261,15 @@ public partial class DashboardViewModel : ObservableObject
 
             // ═══ مصادر لوحة القيادة (كائنات Source مباشرة) ═══
             DashboardSources = new ObservableCollection<Source>(sources);
+
+            // ═══ الجزء 1: بطاقة تنبيهات انخفاض النشاط ═══
+            UpdateLowActivityAlertCard(sources);
+
+            // ═══ الجزء 2: بطاقة ملخص الاستعارات ═══
+            UpdateBorrowSummaryCard();
+
+            // ═══ الجزء 3: جدول مصادر منخفضة النشاط ═══
+            UpdateLowActivityTable(sources);
         }
         catch (Exception ex)
         {
@@ -697,5 +745,158 @@ public partial class DashboardViewModel : ObservableObject
         if (value == 0) return "0";
         if (Math.Abs(value) >= 1e7 || Math.Abs(value) < 0.0001) return value.ToString("E2");
         return (value % 1 == 0) ? value.ToString("#,##0") : value.ToString("#,##0.00");
+    }
+
+    // ───────────── الجزء 1: بطاقة تنبيهات انخفاض النشاط ─────────────
+    private void UpdateLowActivityAlertCard(List<Source> sources)
+    {
+        int criticalCount = 0;
+        int warningCount = 0;
+
+        foreach (var source in sources.Where(s =>
+            s.Status == "Active" || s.Status == "InUse" || s.Status == "Storage"))
+        {
+            double maxHalfLives = CalculateMaxHalfLivesElapsed(source);
+            if (maxHalfLives >= 6.0) criticalCount++;
+            else if (maxHalfLives >= 5.0) warningCount++;
+        }
+
+        LowActivityCriticalCount = criticalCount;
+        LowActivityWarningCount = warningCount;
+        HasLowActivityAlerts = criticalCount > 0 || warningCount > 0;
+    }
+
+    // ───────────── الجزء 2: بطاقة ملخص الاستعارات ─────────────
+    private void UpdateBorrowSummaryCard()
+    {
+        try
+        {
+            var allRequests = _borrowService.GetAll();
+            var now = DateTime.Now;
+            var dueSoonThreshold = now.AddDays(7);
+
+            int overdue = allRequests.Count(r => r.Status == "Overdue");
+            int active  = allRequests.Count(r => r.Status == "Delivered" || r.Status == "Overdue");
+            int dueSoon = allRequests.Count(r =>
+                r.Status == "Delivered" &&
+                r.ExpectedReturnDate >= now &&
+                r.ExpectedReturnDate <= dueSoonThreshold);
+
+            BorrowSummary = new DashboardBorrowSummary
+            {
+                OverdueCount = overdue,
+                DueSoonCount  = dueSoon,
+                ActiveCount   = active
+            };
+        }
+        catch
+        {
+            BorrowSummary = new DashboardBorrowSummary();
+        }
+    }
+
+    // ───────────── الجزء 3: جدول مصادر منخفضة النشاط ─────────────
+    private void UpdateLowActivityTable(List<Source> sources)
+    {
+        var rows = new List<LowActivitySourceRow>();
+
+        foreach (var source in sources.Where(s =>
+            s.Status == "Active" || s.Status == "InUse" || s.Status == "Storage"))
+        {
+            double maxHalfLives = CalculateMaxHalfLivesElapsed(source);
+            if (maxHalfLives < 5.0) continue;
+
+            string symbol = source.DisplayIsotopes ?? source.Radioisotope?.Symbol ?? "-";
+            bool isCritical = maxHalfLives >= 6.0;
+
+            rows.Add(new LowActivitySourceRow
+            {
+                SourceCode       = source.SourceCode,
+                IsotopeSymbol    = symbol,
+                HalfLivesElapsed = maxHalfLives,
+                HalfLivesDisplay = $"{maxHalfLives:F1} T½",
+                Severity         = isCritical ? "Critical" : "Warning",
+                SeverityColor    = isCritical ? "#C25B4A" : "#E0A93E",
+                SeverityBadgeBackground = isCritical ? "#1AC25B4A" : "#1AE0A93E",
+                SeverityLabel    = isCritical
+                    ? (IsArabic ? "حرج" : "Critical")
+                    : (IsArabic ? "تحذير" : "Warning")
+            });
+        }
+
+        // ترتيب تنازلي حسب الأشد خطورة
+        rows = rows.OrderByDescending(r => r.HalfLivesElapsed).ToList();
+        TotalLowActivityCount = rows.Count;
+        HasMoreLowActivitySources = rows.Count > 5;
+
+        LowActivitySources = new ObservableCollection<LowActivitySourceRow>(rows.Take(5));
+    }
+
+    // ───────────── دالة مساعدة: احتساب أعلى عدد فترات نصف عمر منقضية ─────────────
+    private static double CalculateMaxHalfLivesElapsed(Source source)
+    {
+        double max = -1;
+
+        if (source.HasDetailedIsotopes &&
+            source.SourceIsotopes != null &&
+            source.SourceIsotopes.Any(si => si.Radioisotope != null))
+        {
+            foreach (var si in source.SourceIsotopes.Where(si => si.Radioisotope != null))
+            {
+                var isotope  = si.Radioisotope!;
+                var calibDate = si.CalibrationDate ?? source.CalibrationDate;
+                if (calibDate == default) continue;
+
+                double halfLifeSec = ConvertHalfLifeToSeconds(isotope.HalfLife, isotope.HalfLifeUnit);
+                if (halfLifeSec <= 0) continue;
+
+                double elapsed = Math.Max(0, (DateTime.Now - calibDate).TotalSeconds);
+                double hl = elapsed / halfLifeSec;
+                if (hl > max) max = hl;
+            }
+        }
+        else if (source.Radioisotope != null && source.CalibrationDate != default)
+        {
+            double halfLifeSec = ConvertHalfLifeToSeconds(
+                source.Radioisotope.HalfLife, source.Radioisotope.HalfLifeUnit);
+            if (halfLifeSec > 0)
+            {
+                double elapsed = Math.Max(0, (DateTime.Now - source.CalibrationDate).TotalSeconds);
+                max = elapsed / halfLifeSec;
+            }
+        }
+
+        return max;
+    }
+
+    private static double ConvertHalfLifeToSeconds(double value, string? unit) =>
+        unit?.ToLower() switch
+        {
+            "seconds" => value,
+            "minutes" => value * 60,
+            "hours"   => value * 3600,
+            "days"    => value * 86400,
+            "years"   => value * 365.25 * 86400,
+            _         => value * 365.25 * 86400
+        };
+
+    // ───────────── أوامر التنقل من لوحة القيادة ─────────────
+    [RelayCommand]
+    private void NavigateToLowActivityReport()
+    {
+        // الحصول على MainViewModel وتحديد نافذة التقارير
+        if (App.ServiceProvider.GetService(typeof(MainViewModel)) is MainViewModel main)
+        {
+            main.NavigateTo("Reports");
+        }
+    }
+
+    [RelayCommand]
+    private void NavigateToBorrowing()
+    {
+        if (App.ServiceProvider.GetService(typeof(MainViewModel)) is MainViewModel main)
+        {
+            main.NavigateTo("Borrowing");
+        }
     }
 }
