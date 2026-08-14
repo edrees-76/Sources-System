@@ -41,7 +41,7 @@
                            Margin="0,0,14,0" 
                            VerticalAlignment="Center">
                         <Image.Effect>
-                            <DropShadowEffect BlurRadius="10" Color="#D4AF37" Opacity="0.4" ShadowDepth="1"/>
+                            <DropShadowEffect BlurRadius="10" Color="{StaticResource SecondaryColor}" Opacity="0.4" ShadowDepth="1"/>
                         </Image.Effect>
                     </Image>
                     

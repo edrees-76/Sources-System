@@ -107,7 +107,7 @@ public partial class DashboardViewModel : ObservableObject
     [ObservableProperty] private DrawMarginFrame? _barDrawMarginFrame = new DrawMarginFrame { Stroke = null };
 
     // ألوان متعددة لمنحنيات التحلل
-    private static readonly string[] DecayColors = { "#D4AF37", "#2196F3", "#E91E63", "#4CAF50", "#FF9800" };
+    private static readonly string[] DecayColors = { "#1F5A66", "#C97A4A", "#3FAE7A", "#E0A93E", "#4F7FA3" };
 
     // دهان النصوص في الرسوم البيانية - أزرق للوضع الفاتح، أبيض للوضع الداكن
     private static SolidColorPaint GetAxisPaint()
@@ -352,7 +352,7 @@ public partial class DashboardViewModel : ObservableObject
             {
                 Values = values,
                 Name = "Activity (Bq)",
-                Fill = new SolidColorPaint(SKColor.Parse("#D4AF37")),
+                Fill = new SolidColorPaint(SKColor.Parse("#1F5A66")),
                 Stroke = null,
                 MaxBarWidth = 30,
                 Padding = 4
@@ -441,7 +441,7 @@ public partial class DashboardViewModel : ObservableObject
                 legend.Add(new LegendItem 
                 { 
                     Label = s.Name ?? "", 
-                    Color = (s.Fill as SolidColorPaint)?.Color.ToString() ?? "#D4AF37" 
+                    Color = (s.Fill as SolidColorPaint)?.Color.ToString() ?? "#1F5A66" 
                 });
             }
         }
@@ -618,7 +618,7 @@ public partial class DashboardViewModel : ObservableObject
                 decayLegend.Add(new LegendItem 
                 { 
                     Label = ls.Name ?? "", 
-                    Color = (ls.Stroke as SolidColorPaint)?.Color.ToString() ?? "#D4AF37"
+                    Color = (ls.Stroke as SolidColorPaint)?.Color.ToString() ?? "#1F5A66"
                 });
             }
         }

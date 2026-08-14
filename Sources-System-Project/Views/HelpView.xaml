@@ -12,10 +12,10 @@
 
     <UserControl.Resources>
         <!-- Unified accent color for icons/numbers -->
-        <SolidColorBrush x:Key="HelpAccent" Color="#D4AF37"/>
-        <SolidColorBrush x:Key="HelpAccentLight" Color="#F5E6B8"/>
-        <SolidColorBrush x:Key="TipBgLight" Color="#1AD4AF37"/>
-        <SolidColorBrush x:Key="StepBgLight" Color="#0A1A2844"/>
+        <SolidColorBrush x:Key="HelpAccent" Color="{DynamicResource GoldColor}"/>
+        <SolidColorBrush x:Key="HelpAccentLight" Color="{DynamicResource GoldLightColor}"/>
+        <SolidColorBrush x:Key="TipBgLight" Color="#151F5A66"/>
+        <SolidColorBrush x:Key="StepBgLight" Color="#0A1F5A66"/>
     </UserControl.Resources>
 
     <Grid Margin="20">

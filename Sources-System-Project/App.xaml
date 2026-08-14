@@ -14,7 +14,7 @@
                 <ResourceDictionary Source="/Resources/LightTheme.xaml"/>
                 
                 <!-- 2. ثيم الماتيريال -->
-                <materialDesign:CustomColorTheme BaseTheme="Inherit" PrimaryColor="#1A2844" SecondaryColor="#D4AF37" />
+                <materialDesign:CustomColorTheme BaseTheme="Inherit" PrimaryColor="#1F5A66" SecondaryColor="#1F5A66" />
 
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ComboBox.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.TextBox.xaml" />

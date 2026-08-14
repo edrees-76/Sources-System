@@ -236,13 +236,12 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <!-- ─── شريط العنوان الذهبي ─── -->
+                        <!-- ─── شريط العنوان ─── -->
                         <Border Grid.Row="0" CornerRadius="8,8,0,0" Padding="20,12">
                             <Border.Background>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                    <GradientStop Color="#D4AF37" Offset="0"/>
-                                    <GradientStop Color="#C5962E" Offset="0.5"/>
-                                    <GradientStop Color="#B8860B" Offset="1"/>
+                                    <GradientStop Color="{StaticResource PrimaryLightColor}" Offset="0"/>
+                                    <GradientStop Color="{StaticResource PrimaryColor}" Offset="1"/>
                                 </LinearGradientBrush>
                             </Border.Background>
                             <Grid>

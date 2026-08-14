@@ -16,17 +16,16 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- ═══════ شريط العنوان الذهبي ═══════ -->
+            <!-- ═══════ شريط العنوان ═══════ -->
             <Border Grid.Row="0" CornerRadius="12" Padding="20,14" Margin="0,0,0,20">
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                        <GradientStop Color="#D4AF37" Offset="0"/>
-                        <GradientStop Color="#C5962E" Offset="0.5"/>
-                        <GradientStop Color="#B8860B" Offset="1"/>
+                        <GradientStop Color="{StaticResource PrimaryLightColor}" Offset="0"/>
+                        <GradientStop Color="{StaticResource PrimaryColor}" Offset="1"/>
                     </LinearGradientBrush>
                 </Border.Background>
                 <Border.Effect>
-                    <DropShadowEffect BlurRadius="16" ShadowDepth="3" Opacity="0.2" Color="#D4AF37"/>
+                    <DropShadowEffect BlurRadius="16" ShadowDepth="3" Opacity="0.2" Color="{StaticResource PrimaryDarkColor}"/>
                 </Border.Effect>
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -203,7 +202,7 @@
                         <Button Content="{DynamicResource CalcBtnCalculate}" Style="{DynamicResource PrimaryButton}"
                                 Command="{Binding CalculateCommand}" Width="160" Height="44" Margin="0,0,16,0">
                             <Button.Effect>
-                                <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.2" Color="#D4AF37"/>
+                                <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.2" Color="{StaticResource PrimaryColor}"/>
                             </Button.Effect>
                         </Button>
                         <Button Content="{DynamicResource CalcBtnReset}" Style="{DynamicResource SecondaryButton}"

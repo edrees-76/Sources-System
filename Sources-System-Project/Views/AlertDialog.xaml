@@ -48,8 +48,8 @@
             <Border x:Name="HeaderBorder" Grid.Row="0" CornerRadius="16,16,0,0" Padding="25,18">
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Color="#1A2844" Offset="0"/>
-                        <GradientStop Color="#0B1320" Offset="1"/>
+                        <GradientStop Color="{StaticResource PrimaryLightColor}" Offset="0"/>
+                        <GradientStop Color="{StaticResource PrimaryColor}" Offset="1"/>
                     </LinearGradientBrush>
                 </Border.Background>
                 <Grid>

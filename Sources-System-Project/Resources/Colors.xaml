@@ -1,27 +1,27 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- ─── الألوان الأساسية — منظومة مصادر Sources (كحلي وذهبي مع لمسة زرقاء فاتحة من الشعار) ─── -->
-    <Color x:Key="PrimaryColor">#0B1320</Color> <!-- Navy Blue -->
-    <Color x:Key="PrimaryLightColor">#1A2844</Color>
-    <Color x:Key="PrimaryDarkColor">#080E18</Color>
-    <Color x:Key="SecondaryColor">#D4AF37</Color> <!-- Gold -->
-    <Color x:Key="GoldColor">#D4AF37</Color>
-    <Color x:Key="GoldLightColor">#FFF5D1</Color>
-    <Color x:Key="GoldDarkColor">#C5A059</Color>
-    <Color x:Key="AccentColor">#D4AF37</Color>
+    <!-- ─── الألوان الأساسية — منظومة مصادر Sources (أزرق بترولي دافئ) ─── -->
+    <Color x:Key="PrimaryColor">#1F5A66</Color>
+    <Color x:Key="PrimaryLightColor">#3D7C89</Color>
+    <Color x:Key="PrimaryDarkColor">#123840</Color>
+    <Color x:Key="SecondaryColor">#1F5A66</Color>
+    <Color x:Key="GoldColor">#1F5A66</Color>
+    <Color x:Key="GoldLightColor">#3D7C89</Color>
+    <Color x:Key="GoldDarkColor">#123840</Color>
+    <Color x:Key="AccentColor">#1F5A66</Color>
 
-    <!-- ─── لون مُستخرج من الجواهر الزرقاء في شعار مصادر — لاستخدامه كلون مميز ثالث (شارات، رسوم بيانية) ─── -->
-    <Color x:Key="GemBlueColor">#7FC3E8</Color>
-    <Color x:Key="GemBlueDarkColor">#4A90B8</Color>
+    <!-- ─── لون مُستخرج من الجواهر والرسوم (تراكوتا دافئ) ─── -->
+    <Color x:Key="GemBlueColor">#C97A4A</Color>
+    <Color x:Key="GemBlueDarkColor">#A25C34</Color>
 
     <!-- ─── ألوان الحالات ─── -->
-    <Color x:Key="SuccessColor">#10B981</Color> <!-- Emerald -->
-    <Color x:Key="WarningColor">#F59E0B</Color>
-    <Color x:Key="DangerColor">#EF4444</Color>
-    <Color x:Key="InfoColor">#3B82F6</Color>
+    <Color x:Key="SuccessColor">#3FAE7A</Color>
+    <Color x:Key="WarningColor">#E0A93E</Color>
+    <Color x:Key="DangerColor">#C25B4A</Color>
+    <Color x:Key="InfoColor">#4F7FA3</Color>
     
-    <!-- ─── التدرج الأساسي ─── -->
+    <!-- ─── التدرج الأساسي والفرش ─── -->
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
     <SolidColorBrush x:Key="PrimaryLightBrush" Color="{StaticResource PrimaryLightColor}"/>
     <SolidColorBrush x:Key="PrimaryDarkBrush" Color="{StaticResource PrimaryDarkColor}"/>
@@ -43,10 +43,16 @@
         <GradientStop Color="{StaticResource PrimaryLightColor}" Offset="1"/>
     </LinearGradientBrush>
 
+    <!-- HeroGradient (135 deg: #EFEAE0 -> #F7E6DC -> #E9EEF2) -->
+    <LinearGradientBrush x:Key="HeroGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#EFEAE0" Offset="0"/>
+        <GradientStop Color="#F7E6DC" Offset="0.5"/>
+        <GradientStop Color="#E9EEF2" Offset="1"/>
+    </LinearGradientBrush>
+
     <LinearGradientBrush x:Key="SidebarGradient" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#0F2744" Offset="0"/>
-        <GradientStop Color="#1C3E6E" Offset="0.5"/>
-        <GradientStop Color="#2A5A9E" Offset="1"/>
+        <GradientStop Color="#123840" Offset="0"/>
+        <GradientStop Color="#1A4B54" Offset="1"/>
     </LinearGradientBrush>
 
 </ResourceDictionary>

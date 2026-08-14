@@ -38,21 +38,21 @@
 
     <!-- ─── عنوان الصفحة ─── -->
     <Style x:Key="PageTitle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="26"/>
+        <Setter Property="FontSize" Value="28"/>
         <Setter Property="FontWeight" Value="Bold"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
         <Setter Property="Margin" Value="0,0,0,8"/>
     </Style>
 
     <Style x:Key="PageSubTitle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontSize" Value="16"/>
         <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
         <Setter Property="Margin" Value="0,0,0,20"/>
     </Style>
 
     <!-- ─── عنوان بطاقة ─── -->
     <Style x:Key="CardTitle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="FontSize" Value="17"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
         <Setter Property="Margin" Value="0,0,0,12"/>
@@ -66,7 +66,7 @@
     </Style>
 
     <Style x:Key="StatLabel" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontSize" Value="15"/>
         <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
         <Setter Property="Margin" Value="0,4,0,0"/>
     </Style>
@@ -75,11 +75,11 @@
     <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
         <Setter Property="Background" Value="{DynamicResource GoldBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource GoldBrush}"/>
-        <Setter Property="Foreground" Value="{DynamicResource PrimaryDarkBrush}"/>
-        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontSize" Value="15"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Padding" Value="24,10"/>
-        <Setter Property="Height" Value="40"/>
+        <Setter Property="Height" Value="42"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="8"/>
     </Style>
@@ -87,9 +87,9 @@
     <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignOutlinedButton}">
         <Setter Property="BorderBrush" Value="{DynamicResource GoldBrush}"/>
         <Setter Property="Foreground" Value="{DynamicResource GoldBrush}"/>
-        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontSize" Value="15"/>
         <Setter Property="Padding" Value="24,10"/>
-        <Setter Property="Height" Value="40"/>
+        <Setter Property="Height" Value="42"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="8"/>
     </Style>
@@ -98,9 +98,9 @@
         <Setter Property="Background" Value="{DynamicResource DangerBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource DangerBrush}"/>
         <Setter Property="Foreground" Value="White"/>
-        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontSize" Value="15"/>
         <Setter Property="Padding" Value="24,10"/>
-        <Setter Property="Height" Value="40"/>
+        <Setter Property="Height" Value="42"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="8"/>
     </Style>
@@ -109,7 +109,7 @@
     <Style x:Key="SidebarButton" TargetType="Button">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{DynamicResource SidebarForeground}"/>
-        <Setter Property="FontSize" Value="15"/>
+        <Setter Property="FontSize" Value="16"/>
         <Setter Property="Padding" Value="16,10"/>
         <Setter Property="HorizontalContentAlignment" Value="Right"/>
         <Setter Property="BorderThickness" Value="0"/>
@@ -123,7 +123,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#1A2844"/>
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource SidebarHover}"/>
                             <Setter Property="Foreground" Value="{DynamicResource GoldLightBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -133,7 +133,7 @@
     </Style>
 
     <Style x:Key="SidebarButtonActive" TargetType="Button" BasedOn="{StaticResource SidebarButton}">
-        <Setter Property="Background" Value="#1A2844"/>
+        <Setter Property="Background" Value="{DynamicResource SidebarActive}"/>
         <Setter Property="Foreground" Value="{DynamicResource GoldBrush}"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
@@ -145,12 +145,12 @@
         <Setter Property="FontWeight" Value="Bold"/>
         <Setter Property="Padding" Value="10,12"/>
         <Setter Property="BorderThickness" Value="0,0,0,1"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource GoldBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
         <Setter Property="ContentTemplate">
             <Setter.Value>
                 <DataTemplate>
-                    <TextBlock Text="{Binding}" TextWrapping="Wrap" MaxWidth="110" TextAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding}" TextWrapping="Wrap" MaxWidth="120" TextAlignment="Center" VerticalAlignment="Center" FontSize="14"/>
                 </DataTemplate>
             </Setter.Value>
         </Setter>
@@ -210,7 +210,7 @@
 
     <!-- ─── شريط البحث ─── -->
     <Style x:Key="SearchBox" TargetType="TextBox" BasedOn="{StaticResource MaterialDesignOutlinedTextBox}">
-        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontSize" Value="15"/>
         <Setter Property="Padding" Value="12,8"/>
         <Setter Property="FlowDirection" Value="RightToLeft"/>
         <Setter Property="Background" Value="{DynamicResource InputBackground}"/>
@@ -228,7 +228,7 @@
     <Style x:Key="FormTextBox" TargetType="TextBox" BasedOn="{StaticResource MaterialDesignOutlinedTextBox}">
         <Setter Property="Height" Value="60"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontSize" Value="15"/>
         <Setter Property="Padding" Value="12,8"/>
         <Setter Property="FontFamily" Value="Segoe UI"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
@@ -240,7 +240,7 @@
     <Style x:Key="FormComboBox" TargetType="ComboBox" BasedOn="{StaticResource MaterialDesignOutlinedComboBox}">
         <Setter Property="Height" Value="60"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontSize" Value="15"/>
         <Setter Property="Padding" Value="12,8"/>
         <Setter Property="FontFamily" Value="Segoe UI"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
@@ -251,7 +251,7 @@
     <Style x:Key="FormDatePicker" TargetType="DatePicker" BasedOn="{StaticResource MaterialDesignOutlinedDatePicker}">
         <Setter Property="Height" Value="60"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontSize" Value="15"/>
         <Setter Property="Padding" Value="12,8"/>
         <Setter Property="FontFamily" Value="Segoe UI"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
@@ -262,7 +262,7 @@
     <Style x:Key="FormPasswordBox" TargetType="PasswordBox" BasedOn="{StaticResource MaterialDesignOutlinedPasswordBox}">
         <Setter Property="Height" Value="60"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontSize" Value="15"/>
         <Setter Property="Padding" Value="12,8"/>
         <Setter Property="FontFamily" Value="Segoe UI"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
@@ -274,9 +274,9 @@
     <!-- ─── أنماط مكثفة للجداول (Condenced Styles for DataGrids) ─── -->
     <Style x:Key="CompactTextBox" TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
         <Setter Property="Padding" Value="8,4"/>
-        <Setter Property="Height" Value="32"/>
+        <Setter Property="Height" Value="34"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
-        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontSize" Value="14"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0,0,0,1"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
@@ -286,9 +286,9 @@
 
     <Style x:Key="CompactComboBox" TargetType="ComboBox" BasedOn="{StaticResource MaterialDesignComboBox}">
         <Setter Property="Padding" Value="8,4"/>
-        <Setter Property="Height" Value="32"/>
+        <Setter Property="Height" Value="34"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
-        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontSize" Value="14"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0,0,0,1"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
