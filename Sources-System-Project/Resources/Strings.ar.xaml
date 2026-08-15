@@ -163,6 +163,15 @@
     <system:String x:Key="LabelNoLowActivity">لا توجد مصادر منخفضة النشاط حالياً ✅</system:String>
     <system:String x:Key="BtnViewAllLowActivity">عرض الكل في التقارير ←</system:String>
 
+    <!-- ── بطاقة الاختصارات والرسوم البيانية الجديدة ── -->
+    <system:String x:Key="CardQuickActionsTitle">الإجراءات السريعة</system:String>
+    <system:String x:Key="CardQuickActionsSubtitle">اختصارات العمليات والمهام الشائعة</system:String>
+    <system:String x:Key="BtnQuickAddSource">➕ إضافة مصدر جديد</system:String>
+    <system:String x:Key="BtnQuickBorrowSource">🔄 طلب استعارة مصدر</system:String>
+    <system:String x:Key="ChartSourcesByIsotope">توزيع المصادر حسب النظير المشع</system:String>
+    <system:String x:Key="ChartSourcesByLocation">توزيع المصادر حسب موقع التخزين</system:String>
+    <system:String x:Key="LabelInsufficientData">لا توجد بيانات كافية للعرض بعد</system:String>
+
     <!-- Radioisotopes Page -->
     <system:String x:Key="LabelSearchIsotope">🔍 ابحث هنا عن اسم النظير أو رمزه</system:String>
     <system:String x:Key="LabelExamplePrefix"> (مثل: </system:String>

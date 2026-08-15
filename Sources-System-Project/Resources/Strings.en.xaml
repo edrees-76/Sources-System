@@ -166,6 +166,15 @@
     <system:String x:Key="LabelNoLowActivity">No low-activity sources found ✅</system:String>
     <system:String x:Key="BtnViewAllLowActivity">View All in Reports →</system:String>
 
+    <!-- ── Quick Actions & New Charts ── -->
+    <system:String x:Key="CardQuickActionsTitle">Quick Actions</system:String>
+    <system:String x:Key="CardQuickActionsSubtitle">Shortcuts for frequent operations</system:String>
+    <system:String x:Key="BtnQuickAddSource">➕ Add New Source</system:String>
+    <system:String x:Key="BtnQuickBorrowSource">🔄 Request Borrowing</system:String>
+    <system:String x:Key="ChartSourcesByIsotope">Sources by Radioisotope</system:String>
+    <system:String x:Key="ChartSourcesByLocation">Sources by Storage Location</system:String>
+    <system:String x:Key="LabelInsufficientData">Not enough data to display yet</system:String>
+
     <!-- Radioisotopes Page -->
     <system:String x:Key="LabelSearchIsotope">🔍 Search here for isotope name or symbol</system:String>
     <system:String x:Key="LabelExamplePrefix"> (e.g., </system:String>

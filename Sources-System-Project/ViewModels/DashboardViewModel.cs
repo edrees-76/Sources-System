@@ -66,6 +66,18 @@ public class DashboardBorrowSummary
 
 public partial class DashboardViewModel : ObservableObject
 {
+    private static readonly string[] ChartPalette = new[]
+    {
+        "#1F5A66", // Petrol Blue (Primary)
+        "#C97A4A", // Terracotta (Accent)
+        "#3FAE7A", // Emerald (Success)
+        "#E0A93E", // Gold (Warning)
+        "#4F7FA3", // Steel Blue (Info)
+        "#8E44AD", // Purple
+        "#D35400", // Rust
+        "#16A085"  // Teal
+    };
+
     private readonly ISourceService _sourceService;
     private readonly IRadioisotopeService _isotopeService;
     private readonly ILocationService _locationService;
@@ -98,6 +110,12 @@ public partial class DashboardViewModel : ObservableObject
 
     // ─── مخطط دائري: توزيع النظائر ───
     [ObservableProperty] private ISeries[] _sourcesByIsotopeSeries = Array.Empty<ISeries>();
+    [ObservableProperty] private bool _hasEnoughIsotopeData;
+
+    // ─── مخطط دائري: توزيع المواقع ───
+    [ObservableProperty] private ISeries[] _sourcesByLocationSeries = Array.Empty<ISeries>();
+    [ObservableProperty] private bool _hasEnoughLocationData;
+    [ObservableProperty] private ObservableCollection<LegendItem> _locationLegendItems = new();
 
     // ─── منحنى التحلل الزمني ───
     [ObservableProperty] private ISeries[] _activityDecaySeries = Array.Empty<ISeries>();
@@ -250,6 +268,9 @@ public partial class DashboardViewModel : ObservableObject
 
             // ═══ مخطط دائري: توزيع النظائر (جميع النظائر الموجودة في المصادر) ═══
             UpdatePieChart(sources);
+
+            // ═══ مخطط دائري: توزيع المواقع ═══
+            UpdateLocationChart(sources);
 
             // ═══ منحنى التحلل: أعلى 5 مصادر + اختيار ═══
             AvailableSources = new ObservableCollection<Source>(
@@ -470,30 +491,91 @@ public partial class DashboardViewModel : ObservableObject
             .OrderByDescending(x => x.Count)
             .ToList();
 
-        var axisPaint = GetAxisPaint();
-        SourcesByIsotopeSeries = byIsotope.Select(x => new PieSeries<int>
-        {
-            Values = new[] { x.Count },
-            Name = x.Label,
-            DataLabelsPaint = axisPaint,
-            DataLabelsSize = 12
-        } as ISeries).ToArray();
+        // فحص كفاية البيانات: يجب أن يوجد نوعان على الأقل لإظهار رسم مفيد
+        HasEnoughIsotopeData = byIsotope.Count >= 2;
 
-        // تحديث مفتاح الرسم المخصص
-        var legend = new ObservableCollection<LegendItem>();
-        for (int i = 0; i < SourcesByIsotopeSeries.Length; i++)
+        if (HasEnoughIsotopeData)
         {
-            var s = SourcesByIsotopeSeries[i] as PieSeries<int>;
-            if (s != null)
+            var axisPaint = GetAxisPaint();
+            SourcesByIsotopeSeries = byIsotope.Select((x, idx) => new PieSeries<int>
             {
-                legend.Add(new LegendItem 
-                { 
-                    Label = s.Name ?? "", 
-                    Color = (s.Fill as SolidColorPaint)?.Color.ToString() ?? "#1F5A66" 
-                });
+                Values = new[] { x.Count },
+                Name = x.Label,
+                Fill = new SolidColorPaint(SKColor.Parse(ChartPalette[idx % ChartPalette.Length])),
+                InnerRadius = 40,
+                DataLabelsPaint = axisPaint,
+                DataLabelsSize = 11,
+                DataLabelsPosition = LiveChartsCore.Measure.PolarLabelsPosition.Middle
+            } as ISeries).ToArray();
+
+            // تحديث مفتاح الرسم المخصص
+            var legend = new ObservableCollection<LegendItem>();
+            for (int i = 0; i < SourcesByIsotopeSeries.Length; i++)
+            {
+                if (SourcesByIsotopeSeries[i] is PieSeries<int> s)
+                {
+                    legend.Add(new LegendItem 
+                    { 
+                        Label = $"{s.Name} ({byIsotope[i].Count})", 
+                        Color = ChartPalette[i % ChartPalette.Length]
+                    });
+                }
             }
+            PieLegendItems = legend;
         }
-        PieLegendItems = legend;
+        else
+        {
+            SourcesByIsotopeSeries = Array.Empty<ISeries>();
+            PieLegendItems.Clear();
+        }
+    }
+
+    // ───────────── مخطط دائري: توزيع المصادر حسب الموقع ─────────────
+    private void UpdateLocationChart(List<Source> sources)
+    {
+        var locations = sources
+            .Where(s => s.Location != null)
+            .GroupBy(s => s.Location!.LocationName)
+            .Select(g => new { Label = g.Key, Count = g.Count() })
+            .OrderByDescending(x => x.Count)
+            .ToList();
+
+        // فحص كفاية البيانات: يجب أن يوجد موقعان على الأقل لإظهار رسم مفيد
+        HasEnoughLocationData = locations.Count >= 2;
+
+        if (HasEnoughLocationData)
+        {
+            var axisPaint = GetAxisPaint();
+            SourcesByLocationSeries = locations.Select((x, idx) => (ISeries)new PieSeries<int>
+            {
+                Values = new[] { x.Count },
+                Name = x.Label,
+                Fill = new SolidColorPaint(SKColor.Parse(ChartPalette[idx % ChartPalette.Length])),
+                InnerRadius = 40,
+                DataLabelsPaint = axisPaint,
+                DataLabelsSize = 11,
+                DataLabelsPosition = LiveChartsCore.Measure.PolarLabelsPosition.Middle
+            }).ToArray();
+
+            var legend = new ObservableCollection<LegendItem>();
+            for (int i = 0; i < SourcesByLocationSeries.Length; i++)
+            {
+                if (SourcesByLocationSeries[i] is PieSeries<int> s)
+                {
+                    legend.Add(new LegendItem 
+                    { 
+                        Label = $"{s.Name} ({locations[i].Count})", 
+                        Color = ChartPalette[i % ChartPalette.Length]
+                    });
+                }
+            }
+            LocationLegendItems = legend;
+        }
+        else
+        {
+            SourcesByLocationSeries = Array.Empty<ISeries>();
+            LocationLegendItems.Clear();
+        }
     }
 
     // ───────────── منحنى التحلل الزمني — محاور بالإنجليزية + تواريخ ─────────────
@@ -897,6 +979,33 @@ public partial class DashboardViewModel : ObservableObject
         if (App.ServiceProvider.GetService(typeof(MainViewModel)) is MainViewModel main)
         {
             main.NavigateTo("Borrowing");
+        }
+    }
+
+    // ───────────── أوامر الاختصارات السريعة ─────────────
+    [RelayCommand]
+    private void QuickAddSource()
+    {
+        if (App.ServiceProvider.GetService(typeof(MainViewModel)) is MainViewModel main)
+        {
+            main.NavigateTo("Sources");
+            if (main.CurrentView is SourcesViewModel sourcesVm)
+            {
+                sourcesVm.AddNewCommand.Execute(null);
+            }
+        }
+    }
+
+    [RelayCommand]
+    private void QuickBorrowSource()
+    {
+        if (App.ServiceProvider.GetService(typeof(MainViewModel)) is MainViewModel main)
+        {
+            main.NavigateTo("Borrowing");
+            if (main.CurrentView is BorrowViewModel borrowVm)
+            {
+                borrowVm.OpenCreateDialogCommand.Execute(null);
+            }
         }
     }
 }
