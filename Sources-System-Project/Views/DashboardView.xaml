@@ -501,7 +501,7 @@
                         </StackPanel>
 
                         <!-- Chart (When enough data >= 2 isotopes) -->
-                        <Grid Grid.Row="1"
+                        <Grid Grid.Row="1" FlowDirection="LeftToRight"
                               Visibility="{Binding HasEnoughIsotopeData, Converter={StaticResource BoolToVis}}">
                             <lvc:PieChart Series="{Binding SourcesByIsotopeSeries}"
                                           LegendPosition="Right"
@@ -538,7 +538,7 @@
                         </StackPanel>
 
                         <!-- Chart (When enough data >= 2 locations) -->
-                        <Grid Grid.Row="1"
+                        <Grid Grid.Row="1" FlowDirection="LeftToRight"
                               Visibility="{Binding HasEnoughLocationData, Converter={StaticResource BoolToVis}}">
                             <lvc:PieChart Series="{Binding SourcesByLocationSeries}"
                                           LegendPosition="Right"
