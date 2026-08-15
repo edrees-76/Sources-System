@@ -578,6 +578,5 @@
     <!-- حالة فارغة - شاشة المصادر -->
     <system:String x:Key="EmptySourcesTitle">لا توجد مصادر مسجّلة بعد</system:String>
     <system:String x:Key="EmptySourcesSubtitle">ابدأ بإضافة أول مصدر إشعاعي لتتبع نشاطه وإدارة دورة حياته بشكل كامل</system:String>
-    <system:String x:Key="BtnAddSource">+ إضافة مصدر جديد</system:String>
 
 </ResourceDictionary>
