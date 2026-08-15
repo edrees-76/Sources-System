@@ -228,7 +228,7 @@
     <system:String x:Key="ColSerialNumber">الرقم التسلسلي</system:String>
     <system:String x:Key="ColInitialActivity">النشاط الابتدائي</system:String>
     <system:String x:Key="ColCurrentActivity">النشاط الحالي</system:String>
-    <system:String x:Key="ColActivityUnit">وحدة النشاط</system:String>
+    <system:String x:Key="ColActivityUnit">وحدة النشاط الإشعاعي</system:String>
     <system:String x:Key="ColStorageLocation">موقع التخزين</system:String>
     <system:String x:Key="ColSourceStatus">حالة المصدر</system:String>
     <system:String x:Key="ColCalibrationDate">تاريخ المعايرة / الصنع</system:String>

@@ -1224,8 +1224,8 @@
                                                         </DataGridTemplateColumn.CellTemplate>
                                                     </DataGridTemplateColumn>
 
-                                                    <!-- عمود وحدة النشاط -->
-                                                    <DataGridTemplateColumn Header="{DynamicResource FieldTimeUnit}" Width="110" MinWidth="90">
+                                                    <!-- عمود وحدة النشاط الإشعاعي -->
+                                                    <DataGridTemplateColumn Header="{DynamicResource ColActivityUnit}" Width="130" MinWidth="100">
                                                         <DataGridTemplateColumn.CellTemplate>
                                                             <DataTemplate>
                                                                 <ComboBox ItemsSource="{Binding DataContext.ActivityUnits, RelativeSource={RelativeSource AncestorType=UserControl}}"
