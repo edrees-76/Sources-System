@@ -153,7 +153,7 @@ public class SourceService : ISourceService
             .Include(s => s.CurrentActivityUnit)
             .Include(s => s.SourceIsotopes).ThenInclude(si => si.Radioisotope)
             .Include(s => s.SourceIsotopes).ThenInclude(si => si.ActivityUnit)
-            .Where(s => s.Status == "Active")
+            .Where(s => s.Status == "InUse" || s.Status == "Storage")
             .ToList();
 
         foreach (var source in sources)
@@ -269,12 +269,6 @@ public class SourceService : ISourceService
         return db.Sources.Count();
     }
 
-    public int GetActiveSourcesCount()
-    {
-        using var db = _dbFactory.CreateDbContext();
-        return db.Sources.Count(s => s.Status == "Active");
-    }
-
     public List<Source> GetLowActivitySources(double thresholdPercent = 10)
     {
         using var db = _dbFactory.CreateDbContext();
@@ -284,7 +278,7 @@ public class SourceService : ISourceService
             .Include(s => s.CurrentActivityUnit)
             .Include(s => s.Location)
             .Include(s => s.SourceIsotopes).ThenInclude(si => si.Radioisotope)
-            .Where(s => s.Status == "Active" || s.Status == "Storage" || s.Status == "Borrowed")
+            .Where(s => s.Status == "InUse" || s.Status == "Storage")
             .ToList()
             .Where(s =>
             {

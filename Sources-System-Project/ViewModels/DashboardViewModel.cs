@@ -15,19 +15,6 @@ using System.Windows;
 
 namespace Sources.ViewModels;
 
-/// <summary>
-/// نموذج صف في جدول المصادر والنشاط الحالي
-/// </summary>
-public class SourceActivityRow
-{
-    public string SourceCode { get; set; } = string.Empty;
-    public string IsotopeSymbol { get; set; } = string.Empty;
-    public string CurrentActivity { get; set; } = string.Empty;
-    public string UnitSymbol { get; set; } = string.Empty;
-    public string CalibrationDate { get; set; } = string.Empty;
-    public string StatusDisplay { get; set; } = string.Empty;
-    public int StatusCode { get; set; } = 0; // 1: Active, 2: Stored, 3: Warning/Action
-}
 
 /// <summary>
 /// نموذج لمفتاح الرسم المخصص لضمان التباين
@@ -87,9 +74,6 @@ public partial class DashboardViewModel : ObservableObject
 
     // ─── بطاقة 1: عدد المصادر ───
     [ObservableProperty] private int _totalSources;
-    [ObservableProperty] private int _activeSourcesCount;
-    [ObservableProperty] private int _storedSourcesCount;
-    [ObservableProperty] private int _actionRequiredCount;
     [ObservableProperty] private bool _isArabic;
     [ObservableProperty] private Thickness _axisOverlayMargin;
     [ObservableProperty] private Thickness _axisOverlayThickness;
@@ -126,8 +110,6 @@ public partial class DashboardViewModel : ObservableObject
     [ObservableProperty] private ObservableCollection<Source> _availableSources = new();
     [ObservableProperty] private Source? _selectedDecaySource;
 
-    // ─── جدول المصادر والنشاط ───
-    [ObservableProperty] private ObservableCollection<SourceActivityRow> _sourceActivityTable = new();
 
     // ─── مصادر لوحة القيادة (نفس كائنات Source كصفحة المصادر) ───
     [ObservableProperty] private ObservableCollection<Source> _dashboardSources = new();
@@ -261,13 +243,8 @@ public partial class DashboardViewModel : ObservableObject
 
             var sources = _sourceService.GetAllSources();
 
-            // ═══ بطاقة 1: عدد المصادر المسجلة وحالاتها ═══
+            // ═══ بطاقة 1: عدد المصادر المسجلة ═══
             TotalSources = sources.Count;
-            // Calculate statuses based on SourceStatus (Assuming "نشط", "مخزن", "Active", "Stored")
-            // Also warning if leak test is due or expired
-            ActiveSourcesCount = sources.Count(s => s.Status.Contains("نشط") || s.Status.Contains("Active") || s.Status.Contains("قيد الاستخدام") || s.Status.Contains("In Use"));
-            StoredSourcesCount = sources.Count(s => s.Status.Contains("مخزن") || s.Status.Contains("Stored"));
-            ActionRequiredCount = sources.Count - ActiveSourcesCount - StoredSourcesCount; // Simplification for demo, ideally checks dates
 
             // ═══ بطاقة 2: إجمالي النشاط بجميع الوحدات ═══
             UpdateTotalActivityItems(sources);
@@ -285,9 +262,6 @@ public partial class DashboardViewModel : ObservableObject
             AvailableSources = new ObservableCollection<Source>(
                 sources.Where(s => s.Radioisotope != null).ToList());
             UpdateDecayCurves(sources, SelectedDecaySource);
-
-            // ═══ جدول المصادر والنشاط الحالي (مع جميع النظائر) ═══
-            UpdateSourceTable(sources);
 
             // ═══ مصادر لوحة القيادة (كائنات Source مباشرة) ═══
             DashboardSources = new ObservableCollection<Source>(sources);
@@ -788,40 +762,9 @@ public partial class DashboardViewModel : ObservableObject
             } 
         };
     }
-    // ───────────── جدول المصادر والنشاط (مع جميع النظائر) ─────────────
-    private void UpdateSourceTable(List<Source> sources)
-    {
-        var rows = sources.Select(s => 
-        {
-            // Determine status formatting
-            string status = s.Status ?? "Unknown";
-            int code = 3; // Action required by default
-            if (status.Contains("نشط") || status.Contains("Active") || status.Contains("استخدام") || status.Contains("Use"))
-                code = 1;
-            else if (status.Contains("مخزن") || status.Contains("Stored"))
-                code = 2;
-
-            return new SourceActivityRow
-            {
-                SourceCode = s.SourceCode,
-                // استخدام DisplayIsotopes لعرض جميع النظائر (بما في ذلك الخلائط)
-                IsotopeSymbol = !string.IsNullOrEmpty(s.DisplayIsotopes) 
-                    ? s.DisplayIsotopes 
-                    : (s.Radioisotope?.Symbol ?? "-"),
-                CurrentActivity = FormatActivityShort(s.CurrentActivityValue),
-                UnitSymbol = s.CurrentActivityUnit?.UnitSymbol ?? "Bq",
-                CalibrationDate = s.CalibrationDate.ToString("dd/MM/yyyy"),
-                StatusDisplay = IsArabic 
-                    ? (code == 1 ? "نشط" : (code == 2 ? "مخزن" : status))
-                    : (code == 1 ? "Active" : (code == 2 ? "Stored" : status)),
-                StatusCode = code
-            };
-        }).ToList();
-        SourceActivityTable = new ObservableCollection<SourceActivityRow>(rows);
-    }
 
     // ───────────── أدوات التنسيق ─────────────
-    private string FormatActivityValue(double value, string unitSymbol)
+    private static string FormatActivityValue(double value, string unitSymbol)
     {
         if (value == 0) return $"0 {unitSymbol}";
         if (Math.Abs(value) >= 1e9) return $"{value:E3} {unitSymbol}";
@@ -831,13 +774,6 @@ public partial class DashboardViewModel : ObservableObject
         return $"{value:E3} {unitSymbol}";
     }
 
-    private string FormatActivityShort(double value)
-    {
-        if (value == 0) return "0";
-        if (Math.Abs(value) >= 1e7 || Math.Abs(value) < 0.0001) return value.ToString("E2");
-        return (value % 1 == 0) ? value.ToString("#,##0") : value.ToString("#,##0.00");
-    }
-
     // ───────────── الجزء 1: بطاقة تنبيهات انخفاض النشاط ─────────────
     private void UpdateLowActivityAlertCard(List<Source> sources)
     {
@@ -845,7 +781,7 @@ public partial class DashboardViewModel : ObservableObject
         int warningCount = 0;
 
         foreach (var source in sources.Where(s =>
-            s.Status == "Active" || s.Status == "InUse" || s.Status == "Storage"))
+            s.Status == "InUse" || s.Status == "Storage"))
         {
             double maxHalfLives = CalculateMaxHalfLivesElapsed(source);
             if (maxHalfLives >= 6.0) criticalCount++;
@@ -892,7 +828,7 @@ public partial class DashboardViewModel : ObservableObject
         var rows = new List<LowActivitySourceRow>();
 
         foreach (var source in sources.Where(s =>
-            s.Status == "Active" || s.Status == "InUse" || s.Status == "Storage"))
+            s.Status == "InUse" || s.Status == "Storage"))
         {
             double maxHalfLives = CalculateMaxHalfLivesElapsed(source);
             if (maxHalfLives < 5.0) continue;

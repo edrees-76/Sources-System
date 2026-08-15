@@ -126,9 +126,10 @@
                                   Style="{DynamicResource FormComboBox}"
                                   materialDesign:HintAssist.Hint="{DynamicResource FilterAllStatuses}" DockPanel.Dock="Right">
                             <ComboBoxItem Content="{DynamicResource FilterAllStatuses}" Tag="All" IsSelected="True"/>
-                            <ComboBoxItem Content="{DynamicResource StatusActive}" Tag="Active"/>
-                            <ComboBoxItem Content="{DynamicResource StatusDecayed}" Tag="Decayed"/>
-                            <ComboBoxItem Content="{DynamicResource StatusDisposed}" Tag="Disposed"/>
+                            <ComboBoxItem Content="{DynamicResource StatusInUse}" Tag="InUse"/>
+                            <ComboBoxItem Content="{DynamicResource StatusStorage}" Tag="Storage"/>
+                            <ComboBoxItem Content="{DynamicResource StatusWaste}" Tag="Waste"/>
+                            <ComboBoxItem Content="{DynamicResource StatusTransfer}" Tag="Transfer"/>
                         </ComboBox>
 
                         <!-- زر إعادة التعيين -->

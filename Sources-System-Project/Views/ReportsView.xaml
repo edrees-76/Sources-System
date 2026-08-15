@@ -12,7 +12,7 @@
             <StackPanel HorizontalAlignment="Right">
                 <!-- أزرار التقارير (Navy Gold buttons) -->
                 <WrapPanel Margin="0,0,0,0">
-                    <Button Content="التقرير العام الشامل" Margin="0,0,8,8" Style="{StaticResource SecondaryButton}"
+                    <Button Content="{DynamicResource BtnGeneralReport}" Margin="0,0,8,8" Style="{StaticResource SecondaryButton}"
                             Command="{Binding SelectReportCommand}" CommandParameter="GeneralReport">
                         <Button.Effect>
                             <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.1" Color="{StaticResource GoldColor}"/>
@@ -62,123 +62,199 @@
                               VerticalScrollBarVisibility="Auto" Margin="0,0,8,0">
                     <StackPanel Margin="0,0,16,16">
                         <!-- 1. جرد المصادر -->
-                        <TextBlock Text="1. تقرير جرد المصادر والمواد المشعة" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="0,0,0,8"/>
-                        <DataGrid ItemsSource="{Binding InventoryData}" Style="{StaticResource ModernDataGrid}" MaxHeight="350" Margin="0,0,0,24">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                                <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100"/>
-                                <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding Radioisotope.Symbol}" Width="90"/>
-                                <DataGridTextColumn Header="{DynamicResource ColInitialActivity}" Binding="{Binding InitialActivityWithUnit}" Width="130"/>
-                                <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130"/>
-                                <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName}" Width="130"/>
-                                <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding Status, Converter={StaticResource StatusToArabic}}" Width="90"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <TextBlock Text="{DynamicResource GeneralReportSectionInventory}" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="0,0,0,8"/>
+                        <Grid Margin="0,0,0,24">
+                            <DataGrid ItemsSource="{Binding InventoryData}" Style="{StaticResource ModernDataGrid}" MaxHeight="350" MinHeight="100">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding Radioisotope.Symbol}" Width="90"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColInitialActivity}" Binding="{Binding InitialActivityWithUnit}" Width="130"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName}" Width="130"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding Status, Converter={StaticResource StatusToArabic}}" Width="90"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <Border Visibility="{Binding InventoryData.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}"
+                                    Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,36,0,0" IsHitTestVisible="False">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="InformationOutline" Width="18" Height="18" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock Text="{DynamicResource LabelNoDataAvailable}" FontSize="13" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
 
                         <!-- 2. الاستعارات -->
-                        <TextBlock Text="2. سجل الاستعارات" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="0,0,0,8"/>
-                        <DataGrid ItemsSource="{Binding BorrowingData}" Style="{StaticResource ModernDataGrid}" MaxHeight="350" Margin="0,0,0,24">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                                <DataGridTextColumn Header="{DynamicResource ColSource}" Binding="{Binding Source.SourceCode}" Width="100"/>
-                                <DataGridTextColumn Header="{DynamicResource ColBorrowerName}" Binding="{Binding BorrowerUser.FullName}" Width="150"/>
-                                <DataGridTextColumn Header="{DynamicResource ColRequestDate}" Binding="{Binding RequestDate, StringFormat=d}" Width="120"/>
-                                <DataGridTextColumn Header="{DynamicResource ColExpectedReturn}" Binding="{Binding ExpectedReturnDate, StringFormat=d}" Width="130"/>
-                                <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="100"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <TextBlock Text="{DynamicResource GeneralReportSectionBorrowing}" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="0,0,0,8"/>
+                        <Grid Margin="0,0,0,24">
+                            <DataGrid ItemsSource="{Binding BorrowingData}" Style="{StaticResource ModernDataGrid}" MaxHeight="350" MinHeight="100">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColSource}" Binding="{Binding Source.SourceCode}" Width="100"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColBorrowerName}" Binding="{Binding BorrowerUser.FullName}" Width="150"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColRequestDate}" Binding="{Binding RequestDate, StringFormat=d}" Width="120"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColExpectedReturn}" Binding="{Binding ExpectedReturnDate, StringFormat=d}" Width="130"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="100"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <Border Visibility="{Binding BorrowingData.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}"
+                                    Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,36,0,0" IsHitTestVisible="False">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="InformationOutline" Width="18" Height="18" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock Text="{DynamicResource LabelNoDataAvailable}" FontSize="13" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
 
                         <!-- 3. المصادر المنخفضة -->
-                        <TextBlock Text="3. تقرير المصادر منخفضة النشاط الإشعاعي" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="0,0,0,8"/>
-                        <DataGrid ItemsSource="{Binding LowActivityData}" Style="{StaticResource ModernDataGrid}" MaxHeight="350" Margin="0,0,0,24">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                                <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100"/>
-                                <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding Radioisotope.Symbol}" Width="90"/>
-                                <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130"/>
-                                <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName}" Width="130"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <TextBlock Text="{DynamicResource GeneralReportSectionLowActivity}" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="0,0,0,8"/>
+                        <Grid Margin="0,0,0,24">
+                            <DataGrid ItemsSource="{Binding LowActivityData}" Style="{StaticResource ModernDataGrid}" MaxHeight="350" MinHeight="100">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding Radioisotope.Symbol}" Width="90"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName}" Width="130"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <Border Visibility="{Binding LowActivityData.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}"
+                                    Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,36,0,0" IsHitTestVisible="False">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="InformationOutline" Width="18" Height="18" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock Text="{DynamicResource LabelNoDataAvailable}" FontSize="13" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
 
                         <!-- 4. تنبيهات انخفاض النشاط -->
-                        <TextBlock Text="4. تنبيهات انخفاض النشاط" FontSize="18" FontWeight="SemiBold" Foreground="Red" Margin="0,0,0,8"/>
-                        <DataGrid ItemsSource="{Binding CalibrationData}" Style="{StaticResource ModernDataGrid}" MaxHeight="350" Margin="0,0,0,16">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                                <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100"/>
-                                <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding Radioisotope.Symbol}" Width="90"/>
-                                <DataGridTextColumn Header="{DynamicResource ColCalibration}" Binding="{Binding CalibrationDate, StringFormat=d}" Width="120"/>
-                                <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="110"/>
-                                <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <TextBlock Text="{DynamicResource GeneralReportSectionAlerts}" FontSize="18" FontWeight="SemiBold" Foreground="Red" Margin="0,0,0,8"/>
+                        <Grid Margin="0,0,0,16">
+                            <DataGrid ItemsSource="{Binding CalibrationData}" Style="{StaticResource ModernDataGrid}" MaxHeight="350" MinHeight="100">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding Radioisotope.Symbol}" Width="90"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColCalibration}" Binding="{Binding CalibrationDate, StringFormat=d}" Width="120"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="110"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <Border Visibility="{Binding CalibrationData.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}"
+                                    Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,36,0,0" IsHitTestVisible="False">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="InformationOutline" Width="18" Height="18" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock Text="{DynamicResource LabelNoDataAvailable}" FontSize="13" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
                     </StackPanel>
                 </ScrollViewer>
 
                 <!-- تقرير الجرد -->
-                <DataGrid ItemsSource="{Binding InventoryData}" Style="{StaticResource ModernDataGrid}"
-                          Visibility="{Binding SelectedReport, Converter={StaticResource EqualityToVis}, ConverterParameter=InventoryReport}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                        <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100"/>
-                        <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding Radioisotope.Symbol}" Width="90"/>
-                        <DataGridTextColumn Header="{DynamicResource ColInitialActivity}" Binding="{Binding InitialActivityWithUnit}" Width="130"/>
-                        <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130"/>
-                        <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName}" Width="130"/>
-                        <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding Status, Converter={StaticResource StatusToArabic}}" Width="90"/>
-                    </DataGrid.Columns>
-                </DataGrid>
+                <Grid Visibility="{Binding SelectedReport, Converter={StaticResource EqualityToVis}, ConverterParameter=InventoryReport}">
+                    <DataGrid ItemsSource="{Binding InventoryData}" Style="{StaticResource ModernDataGrid}" MinHeight="100">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100"/>
+                            <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding Radioisotope.Symbol}" Width="90"/>
+                            <DataGridTextColumn Header="{DynamicResource ColInitialActivity}" Binding="{Binding InitialActivityWithUnit}" Width="130"/>
+                            <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130"/>
+                            <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName}" Width="130"/>
+                            <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding Status, Converter={StaticResource StatusToArabic}}" Width="90"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Border Visibility="{Binding InventoryData.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}"
+                            Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,36,0,0" IsHitTestVisible="False">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="InformationOutline" Width="18" Height="18" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="{DynamicResource LabelNoDataAvailable}" FontSize="13" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
 
                 <!-- تقرير الاستعارة -->
-                <DataGrid ItemsSource="{Binding BorrowingData}" Style="{StaticResource ModernDataGrid}"
-                          Visibility="{Binding SelectedReport, Converter={StaticResource EqualityToVis}, ConverterParameter=BorrowingReport}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                        <DataGridTextColumn Header="{DynamicResource ColSource}" Binding="{Binding Source.SourceCode}" Width="100"/>
-                        <DataGridTextColumn Header="{DynamicResource ColBorrowerName}" Binding="{Binding BorrowerUser.FullName}" Width="150"/>
-                        <DataGridTextColumn Header="{DynamicResource ColRequestDate}" Binding="{Binding RequestDate, StringFormat=d}" Width="120"/>
-                        <DataGridTextColumn Header="{DynamicResource ColExpectedReturn}" Binding="{Binding ExpectedReturnDate, StringFormat=d}" Width="130"/>
-                        <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="100"/>
-                    </DataGrid.Columns>
-                </DataGrid>
+                <Grid Visibility="{Binding SelectedReport, Converter={StaticResource EqualityToVis}, ConverterParameter=BorrowingReport}">
+                    <DataGrid ItemsSource="{Binding BorrowingData}" Style="{StaticResource ModernDataGrid}" MinHeight="100">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColSource}" Binding="{Binding Source.SourceCode}" Width="100"/>
+                            <DataGridTextColumn Header="{DynamicResource ColBorrowerName}" Binding="{Binding BorrowerUser.FullName}" Width="150"/>
+                            <DataGridTextColumn Header="{DynamicResource ColRequestDate}" Binding="{Binding RequestDate, StringFormat=d}" Width="120"/>
+                            <DataGridTextColumn Header="{DynamicResource ColExpectedReturn}" Binding="{Binding ExpectedReturnDate, StringFormat=d}" Width="130"/>
+                            <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="100"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Border Visibility="{Binding BorrowingData.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}"
+                            Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,36,0,0" IsHitTestVisible="False">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="InformationOutline" Width="18" Height="18" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="{DynamicResource LabelNoDataAvailable}" FontSize="13" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
 
                 <!-- تقرير النشاط -->
-                <DataGrid ItemsSource="{Binding ActivityData}" Style="{StaticResource ModernDataGrid}"
-                          Visibility="{Binding SelectedReport, Converter={StaticResource EqualityToVis}, ConverterParameter=ActivityReport}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                        <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100"/>
-                        <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding Radioisotope.Symbol}" Width="90"/>
-                        <DataGridTextColumn Header="{DynamicResource ColInitialActivity}" Binding="{Binding InitialActivityWithUnit}" Width="130"/>
-                        <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130"/>
-                        <DataGridTextColumn Header="{DynamicResource ColCalibration}" Binding="{Binding CalibrationDate, StringFormat=d}" Width="110"/>
-                    </DataGrid.Columns>
-                </DataGrid>
+                <Grid Visibility="{Binding SelectedReport, Converter={StaticResource EqualityToVis}, ConverterParameter=ActivityReport}">
+                    <DataGrid ItemsSource="{Binding ActivityData}" Style="{StaticResource ModernDataGrid}" MinHeight="100">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100"/>
+                            <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding Radioisotope.Symbol}" Width="90"/>
+                            <DataGridTextColumn Header="{DynamicResource ColInitialActivity}" Binding="{Binding InitialActivityWithUnit}" Width="130"/>
+                            <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130"/>
+                            <DataGridTextColumn Header="{DynamicResource ColCalibration}" Binding="{Binding CalibrationDate, StringFormat=d}" Width="110"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Border Visibility="{Binding ActivityData.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}"
+                            Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,36,0,0" IsHitTestVisible="False">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="InformationOutline" Width="18" Height="18" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="{DynamicResource LabelNoDataAvailable}" FontSize="13" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
 
                 <!-- تقرير المصادر المنخفضة -->
-                <DataGrid ItemsSource="{Binding LowActivityData}" Style="{StaticResource ModernDataGrid}"
-                          Visibility="{Binding SelectedReport, Converter={StaticResource EqualityToVis}, ConverterParameter=LowActivityReport}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                        <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100"/>
-                        <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding Radioisotope.Symbol}" Width="90"/>
-                        <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130"/>
-                        <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName}" Width="130"/>
-                    </DataGrid.Columns>
-                </DataGrid>
+                <Grid Visibility="{Binding SelectedReport, Converter={StaticResource EqualityToVis}, ConverterParameter=LowActivityReport}">
+                    <DataGrid ItemsSource="{Binding LowActivityData}" Style="{StaticResource ModernDataGrid}" MinHeight="100">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100"/>
+                            <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding Radioisotope.Symbol}" Width="90"/>
+                            <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130"/>
+                            <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName}" Width="130"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Border Visibility="{Binding LowActivityData.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}"
+                            Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,36,0,0" IsHitTestVisible="False">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="InformationOutline" Width="18" Height="18" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="{DynamicResource LabelNoDataAvailable}" FontSize="13" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
 
                 <!-- تقرير تنبيهات انخفاض النشاط -->
-                <DataGrid ItemsSource="{Binding CalibrationData}" Style="{StaticResource ModernDataGrid}"
-                          Visibility="{Binding SelectedReport, Converter={StaticResource EqualityToVis}, ConverterParameter=CalibrationReport}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                        <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100"/>
-                        <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding Radioisotope.Symbol}" Width="90"/>
-                        <DataGridTextColumn Header="{DynamicResource ColCalibration}" Binding="{Binding CalibrationDate, StringFormat=d}" Width="120"/>
-                        <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="110"/>
-                        <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130"/>
-                    </DataGrid.Columns>
-                </DataGrid>
+                <Grid Visibility="{Binding SelectedReport, Converter={StaticResource EqualityToVis}, ConverterParameter=CalibrationReport}">
+                    <DataGrid ItemsSource="{Binding CalibrationData}" Style="{StaticResource ModernDataGrid}" MinHeight="100">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100"/>
+                            <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding Radioisotope.Symbol}" Width="90"/>
+                            <DataGridTextColumn Header="{DynamicResource ColCalibration}" Binding="{Binding CalibrationDate, StringFormat=d}" Width="120"/>
+                            <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="110"/>
+                            <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Border Visibility="{Binding CalibrationData.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}"
+                            Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,36,0,0" IsHitTestVisible="False">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="InformationOutline" Width="18" Height="18" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="{DynamicResource LabelNoDataAvailable}" FontSize="13" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
             </Grid>
         </Border>
     </Grid>

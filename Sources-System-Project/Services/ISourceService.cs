@@ -13,6 +13,5 @@ public interface ISourceService
     (bool Success, string Message) DeleteSource(Guid id);
     void UpdateAllCurrentActivities();
     int GetTotalSourcesCount();
-    int GetActiveSourcesCount();
     List<Source> GetLowActivitySources(double threshold);
 }

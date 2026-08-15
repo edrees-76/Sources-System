@@ -48,11 +48,10 @@ public class StatusToColorConverter : IValueConverter
     {
         return value?.ToString() switch
         {
-            "Active" => new SolidColorBrush(Color.FromRgb(76, 175, 80)),      // أخضر
-            "Decayed" => new SolidColorBrush(Color.FromRgb(255, 152, 0)),     // برتقالي
-            "Disposed" => new SolidColorBrush(Color.FromRgb(158, 158, 158)),  // رمادي
-            "InTransit" => new SolidColorBrush(Color.FromRgb(33, 150, 243)), // أزرق
-            "Lost" => new SolidColorBrush(Color.FromRgb(244, 67, 54)),       // أحمر
+            "InUse" or "Active" => new SolidColorBrush(Color.FromRgb(63, 174, 122)),       // أخضر تشغيلي
+            "Storage" => new SolidColorBrush(Color.FromRgb(79, 127, 163)),                 // أزرق تخزين
+            "Waste" => new SolidColorBrush(Color.FromRgb(224, 169, 62)),                   // كهرماني/نفايات
+            "Transfer" => new SolidColorBrush(Color.FromRgb(224, 169, 62)),                // كهرماني/نقل
             _ => new SolidColorBrush(Color.FromRgb(158, 158, 158))
         };
     }
@@ -67,11 +66,10 @@ public class StatusToArabicConverter : IValueConverter
     {
         string? key = value?.ToString() switch
         {
-            "Active" => "StatusActive",
-            "Decayed" => "StatusDecayed",
-            "Disposed" => "StatusDisposed",
-            "InTransit" => "StatusInTransit",
-            "Lost" => "StatusLost",
+            "InUse" or "Active" => "StatusInUse",
+            "Storage" => "StatusStorage",
+            "Waste" => "StatusWaste",
+            "Transfer" => "StatusTransfer",
             _ => null
         };
 

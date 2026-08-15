@@ -59,7 +59,7 @@ public partial class ReportsViewModel : ObservableObject
                 BorrowingData = new ObservableCollection<BorrowRequest>(_borrowService.GetAll());
                 break;
             case "ActivityReport":
-                ActivityData = new ObservableCollection<Source>(allSources.Where(s => s.Status == "Active" || s.Status == "Storage" || s.Status == "Borrowed"));
+                ActivityData = new ObservableCollection<Source>(allSources.Where(s => s.Status == "InUse" || s.Status == "Storage"));
                 break;
             case "LowActivityReport":
                 LowActivityData = new ObservableCollection<Source>(_sourceService.GetLowActivitySources(LowActivityThreshold));
@@ -67,18 +67,18 @@ public partial class ReportsViewModel : ObservableObject
             case "CalibrationReport":
                 // تصفية المصادر التي تجاوزت 5 أضعاف نصف العمر (T½)
                 CalibrationData = new ObservableCollection<Source>(
-                    allSources.Where(s => (s.Status == "Active" || s.Status == "Storage" || s.Status == "Borrowed") &&
+                    allSources.Where(s => (s.Status == "InUse" || s.Status == "Storage") &&
                                          CalculateMaxHalfLivesElapsed(s) >= 5.0)
                               .OrderByDescending(s => CalculateMaxHalfLivesElapsed(s)));
                 break;
             case "GeneralReport":
                 InventoryData = new ObservableCollection<Source>(allSources);
                 BorrowingData = new ObservableCollection<BorrowRequest>(_borrowService.GetAll());
-                ActivityData = new ObservableCollection<Source>(allSources.Where(s => s.Status == "Active" || s.Status == "Storage" || s.Status == "Borrowed"));
+                ActivityData = new ObservableCollection<Source>(allSources.Where(s => s.Status == "InUse" || s.Status == "Storage"));
                 LowActivityData = new ObservableCollection<Source>(_sourceService.GetLowActivitySources(LowActivityThreshold));
                 
                 CalibrationData = new ObservableCollection<Source>(
-                    allSources.Where(s => (s.Status == "Active" || s.Status == "Storage" || s.Status == "Borrowed") &&
+                    allSources.Where(s => (s.Status == "InUse" || s.Status == "Storage") &&
                                          CalculateMaxHalfLivesElapsed(s) >= 5.0)
                               .OrderByDescending(s => CalculateMaxHalfLivesElapsed(s)));
                 break;

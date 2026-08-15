@@ -39,7 +39,7 @@ public class AlertService : IAlertService
             .Include(s => s.Location)
             .Include(s => s.SourceIsotopes)
                 .ThenInclude(si => si.Radioisotope)
-            .Where(s => s.Status == "Active" || s.Status == "InUse" || s.Status == "Storage")
+            .Where(s => s.Status == "InUse" || s.Status == "Storage")
             .ToList();
 
         foreach (var source in activeSources)

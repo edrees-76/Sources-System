@@ -84,7 +84,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     [ObservableProperty] private DateTime _editCalibrationDate = DateTime.Now;
     [ObservableProperty] private Guid? _editCurrentUnitId;
     [ObservableProperty] private Guid? _editLocationId;
-    [ObservableProperty] private string _editStatus = "Active";
+    [ObservableProperty] private string _editStatus = "InUse";
 
     partial void OnEditInitialActivityTextChanged(string value)
     {
@@ -157,11 +157,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
             ).ToList();
         }
 
-        if (StatusFilter == "Active")
-        {
-            allSources = allSources.Where(s => s.Status == "Active" || s.Status == "InUse" || s.Status == "Storage").ToList();
-        }
-        else if (StatusFilter != "All")
+        if (!string.IsNullOrWhiteSpace(StatusFilter) && StatusFilter != "All")
         {
             allSources = allSources.Where(s => s.Status == StatusFilter).ToList();
         }
@@ -213,7 +209,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         EditCalibrationDate = DateTime.Now;
         EditCurrentUnitId = ActivityUnits.FirstOrDefault()?.Id;
         EditLocationId = Locations.FirstOrDefault()?.Id;
-        EditStatus = "Active";
+        EditStatus = "InUse";
         EditNotes = string.Empty;
         IsMultiIsotope = false;
         EditImagePath = null;

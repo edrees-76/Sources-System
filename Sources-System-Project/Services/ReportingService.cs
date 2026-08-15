@@ -1,5 +1,6 @@
 using ClosedXML.Excel;
 using Sources.Models;
+using Sources.Helpers;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -19,6 +20,18 @@ namespace Sources.Services
             QuestPDF.Settings.License = LicenseType.Community;
         }
 
+        private static string GetNoDataText()
+        {
+            try
+            {
+                string text = TranslationHelper.GetString("LabelNoDataAvailable");
+                if (!string.IsNullOrEmpty(text) && text != "LabelNoDataAvailable")
+                    return text;
+            }
+            catch { }
+            return "لا توجد بيانات حالياً";
+        }
+
         public async Task GenerateInventoryReportExcelAsync(IEnumerable<Source> sources, string filePath, string reportTitle)
         {
             await Task.Run(() =>
@@ -29,7 +42,7 @@ namespace Sources.Services
                 worksheet.RightToLeft = true;
 
                 // Headers
-                string[] headers = { "رقم المصدر", "النظير", "النشاط الحالي", "المسار / الموقع", "الحالة", "أُضيف بواسطة" };
+                string[] headers = { "رقم المصدر", "النظير", "النشاط الحالي", "الموقع", "الحالة", "أُضيف بواسطة" };
                 for (int i = 0; i < headers.Length; i++)
                 {
                     worksheet.Cell(1, i + 1).Value = headers[i];
@@ -94,6 +107,9 @@ namespace Sources.Services
 
         private void ComposeContentInventory(IContainer container, IEnumerable<Source> sources)
         {
+            var list = sources?.ToList() ?? new List<Source>();
+            string noDataText = GetNoDataText();
+
             container.PaddingVertical(0.5f, Unit.Centimetre).Column(column =>
             {
                 column.Item().Table(table =>
@@ -123,23 +139,30 @@ namespace Sources.Services
                         }
                     });
 
-                    int i = 0;
-                    foreach (var source in sources)
+                    if (!list.Any())
                     {
-                        var backgroundColor = i % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
-                        
-                        table.Cell().Element(CellStyle).Text(source.SourceCode);
-                        table.Cell().Element(CellStyle).Text(source.DisplayIsotopes);
-                        table.Cell().Element(CellStyle).Text(source.CurrentActivityWithUnit);
-                        table.Cell().Element(CellStyle).Text(source.Location?.LocationName ?? "-");
-                        table.Cell().Element(CellStyle).Text(source.ArabicStatus);
-                        table.Cell().Element(CellStyle).Text(source.AddedBy ?? "-");
-
-                        IContainer CellStyle(IContainer container)
+                        table.Cell().ColumnSpan(6).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
+                    }
+                    else
+                    {
+                        int i = 0;
+                        foreach (var source in list)
                         {
-                            return container.Background(backgroundColor).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(6).AlignCenter();
+                            var backgroundColor = i % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
+                            
+                            table.Cell().Element(CellStyle).Text(source.SourceCode);
+                            table.Cell().Element(CellStyle).Text(source.DisplayIsotopes);
+                            table.Cell().Element(CellStyle).Text(source.CurrentActivityWithUnit);
+                            table.Cell().Element(CellStyle).Text(source.Location?.LocationName ?? "-");
+                            table.Cell().Element(CellStyle).Text(source.ArabicStatus);
+                            table.Cell().Element(CellStyle).Text(source.AddedBy ?? "-");
+
+                            IContainer CellStyle(IContainer container)
+                            {
+                                return container.Background(backgroundColor).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(6).AlignCenter();
+                            }
+                            i++;
                         }
-                        i++;
                     }
                 });
             });
@@ -195,6 +218,9 @@ namespace Sources.Services
         {
              await Task.Run(() =>
              {
+                 var list = requests?.ToList() ?? new List<BorrowRequest>();
+                 string noDataText = GetNoDataText();
+
                  Document.Create(container =>
                  {
                      container.Page(page =>
@@ -209,7 +235,7 @@ namespace Sources.Services
                          {
                              row.RelativeItem().Column(column =>
                              {
-                                 column.Item().Text("تقرير استعارة المصادر").FontSize(20).SemiBold().FontColor(Colors.Blue.Darken2);
+                                 column.Item().Text("منظومة مصادر — تقرير استعارة المصادر").FontSize(20).SemiBold().FontColor(Colors.Blue.Darken2);
                                  column.Item().Text($"تاريخ التقرير: {DateTime.Now:yyyy/MM/dd}").FontSize(14).FontColor(Colors.Grey.Darken1);
                              });
                          });
@@ -245,25 +271,32 @@ namespace Sources.Services
                                      }
                                  });
 
-                                 int i = 0;
-                                 foreach (var req in requests)
+                                 if (!list.Any())
                                  {
-                                     var backgroundColor = i % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
-                                     string borrower = !string.IsNullOrEmpty(req.BorrowerName) ? req.BorrowerName : (req.BorrowerUser?.FullName ?? "-");
-                                     
-                                     table.Cell().Element(CellStyle).Text(req.Source?.SourceCode ?? "-");
-                                     table.Cell().Element(CellStyle).Text(borrower);
-                                     table.Cell().Element(CellStyle).Text(req.Purpose ?? "-");
-                                     table.Cell().Element(CellStyle).Text(req.ExpectedReturnDate.ToString("yyyy/MM/dd"));
-                                     table.Cell().Element(CellStyle).Text(req.ArabicStatus);
-                                     table.Cell().Element(CellStyle).Text(req.AddedBy ?? "-");
-                                     table.Cell().Element(CellStyle).Text(req.RequestDate.ToString("yyyy/MM/dd"));
-
-                                     IContainer CellStyle(IContainer container)
+                                     table.Cell().ColumnSpan(7).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
+                                 }
+                                 else
+                                 {
+                                     int i = 0;
+                                     foreach (var req in list)
                                      {
-                                         return container.Background(backgroundColor).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(6).AlignCenter();
+                                         var backgroundColor = i % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
+                                         string borrower = !string.IsNullOrEmpty(req.BorrowerName) ? req.BorrowerName : (req.BorrowerUser?.FullName ?? "-");
+                                         
+                                         table.Cell().Element(CellStyle).Text(req.Source?.SourceCode ?? "-");
+                                         table.Cell().Element(CellStyle).Text(borrower);
+                                         table.Cell().Element(CellStyle).Text(req.Purpose ?? "-");
+                                         table.Cell().Element(CellStyle).Text(req.ExpectedReturnDate.ToString("yyyy/MM/dd"));
+                                         table.Cell().Element(CellStyle).Text(req.ArabicStatus);
+                                         table.Cell().Element(CellStyle).Text(req.AddedBy ?? "-");
+                                         table.Cell().Element(CellStyle).Text(req.RequestDate.ToString("yyyy/MM/dd"));
+
+                                         IContainer CellStyle(IContainer container)
+                                         {
+                                             return container.Background(backgroundColor).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(6).AlignCenter();
+                                         }
+                                         i++;
                                      }
-                                     i++;
                                  }
                              });
                          });
@@ -312,6 +345,9 @@ namespace Sources.Services
         {
             await Task.Run(() =>
             {
+                var list = sources?.ToList() ?? new List<Source>();
+                string noDataText = GetNoDataText();
+
                 Document.Create(container =>
                 {
                     container.Page(page =>
@@ -352,15 +388,22 @@ namespace Sources.Services
                                 static IContainer BlockStyle(IContainer container) => container.Background(Colors.Red.Lighten4).Padding(5).BorderBottom(1).BorderColor(Colors.Red.Medium);
                             });
 
-                            foreach (var s in sources)
+                            if (!list.Any())
                             {
-                                table.Cell().Element(CellStyle).Text(s.SourceCode);
-                                table.Cell().Element(CellStyle).Text(s.DisplayIsotopes);
-                                table.Cell().Element(CellStyle).Text(s.CalibrationDate.ToString("yyyy/MM/dd"));
-                                table.Cell().Element(CellStyle).Text(s.ArabicStatus);
-                                table.Cell().Element(CellStyle).Text(s.AddedBy ?? "-");
+                                table.Cell().ColumnSpan(5).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
+                            }
+                            else
+                            {
+                                foreach (var s in list)
+                                {
+                                    table.Cell().Element(CellStyle).Text(s.SourceCode);
+                                    table.Cell().Element(CellStyle).Text(s.DisplayIsotopes);
+                                    table.Cell().Element(CellStyle).Text(s.CalibrationDate.ToString("yyyy/MM/dd"));
+                                    table.Cell().Element(CellStyle).Text(s.ArabicStatus);
+                                    table.Cell().Element(CellStyle).Text(s.AddedBy ?? "-");
 
-                                static IContainer CellStyle(IContainer container) => container.BorderBottom(1).BorderColor(Colors.Grey.Lighten3).PaddingVertical(4);
+                                    static IContainer CellStyle(IContainer container) => container.BorderBottom(1).BorderColor(Colors.Grey.Lighten3).PaddingVertical(4);
+                                }
                             }
                         });
 
@@ -378,7 +421,7 @@ namespace Sources.Services
                 // 1. Inventory Sheet
                 var wsInventory = workbook.Worksheets.Add("جرد المصادر");
                 wsInventory.RightToLeft = true;
-                string[] invHeaders = { "رقم المصدر", "النظير", "النشاط الحالي", "المسار / الموقع", "الحالة", "أُضيف بواسطة" };
+                string[] invHeaders = { "رقم المصدر", "النظير", "النشاط الحالي", "الموقع", "الحالة", "أُضيف بواسطة" };
                 for (int i = 0; i < invHeaders.Length; i++)
                 {
                     wsInventory.Cell(1, i + 1).Value = invHeaders[i];
@@ -426,7 +469,7 @@ namespace Sources.Services
                 // 3. Low Activity Sheet
                 var wsLowAct = workbook.Worksheets.Add("المصادر منخفضة النشاط");
                 wsLowAct.RightToLeft = true;
-                string[] lowActHeaders = { "رقم المصدر", "النظير", "النشاط الحالي", "المسار / الموقع", "الحالة", "أُضيف بواسطة" };
+                string[] lowActHeaders = { "رقم المصدر", "النظير", "النشاط الحالي", "الموقع", "الحالة", "أُضيف بواسطة" };
                 for (int i = 0; i < lowActHeaders.Length; i++)
                 {
                     wsLowAct.Cell(1, i + 1).Value = lowActHeaders[i];
@@ -478,6 +521,10 @@ namespace Sources.Services
         {
             await Task.Run(() =>
             {
+                var borrowList = borrowing?.ToList() ?? new List<BorrowRequest>();
+                var calibList = calibration?.ToList() ?? new List<Source>();
+                string noDataText = GetNoDataText();
+
                 Document.Create(container =>
                 {
                     container.Page(page =>
@@ -491,7 +538,7 @@ namespace Sources.Services
                         {
                             row.RelativeItem().Column(column =>
                             {
-                                column.Item().Text("نظام مسار - التقرير العام الشامل").FontSize(22).SemiBold().FontColor(Colors.Blue.Darken2);
+                                column.Item().Text("منظومة مصادر — التقرير العام الشامل").FontSize(22).SemiBold().FontColor(Colors.Blue.Darken2);
                                 column.Item().Text($"تاريخ الاستخراج: {DateTime.Now:yyyy/MM/dd HH:mm}").FontSize(12).FontColor(Colors.Grey.Darken2);
                                 column.Item().PaddingVertical(10).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
                             });
@@ -502,9 +549,6 @@ namespace Sources.Services
                             // 1. Inventory Section
                             column.Item().PaddingVertical(10).Text("1. تقرير جرد المصادر والمواد المشعة").FontSize(16).SemiBold().FontColor(Colors.Blue.Medium);
                             column.Item().Element(c => ComposeContentInventory(c, inventory));
-
-                            // Page Break before next section if desired, or just let it flow.
-                            // We will let QuestPDF handle page breaks naturally, just add some spacing.
 
                             // 2. Borrowing Section
                             column.Item().PaddingTop(20).PaddingBottom(10).Text("2. تقرير سجل الاستعارات").FontSize(16).SemiBold().FontColor(Colors.Blue.Medium);
@@ -527,24 +571,32 @@ namespace Sources.Services
                                     header.Cell().Element(HeaderStyle).Text("الحالة");
                                     static IContainer HeaderStyle(IContainer c) => c.Background(Colors.Blue.Medium).PaddingVertical(6).AlignCenter().DefaultTextStyle(x => x.SemiBold().FontColor(Colors.White));
                                 });
-                                int i = 0;
-                                foreach (var req in borrowing)
+
+                                if (!borrowList.Any())
                                 {
-                                    var bg = i % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
-                                    string borrower = !string.IsNullOrEmpty(req.BorrowerName) ? req.BorrowerName : (req.BorrowerUser?.FullName ?? "-");
-                                    table.Cell().Element(c => CellStyle(c, bg)).Text(req.Source?.SourceCode ?? "-");
-                                    table.Cell().Element(c => CellStyle(c, bg)).Text(borrower);
-                                    table.Cell().Element(c => CellStyle(c, bg)).Text(req.Purpose ?? "-");
-                                    table.Cell().Element(c => CellStyle(c, bg)).Text(req.ExpectedReturnDate.ToString("yyyy/MM/dd"));
-                                    table.Cell().Element(c => CellStyle(c, bg)).Text(req.ArabicStatus);
-                                    static IContainer CellStyle(IContainer c, string bg) => c.Background(bg).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(4).AlignCenter();
-                                    i++;
+                                    table.Cell().ColumnSpan(5).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
+                                }
+                                else
+                                {
+                                    int i = 0;
+                                    foreach (var req in borrowList)
+                                    {
+                                        var bg = i % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
+                                        string borrower = !string.IsNullOrEmpty(req.BorrowerName) ? req.BorrowerName : (req.BorrowerUser?.FullName ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(req.Source?.SourceCode ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(borrower);
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(req.Purpose ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(req.ExpectedReturnDate.ToString("yyyy/MM/dd"));
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(req.ArabicStatus);
+                                        static IContainer CellStyle(IContainer c, string bg) => c.Background(bg).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(4).AlignCenter();
+                                        i++;
+                                    }
                                 }
                             });
 
                             // 3. Low Activity Section
                             column.Item().PaddingTop(20).PaddingBottom(10).Text("3. تقرير المصادر منخفضة النشاط الإشعاعي").FontSize(16).SemiBold().FontColor(Colors.Blue.Medium);
-                            column.Item().Element(c => ComposeContentInventory(c, lowActivity)); // Can reuse inventory format
+                            column.Item().Element(c => ComposeContentInventory(c, lowActivity)); // Reuses inventory table format with empty check
 
                             // 4. Calibration / Low Activity Alert Section
                             column.Item().PaddingTop(20).PaddingBottom(10).Text("4. تنبيهات انخفاض النشاط").FontSize(16).SemiBold().FontColor(Colors.Red.Medium);
@@ -565,13 +617,21 @@ namespace Sources.Services
                                     header.Cell().Element(HeaderStyle).Text("النشاط الحالي");
                                     static IContainer HeaderStyle(IContainer c) => c.Background(Colors.Red.Lighten4).Padding(5).BorderBottom(1).BorderColor(Colors.Red.Medium);
                                 });
-                                foreach (var s in calibration)
+
+                                if (!calibList.Any())
                                 {
-                                    table.Cell().Element(CellStyle).Text(s.SourceCode);
-                                    table.Cell().Element(CellStyle).Text(s.DisplayIsotopes);
-                                    table.Cell().Element(CellStyle).Text(s.CalibrationDate.ToString("yyyy/MM/dd"));
-                                    table.Cell().Element(CellStyle).Text(s.CurrentActivityWithUnit);
-                                    static IContainer CellStyle(IContainer c) => c.BorderBottom(1).BorderColor(Colors.Grey.Lighten3).PaddingVertical(4);
+                                    table.Cell().ColumnSpan(4).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
+                                }
+                                else
+                                {
+                                    foreach (var s in calibList)
+                                    {
+                                        table.Cell().Element(CellStyle).Text(s.SourceCode);
+                                        table.Cell().Element(CellStyle).Text(s.DisplayIsotopes);
+                                        table.Cell().Element(CellStyle).Text(s.CalibrationDate.ToString("yyyy/MM/dd"));
+                                        table.Cell().Element(CellStyle).Text(s.CurrentActivityWithUnit);
+                                        static IContainer CellStyle(IContainer c) => c.BorderBottom(1).BorderColor(Colors.Grey.Lighten3).PaddingVertical(4);
+                                    }
                                 }
                             });
                         });

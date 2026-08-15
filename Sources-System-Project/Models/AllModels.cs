@@ -225,7 +225,7 @@ public class Source
     public Location? Location { get; set; }
 
     [MaxLength(30)]
-    public string Status { get; set; } = "Active"; // Active, Borrowed, Decayed, Disposed, Waste, Lost
+    public string Status { get; set; } = "InUse"; // InUse, Storage, Waste, Transfer
 
     /// <summary>هل المصدر يحتوي على تفاصيل متعددة النظائر؟</summary>
     public bool HasDetailedIsotopes { get; set; }
@@ -288,24 +288,20 @@ public class Source
     [NotMapped]
     public string ArabicStatus => Status switch
     {
-        "Active" => "نشط",
-        "Borrowed" => "مستعار",
-        "Decayed" => "متحلل",
-        "Disposed" => "تم التخلص",
+        "InUse" => "قيد الاستخدام",
+        "Storage" => "مخزن",
         "Waste" => "نفايات",
-        "Lost" => "مفقود",
+        "Transfer" => "قيد النقل",
         _ => Status
     };
 
     [NotMapped]
     public string SimpleArabicStatus => Status switch
     {
-        "Active" => "نشط",
-        "Borrowed" => "مستعار",
-        "Decayed" => "متحلل",
-        "Disposed" => "تم التخلص",
+        "InUse" => "قيد الاستخدام",
+        "Storage" => "مخزن",
         "Waste" => "نفايات",
-        "Lost" => "مفقود",
+        "Transfer" => "قيد النقل",
         _ => Status
     };
 
