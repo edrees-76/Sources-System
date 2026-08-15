@@ -2,6 +2,147 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+    <UserControl.Resources>
+        <!-- النمط الأساسي لأزرار تبويبات التقارير -->
+        <Style x:Key="ReportTabButtonBase" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0,0,8,8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <!-- Hover: تفتيح خفيف للخلفية مع تمييز الحدود بلون Primary خفيف -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource DataGridRowHover}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource PrimaryLightBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="GeneralReportTabBtn" TargetType="Button" BasedOn="{StaticResource ReportTabButtonBase}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SelectedReport}" Value="GeneralReport">
+                    <Setter Property="Background" Value="{DynamicResource DataGridRowSelected}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="BorderThickness" Value="1.5"/>
+                    <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.12" Color="{StaticResource PrimaryColor}"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="InventoryReportTabBtn" TargetType="Button" BasedOn="{StaticResource ReportTabButtonBase}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SelectedReport}" Value="InventoryReport">
+                    <Setter Property="Background" Value="{DynamicResource DataGridRowSelected}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="BorderThickness" Value="1.5"/>
+                    <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.12" Color="{StaticResource PrimaryColor}"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="BorrowingReportTabBtn" TargetType="Button" BasedOn="{StaticResource ReportTabButtonBase}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SelectedReport}" Value="BorrowingReport">
+                    <Setter Property="Background" Value="{DynamicResource DataGridRowSelected}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="BorderThickness" Value="1.5"/>
+                    <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.12" Color="{StaticResource PrimaryColor}"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ActivityReportTabBtn" TargetType="Button" BasedOn="{StaticResource ReportTabButtonBase}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SelectedReport}" Value="ActivityReport">
+                    <Setter Property="Background" Value="{DynamicResource DataGridRowSelected}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="BorderThickness" Value="1.5"/>
+                    <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.12" Color="{StaticResource PrimaryColor}"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="LowActivityReportTabBtn" TargetType="Button" BasedOn="{StaticResource ReportTabButtonBase}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SelectedReport}" Value="LowActivityReport">
+                    <Setter Property="Background" Value="{DynamicResource DataGridRowSelected}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="BorderThickness" Value="1.5"/>
+                    <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.12" Color="{StaticResource PrimaryColor}"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="CalibrationReportTabBtn" TargetType="Button" BasedOn="{StaticResource ReportTabButtonBase}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SelectedReport}" Value="CalibrationReport">
+                    <Setter Property="Background" Value="{DynamicResource DataGridRowSelected}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="BorderThickness" Value="1.5"/>
+                    <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.12" Color="{StaticResource PrimaryColor}"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
     <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -10,32 +151,20 @@
 
         <Grid Grid.Row="0" Margin="0,0,0,16">
             <StackPanel HorizontalAlignment="Right">
-                <!-- أزرار التقارير (Navy Gold buttons) -->
+                <!-- أزرار التقارير بتصميم موحد وتأثير تفاعلي للتبويب النشط والتحويم -->
                 <WrapPanel Margin="0,0,0,0">
-                    <Button Content="{DynamicResource BtnGeneralReport}" Margin="0,0,8,8" Style="{StaticResource SecondaryButton}"
-                            Command="{Binding SelectReportCommand}" CommandParameter="GeneralReport">
-                        <Button.Effect>
-                            <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.1" Color="{StaticResource GoldColor}"/>
-                        </Button.Effect>
-                    </Button>
-                    <Button Content="{DynamicResource BtnInventoryReport}" Margin="0,0,8,8" Style="{StaticResource SecondaryButton}"
-                            Command="{Binding SelectReportCommand}" CommandParameter="InventoryReport">
-                        <Button.Effect>
-                            <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.1" Color="{StaticResource GoldColor}"/>
-                        </Button.Effect>
-                    </Button>
-                    <Button Content="{DynamicResource BtnBorrowingReport}" Margin="0,0,8,8" Style="{StaticResource SecondaryButton}"
+                    <Button Content="{DynamicResource BtnGeneralReport}" Style="{StaticResource GeneralReportTabBtn}"
+                            Command="{Binding SelectReportCommand}" CommandParameter="GeneralReport"/>
+                    <Button Content="{DynamicResource BtnInventoryReport}" Style="{StaticResource InventoryReportTabBtn}"
+                            Command="{Binding SelectReportCommand}" CommandParameter="InventoryReport"/>
+                    <Button Content="{DynamicResource BtnBorrowingReport}" Style="{StaticResource BorrowingReportTabBtn}"
                             Command="{Binding SelectReportCommand}" CommandParameter="BorrowingReport"/>
-                    <Button Content="{DynamicResource BtnActivityReport}" Margin="0,0,8,8" Style="{StaticResource SecondaryButton}"
+                    <Button Content="{DynamicResource BtnActivityReport}" Style="{StaticResource ActivityReportTabBtn}"
                             Command="{Binding SelectReportCommand}" CommandParameter="ActivityReport"/>
-                    <Button Content="{DynamicResource BtnLowActivityReport}" Margin="0,0,8,8" Style="{StaticResource SecondaryButton}"
+                    <Button Content="{DynamicResource BtnLowActivityReport}" Style="{StaticResource LowActivityReportTabBtn}"
                             Command="{Binding SelectReportCommand}" CommandParameter="LowActivityReport"/>
-                    <Button Content="{DynamicResource BtnCalibrationReport}" Margin="0,0,8,8" Style="{StaticResource SecondaryButton}"
-                            Command="{Binding SelectReportCommand}" CommandParameter="CalibrationReport">
-                        <Button.Effect>
-                            <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.1" Color="Red"/>
-                        </Button.Effect>
-                    </Button>
+                    <Button Content="{DynamicResource BtnCalibrationReport}" Style="{StaticResource CalibrationReportTabBtn}"
+                            Command="{Binding SelectReportCommand}" CommandParameter="CalibrationReport"/>
                 </WrapPanel>
             </StackPanel>
             
@@ -68,7 +197,7 @@
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100"/>
-                                    <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding Radioisotope.Symbol}" Width="90"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="90"/>
                                     <DataGridTextColumn Header="{DynamicResource ColInitialActivity}" Binding="{Binding InitialActivityWithUnit}" Width="130"/>
                                     <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130"/>
                                     <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName}" Width="130"/>
@@ -90,8 +219,8 @@
                             <DataGrid ItemsSource="{Binding BorrowingData}" Style="{StaticResource ModernDataGrid}" MaxHeight="350" MinHeight="100">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                                    <DataGridTextColumn Header="{DynamicResource ColSource}" Binding="{Binding Source.SourceCode}" Width="100"/>
-                                    <DataGridTextColumn Header="{DynamicResource ColBorrowerName}" Binding="{Binding BorrowerUser.FullName}" Width="150"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding Source.SourceCode}" Width="100"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColBorrowerName}" Binding="{Binding DisplayBorrowerName}" Width="150"/>
                                     <DataGridTextColumn Header="{DynamicResource ColRequestDate}" Binding="{Binding RequestDate, StringFormat=d}" Width="120"/>
                                     <DataGridTextColumn Header="{DynamicResource ColExpectedReturn}" Binding="{Binding ExpectedReturnDate, StringFormat=d}" Width="130"/>
                                     <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="100"/>
@@ -113,7 +242,7 @@
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100"/>
-                                    <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding Radioisotope.Symbol}" Width="90"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="90"/>
                                     <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130"/>
                                     <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName}" Width="130"/>
                                 </DataGrid.Columns>
@@ -134,7 +263,7 @@
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100"/>
-                                    <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding Radioisotope.Symbol}" Width="90"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="90"/>
                                     <DataGridTextColumn Header="{DynamicResource ColCalibration}" Binding="{Binding CalibrationDate, StringFormat=d}" Width="120"/>
                                     <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="110"/>
                                     <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130"/>
@@ -157,7 +286,7 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100"/>
-                            <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding Radioisotope.Symbol}" Width="90"/>
+                            <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="90"/>
                             <DataGridTextColumn Header="{DynamicResource ColInitialActivity}" Binding="{Binding InitialActivityWithUnit}" Width="130"/>
                             <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130"/>
                             <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName}" Width="130"/>
@@ -178,8 +307,8 @@
                     <DataGrid ItemsSource="{Binding BorrowingData}" Style="{StaticResource ModernDataGrid}" MinHeight="100">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                            <DataGridTextColumn Header="{DynamicResource ColSource}" Binding="{Binding Source.SourceCode}" Width="100"/>
-                            <DataGridTextColumn Header="{DynamicResource ColBorrowerName}" Binding="{Binding BorrowerUser.FullName}" Width="150"/>
+                            <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding Source.SourceCode}" Width="100"/>
+                            <DataGridTextColumn Header="{DynamicResource ColBorrowerName}" Binding="{Binding DisplayBorrowerName}" Width="150"/>
                             <DataGridTextColumn Header="{DynamicResource ColRequestDate}" Binding="{Binding RequestDate, StringFormat=d}" Width="120"/>
                             <DataGridTextColumn Header="{DynamicResource ColExpectedReturn}" Binding="{Binding ExpectedReturnDate, StringFormat=d}" Width="130"/>
                             <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="100"/>
@@ -200,7 +329,7 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100"/>
-                            <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding Radioisotope.Symbol}" Width="90"/>
+                            <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="90"/>
                             <DataGridTextColumn Header="{DynamicResource ColInitialActivity}" Binding="{Binding InitialActivityWithUnit}" Width="130"/>
                             <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130"/>
                             <DataGridTextColumn Header="{DynamicResource ColCalibration}" Binding="{Binding CalibrationDate, StringFormat=d}" Width="110"/>
@@ -221,7 +350,7 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100"/>
-                            <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding Radioisotope.Symbol}" Width="90"/>
+                            <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="90"/>
                             <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130"/>
                             <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName}" Width="130"/>
                         </DataGrid.Columns>
@@ -241,7 +370,7 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100"/>
-                            <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding Radioisotope.Symbol}" Width="90"/>
+                            <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="90"/>
                             <DataGridTextColumn Header="{DynamicResource ColCalibration}" Binding="{Binding CalibrationDate, StringFormat=d}" Width="120"/>
                             <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="110"/>
                             <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130"/>

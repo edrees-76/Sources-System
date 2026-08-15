@@ -13,7 +13,6 @@ public partial class ReportsViewModel : ObservableObject
 {
     private readonly ISourceService _sourceService;
     private readonly IBorrowService _borrowService;
-    private readonly IDecayCalculationService _decayService;
     private readonly IReportingService _reportingService;
     private readonly ISystemSettingsService _settingsService;
 
@@ -28,13 +27,11 @@ public partial class ReportsViewModel : ObservableObject
     public ReportsViewModel(
         ISourceService sourceService, 
         IBorrowService borrowService, 
-        IDecayCalculationService decayService, 
         IReportingService reportingService,
         ISystemSettingsService settingsService)
     {
         _sourceService = sourceService;
         _borrowService = borrowService;
-        _decayService = decayService;
         _reportingService = reportingService;
         _settingsService = settingsService;
         

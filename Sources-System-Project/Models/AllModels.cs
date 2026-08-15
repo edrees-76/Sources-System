@@ -406,6 +406,12 @@ public class BorrowRequest
         "Overdue" => "متأخر",
         _ => Status
     };
+
+    /// <summary>اسم المستعير للعرض (يدعم المستخدم المسجل أو الاسم الحر)</summary>
+    [NotMapped]
+    public string DisplayBorrowerName => !string.IsNullOrWhiteSpace(BorrowerName)
+        ? BorrowerName
+        : (BorrowerUser?.FullName ?? "-");
 }
 
 // ─── المستخدمين ───

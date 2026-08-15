@@ -198,9 +198,8 @@ namespace Sources.Services
                 int row = 2;
                 foreach (var req in requests)
                 {
-                    string borrower = !string.IsNullOrEmpty(req.BorrowerName) ? req.BorrowerName : (req.BorrowerUser?.FullName ?? "-");
                     worksheet.Cell(row, 1).Value = req.Source?.SourceCode ?? "-";
-                    worksheet.Cell(row, 2).Value = borrower;
+                    worksheet.Cell(row, 2).Value = req.DisplayBorrowerName;
                     worksheet.Cell(row, 3).Value = req.Purpose ?? "-";
                     worksheet.Cell(row, 4).Value = req.ExpectedReturnDate.ToString("yyyy/MM/dd");
                     worksheet.Cell(row, 5).Value = req.ArabicStatus;
@@ -281,10 +280,9 @@ namespace Sources.Services
                                      foreach (var req in list)
                                      {
                                          var backgroundColor = i % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
-                                         string borrower = !string.IsNullOrEmpty(req.BorrowerName) ? req.BorrowerName : (req.BorrowerUser?.FullName ?? "-");
                                          
                                          table.Cell().Element(CellStyle).Text(req.Source?.SourceCode ?? "-");
-                                         table.Cell().Element(CellStyle).Text(borrower);
+                                         table.Cell().Element(CellStyle).Text(req.DisplayBorrowerName);
                                          table.Cell().Element(CellStyle).Text(req.Purpose ?? "-");
                                          table.Cell().Element(CellStyle).Text(req.ExpectedReturnDate.ToString("yyyy/MM/dd"));
                                          table.Cell().Element(CellStyle).Text(req.ArabicStatus);
@@ -454,9 +452,8 @@ namespace Sources.Services
                 row = 2;
                 foreach (var req in borrowing)
                 {
-                    string borrower = !string.IsNullOrEmpty(req.BorrowerName) ? req.BorrowerName : (req.BorrowerUser?.FullName ?? "-");
                     wsBorrowing.Cell(row, 1).Value = req.Source?.SourceCode ?? "-";
-                    wsBorrowing.Cell(row, 2).Value = borrower;
+                    wsBorrowing.Cell(row, 2).Value = req.DisplayBorrowerName;
                     wsBorrowing.Cell(row, 3).Value = req.Purpose ?? "-";
                     wsBorrowing.Cell(row, 4).Value = req.ExpectedReturnDate.ToString("yyyy/MM/dd");
                     wsBorrowing.Cell(row, 5).Value = req.ArabicStatus;
@@ -582,9 +579,8 @@ namespace Sources.Services
                                     foreach (var req in borrowList)
                                     {
                                         var bg = i % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
-                                        string borrower = !string.IsNullOrEmpty(req.BorrowerName) ? req.BorrowerName : (req.BorrowerUser?.FullName ?? "-");
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(req.Source?.SourceCode ?? "-");
-                                        table.Cell().Element(c => CellStyle(c, bg)).Text(borrower);
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(req.DisplayBorrowerName);
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(req.Purpose ?? "-");
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(req.ExpectedReturnDate.ToString("yyyy/MM/dd"));
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(req.ArabicStatus);
