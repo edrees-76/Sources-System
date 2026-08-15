@@ -966,10 +966,14 @@ public partial class DashboardViewModel : ObservableObject
     [RelayCommand]
     private void NavigateToLowActivityReport()
     {
-        // الحصول على MainViewModel وتحديد نافذة التقارير
+        // الحصول على MainViewModel وتحديد نافذة التقارير وفتح تقرير المصادر المنخفضة
         if (App.ServiceProvider.GetService(typeof(MainViewModel)) is MainViewModel main)
         {
             main.NavigateTo("Reports");
+            if (main.CurrentView is ReportsViewModel reportsVm)
+            {
+                reportsVm.SelectReportCommand.Execute("LowActivityReport");
+            }
         }
     }
 
