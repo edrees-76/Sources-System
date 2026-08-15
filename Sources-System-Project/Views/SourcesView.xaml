@@ -161,27 +161,30 @@
                             Margin="0,0,0,2">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="52"/>      <!-- صورة -->
-                                <ColumnDefinition Width="120"/>     <!-- رمز المصدر -->
-                                <ColumnDefinition Width="*"/>       <!-- النظائر -->
-                                <ColumnDefinition Width="120"/>     <!-- النشاط الحالي -->
-                                <ColumnDefinition Width="140"/>     <!-- الموقع -->
-                                <ColumnDefinition Width="110"/>     <!-- الحالة -->
-                                <ColumnDefinition Width="108"/>     <!-- الإجراءات -->
+                                <ColumnDefinition Width="52"/>      <!-- 0: صورة -->
+                                <ColumnDefinition Width="110"/>     <!-- 1: كود المصدر -->
+                                <ColumnDefinition Width="110"/>     <!-- 2: التسلسل -->
+                                <ColumnDefinition Width="*"/>       <!-- 3: النظائر -->
+                                <ColumnDefinition Width="120"/>     <!-- 4: النشاط الحالي -->
+                                <ColumnDefinition Width="130"/>     <!-- 5: الموقع -->
+                                <ColumnDefinition Width="100"/>     <!-- 6: الحالة -->
+                                <ColumnDefinition Width="108"/>     <!-- 7: الإجراءات -->
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="" FontSize="11" FontWeight="Bold"
                                        Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                             <TextBlock Grid.Column="1" Text="{DynamicResource ColSourceCode}" FontSize="12" FontWeight="Bold"
                                        Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                            <TextBlock Grid.Column="2" Text="{DynamicResource ColRadioisotopes}" FontSize="12" FontWeight="Bold"
+                            <TextBlock Grid.Column="2" Text="{DynamicResource ColSerialNumber}" FontSize="12" FontWeight="Bold"
                                        Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                            <TextBlock Grid.Column="3" Text="{DynamicResource ColCurrentActivity}" FontSize="12" FontWeight="Bold"
+                            <TextBlock Grid.Column="3" Text="{DynamicResource ColRadioisotopes}" FontSize="12" FontWeight="Bold"
                                        Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                            <TextBlock Grid.Column="4" Text="{DynamicResource ColStorageLocation}" FontSize="12" FontWeight="Bold"
+                            <TextBlock Grid.Column="4" Text="{DynamicResource ColCurrentActivity}" FontSize="12" FontWeight="Bold"
                                        Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                            <TextBlock Grid.Column="5" Text="{DynamicResource ColSourceStatus}" FontSize="12" FontWeight="Bold"
+                            <TextBlock Grid.Column="5" Text="{DynamicResource ColStorageLocation}" FontSize="12" FontWeight="Bold"
                                        Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                            <TextBlock Grid.Column="6" Text="{DynamicResource ColActions}" FontSize="12" FontWeight="Bold"
+                            <TextBlock Grid.Column="6" Text="{DynamicResource ColSourceStatus}" FontSize="12" FontWeight="Bold"
+                                       Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            <TextBlock Grid.Column="7" Text="{DynamicResource ColActions}" FontSize="12" FontWeight="Bold"
                                        Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                         </Grid>
                     </Border>
@@ -281,13 +284,14 @@
 
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="52"/>      <!-- صورة المصدر -->
-                                                    <ColumnDefinition Width="120"/>     <!-- رمز + رقم تسلسلي -->
-                                                    <ColumnDefinition Width="*"/>       <!-- النظائر -->
-                                                    <ColumnDefinition Width="120"/>     <!-- النشاط الحالي -->
-                                                    <ColumnDefinition Width="140"/>     <!-- الموقع -->
-                                                    <ColumnDefinition Width="110"/>     <!-- شارة الحالة -->
-                                                    <ColumnDefinition Width="108"/>     <!-- الإجراءات -->
+                                                    <ColumnDefinition Width="52"/>      <!-- 0: صورة المصدر -->
+                                                    <ColumnDefinition Width="110"/>     <!-- 1: رمز المصدر -->
+                                                    <ColumnDefinition Width="110"/>     <!-- 2: الرقم التسلسلي -->
+                                                    <ColumnDefinition Width="*"/>       <!-- 3: النظائر -->
+                                                    <ColumnDefinition Width="120"/>     <!-- 4: النشاط الحالي -->
+                                                    <ColumnDefinition Width="130"/>     <!-- 5: الموقع -->
+                                                    <ColumnDefinition Width="100"/>     <!-- 6: شارة الحالة -->
+                                                    <ColumnDefinition Width="108"/>     <!-- 7: الإجراءات -->
                                                 </Grid.ColumnDefinitions>
 
                                                 <!-- ── عمود 0: صورة المصدر ── -->
@@ -311,33 +315,32 @@
                                                     </Grid>
                                                 </Border>
 
-                                                <!-- ── عمود 1: رمز المصدر + رقم تسلسلي ── -->
-                                                <StackPanel Grid.Column="1"
-                                                            VerticalAlignment="Center"
-                                                            HorizontalAlignment="Center">
-                                                    <TextBlock Text="{Binding SourceCode}"
-                                                               FontSize="14" FontWeight="SemiBold"
-                                                               FontFamily="Segoe UI"
-                                                               Foreground="{DynamicResource TextPrimary}"
-                                                               TextAlignment="Center"
-                                                               TextWrapping="NoWrap"
-                                                               TextTrimming="CharacterEllipsis"/>
-                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,2,0,0">
-                                                        <TextBlock Text="{DynamicResource LabelSerialShort}"
-                                                                   FontSize="11"
-                                                                   FontFamily="Segoe UI"
-                                                                   Foreground="{DynamicResource TextSecondary}"/>
-                                                        <TextBlock Text="{Binding SerialNumber, TargetNullValue='-', FallbackValue='-'}"
-                                                                   FontSize="11"
-                                                                   FontFamily="Segoe UI"
-                                                                   Foreground="{DynamicResource TextSecondary}"
-                                                                   TextWrapping="NoWrap"
-                                                                   TextTrimming="CharacterEllipsis"/>
-                                                    </StackPanel>
-                                                </StackPanel>
+                                                <!-- ── عمود 1: كود المصدر ── -->
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding SourceCode}"
+                                                           FontSize="14" FontWeight="SemiBold"
+                                                           FontFamily="Segoe UI"
+                                                           Foreground="{DynamicResource TextPrimary}"
+                                                           TextAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Center"
+                                                           TextWrapping="NoWrap"
+                                                           TextTrimming="CharacterEllipsis"/>
 
-                                                <!-- ── عمود 2: النظائر المشعة (شارات) ── -->
-                                                <ItemsControl Grid.Column="2"
+                                                <!-- ── عمود 2: الرقم التسلسلي ── -->
+                                                <TextBlock Grid.Column="2"
+                                                           Text="{Binding SerialNumber, TargetNullValue='-', FallbackValue='-'}"
+                                                           FontSize="13"
+                                                           FontFamily="Segoe UI"
+                                                           Foreground="{DynamicResource TextSecondary}"
+                                                           TextAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Center"
+                                                           TextWrapping="NoWrap"
+                                                           TextTrimming="CharacterEllipsis"/>
+
+                                                <!-- ── عمود 3: النظائر المشعة (شارات) ── -->
+                                                <ItemsControl Grid.Column="3"
                                                               ItemsSource="{Binding DisplayIsotopesList}"
                                                               VerticalAlignment="Center"
                                                               HorizontalAlignment="Center">
@@ -363,8 +366,8 @@
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
 
-                                                <!-- ── عمود 3: النشاط الحالي ── -->
-                                                <StackPanel Grid.Column="3"
+                                                <!-- ── عمود 4: النشاط الحالي ── -->
+                                                <StackPanel Grid.Column="4"
                                                             VerticalAlignment="Center"
                                                             HorizontalAlignment="Center">
                                                     <TextBlock FontSize="13" FontWeight="SemiBold"
@@ -388,8 +391,8 @@
                                                                Margin="0,2,0,0"/>
                                                 </StackPanel>
 
-                                                <!-- ── عمود 4: الموقع ── -->
-                                                <StackPanel Grid.Column="4"
+                                                <!-- ── عمود 5: الموقع ── -->
+                                                <StackPanel Grid.Column="5"
                                                             VerticalAlignment="Center"
                                                             HorizontalAlignment="Center"
                                                             Orientation="Horizontal">
@@ -407,8 +410,8 @@
                                                                VerticalAlignment="Center"/>
                                                 </StackPanel>
 
-                                                <!-- ── عمود 5: شارة الحالة اللونية ── -->
-                                                <Border Grid.Column="5"
+                                                <!-- ── عمود 6: شارة الحالة اللونية ── -->
+                                                <Border Grid.Column="6"
                                                         CornerRadius="12"
                                                         Padding="10,4"
                                                         VerticalAlignment="Center"
@@ -483,8 +486,8 @@
                                                     </TextBlock>
                                                 </Border>
 
-                                                <!-- ── عمود 6: أزرار الإجراءات ── -->
-                                                <StackPanel Grid.Column="6"
+                                                <!-- ── عمود 7: أزرار الإجراءات ── -->
+                                                <StackPanel Grid.Column="7"
                                                             Orientation="Horizontal"
                                                             HorizontalAlignment="Center"
                                                             VerticalAlignment="Center">
