@@ -10,20 +10,23 @@ namespace Sources.Services;
 public class DecayCalculationService : IDecayCalculationService
 {
     /// <summary>
-    /// حساب النشاط الإشعاعي الحالي
+    /// حساب النشاط الإشعاعي الحالي (عند اللحظة الحالية)
     /// </summary>
-    /// <param name="initialActivityBq">النشاط الابتدائي بالبيكريل</param>
-    /// <param name="halfLife">نصف العمر</param>
-    /// <param name="halfLifeUnit">وحدة نصف العمر</param>
-    /// <param name="calibrationDate">تاريخ المعايرة</param>
-    /// <returns>النشاط الحالي بالبيكريل</returns>
     public double CalculateCurrentActivity(double initialActivityBq, double halfLife, string halfLifeUnit, DateTime calibrationDate)
+    {
+        return CalculateActivityAtDate(initialActivityBq, halfLife, halfLifeUnit, calibrationDate, DateTime.Now);
+    }
+
+    /// <summary>
+    /// حساب النشاط الإشعاعي عند تاريخ حساب محدد
+    /// </summary>
+    public double CalculateActivityAtDate(double initialActivityBq, double halfLife, string halfLifeUnit, DateTime calibrationDate, DateTime calculationDate)
     {
         if (halfLife <= 0 || initialActivityBq <= 0)
             return 0;
 
         // حساب الزمن المنقضي بالثواني
-        var elapsedTime = (DateTime.Now - calibrationDate).TotalSeconds;
+        var elapsedTime = (calculationDate - calibrationDate).TotalSeconds;
         if (elapsedTime < 0) elapsedTime = 0;
 
         // تحويل نصف العمر إلى ثوانٍ
@@ -57,11 +60,49 @@ public class DecayCalculationService : IDecayCalculationService
     }
 
     /// <summary>
+    /// تحويل النشاط من Bq إلى وحدة باستخدام اسم/رمز الوحدة
+    /// </summary>
+    public double ConvertFromBq(double activityBq, string unitSymbol)
+    {
+        return unitSymbol switch
+        {
+            "Bq" => activityBq,
+            "kBq" => activityBq / 1e3,
+            "MBq" => activityBq / 1e6,
+            "GBq" => activityBq / 1e9,
+            "TBq" => activityBq / 1e12,
+            "Ci" => activityBq / 3.7e10,
+            "mCi" => activityBq / 3.7e7,
+            "µCi" or "uCi" => activityBq / 3.7e4,
+            _ => activityBq
+        };
+    }
+
+    /// <summary>
     /// تحويل النشاط إلى Bq
     /// </summary>
     public double ConvertToBq(double activityValue, double conversionToBq)
     {
         return activityValue * conversionToBq;
+    }
+
+    /// <summary>
+    /// تحويل النشاط إلى Bq باستخدام اسم/رمز الوحدة
+    /// </summary>
+    public double ConvertToBq(double activityValue, string unitSymbol)
+    {
+        return unitSymbol switch
+        {
+            "Bq" => activityValue,
+            "kBq" => activityValue * 1e3,
+            "MBq" => activityValue * 1e6,
+            "GBq" => activityValue * 1e9,
+            "TBq" => activityValue * 1e12,
+            "Ci" => activityValue * 3.7e10,
+            "mCi" => activityValue * 3.7e7,
+            "µCi" or "uCi" => activityValue * 3.7e4,
+            _ => activityValue
+        };
     }
 
     /// <summary>
@@ -148,15 +189,21 @@ public class DecayCalculationService : IDecayCalculationService
         return curve;
     }
 
+    public double ConvertTimeToSeconds(double value, string unit)
+    {
+        return ConvertToSeconds(value, unit);
+    }
+
     private double ConvertToSeconds(double value, string unit)
     {
         return unit?.ToLower() switch
         {
-            "seconds" => value,
-            "minutes" => value * 60,
-            "hours" => value * 3600,
-            "days" => value * 86400,
-            "years" => value * 365.25 * 86400,
+            "seconds" or "second" or "s" => value,
+            "minutes" or "minute" or "min" or "m" => value * 60,
+            "hours" or "hour" or "h" => value * 3600,
+            "days" or "day" or "d" => value * 86400,
+            "months" or "month" or "mo" => value * 30 * 86400, // 30 يوماً
+            "years" or "year" or "yr" or "y" => value * 365.25 * 86400, // 365.25 يوماً
             _ => value * 365.25 * 86400 // افتراضي: سنوات
         };
     }
