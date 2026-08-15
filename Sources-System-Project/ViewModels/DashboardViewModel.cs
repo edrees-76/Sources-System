@@ -191,6 +191,15 @@ public partial class DashboardViewModel : ObservableObject
         return new SolidColorPaint(color) { StrokeThickness = 1.5f };
     }
 
+    // دهان أرقام القطاعات في الرسوم الدائرية - لون أبيض ناصع عالي التباين وخط عريض
+    private static SolidColorPaint GetPieDataLabelsPaint()
+    {
+        return new SolidColorPaint(SKColors.White)
+        {
+            SKTypeface = SKTypeface.FromFamilyName("Segoe UI", SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright)
+        };
+    }
+
     private void InitDrawMarginFrames()
     {
         IsArabic = SettingsHelper.Language == "ar";
@@ -496,15 +505,15 @@ public partial class DashboardViewModel : ObservableObject
 
         if (HasEnoughIsotopeData)
         {
-            var axisPaint = GetAxisPaint();
+            var dataLabelsPaint = GetPieDataLabelsPaint();
             SourcesByIsotopeSeries = byIsotope.Select((x, idx) => new PieSeries<int>
             {
                 Values = new[] { x.Count },
                 Name = x.Label,
                 Fill = new SolidColorPaint(SKColor.Parse(ChartPalette[idx % ChartPalette.Length])),
                 InnerRadius = 40,
-                DataLabelsPaint = axisPaint,
-                DataLabelsSize = 11,
+                DataLabelsPaint = dataLabelsPaint,
+                DataLabelsSize = 13,
                 DataLabelsPosition = LiveChartsCore.Measure.PolarLabelsPosition.Middle
             } as ISeries).ToArray();
 
@@ -545,15 +554,15 @@ public partial class DashboardViewModel : ObservableObject
 
         if (HasEnoughLocationData)
         {
-            var axisPaint = GetAxisPaint();
+            var dataLabelsPaint = GetPieDataLabelsPaint();
             SourcesByLocationSeries = locations.Select((x, idx) => (ISeries)new PieSeries<int>
             {
                 Values = new[] { x.Count },
                 Name = x.Label,
                 Fill = new SolidColorPaint(SKColor.Parse(ChartPalette[idx % ChartPalette.Length])),
                 InnerRadius = 40,
-                DataLabelsPaint = axisPaint,
-                DataLabelsSize = 11,
+                DataLabelsPaint = dataLabelsPaint,
+                DataLabelsSize = 13,
                 DataLabelsPosition = LiveChartsCore.Measure.PolarLabelsPosition.Middle
             }).ToArray();
 
