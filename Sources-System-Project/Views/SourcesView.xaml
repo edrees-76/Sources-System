@@ -148,8 +148,9 @@
                 <!-- ══════════════════════════════════════════════════ -->
                 <Grid Grid.Row="3">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>  <!-- رأس الأعمدة -->
-                        <RowDefinition Height="*"/>     <!-- قائمة البطاقات -->
+                        <RowDefinition Height="Auto"/>  <!-- Row 0: رأس الأعمدة -->
+                        <RowDefinition Height="*"/>     <!-- Row 1: قائمة البطاقات -->
+                        <RowDefinition Height="Auto"/>  <!-- Row 2: شريط ترقيم الصفحات -->
                     </Grid.RowDefinitions>
 
                     <!-- ─── رأس الأعمدة (Header Row) ─── -->
@@ -232,7 +233,6 @@
 
                             <!-- قائمة البطاقات الفعلية -->
                             <ItemsControl ItemsSource="{Binding PagedSources}"
-                                          Visibility="{Binding Sources.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}"
                                           x:Name="SourceCardsPanel">
                                 <!-- عكس الظهور: نظهر ItemsControl فقط حين يكون Count != 0 -->
                                 <ItemsControl.Style>
@@ -322,14 +322,18 @@
                                                                TextAlignment="Center"
                                                                TextWrapping="NoWrap"
                                                                TextTrimming="CharacterEllipsis"/>
-                                                    <TextBlock Text="{Binding SerialNumber}"
-                                                               FontSize="11"
-                                                               FontFamily="Segoe UI"
-                                                               Foreground="{DynamicResource TextSecondary}"
-                                                               TextAlignment="Center"
-                                                               TextWrapping="NoWrap"
-                                                               TextTrimming="CharacterEllipsis"
-                                                               Margin="0,2,0,0"/>
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,2,0,0">
+                                                        <TextBlock Text="{DynamicResource LabelSerialShort}"
+                                                                   FontSize="11"
+                                                                   FontFamily="Segoe UI"
+                                                                   Foreground="{DynamicResource TextSecondary}"/>
+                                                        <TextBlock Text="{Binding SerialNumber, TargetNullValue='-', FallbackValue='-'}"
+                                                                   FontSize="11"
+                                                                   FontFamily="Segoe UI"
+                                                                   Foreground="{DynamicResource TextSecondary}"
+                                                                   TextWrapping="NoWrap"
+                                                                   TextTrimming="CharacterEllipsis"/>
+                                                    </StackPanel>
                                                 </StackPanel>
 
                                                 <!-- ── عمود 2: النظائر المشعة (شارات) ── -->
@@ -521,14 +525,13 @@
                     </ScrollViewer>
 
                     <!-- ─── شريط ترقيم الصفحات ─── -->
-                    <Border Grid.Row="1"
+                    <Border Grid.Row="2"
                             Background="{DynamicResource CardBackground}"
                             CornerRadius="0,0,10,10"
                             Padding="16,10"
                             BorderBrush="{DynamicResource BorderColor}"
                             BorderThickness="0,1,0,0"
-                            Margin="0,6,0,0"
-                            Visibility="{Binding Sources.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}">
+                            Margin="0,6,0,0">
                         <Border.Style>
                             <Style TargetType="Border">
                                 <Setter Property="Visibility" Value="Visible"/>

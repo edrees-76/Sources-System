@@ -580,5 +580,6 @@
     <!-- Empty State - Sources Screen -->
     <system:String x:Key="EmptySourcesTitle">No radioactive sources registered yet</system:String>
     <system:String x:Key="EmptySourcesSubtitle">Start by adding your first radioactive source to track its activity and manage its full lifecycle</system:String>
+    <system:String x:Key="LabelSerialShort">S/N: </system:String>
 
 </ResourceDictionary>
