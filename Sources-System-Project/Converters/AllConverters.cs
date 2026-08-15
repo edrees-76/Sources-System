@@ -107,6 +107,29 @@ public class TransactionTypeToArabicConverter : IValueConverter
         => throw new NotImplementedException();
 }
 
+// ─── تحويل نوع الموقع إلى نص مترجم ───
+public class LocationTypeToDisplayConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        string? key = value?.ToString() switch
+        {
+            "Lab" => "LocationTypeLab",
+            "Storage" => "LocationTypeStorage",
+            "Hospital" => "LocationTypeHospital",
+            "Clinic" => "LocationTypeClinic",
+            _ => null
+        };
+
+        if (key != null && Application.Current.Resources.Contains(key))
+            return Application.Current.FindResource(key);
+
+        return value?.ToString() ?? "";
+    }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}
+
 // ─── تنسيق الأرقام العلمية ───
 public class ScientificNotationConverter : IValueConverter
 {

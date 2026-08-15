@@ -321,6 +321,10 @@
     <system:String x:Key="FieldBuilding">Building</system:String>
     <system:String x:Key="FieldRoom">Room</system:String>
     <system:String x:Key="FieldResponsible">Responsible Person</system:String>
+    <system:String x:Key="LocationTypeLab">Laboratory</system:String>
+    <system:String x:Key="LocationTypeStorage">Storage</system:String>
+    <system:String x:Key="LocationTypeHospital">Hospital</system:String>
+    <system:String x:Key="LocationTypeClinic">Clinic</system:String>
 
     <!-- Reports Page -->
     <system:String x:Key="ReportsCenterTitle">Strategic Reports Center</system:String>

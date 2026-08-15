@@ -317,6 +317,10 @@
     <system:String x:Key="FieldBuilding">المبنى</system:String>
     <system:String x:Key="FieldRoom">الغرفة</system:String>
     <system:String x:Key="FieldResponsible">المسؤول</system:String>
+    <system:String x:Key="LocationTypeLab">مختبر</system:String>
+    <system:String x:Key="LocationTypeStorage">مخزن</system:String>
+    <system:String x:Key="LocationTypeHospital">مستشفى</system:String>
+    <system:String x:Key="LocationTypeClinic">عيادة</system:String>
 
     <!-- Reports Page -->
     <system:String x:Key="ReportsCenterTitle">مركز التقارير الاستراتيجية</system:String>
