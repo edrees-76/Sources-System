@@ -13,6 +13,9 @@
     <SolidColorBrush x:Key="BorderColor" Color="#34322D"/>
     <SolidColorBrush x:Key="DataGridHeader" Color="#1D1E21"/>
     <SolidColorBrush x:Key="DataGridAltRow" Color="#23252A"/>
+    <SolidColorBrush x:Key="DataGridRowHover" Color="#2C2F36"/>
+    <SolidColorBrush x:Key="DataGridRowSelected" Color="#1B3238"/>
+    <SolidColorBrush x:Key="DataGridRowSelectedHover" Color="#234149"/>
     <SolidColorBrush x:Key="InputBackground" Color="#1D1E21"/>
     <SolidColorBrush x:Key="ChartBackground" Color="#202226"/>
 

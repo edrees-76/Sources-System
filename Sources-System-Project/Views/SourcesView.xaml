@@ -260,31 +260,7 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <!-- بطاقة المصدر الأفقية -->
-                                        <Border x:Name="SourceCard"
-                                                Background="{DynamicResource CardBackground}"
-                                                CornerRadius="8"
-                                                Margin="0,0,0,6"
-                                                Padding="12,10"
-                                                BorderThickness="1"
-                                                BorderBrush="{DynamicResource BorderColor}"
-                                                Cursor="Hand">
-                                            <Border.Effect>
-                                                <DropShadowEffect x:Name="CardShadow" BlurRadius="8" ShadowDepth="1" Opacity="0.07" Color="#000000"/>
-                                            </Border.Effect>
-                                            <Border.Style>
-                                                <Style TargetType="Border">
-                                                    <Style.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="BorderBrush" Value="{DynamicResource GoldBrush}"/>
-                                                            <Setter Property="Effect">
-                                                                <Setter.Value>
-                                                                    <DropShadowEffect BlurRadius="16" ShadowDepth="2" Opacity="0.14" Color="#000000"/>
-                                                                </Setter.Value>
-                                                            </Setter>
-                                                        </Trigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
+                                        <Border x:Name="SourceCard" Style="{DynamicResource ModernCardListItemStyle}">
 
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
