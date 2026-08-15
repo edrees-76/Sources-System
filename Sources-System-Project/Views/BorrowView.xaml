@@ -5,9 +5,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
-             xmlns:vm="clr-namespace:Sources.ViewModels"
+             xmlns:converters="clr-namespace:Sources.Converters"
              mc:Ignorable="d" 
-             d:DesignHeight="800" d:DesignWidth="1200"
+             d:DesignHeight="900" d:DesignWidth="1200"
              FlowDirection="RightToLeft">
 
     <b:Interaction.Triggers>
@@ -16,17 +16,18 @@
         </b:EventTrigger>
     </b:Interaction.Triggers>
 
-    <Grid>
+    <Grid Margin="24">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
-        <Border Grid.Row="0" Margin="0,0,0,20" Padding="20" Background="{DynamicResource CardBackground}" CornerRadius="8" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- شريط العنوان العلوي العام                             -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <Border Grid.Row="0" Margin="0,0,0,20" Padding="20,16" Background="{DynamicResource CardBackground}" CornerRadius="10" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.1"/>
+                <DropShadowEffect BlurRadius="12" ShadowDepth="1" Opacity="0.06"/>
             </Border.Effect>
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -34,271 +35,737 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
-                <StackPanel Grid.Column="0">
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
                     <TextBlock Text="{DynamicResource BorrowingManagementTitle}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
-                    <TextBlock Text="{DynamicResource BorrowingManagementSubtitle}" FontSize="14" Foreground="{DynamicResource TextSecondary}" Margin="0,5,0,0"/>
+                    <TextBlock Text="{DynamicResource BorrowingManagementSubtitle}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button Command="{Binding OpenCreateDialogCommand}" Style="{StaticResource MaterialDesignOutlinedButton}" Margin="0,0,10,0" Height="40" Foreground="{DynamicResource TextPrimary}" BorderBrush="{DynamicResource BorderColor}">
+                <!-- أزرار الإجراءات العلوية: تظهر فقط عند عدم التحرير -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center"
+                            Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVis}}">
+                    <Button Command="{Binding AddNewCommand}" Style="{StaticResource PrimaryButton}" Margin="0,0,10,0" Height="40" Padding="18,0">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="PlusCircleOutline" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource AddNewBorrowRequest}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource AddNewBorrowRequestTitle}" VerticalAlignment="Center" FontWeight="SemiBold"/>
                         </StackPanel>
                     </Button>
-                    <Button Command="{Binding ExportExcelCommand}" Style="{StaticResource MaterialDesignOutlinedButton}" Margin="0,0,10,0" Height="40" ToolTip="{DynamicResource ExportExcel}" BorderBrush="{DynamicResource BorderColor}">
-                        <materialDesign:PackIcon Kind="FileExcelBox" Width="20" Height="20" Foreground="#22C55E"/>
+                    <Button Command="{Binding ExportExcelCommand}" Style="{StaticResource MaterialDesignOutlinedButton}" Margin="0,0,8,0" Height="40" Width="40" Padding="0" ToolTip="{DynamicResource ExportExcel}" BorderBrush="{DynamicResource BorderColor}">
+                        <materialDesign:PackIcon Kind="FileExcelBox" Width="22" Height="22" Foreground="#22C55E"/>
                     </Button>
-                    <Button Command="{Binding ExportPdfCommand}" Style="{StaticResource MaterialDesignOutlinedButton}" Height="40" ToolTip="{DynamicResource ExportPdf}" BorderBrush="{DynamicResource BorderColor}">
-                        <materialDesign:PackIcon Kind="FilePdfBox" Width="20" Height="20" Foreground="#EF4444"/>
+                    <Button Command="{Binding ExportPdfCommand}" Style="{StaticResource MaterialDesignOutlinedButton}" Height="40" Width="40" Padding="0" ToolTip="{DynamicResource ExportPdf}" BorderBrush="{DynamicResource BorderColor}">
+                        <materialDesign:PackIcon Kind="FilePdfBox" Width="22" Height="22" Foreground="#EF4444"/>
                     </Button>
                 </StackPanel>
             </Grid>
         </Border>
 
-        <!-- Statistics & Filters -->
-        <Grid Grid.Row="1" Margin="0,0,0,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- حاوية المشهد المزدوج (List ↔ Form)                    -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <Grid Grid.Row="1">
 
-            <!-- Cards -->
-            <UniformGrid Grid.Column="0" Columns="3">
-                <!-- Active Borrows -->
-                <Border Background="{DynamicResource CardBackground}" CornerRadius="6" Padding="12" Margin="0,0,8,0" BorderBrush="{DynamicResource SuccessBrush}" BorderThickness="0,3,0,0">
-                    <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.1"/></Border.Effect>
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <materialDesign:PackIcon Kind="CheckCircleOutline" Width="18" Height="18" Foreground="{DynamicResource SuccessBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource ActiveBorrows}" Foreground="{DynamicResource SuccessBrush}" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
-                            <TextBlock Text="{Binding ActiveCount}" Foreground="{DynamicResource TextPrimary}" FontSize="28" FontWeight="Heavy" FontFamily="Segoe UI"/>
-                            <TextBlock Text="{DynamicResource SourcesCountSuffix}" Foreground="{DynamicResource TextSecondary}" FontSize="11" VerticalAlignment="Bottom" Margin="6,0,0,4"/>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
+            <!-- ─────────────────────────────────────────────────── -->
+            <!-- المشهد 1: قائمة الاستعارات والبحث والإحصائيات       -->
+            <!-- ─────────────────────────────────────────────────── -->
+            <Grid Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVis}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <!-- البطاقات الإحصائية -->
+                    <RowDefinition Height="Auto"/> <!-- شريط البحث والتصفية -->
+                    <RowDefinition Height="*"/>    <!-- جدول البيانات -->
+                </Grid.RowDefinitions>
 
-                <!-- Due Soon -->
-                <Border Background="{DynamicResource CardBackground}" CornerRadius="6" Padding="12" Margin="4,0,4,0" BorderBrush="{DynamicResource WarningBrush}" BorderThickness="0,3,0,0">
-                    <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.1"/></Border.Effect>
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <materialDesign:PackIcon Kind="CalendarClock" Width="18" Height="18" Foreground="{DynamicResource WarningBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource DueSoon}" Foreground="{DynamicResource WarningBrush}" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
-                            <TextBlock Text="{Binding DueSoonCount}" Foreground="{DynamicResource TextPrimary}" FontSize="28" FontWeight="Heavy" FontFamily="Segoe UI"/>
-                            <TextBlock Text="{DynamicResource SourcesCountSuffix}" Foreground="{DynamicResource TextSecondary}" FontSize="11" VerticalAlignment="Bottom" Margin="6,0,0,4"/>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
+                <!-- البطاقات الإحصائية الأربع -->
+                <Grid Grid.Row="0" Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                <!-- Overdue -->
-                <Border Background="{DynamicResource CardBackground}" CornerRadius="6" Padding="12" Margin="8,0,0,0" BorderBrush="{DynamicResource DangerBrush}" BorderThickness="0,3,0,0">
-                    <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.1"/></Border.Effect>
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <materialDesign:PackIcon Kind="AlertCircleOutline" Width="18" Height="18" Foreground="{DynamicResource DangerBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource OverdueRequests}" Foreground="{DynamicResource DangerBrush}" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
-                            <TextBlock Text="{Binding OverdueCount}" Foreground="{DynamicResource TextPrimary}" FontSize="28" FontWeight="Heavy" FontFamily="Segoe UI"/>
-                            <TextBlock Text="{DynamicResource SourcesCountSuffix}" Foreground="{DynamicResource TextSecondary}" FontSize="11" VerticalAlignment="Bottom" Margin="6,0,0,4"/>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-            </UniformGrid>
-
-            <!-- Search and Filter -->
-            <Border Grid.Column="1" Padding="15" Background="{DynamicResource CardBackground}" CornerRadius="8" BorderThickness="1" BorderBrush="{DynamicResource BorderColor}">
-                <Border.Effect><DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.1"/></Border.Effect>
-                <StackPanel>
-                    <TextBox Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" 
-                             materialDesign:HintAssist.Hint="{DynamicResource SearchBorrowHint}"
-                             Style="{StaticResource SearchBox}" Margin="0,0,0,15">
-                        <b:Interaction.Triggers>
-                            <b:EventTrigger EventName="TextChanged">
-                                <b:InvokeCommandAction Command="{Binding PerformSearchCommand}"/>
-                            </b:EventTrigger>
-                        </b:Interaction.Triggers>
-                    </TextBox>
-                    <ComboBox ItemsSource="{Binding StatusFilters}" 
-                              SelectedItem="{Binding SelectedStatusFilter, UpdateSourceTrigger=PropertyChanged}"
-                              materialDesign:HintAssist.Hint="{DynamicResource StatusFilter}"
-                              Style="{StaticResource FormComboBox}">
-                        <b:Interaction.Triggers>
-                            <b:EventTrigger EventName="SelectionChanged">
-                                <b:InvokeCommandAction Command="{Binding PerformSearchCommand}"/>
-                            </b:EventTrigger>
-                        </b:Interaction.Triggers>
-                    </ComboBox>
-                </StackPanel>
-            </Border>
-        </Grid>
-
-        <!-- DataGrid -->
-        <Border Grid.Row="2" Style="{DynamicResource ContentCard}" Margin="0">
-            <DataGrid ItemsSource="{Binding Requests}" SelectedItem="{Binding ActionRequest}" Style="{DynamicResource ModernDataGrid}"
-                      HeadersVisibility="Column" CanUserResizeColumns="False" 
-                      ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                      ColumnWidth="*">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="45" ElementStyle="{StaticResource CenterAligned}"/>
-                    <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding Source.SourceCode}" Width="110" ElementStyle="{StaticResource CenterAligned}"/>
-                    <DataGridTextColumn Header="{DynamicResource ColBorrower}" Binding="{Binding BorrowerName}" Width="*" ElementStyle="{StaticResource CenterAligned}"/>
-                    <DataGridTextColumn Header="{DynamicResource ColPurpose}" Binding="{Binding Purpose}" Width="1.5*" ElementStyle="{StaticResource NotesCellStyle}"/>
-                    <DataGridTextColumn Header="{DynamicResource ColBorrowDate}" Binding="{Binding RequestDate, StringFormat={}{0:yyyy/MM/dd}}" Width="115" ElementStyle="{StaticResource CenterAligned}"/>
-                    <DataGridTextColumn Header="{DynamicResource ColReturnDate}" Binding="{Binding ExpectedReturnDate, StringFormat={}{0:yyyy/MM/dd}}" Width="115">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource CenterAligned}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Status}" Value="Overdue">
-                                        <Setter Property="Foreground" Value="#EF4444"/>
-                                        <Setter Property="FontWeight" Value="Bold"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
-
-                    <DataGridTextColumn Header="{DynamicResource ColStatusAction}" Binding="{Binding ArabicStatus}" Width="100" ElementStyle="{StaticResource CenterAligned}"/>
-                    <DataGridTextColumn Header="{DynamicResource ColAddedBy}" Binding="{Binding AddedBy}" Width="120" ElementStyle="{StaticResource CenterAligned}"/>
-
-                    <DataGridTemplateColumn Header="{DynamicResource ColActions}" Width="80">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Button Command="{Binding DataContext.PrepareActionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                        CommandParameter="{Binding}" 
-                                        Style="{StaticResource MaterialDesignToolForegroundButton}"
-                                        Height="32" Padding="4" Width="32"
-                                        ToolTip="{DynamicResource ToolTipActions}">
-                                    <materialDesign:PackIcon Kind="Settings" Width="20" Height="20" Foreground="{DynamicResource GoldBrush}"/>
-                                </Button>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
-        </Border>
-
-        <!-- Create Request Dialog -->
-        <materialDesign:DialogHost IsOpen="{Binding IsCreateDialogOpen}" DialogMargin="8" Grid.RowSpan="3" Background="{DynamicResource CardBackground}">
-            <materialDesign:DialogHost.DialogContent>
-                <Grid Width="500" Margin="20" FlowDirection="RightToLeft">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    
-                    <TextBlock Grid.Row="0" Text="{DynamicResource AddNewBorrowRequest}" Foreground="{DynamicResource TextPrimary}" FontSize="20" FontWeight="Bold" Margin="0,0,0,20"/>
-
-                    <StackPanel Grid.Row="1" Margin="0,0,0,30">
-                        <ComboBox ItemsSource="{Binding AvailableSources}" SelectedItem="{Binding SelectedSourceForNew}" 
-                                  materialDesign:HintAssist.Hint="{DynamicResource SelectSource}" DisplayMemberPath="SourceCode"
-                                  Style="{StaticResource FormComboBox}" Margin="0,0,0,10"/>
-                                  
-                        <!-- Source Info Card (Visible when source is selected) -->
-                        <Border Background="{DynamicResource InputBackground}" CornerRadius="6" Padding="12,8" Margin="0,0,0,15"
-                                BorderBrush="#33D4AF37" BorderThickness="1">
-                            <Border.Style>
-                                <Style TargetType="Border">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SelectedSourceInfo}" Value="">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding SelectedSourceInfo}" Value="{x:Null}">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
-                            <StackPanel>
-                                <TextBlock Text="معلومات المصدر:" FontWeight="SemiBold" FontSize="11" Foreground="{DynamicResource GoldBrush}" Margin="0,0,0,4"/>
-                                <TextBlock Text="{Binding SelectedSourceInfo}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,2"
-                                           TextAlignment="Right" FlowDirection="RightToLeft"/>
+                    <!-- إجمالي السجلات -->
+                    <Border Grid.Column="0" Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="16,14" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{DynamicResource TotalBorrows}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                                <TextBlock Text="{Binding Requests.Count}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,0"/>
                             </StackPanel>
-                        </Border>
-                                  
-                        <TextBox Text="{Binding NewBorrowerName, UpdateSourceTrigger=PropertyChanged}" 
-                                 materialDesign:HintAssist.Hint="{DynamicResource SelectBorrower}"
-                                 Style="{StaticResource FormTextBox}" Margin="0,0,0,15"/>
-                                  
-                        <TextBox Text="{Binding NewPurpose, UpdateSourceTrigger=PropertyChanged}" 
-                                 materialDesign:HintAssist.Hint="{DynamicResource BorrowPurpose}" 
-                                 Style="{StaticResource FormTextBox}" Margin="0,0,0,15" Height="80" 
-                                 TextWrapping="Wrap" AcceptsReturn="True" VerticalContentAlignment="Top"/>
-                                 
-                        <DatePicker SelectedDate="{Binding NewExpectedReturnDate, UpdateSourceTrigger=PropertyChanged}" 
-                                    materialDesign:HintAssist.Hint="{DynamicResource ExpectedReturn}" 
-                                    Style="{StaticResource FormDatePicker}"/>
-                    </StackPanel>
+                            <Border Grid.Column="1" Width="40" Height="40" CornerRadius="20" Background="#144F7FA3" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="BookSyncOutline" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                    </Border>
 
-                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="{DynamicResource Cancel}" Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}" 
-                                Style="{StaticResource SecondaryButton}" Margin="0,0,12,0"/>
-                        <Button Content="{DynamicResource SubmitRequest}" Command="{Binding SubmitCreateRequestCommand}" 
-                                Style="{StaticResource PrimaryButton}"/>
-                    </StackPanel>
+                    <!-- جارية حالياً -->
+                    <Border Grid.Column="1" Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="16,14" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{DynamicResource ActiveBorrows}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                                <TextBlock Text="{Binding BorrowedCount}" FontSize="24" FontWeight="Bold" Foreground="#3FAE7A" Margin="0,4,0,0"/>
+                            </StackPanel>
+                            <Border Grid.Column="1" Width="40" Height="40" CornerRadius="20" Background="#1A3FAE7A" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="HandExtendedOutline" Width="22" Height="22" Foreground="#3FAE7A" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- قريبة الإرجاع (7 أيام) -->
+                    <Border Grid.Column="2" Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="16,14" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{DynamicResource DueSoon}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                                <TextBlock Text="{Binding DueSoonCount}" FontSize="24" FontWeight="Bold" Foreground="#E0A93E" Margin="0,4,0,0"/>
+                            </StackPanel>
+                            <Border Grid.Column="1" Width="40" Height="40" CornerRadius="20" Background="#1AE0A93E" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="ClockAlertOutline" Width="22" Height="22" Foreground="#E0A93E" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- متأخرة -->
+                    <Border Grid.Column="3" Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="16,14" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{DynamicResource OverdueBorrows}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                                <TextBlock Text="{Binding OverdueCount}" FontSize="24" FontWeight="Bold" Foreground="#C25B4A" Margin="0,4,0,0"/>
+                            </StackPanel>
+                            <Border Grid.Column="1" Width="40" Height="40" CornerRadius="20" Background="#1AC25B4A" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="AlertCircleOutline" Width="22" Height="22" Foreground="#C25B4A" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                    </Border>
                 </Grid>
-            </materialDesign:DialogHost.DialogContent>
-        </materialDesign:DialogHost>
 
-        <!-- Action Dialog -->
-        <materialDesign:DialogHost IsOpen="{Binding IsActionDialogOpen}" DialogMargin="8" Grid.RowSpan="3" Background="{DynamicResource CardBackground}">
-            <materialDesign:DialogHost.DialogContent>
-                <Grid Width="450" Margin="20" FlowDirection="RightToLeft">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    
-                    <TextBlock Grid.Row="0" Text="{DynamicResource RequestActions}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,20"/>
-
-                    <StackPanel Grid.Row="1" Margin="0,0,0,30">
-                        <TextBlock Text="{Binding ActionRequest.Source.SourceCode, StringFormat='المصدر: {0}'}" FontWeight="DemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,5"/>
-                        <TextBlock Text="{Binding ActionRequest.BorrowerName, StringFormat='المستعير: {0}'}" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,5"/>
-                        <TextBlock Text="{Binding ActionRequest.ArabicStatus, StringFormat='الحالة الحالية: {0}'}" Margin="0,0,0,15" Foreground="{DynamicResource PrimaryHueMidBrush}"/>
-
-                        <!-- أقسام الموافقة/الرفض والتسليم محذوفة - الاستعارة الآن فورية -->
-                        <!-- يبقى فقط قسم الإرجاع (Return Section) للطلبات النشطة -->
-                        
-                        <!-- Return Section (Visible if Delivered or Overdue) -->
-                        <StackPanel>
-                            <StackPanel.Style>
-                                <Style TargetType="StackPanel">
-                                    <Setter Property="Visibility" Value="Collapsed" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding ActionRequest.Status}" Value="Delivered">
-                                            <Setter Property="Visibility" Value="Visible" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding ActionRequest.Status}" Value="Overdue">
-                                            <Setter Property="Visibility" Value="Visible" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </StackPanel.Style>
- 
-                            <ComboBox ItemsSource="{Binding AvailableBorrowers}" SelectedItem="{Binding SelectedReturnedBy}" 
-                                      materialDesign:HintAssist.Hint="{DynamicResource SelectedReturnedBy}" DisplayMemberPath="FullName"
-                                      Style="{StaticResource FormComboBox}" Margin="0,0,0,20"/>
- 
-                            <Button Content="{DynamicResource MarkReturned}" Command="{Binding ExecuteReturnCommand}" 
-                                    Style="{StaticResource PrimaryButton}" HorizontalAlignment="Stretch"/>
+                <!-- شريط البحث والتصفية -->
+                <Border Grid.Row="1" Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="16,12" Margin="0,0,0,16" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="Magnify" Width="20" Height="20" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBox Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" 
+                                     materialDesign:HintAssist.Hint="{DynamicResource SearchPlaceholder}"
+                                     Width="320" Style="{StaticResource FormTextBox}">
+                                <b:Interaction.Triggers>
+                                    <b:EventTrigger EventName="TextChanged">
+                                        <b:InvokeCommandAction Command="{Binding PerformSearchCommand}"/>
+                                    </b:EventTrigger>
+                                </b:Interaction.Triggers>
+                            </TextBox>
                         </StackPanel>
-                        
-                    </StackPanel>
 
-                    <Button Grid.Row="2" Content="{DynamicResource Close}" Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}" 
-                            Foreground="{DynamicResource TextPrimary}"
-                            Style="{StaticResource MaterialDesignFlatButton}" HorizontalAlignment="Right"/>
-                </Grid>
-            </materialDesign:DialogHost.DialogContent>
-        </materialDesign:DialogHost>
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="{DynamicResource FilterByStatus}" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondary}" Margin="0,0,8,0"/>
+                            <ComboBox ItemsSource="{Binding StatusFilters}" SelectedItem="{Binding SelectedStatusFilter}" 
+                                      Width="160" Style="{StaticResource FormComboBox}">
+                                <b:Interaction.Triggers>
+                                    <b:EventTrigger EventName="SelectionChanged">
+                                        <b:InvokeCommandAction Command="{Binding PerformSearchCommand}"/>
+                                    </b:EventTrigger>
+                                </b:Interaction.Triggers>
+                            </ComboBox>
+                        </StackPanel>
+                        <TextBlock/>
+                    </DockPanel>
+                </Border>
 
+                <!-- جدول سجل الاستعارات -->
+                <Border Grid.Row="2" Background="{DynamicResource CardBackground}" CornerRadius="10" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" ClipToBounds="True">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.05"/>
+                    </Border.Effect>
+                    <DataGrid ItemsSource="{Binding Requests}" Style="{StaticResource ModernDataGrid}"
+                              AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single">
+                        <DataGrid.Columns>
+                            <!-- 1. الترقيم -->
+                            <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="45" ElementStyle="{StaticResource CenterAligned}"/>
+
+                            <!-- 2. كود المصدر -->
+                            <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding Source.SourceCode}" Width="110" ElementStyle="{StaticResource BoldCenterAligned}"/>
+
+                            <!-- 3. المستعير -->
+                            <DataGridTextColumn Header="{DynamicResource ColBorrower}" Binding="{Binding BorrowerName}" Width="150"/>
+
+                            <!-- 4. تاريخ الاستعارة -->
+                            <DataGridTextColumn Header="{DynamicResource ColBorrowDate}" Binding="{Binding RequestDate, StringFormat='{}{0:yyyy/MM/dd}'}" Width="120" ElementStyle="{StaticResource CenterAligned}"/>
+
+                            <!-- 5. تاريخ الإرجاع المتوقع -->
+                            <DataGridTextColumn Header="{DynamicResource ColExpectedReturn}" Binding="{Binding ExpectedReturnDate, StringFormat='{}{0:yyyy/MM/dd}'}" Width="130" ElementStyle="{StaticResource CenterAligned}"/>
+
+                            <!-- 6. تاريخ الإرجاع الفعلي -->
+                            <DataGridTextColumn Header="{DynamicResource ColActualReturn}" Binding="{Binding ActualReturnDate, StringFormat='{}{0:yyyy/MM/dd}', TargetNullValue='—'}" Width="130" ElementStyle="{StaticResource CenterAligned}"/>
+
+                            <!-- 7. الغرض -->
+                            <DataGridTextColumn Header="{DynamicResource ColPurpose}" Binding="{Binding Purpose}" Width="*"/>
+
+                            <!-- 8. الحالة -->
+                            <DataGridTemplateColumn Header="{DynamicResource ColStatusAction}" Width="115">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="8" Padding="10,4" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="#1A4F7FA3"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Delivered">
+                                                            <Setter Property="Background" Value="#1A3FAE7A"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Returned">
+                                                            <Setter Property="Background" Value="#1A4F7FA3"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Overdue">
+                                                            <Setter Property="Background" Value="#1AC25B4A"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock Text="{Binding ArabicStatus}" FontSize="11.5" FontWeight="SemiBold" HorizontalAlignment="Center">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Status}" Value="Delivered">
+                                                                <Setter Property="Foreground" Value="#3FAE7A"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Status}" Value="Returned">
+                                                                <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Status}" Value="Overdue">
+                                                                <Setter Property="Foreground" Value="#C25B4A"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- 9. الإجراءات -->
+                            <DataGridTemplateColumn Header="{DynamicResource ColActions}" Width="80">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                CommandParameter="{Binding}" 
+                                                Style="{StaticResource MaterialDesignToolForegroundButton}"
+                                                Height="32" Padding="4" Width="32"
+                                                ToolTip="{DynamicResource ToolTipActions}">
+                                            <materialDesign:PackIcon Kind="EyeOutline" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}"/>
+                                        </Button>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+            </Grid>
+
+
+            <!-- ─────────────────────────────────────────────────── -->
+            <!-- المشهد 2: بطاقة النموذج / الإجراء (IsEditing)       -->
+            <!-- ─────────────────────────────────────────────────── -->
+            <Border Style="{StaticResource ContentCard}"
+                    Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}"
+                    ClipToBounds="True">
+                <Border.InputBindings>
+                    <KeyBinding Key="Escape" Command="{Binding CancelEditCommand}"/>
+                </Border.InputBindings>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <Grid>
+
+                        <!-- ═══════════════════════════════════════════════ -->
+                        <!-- وضع أ: طلب استعارة جديد (IsNew = true)           -->
+                        <!-- نموذج Stepper ثنائي الخطوات                       -->
+                        <!-- ═══════════════════════════════════════════════ -->
+                        <Grid Visibility="{Binding IsNew, Converter={StaticResource BoolToVis}}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/> <!-- 0: شريط العنوان -->
+                                <RowDefinition Height="Auto"/> <!-- 1: مؤشر الخطوات Stepper -->
+                                <RowDefinition Height="*"/>    <!-- 2: محتوى الخطوات -->
+                            </Grid.RowDefinitions>
+
+                            <!-- شريط العنوان للنموذج -->
+                            <Border Grid.Row="0" CornerRadius="10,10,0,0" Padding="20,16"
+                                    Background="{DynamicResource CardBackground}"
+                                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <Border Grid.Column="0" Width="42" Height="42" CornerRadius="21" 
+                                            Background="#141F5A66" Margin="0,0,14,0">
+                                        <materialDesign:PackIcon Kind="HandExtendedOutline" Width="24" Height="24" 
+                                                                 Foreground="{DynamicResource PrimaryBrush}" 
+                                                                 VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    </Border>
+                                    
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{DynamicResource AddNewBorrowRequestTitle}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                        <TextBlock Text="{DynamicResource BorrowingManagementSubtitle}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                                    </StackPanel>
+                                    
+                                    <Button Grid.Column="2" Command="{Binding CancelEditCommand}"
+                                            Style="{StaticResource MaterialDesignIconButton}"
+                                            Width="36" Height="36" Padding="0"
+                                            ToolTip="{DynamicResource Close}">
+                                        <materialDesign:PackIcon Kind="Close" Foreground="{DynamicResource TextSecondary}" Width="20" Height="20"/>
+                                    </Button>
+                                </Grid>
+                            </Border>
+
+                            <!-- مؤشر الخطوات البصري (Stepper) -->
+                            <Border Grid.Row="1" Padding="24,18,24,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1">
+                                <Grid MaxWidth="500" HorizontalAlignment="Center">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/> <!-- الخطوة 1 -->
+                                        <ColumnDefinition Width="*"/>    <!-- الخط الواصل -->
+                                        <ColumnDefinition Width="Auto"/> <!-- الخطوة 2 -->
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- الخطوة 1: بيانات الطلب والمصدر -->
+                                    <StackPanel Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Border Width="38" Height="38" CornerRadius="19" HorizontalAlignment="Center" Margin="0,0,0,6">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                                    <Setter Property="BorderThickness" Value="2"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding CurrentStep}" Value="2">
+                                                            <Setter Property="Background" Value="#141F5A66"/>
+                                                            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                                            <Setter Property="BorderThickness" Value="2"/>
+                                                            <Setter Property="Width" Value="36"/>
+                                                            <Setter Property="Height" Value="36"/>
+                                                            <Setter Property="CornerRadius" Value="18"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <Grid>
+                                                <materialDesign:PackIcon Kind="Check" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                    <materialDesign:PackIcon.Style>
+                                                        <Style TargetType="materialDesign:PackIcon">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding CurrentStep}" Value="2">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </materialDesign:PackIcon.Style>
+                                                </materialDesign:PackIcon>
+                                                <TextBlock Text="1" FontWeight="Bold" FontSize="13" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding CurrentStep}" Value="2">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Grid>
+                                        </Border>
+                                        <TextBlock Text="{DynamicResource Step1RequestData}" FontSize="12" TextAlignment="Center" FontFamily="Segoe UI">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding CurrentStep}" Value="2">
+                                                            <Setter Property="FontWeight" Value="Normal"/>
+                                                            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+
+                                    <!-- الخط الواصل -->
+                                    <Border Grid.Column="1" Height="3" CornerRadius="1.5" Margin="12,0,12,20" VerticalAlignment="Center">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="{DynamicResource BorderColor}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding CurrentStep}" Value="2">
+                                                        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                    </Border>
+
+                                    <!-- الخطوة 2: التسليم والمراجعة -->
+                                    <StackPanel Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Border Width="36" Height="36" CornerRadius="18" HorizontalAlignment="Center" Margin="0,0,0,6">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="Transparent"/>
+                                                    <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+                                                    <Setter Property="BorderThickness" Value="1.5"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding CurrentStep}" Value="2">
+                                                            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                                            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                                            <Setter Property="BorderThickness" Value="2"/>
+                                                            <Setter Property="Width" Value="38"/>
+                                                            <Setter Property="Height" Value="38"/>
+                                                            <Setter Property="CornerRadius" Value="19"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock Text="2" FontWeight="Bold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding CurrentStep}" Value="2">
+                                                                <Setter Property="Foreground" Value="White"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Border>
+                                        <TextBlock Text="{DynamicResource Step2DeliveryReview}" FontSize="12" TextAlignment="Center" FontFamily="Segoe UI">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="FontWeight" Value="Normal"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding CurrentStep}" Value="2">
+                                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                                            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- محتوى الخطوات -->
+                            <Grid Grid.Row="2" Margin="30,24">
+
+                                <!-- محتوى الخطوة 1 -->
+                                <StackPanel MaxWidth="580" Visibility="{Binding CurrentStep, Converter={StaticResource EqualityToVis}, ConverterParameter=1}">
+                                    
+                                    <!-- اختيار المصدر -->
+                                    <StackPanel Margin="0,0,0,16">
+                                        <TextBlock Text="{DynamicResource SelectSource}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                        <ComboBox ItemsSource="{Binding AvailableSources}" SelectedItem="{Binding SelectedSourceForNew}" 
+                                                  DisplayMemberPath="SourceCode" Style="{StaticResource FormComboBox}"/>
+                                    </StackPanel>
+
+                                    <!-- بطاقة معلومات المصدر المختار -->
+                                    <Border Background="{DynamicResource InputBackground}" CornerRadius="8" Padding="14,10" Margin="0,0,0,18"
+                                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SelectedSourceInfo}" Value="">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding SelectedSourceInfo}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <StackPanel>
+                                            <TextBlock Text="معلومات المصدر:" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,0,6"/>
+                                            <TextBlock Text="{Binding SelectedSourceInfo}" FontSize="12" Foreground="{DynamicResource TextSecondary}" LineHeight="20" TextAlignment="Right"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- اسم المستعير -->
+                                    <StackPanel Margin="0,0,0,16">
+                                        <TextBlock Text="{DynamicResource SelectBorrower}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                        <TextBox Text="{Binding NewBorrowerName, UpdateSourceTrigger=PropertyChanged}" 
+                                                 Style="{StaticResource FormTextBox}"/>
+                                    </StackPanel>
+
+                                    <!-- الغرض من الاستعارة -->
+                                    <StackPanel Margin="0,0,0,24">
+                                        <TextBlock Text="{DynamicResource BorrowPurpose}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                        <TextBox Text="{Binding NewPurpose, UpdateSourceTrigger=PropertyChanged}" 
+                                                 Style="{StaticResource FormTextBox}" Height="75"
+                                                 TextWrapping="Wrap" AcceptsReturn="True" VerticalContentAlignment="Top"/>
+                                    </StackPanel>
+
+                                    <!-- أزرار الخطوة 1 -->
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,10,0,0">
+                                        <Button Content="{DynamicResource BtnNext}" Style="{StaticResource PrimaryButton}" 
+                                                Command="{Binding NextStepCommand}" Height="40" Padding="24,0" Margin="0,0,12,0"/>
+                                        <Button Content="{DynamicResource Cancel}" Style="{StaticResource SecondaryButton}" 
+                                                Command="{Binding CancelEditCommand}" Height="40" Padding="18,0"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- محتوى الخطوة 2 -->
+                                <StackPanel MaxWidth="580" Visibility="{Binding CurrentStep, Converter={StaticResource EqualityToVis}, ConverterParameter=2}">
+                                    
+                                    <!-- تاريخ الإرجاع المتوقع -->
+                                    <StackPanel Margin="0,0,0,16">
+                                        <TextBlock Text="{DynamicResource ExpectedReturn}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                        <DatePicker SelectedDate="{Binding NewExpectedReturnDate, UpdateSourceTrigger=PropertyChanged}" 
+                                                    Style="{StaticResource FormDatePicker}"/>
+                                    </StackPanel>
+
+                                    <!-- ملاحظات إضافية -->
+                                    <StackPanel Margin="0,0,0,18">
+                                        <TextBlock Text="{DynamicResource FieldNotes}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                        <TextBox Text="{Binding NewNotes, UpdateSourceTrigger=PropertyChanged}" 
+                                                 materialDesign:HintAssist.Hint="{DynamicResource HintNotesOptional}"
+                                                 Style="{StaticResource FormTextBox}" Height="70"
+                                                 TextWrapping="Wrap" AcceptsReturn="True" VerticalContentAlignment="Top"/>
+                                    </StackPanel>
+
+                                    <!-- بطاقة ملخص المراجعة -->
+                                    <Border Background="{DynamicResource InputBackground}" CornerRadius="8" Padding="16,12" Margin="0,0,0,24"
+                                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="{DynamicResource ReviewSummaryTitle}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,0,8"/>
+                                            <TextBlock Margin="0,0,0,4">
+                                                <Run Text="• المصدر: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                                <Run Text="{Binding SelectedSourceForNew.SourceCode}" Foreground="{DynamicResource PrimaryBrush}" FontWeight="Bold"/>
+                                            </TextBlock>
+                                            <TextBlock Margin="0,0,0,4">
+                                                <Run Text="• المستعير: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                                <Run Text="{Binding NewBorrowerName}" Foreground="{DynamicResource TextSecondary}"/>
+                                            </TextBlock>
+                                            <TextBlock Margin="0,0,0,4">
+                                                <Run Text="• الغرض: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                                <Run Text="{Binding NewPurpose}" Foreground="{DynamicResource TextSecondary}"/>
+                                            </TextBlock>
+                                            <TextBlock>
+                                                <Run Text="• موعد الإرجاع المتوقع: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                                <Run Text="{Binding NewExpectedReturnDate, StringFormat='{}{0:yyyy/MM/dd}'}" Foreground="{DynamicResource TextSecondary}"/>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- أزرار الخطوة 2 -->
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,6,0,0">
+                                        <Button Content="{DynamicResource BtnSubmitBorrow}" Style="{StaticResource PrimaryButton}" 
+                                                Command="{Binding SubmitCommand}" Height="40" Padding="24,0" Margin="0,0,12,0"/>
+                                        <Button Content="{DynamicResource BtnBack}" Style="{StaticResource SecondaryButton}" 
+                                                Command="{Binding PreviousStepCommand}" Height="40" Padding="18,0" Margin="0,0,12,0"/>
+                                        <Button Content="{DynamicResource Cancel}" Style="{StaticResource SecondaryButton}" 
+                                                Command="{Binding CancelEditCommand}" Height="40" Padding="18,0"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+
+
+                        <!-- ═══════════════════════════════════════════════ -->
+                        <!-- وضع ب: عرض وتفاصيل وإرجاع (IsNew = false)        -->
+                        <!-- بطاقة بيانات وتأكيد استرجاع                       -->
+                        <!-- ═══════════════════════════════════════════════ -->
+                        <Grid Visibility="{Binding IsNew, Converter={StaticResource InverseBoolToVis}}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/> <!-- 0: شريط العنوان -->
+                                <RowDefinition Height="*"/>    <!-- 1: المحتوى -->
+                            </Grid.RowDefinitions>
+
+                            <!-- شريط العنوان -->
+                            <Border Grid.Row="0" CornerRadius="10,10,0,0" Padding="20,16"
+                                    Background="{DynamicResource CardBackground}"
+                                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <Border Grid.Column="0" Width="42" Height="42" CornerRadius="21" 
+                                            Background="#141F5A66" Margin="0,0,14,0">
+                                        <materialDesign:PackIcon Kind="FileDocumentOutline" Width="24" Height="24" 
+                                                                 Foreground="{DynamicResource PrimaryBrush}" 
+                                                                 VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    </Border>
+                                    
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{DynamicResource BorrowDetailsTitle}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                        <TextBlock Text="{Binding SelectedRequest.Source.SourceCode, StringFormat='المصدر: {0}'}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                                    </StackPanel>
+                                    
+                                    <Button Grid.Column="2" Command="{Binding CancelEditCommand}"
+                                            Style="{StaticResource MaterialDesignIconButton}"
+                                            Width="36" Height="36" Padding="0"
+                                            ToolTip="{DynamicResource Close}">
+                                        <materialDesign:PackIcon Kind="Close" Foreground="{DynamicResource TextSecondary}" Width="20" Height="20"/>
+                                    </Button>
+                                </Grid>
+                            </Border>
+
+                            <StackPanel Grid.Row="1" Margin="30,24" MaxWidth="620">
+                                
+                                <!-- بطاقة بيانات الاستعارة للقراءة فقط -->
+                                <Border Background="{DynamicResource InputBackground}" CornerRadius="8" Padding="18,16" Margin="0,0,0,20"
+                                        BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                                    <StackPanel>
+                                        <TextBlock Text="{DynamicResource SectionBorrowInfo}" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,0,12"/>
+                                        
+                                        <UniformGrid Columns="2" Margin="0,0,0,10">
+                                            <TextBlock Margin="0,0,0,6">
+                                                <Run Text="• كود المصدر: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                                <Run Text="{Binding SelectedRequest.Source.SourceCode}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
+                                            </TextBlock>
+                                            <TextBlock Margin="0,0,0,6">
+                                                <Run Text="• اسم المستعير: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                                <Run Text="{Binding SelectedRequest.BorrowerName}" Foreground="{DynamicResource TextSecondary}"/>
+                                            </TextBlock>
+                                        </UniformGrid>
+
+                                        <UniformGrid Columns="2" Margin="0,0,0,10">
+                                            <TextBlock Margin="0,0,0,6">
+                                                <Run Text="• تاريخ الاستعارة: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                                <Run Text="{Binding SelectedRequest.RequestDate, StringFormat='{}{0:yyyy/MM/dd}'}" Foreground="{DynamicResource TextSecondary}"/>
+                                            </TextBlock>
+                                            <TextBlock Margin="0,0,0,6">
+                                                <Run Text="• موعد الإرجاع المتوقع: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                                <Run Text="{Binding SelectedRequest.ExpectedReturnDate, StringFormat='{}{0:yyyy/MM/dd}'}" Foreground="{DynamicResource TextSecondary}"/>
+                                            </TextBlock>
+                                        </UniformGrid>
+
+                                        <TextBlock Margin="0,0,0,10">
+                                            <Run Text="• الغرض: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                            <Run Text="{Binding SelectedRequest.Purpose}" Foreground="{DynamicResource TextSecondary}"/>
+                                        </TextBlock>
+
+                                        <TextBlock Margin="0,0,0,8" Visibility="{Binding SelectedRequest.Notes, Converter={StaticResource NullToVis}}">
+                                            <Run Text="• الملاحظات: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                            <Run Text="{Binding SelectedRequest.Notes}" Foreground="{DynamicResource TextSecondary}"/>
+                                        </TextBlock>
+
+                                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                            <TextBlock Text="• الحالة الحالية: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                            <Border CornerRadius="6" Padding="10,3" Background="#1A4F7FA3">
+                                                <TextBlock Text="{Binding SelectedRequest.ArabicStatus}" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource PrimaryBrush}"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- قسم الإرجاع (يظهر فقط إذا كان المصدر مستعاراً حالياً أو متأخراً) -->
+                                <Border CornerRadius="8" Padding="18,16" Margin="0,0,0,16"
+                                        Background="{DynamicResource CardBackground}"
+                                        BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="1.5">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SelectedRequest.Status}" Value="Delivered">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding SelectedRequest.Status}" Value="Overdue">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding SelectedRequest.Status}" Value="Approved">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel>
+                                        <TextBlock Text="{DynamicResource SectionReturnAction}" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,0,14"/>
+
+                                        <!-- اختيار المستلم -->
+                                        <StackPanel Margin="0,0,0,14">
+                                            <TextBlock Text="{DynamicResource SelectedReturnedBy}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                            <ComboBox ItemsSource="{Binding AvailableBorrowers}" SelectedItem="{Binding SelectedReturnedBy}" 
+                                                      DisplayMemberPath="FullName" Style="{StaticResource FormComboBox}"/>
+                                        </StackPanel>
+
+                                        <!-- تاريخ الإرجاع الفعلي -->
+                                        <StackPanel Margin="0,0,0,14">
+                                            <TextBlock Text="{DynamicResource ActualReturnDate}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                            <DatePicker SelectedDate="{Binding NewActualReturnDate, UpdateSourceTrigger=PropertyChanged}" 
+                                                        Style="{StaticResource FormDatePicker}"/>
+                                        </StackPanel>
+
+                                        <!-- ملاحظات عند الإرجاع -->
+                                        <StackPanel Margin="0,0,0,20">
+                                            <TextBlock Text="{DynamicResource FieldNotes}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                            <TextBox Text="{Binding ReturnNotes, UpdateSourceTrigger=PropertyChanged}" 
+                                                     materialDesign:HintAssist.Hint="{DynamicResource HintNotesOptional}"
+                                                     Style="{StaticResource FormTextBox}" Height="60"
+                                                     TextWrapping="Wrap" AcceptsReturn="True" VerticalContentAlignment="Top"/>
+                                        </StackPanel>
+
+                                        <!-- زر تأكيد الاسترجاع -->
+                                        <Button Content="{DynamicResource MarkReturned}" Style="{StaticResource PrimaryButton}" 
+                                                Command="{Binding MarkReturnedCommand}" Height="42" Padding="24,0"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- بطاقة للمصادر التي تم إرجاعها مسبقاً -->
+                                <Border CornerRadius="8" Padding="16,14" Margin="0,0,0,16"
+                                        Background="#143FAE7A" BorderBrush="#333FAE7A" BorderThickness="1">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SelectedRequest.Status}" Value="Returned">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                            <materialDesign:PackIcon Kind="CheckCircleOutline" Width="20" Height="20" Foreground="#3FAE7A" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <TextBlock Text="تم إرجاع هذا المصدر إلى المخزن بنجاح" FontWeight="Bold" FontSize="13" Foreground="#3FAE7A" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <TextBlock Margin="28,0,0,0">
+                                            <Run Text="تاريخ الإرجاع الفعلي المسجّل: " Foreground="{DynamicResource TextSecondary}"/>
+                                            <Run Text="{Binding SelectedRequest.ActualReturnDate, StringFormat='{}{0:yyyy/MM/dd}'}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- زر إغلاق البطاقة -->
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,8,0,0">
+                                    <Button Content="{DynamicResource Close}" Style="{StaticResource SecondaryButton}" 
+                                            Command="{Binding CancelEditCommand}" Height="40" Padding="24,0"/>
+                                </StackPanel>
+
+                            </StackPanel>
+                        </Grid>
+
+                    </Grid>
+                </ScrollViewer>
+            </Border>
+
+        </Grid>
     </Grid>
 </UserControl>

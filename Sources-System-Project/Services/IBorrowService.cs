@@ -16,10 +16,7 @@ public interface IBorrowService
     int GetPendingCount();
     
     (bool Success, string Message) CreateRequest(BorrowRequest request);
-    (bool Success, string Message) ApproveRequest(Guid requestId, Guid approverId);
-    (bool Success, string Message) RejectRequest(Guid requestId, Guid approverId, string reason);
-    (bool Success, string Message) MarkDelivered(Guid requestId);
-    (bool Success, string Message) MarkReturned(Guid requestId, Guid returnedByUserId);
+    (bool Success, string Message) MarkReturned(Guid requestId, Guid returnedByUserId, DateTime actualReturnDate, string? notes = null);
     
     void CheckAndUpdateOverdue();
 }

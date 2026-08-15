@@ -4,20 +4,24 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.EntityFrameworkCore;
+using Sources.Data;
+using Sources.Helpers;
+using Sources.Interfaces;
 using Sources.Models;
 using Sources.Services;
-using Sources.Helpers;
-using Microsoft.EntityFrameworkCore;
 
 namespace Sources.ViewModels;
 
-public sealed partial class BorrowViewModel : ObservableObject
+public sealed partial class BorrowViewModel : ObservableObject, IEditableViewModel
 {
     private readonly IBorrowService _borrowService;
     private readonly ISourceService _sourceService;
     private readonly IUserService _userService;
     private readonly IReportingService _reportingService;
-    
+    private readonly IDbContextFactory<AppDbContext>? _dbFactory;
+
+    // ─── مجموعات البيانات ───
     [ObservableProperty]
     private ObservableCollection<BorrowRequest> _requests = new();
 
@@ -27,6 +31,49 @@ public sealed partial class BorrowViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<User> _availableBorrowers = new();
 
+    // ─── المشهد المزدوج والتنقل ───
+    [ObservableProperty]
+    private bool _isEditing;
+
+    [ObservableProperty]
+    private bool _isNew;
+
+    [ObservableProperty]
+    private int _currentStep = 1;
+
+    [ObservableProperty]
+    private BorrowRequest? _selectedRequest;
+
+    // ─── حقول وضع الإضافة (IsNew = true) ───
+    [ObservableProperty]
+    private Source? _selectedSourceForNew;
+
+    [ObservableProperty]
+    private string _selectedSourceInfo = string.Empty;
+
+    [ObservableProperty]
+    private string _newBorrowerName = string.Empty;
+
+    [ObservableProperty]
+    private string _newPurpose = string.Empty;
+
+    [ObservableProperty]
+    private DateTime _newExpectedReturnDate = DateTime.Now.AddDays(7);
+
+    [ObservableProperty]
+    private string? _newNotes = string.Empty;
+
+    // ─── حقول وضع العرض والإرجاع (IsNew = false) ───
+    [ObservableProperty]
+    private DateTime _newActualReturnDate = DateTime.Now;
+
+    [ObservableProperty]
+    private User? _selectedReturnedBy;
+
+    [ObservableProperty]
+    private string? _returnNotes = string.Empty;
+
+    // ─── الإحصائيات ───
     [ObservableProperty]
     private int _activeCount;
 
@@ -39,47 +86,16 @@ public sealed partial class BorrowViewModel : ObservableObject
     [ObservableProperty]
     private int _dueSoonCount;
 
-    [ObservableProperty]
-    private bool _isCreateDialogOpen;
-
-    [ObservableProperty]
-    private bool _isActionDialogOpen;
-
-    [ObservableProperty]
-    private Source? _selectedSourceForNew;
-
-    [ObservableProperty]
-    private string _newBorrowerName = string.Empty;
-
-    [ObservableProperty]
-    private string _selectedSourceInfo = string.Empty;
-
-    [ObservableProperty]
-    private string _newPurpose = string.Empty;
-
-    [ObservableProperty]
-    private DateTime _newExpectedReturnDate = DateTime.Now.AddDays(7);
-    
-    // Action Dialogs (Approve/Reject/Return/Deliver)
-    [ObservableProperty]
-    private BorrowRequest? _actionRequest;
-    
-    [ObservableProperty]
-    private string _rejectionReason = string.Empty;
-
-    [ObservableProperty]
-    private User? _selectedReturnedBy;
-
-    // Filters
+    // ─── البحث والتصفية ───
     [ObservableProperty]
     private string _searchQuery = string.Empty;
 
     [ObservableProperty]
     private string _selectedStatusFilter = "الكل";
 
-    public ObservableCollection<string> StatusFilters { get; } = new() 
-    { 
-        "الكل", "تم التسليم", "تم الإرجاع", "متأخر" 
+    public ObservableCollection<string> StatusFilters { get; } = new()
+    {
+        "الكل", "تم التسليم", "تم الإرجاع", "متأخر"
     };
 
     public BorrowViewModel(IBorrowService borrowService, ISourceService sourceService, IUserService userService, IReportingService reportingService)
@@ -88,6 +104,8 @@ public sealed partial class BorrowViewModel : ObservableObject
         _sourceService = sourceService;
         _userService = userService;
         _reportingService = reportingService;
+        _dbFactory = App.ServiceProvider.GetService(typeof(IDbContextFactory<AppDbContext>)) as IDbContextFactory<AppDbContext>;
+
         _ = LoadDataAsync();
     }
 
@@ -98,7 +116,7 @@ public sealed partial class BorrowViewModel : ObservableObject
         {
             _borrowService.CheckAndUpdateOverdue();
             var all = _borrowService.GetAll();
-            
+
             App.Current.Dispatcher.Invoke(() =>
             {
                 Requests.Clear();
@@ -114,20 +132,86 @@ public sealed partial class BorrowViewModel : ObservableObject
         BorrowedCount = all.Count(r => r.Status == "Delivered");
         OverdueCount = all.Count(r => r.Status == "Overdue");
 
-        var soonDate = DateTime.Now.AddDays(2);
-        DueSoonCount = all.Count(r => (r.Status == "Delivered" || r.Status == "Approved") 
+        var soonDate = DateTime.Now.AddDays(7);
+        DueSoonCount = all.Count(r => r.Status == "Delivered"
                                     && r.ExpectedReturnDate <= soonDate && r.ExpectedReturnDate >= DateTime.Now);
     }
 
+    // ─── أوامر التنقل بين المشهدين والخطوات ───
+
     [RelayCommand]
-    private void OpenCreateDialog()
+    private void AddNew()
     {
-        var dbFactory = App.ServiceProvider.GetService(typeof(Microsoft.EntityFrameworkCore.IDbContextFactory<Data.AppDbContext>)) 
-            as Microsoft.EntityFrameworkCore.IDbContextFactory<Data.AppDbContext>;
-        
-        if (dbFactory == null) return;
-        
-        using var db = dbFactory.CreateDbContext();
+        IsNew = true;
+        CurrentStep = 1;
+        ClearForm();
+        LoadAvailableSources();
+        IsEditing = true;
+    }
+
+    [RelayCommand]
+    private void OpenCreateDialog() => AddNew();
+
+    [RelayCommand]
+    private void Edit(BorrowRequest? request)
+    {
+        if (request == null) return;
+        SelectedRequest = request;
+        IsNew = false;
+        CurrentStep = 1;
+        NewActualReturnDate = DateTime.Now;
+        ReturnNotes = string.Empty;
+
+        if (request.Status == "Delivered" || request.Status == "Overdue" || request.Status == "Approved")
+        {
+            LoadAvailableBorrowers(request.BorrowerUserId);
+        }
+
+        IsEditing = true;
+    }
+
+    [RelayCommand]
+    private void NextStep()
+    {
+        if (SelectedSourceForNew == null || string.IsNullOrWhiteSpace(NewBorrowerName) || string.IsNullOrWhiteSpace(NewPurpose))
+        {
+            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrStep1Incomplete"));
+            return;
+        }
+        CurrentStep = 2;
+    }
+
+    [RelayCommand]
+    private void PreviousStep()
+    {
+        CurrentStep = 1;
+    }
+
+    [RelayCommand]
+    private void CancelEdit()
+    {
+        IsEditing = false;
+        ClearForm();
+    }
+
+    private void ClearForm()
+    {
+        SelectedSourceForNew = null;
+        SelectedSourceInfo = string.Empty;
+        NewBorrowerName = string.Empty;
+        NewPurpose = string.Empty;
+        NewExpectedReturnDate = DateTime.Now.AddDays(7);
+        NewNotes = string.Empty;
+        ReturnNotes = string.Empty;
+        NewActualReturnDate = DateTime.Now;
+        SelectedReturnedBy = null;
+        SelectedRequest = null;
+    }
+
+    private void LoadAvailableSources()
+    {
+        if (_dbFactory == null) return;
+        using var db = _dbFactory.CreateDbContext();
         var sources = db.Sources
             .Include(s => s.SourceIsotopes)
                 .ThenInclude(si => si.Radioisotope)
@@ -137,17 +221,21 @@ public sealed partial class BorrowViewModel : ObservableObject
             .Include(s => s.Radioisotope)
             .Include(s => s.InitialActivityUnit)
             .Where(s => s.Status == "Storage").ToList();
-        
+
         AvailableSources.Clear();
         foreach (var s in sources) AvailableSources.Add(s);
+    }
 
-        SelectedSourceForNew = null;
-        NewBorrowerName = string.Empty;
-        NewPurpose = string.Empty;
-        NewExpectedReturnDate = DateTime.Now.AddDays(7);
-        SelectedSourceInfo = string.Empty;
+    private void LoadAvailableBorrowers(Guid? borrowerUserId)
+    {
+        if (_dbFactory == null) return;
+        using var db = _dbFactory.CreateDbContext();
+        var users = db.Users.Where(u => u.IsActive).ToList();
 
-        IsCreateDialogOpen = true;
+        AvailableBorrowers.Clear();
+        foreach (var u in users) AvailableBorrowers.Add(u);
+
+        SelectedReturnedBy = AvailableBorrowers.FirstOrDefault(u => u.Id == borrowerUserId);
     }
 
     partial void OnSelectedSourceForNewChanged(Source? value)
@@ -182,43 +270,45 @@ public sealed partial class BorrowViewModel : ObservableObject
 
         string location = value.Location?.LocationName ?? "غير محدد";
         lines.Add($"📍 الموقع: {lre}{location}{pdf}");
-        
+
         SelectedSourceInfo = string.Join("\n", lines);
     }
 
+    // ─── تنفيذ حفظ الاستعارة الجديدة ───
     [RelayCommand]
-    private async Task SubmitCreateRequestAsync()
+    private async Task SubmitAsync()
     {
         if (SelectedSourceForNew == null || string.IsNullOrWhiteSpace(NewBorrowerName) || string.IsNullOrWhiteSpace(NewPurpose))
         {
-            DialogHelper.ShowError("الرجاء إكمال جميع الحقول المطلوبة.");
+            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrStep1Incomplete"));
             return;
         }
 
-        if (NewExpectedReturnDate.Date < DateTime.Now.Date)
+        if (NewExpectedReturnDate.Date < DateTime.Today)
         {
-            DialogHelper.ShowError("تاريخ الإرجاع المتوقع لا يمكن أن يكون في الماضي.");
+            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrExpectedReturnPast"));
             return;
         }
 
-        // رسالة تأكيد قبل الحفظ
-        string confirmMsg = $"سيتم تسليم المصدر ({SelectedSourceForNew.SourceCode}) إلى ({NewBorrowerName}).\nهل أنت متأكد؟";
-        if (!DialogHelper.ShowConfirmation(confirmMsg, "تأكيد الاستعارة"))
+        string confirmMsg = $"سيتم تسليم المصدر ({SelectedSourceForNew.SourceCode}) إلى ({NewBorrowerName}).\nهل أنت متأكد من المتابعة؟";
+        if (!DialogHelper.ShowConfirmation(confirmMsg, TranslationHelper.GetString("AddNewBorrowRequestTitle")))
             return;
 
         var req = new BorrowRequest
         {
             SourceId = SelectedSourceForNew.Id,
-            BorrowerName = NewBorrowerName,
-            BorrowerUserId = _userService.CurrentUser?.Id, // ربط الطلب بالمستخدم الذي قام بالعملية
-            Purpose = NewPurpose,
-            ExpectedReturnDate = NewExpectedReturnDate
+            BorrowerName = NewBorrowerName.Trim(),
+            BorrowerUserId = _userService.CurrentUser?.Id,
+            Purpose = NewPurpose.Trim(),
+            ExpectedReturnDate = NewExpectedReturnDate,
+            Notes = string.IsNullOrWhiteSpace(NewNotes) ? null : NewNotes.Trim()
         };
 
         var result = _borrowService.CreateRequest(req);
         if (result.Success)
         {
-            IsCreateDialogOpen = false;
+            IsEditing = false;
+            ClearForm();
             DialogHelper.ShowInfo(result.Message);
             await LoadDataAsync();
         }
@@ -228,108 +318,38 @@ public sealed partial class BorrowViewModel : ObservableObject
         }
     }
 
+    // ─── تنفيذ إرجاع المصدر ───
     [RelayCommand]
-    private void PrepareAction(BorrowRequest request)
+    private async Task MarkReturnedAsync()
     {
-        ActionRequest = request;
-        RejectionReason = string.Empty;
-        
-        if (request.Status == "Delivered" || request.Status == "Overdue" || request.Status == "Approved")
-        {
-            var dbFactory = App.ServiceProvider.GetService(typeof(Microsoft.EntityFrameworkCore.IDbContextFactory<Data.AppDbContext>)) 
-                as Microsoft.EntityFrameworkCore.IDbContextFactory<Data.AppDbContext>;
-            if (dbFactory == null) return;
-            using var db = dbFactory.CreateDbContext();
-            
-            var users = db.Users.Where(u => u.IsActive).ToList();
-            AvailableBorrowers.Clear();
-            foreach (var u in users) AvailableBorrowers.Add(u);
-            
-            SelectedReturnedBy = AvailableBorrowers.FirstOrDefault(u => u.Id == request.BorrowerUserId);
-        }
-        
-        IsActionDialogOpen = true;
-    }
-
-    [RelayCommand]
-    private async Task ExecuteApproveAsync()
-    {
-        if (ActionRequest == null) return;
-        var currentUser = _userService.CurrentUser;
-        if (currentUser == null) return;
-
-        var result = _borrowService.ApproveRequest(ActionRequest.Id, currentUser.Id);
-        if (result.Success)
-        {
-            IsActionDialogOpen = false;
-            DialogHelper.ShowInfo(result.Message);
-            await LoadDataAsync();
-        }
-        else
-            DialogHelper.ShowError(result.Message);
-    }
-
-    [RelayCommand]
-    private async Task ExecuteRejectAsync()
-    {
-        if (ActionRequest == null) return;
-        if (string.IsNullOrWhiteSpace(RejectionReason))
-        {
-            DialogHelper.ShowError("يجب كتابة سبب الرفض.");
-            return;
-        }
-
-        var currentUser = _userService.CurrentUser;
-        if (currentUser == null) return;
-
-        var result = _borrowService.RejectRequest(ActionRequest.Id, currentUser.Id, RejectionReason);
-        if (result.Success)
-        {
-            IsActionDialogOpen = false;
-            DialogHelper.ShowInfo(result.Message);
-            await LoadDataAsync();
-        }
-        else
-            DialogHelper.ShowError(result.Message);
-    }
-
-    [RelayCommand]
-    private async Task ExecuteDeliverAsync()
-    {
-        if (ActionRequest == null) return;
-
-        var result = _borrowService.MarkDelivered(ActionRequest.Id);
-        if (result.Success)
-        {
-            IsActionDialogOpen = false;
-            DialogHelper.ShowInfo(result.Message);
-            await LoadDataAsync();
-        }
-        else
-            DialogHelper.ShowError(result.Message);
-    }
-
-    [RelayCommand]
-    private async Task ExecuteReturnAsync()
-    {
-        if (ActionRequest == null) return;
+        if (SelectedRequest == null) return;
         if (SelectedReturnedBy == null)
         {
-            DialogHelper.ShowError("الرجاء تحديد من قام بإرجاع المصدر.");
+            DialogHelper.ShowError("الرجاء تحديد من قام باستلام/إرجاع المصدر.");
             return;
         }
 
-        var result = _borrowService.MarkReturned(ActionRequest.Id, SelectedReturnedBy.Id);
+        if (NewActualReturnDate.Date < SelectedRequest.RequestDate.Date)
+        {
+            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrActualReturnBeforeRequest"));
+            return;
+        }
+
+        var result = _borrowService.MarkReturned(SelectedRequest.Id, SelectedReturnedBy.Id, NewActualReturnDate, ReturnNotes);
         if (result.Success)
         {
-            IsActionDialogOpen = false;
+            IsEditing = false;
+            ClearForm();
             DialogHelper.ShowInfo(result.Message);
             await LoadDataAsync();
         }
         else
+        {
             DialogHelper.ShowError(result.Message);
+        }
     }
 
+    // ─── تصدير التقارير ───
     [RelayCommand]
     private async Task ExportPdfAsync()
     {
@@ -355,7 +375,7 @@ public sealed partial class BorrowViewModel : ObservableObject
             }
         }
     }
-    
+
     [RelayCommand]
     private async Task ExportExcelAsync()
     {
@@ -386,12 +406,12 @@ public sealed partial class BorrowViewModel : ObservableObject
     private void PerformSearch()
     {
         var all = _borrowService.GetAll();
-        
+
         var filtered = all.AsEnumerable();
 
         if (!string.IsNullOrWhiteSpace(SearchQuery))
         {
-            filtered = filtered.Where(r => 
+            filtered = filtered.Where(r =>
                 (r.Source?.SourceCode?.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 (r.BorrowerName?.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 (r.BorrowerUser?.FullName?.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ?? false));
@@ -401,9 +421,6 @@ public sealed partial class BorrowViewModel : ObservableObject
         {
             string enStatus = SelectedStatusFilter switch
             {
-                "معلّق" => "Pending",
-                "تمت الموافقة" => "Approved",
-                "مرفوض" => "Rejected",
                 "تم التسليم" => "Delivered",
                 "تم الإرجاع" => "Returned",
                 "متأخر" => "Overdue",

@@ -332,6 +332,10 @@
         <Setter Property="TextAlignment" Value="Center"/>
     </Style>
 
+    <Style x:Key="BoldCenterAligned" TargetType="TextBlock" BasedOn="{StaticResource CenterAligned}">
+        <Setter Property="FontWeight" Value="Bold"/>
+    </Style>
+
     <Style x:Key="WrappingCenterAligned" TargetType="TextBlock" BasedOn="{StaticResource CenterAligned}">
         <Setter Property="TextWrapping" Value="Wrap"/>
         <Setter Property="Padding" Value="5,2"/>

@@ -112,87 +112,7 @@ public class BorrowService : IBorrowService
         }
     }
 
-    public (bool Success, string Message) ApproveRequest(Guid requestId, Guid approverId)
-    {
-        try
-        {
-            using var db = _dbFactory.CreateDbContext();
-            var req = db.BorrowRequests.Include(b => b.Source).FirstOrDefault(b => b.Id == requestId);
-            if (req == null) return (false, "الطلب غير موجود.");
-            if (req.Status != "Pending") return (false, "الطلب ليس بانتظار الموافقة.");
-            if (req.Source == null) return (false, "المصدر غير موجود.");
-
-            req.Status = "Approved";
-            req.ApproverUserId = approverId;
-            req.ApprovalDate = DateTime.Now;
-            
-            req.Source.Status = "Borrowed";
-
-            db.SaveChanges();
-
-            _auditService.Log("Approve", "BorrowRequests", requestId, $"الموافقة على طلب استعارة المصدر {req.Source.SourceCode}");
-            
-            return (true, "تمت الموافقة على طلب الاستعارة.");
-        }
-        catch (Exception ex)
-        {
-            return (false, $"حدث خطأ: {ex.Message}");
-        }
-    }
-
-    public (bool Success, string Message) RejectRequest(Guid requestId, Guid approverId, string reason)
-    {
-        try
-        {
-            using var db = _dbFactory.CreateDbContext();
-            var req = db.BorrowRequests.Include(b => b.Source).FirstOrDefault(b => b.Id == requestId);
-            if (req == null) return (false, "الطلب غير موجود.");
-            if (req.Status != "Pending") return (false, "الطلب ليس بانتظار الموافقة.");
-
-            req.Status = "Rejected";
-            req.ApproverUserId = approverId;
-            req.ApprovalDate = DateTime.Now;
-            req.RejectionReason = reason;
-
-            db.SaveChanges();
-
-            string code = req.Source?.SourceCode ?? "غير معروف";
-            _auditService.Log("Reject", "BorrowRequests", requestId, $"رفض طلب استعارة المصدر {code}");
-            
-            return (true, "تم رفض طلب الاستعارة.");
-        }
-        catch (Exception ex)
-        {
-            return (false, $"حدث خطأ: {ex.Message}");
-        }
-    }
-
-    public (bool Success, string Message) MarkDelivered(Guid requestId)
-    {
-        try
-        {
-            using var db = _dbFactory.CreateDbContext();
-            var req = db.BorrowRequests.Include(b => b.Source).FirstOrDefault(b => b.Id == requestId);
-            if (req == null) return (false, "الطلب غير موجود.");
-            if (req.Status != "Approved") return (false, "يجب الموافقة على الطلب أولاً قبل التسليم.");
-
-            req.Status = "Delivered";
-            req.DeliveryDate = DateTime.Now;
-
-            db.SaveChanges();
-
-            string code = req.Source?.SourceCode ?? "غير معروف";
-            _auditService.Log("Deliver", "BorrowRequests", requestId, $"تسليم المصدر المستعار {code}");
-            
-            return (true, "تم تسجيل تسليم المصدر للمستعير.");
-        }
-        catch (Exception ex)
-        {
-            return (false, $"حدث خطأ: {ex.Message}");
-        }
-    }
-
-    public (bool Success, string Message) MarkReturned(Guid requestId, Guid returnedByUserId)
+    public (bool Success, string Message) MarkReturned(Guid requestId, Guid returnedByUserId, DateTime actualReturnDate, string? notes = null)
     {
         try
         {
@@ -203,8 +123,15 @@ public class BorrowService : IBorrowService
                 return (false, "الحالة الحالية لا تسمح بالإرجاع.");
 
             req.Status = "Returned";
-            req.ActualReturnDate = DateTime.Now;
+            req.ActualReturnDate = actualReturnDate;
             req.ReturnedByUserId = returnedByUserId;
+            if (!string.IsNullOrWhiteSpace(notes))
+            {
+                if (string.IsNullOrWhiteSpace(req.Notes))
+                    req.Notes = notes;
+                else if (!req.Notes.Contains(notes))
+                    req.Notes = $"{req.Notes}\n{notes}";
+            }
 
             if (req.Source != null)
             {
@@ -216,7 +143,7 @@ public class BorrowService : IBorrowService
             string code = req.Source?.SourceCode ?? "غير معروف";
             _auditService.Log("Return", "BorrowRequests", requestId, $"إرجاع المصدر المستعار {code}");
             
-            return (true, "تم تسجيل إرجاع المصدر بنجاح وعاد ليكون نشطاً والمزامنة تمت.");
+            return (true, "تم تسجيل إرجاع المصدر بنجاح وعاد ليكون متاحاً في المخزن.");
         }
         catch (Exception ex)
         {

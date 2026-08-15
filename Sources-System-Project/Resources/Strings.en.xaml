@@ -357,9 +357,10 @@
     <system:String x:Key="ColBorrower">Borrower</system:String>
     <system:String x:Key="ColBorrowDate">Borrowing Date</system:String>
     <system:String x:Key="ColPurpose">Purpose</system:String>
-    <system:String x:Key="ColReturnDate">Return Date</system:String>
+    <system:String x:Key="TotalBorrows">Total Borrows</system:String>
     <system:String x:Key="ActiveBorrows">Active Borrows</system:String>
     <system:String x:Key="DueSoon">Due Soon</system:String>
+    <system:String x:Key="OverdueBorrows">Overdue Borrows</system:String>
     <system:String x:Key="ColExpectedReturnDate">Expected Return</system:String>
     <system:String x:Key="ColActualReturnDate">Actual Return</system:String>
     <system:String x:Key="ColApprover">Approver</system:String>
@@ -562,13 +563,11 @@
     <system:String x:Key="Cancel">Cancel</system:String>
     <system:String x:Key="SubmitRequest">Submit Request</system:String>
     <system:String x:Key="RequestActions">Request Actions</system:String>
-    <system:String x:Key="RejectionReasonHint">Rejection Reason (Optional)</system:String>
-    <system:String x:Key="Reject">Reject</system:String>
-    <system:String x:Key="Approve">Approve</system:String>
-    <system:String x:Key="MarkDelivered">Mark as Delivered</system:String>
+    <system:String x:Key="ActualReturnDate">Actual Return Date</system:String>
     <system:String x:Key="SelectedReturnedBy">Received By</system:String>
     <system:String x:Key="MarkReturned">Confirm Return</system:String>
     <system:String x:Key="Close">Close</system:String>
+    <system:String x:Key="MsgErrActualReturnBeforeRequest">Actual return date cannot be before request date.</system:String>
     <system:String x:Key="ExportExcel">Export Excel</system:String>
     <system:String x:Key="ExportPdf">Export PDF</system:String>
 
@@ -580,6 +579,22 @@
     <system:String x:Key="StatusHintTransfer">• In Transit: Source is being transported.</system:String>
 
     <system:String x:Key="ColAddedBy">Added By</system:String>
+
+    <!-- Source Borrowing - Dual View Screen -->
+    <system:String x:Key="AddNewBorrowRequestTitle">New Source Borrowing Request</system:String>
+    <system:String x:Key="BorrowDetailsTitle">Borrowing Details &amp; Actions</system:String>
+    <system:String x:Key="Step1RequestData">1. Request &amp; Source Data</system:String>
+    <system:String x:Key="Step2DeliveryReview">2. Delivery &amp; Review</system:String>
+    <system:String x:Key="BtnBack">Back</system:String>
+    <system:String x:Key="BtnSubmitBorrow">Deliver &amp; Borrow Source</system:String>
+    <system:String x:Key="FieldNotes">Additional Notes (Optional)</system:String>
+    <system:String x:Key="HintNotesOptional">Enter any special notes regarding borrowing or source condition...</system:String>
+    <system:String x:Key="SectionBorrowInfo">Borrowing &amp; Source Information</system:String>
+    <system:String x:Key="SectionReturnAction">Source Return Action</system:String>
+    <system:String x:Key="ReviewSummaryTitle">Borrowing Request Summary:</system:String>
+    <system:String x:Key="MsgErrStep1Incomplete">Please select a source, borrower name, and purpose before proceeding.</system:String>
+    <system:String x:Key="MsgErrExpectedReturnPast">Expected return date cannot be in the past.</system:String>
+    <system:String x:Key="ColActualReturn">Actual Return</system:String>
 
     <!-- Empty State - Sources Screen -->
     <system:String x:Key="EmptySourcesTitle">No radioactive sources registered yet</system:String>

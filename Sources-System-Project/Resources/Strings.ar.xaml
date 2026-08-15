@@ -353,9 +353,10 @@
     <system:String x:Key="ColBorrower">المستعير</system:String>
     <system:String x:Key="ColBorrowDate">تاريخ الاستعارة</system:String>
     <system:String x:Key="ColPurpose">الغرض</system:String>
-    <system:String x:Key="ColReturnDate">تاريخ الارجاع</system:String>
+    <system:String x:Key="TotalBorrows">إجمالي الاستعارات</system:String>
     <system:String x:Key="ActiveBorrows">الاستعارات النشطة</system:String>
     <system:String x:Key="DueSoon">موعد الإرجاع قريباً</system:String>
+    <system:String x:Key="OverdueBorrows">الاستعارات المتأخرة</system:String>
     <system:String x:Key="ColExpectedReturnDate">الإرجاع المتوقع</system:String>
     <system:String x:Key="ColActualReturnDate">الإرجاع الفعلي</system:String>
     <system:String x:Key="ColApprover">المعتمِد</system:String>
@@ -560,13 +561,11 @@
     <system:String x:Key="Cancel">إلغاء</system:String>
     <system:String x:Key="SubmitRequest">تقديم الطلب</system:String>
     <system:String x:Key="RequestActions">إجراءات الطلب</system:String>
-    <system:String x:Key="RejectionReasonHint">سبب الرفض (إن وجد)</system:String>
-    <system:String x:Key="Reject">رفض</system:String>
-    <system:String x:Key="Approve">موافقة</system:String>
-    <system:String x:Key="MarkDelivered">تسليم المصدر</system:String>
+    <system:String x:Key="ActualReturnDate">تاريخ الإرجاع الفعلي</system:String>
     <system:String x:Key="SelectedReturnedBy">مُستَلم من قِبل</system:String>
     <system:String x:Key="MarkReturned">تأكيد الاسترجاع</system:String>
     <system:String x:Key="Close">إغلاق</system:String>
+    <system:String x:Key="MsgErrActualReturnBeforeRequest">تاريخ الإرجاع الفعلي لا يمكن أن يسبق تاريخ الاستعارة.</system:String>
     <system:String x:Key="ExportExcel">تصدير Excel</system:String>
     <system:String x:Key="ExportPdf">تصدير PDF</system:String>
 
@@ -578,6 +577,22 @@
     <system:String x:Key="StatusHintTransfer">• قيد النقل: المصدر في طريقه إلى موقع آخر.</system:String>
 
     <system:String x:Key="ColAddedBy">أُضيف بواسطة</system:String>
+
+    <!-- شاشة الاستعارة - المشهد المزدوج -->
+    <system:String x:Key="AddNewBorrowRequestTitle">طلب استعارة مصدر جديد</system:String>
+    <system:String x:Key="BorrowDetailsTitle">تفاصيل وإجراء الاستعارة</system:String>
+    <system:String x:Key="Step1RequestData">1. بيانات الطلب والمصدر</system:String>
+    <system:String x:Key="Step2DeliveryReview">2. التسليم والمراجعة</system:String>
+    <system:String x:Key="BtnBack">رجوع</system:String>
+    <system:String x:Key="BtnSubmitBorrow">تسليم واستعارة المصدر</system:String>
+    <system:String x:Key="FieldNotes">ملاحظات إضافية (اختياري)</system:String>
+    <system:String x:Key="HintNotesOptional">أدخل أي ملاحظات خاصة بالاستعارة أو حالة المصدر...</system:String>
+    <system:String x:Key="SectionBorrowInfo">بيانات الاستعارة والمصدر</system:String>
+    <system:String x:Key="SectionReturnAction">إجراء استرجاع المصدر للمخزن</system:String>
+    <system:String x:Key="ReviewSummaryTitle">ملخص بيانات الاستعارة:</system:String>
+    <system:String x:Key="MsgErrStep1Incomplete">الرجاء اختيار المصدر وتحديد اسم المستعير والغرض للمتابعة.</system:String>
+    <system:String x:Key="MsgErrExpectedReturnPast">تاريخ الإرجاع المتوقع لا يمكن أن يكون في الماضي.</system:String>
+    <system:String x:Key="ColActualReturn">الإرجاع الفعلي</system:String>
 
     <!-- حالة فارغة - شاشة المصادر -->
     <system:String x:Key="EmptySourcesTitle">لا توجد مصادر مسجّلة بعد</system:String>
