@@ -363,8 +363,29 @@
                               HeadersVisibility="Column" AutoGenerateColumns="False" IsReadOnly="True"
                               MaxHeight="350"
                               ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                              ColumnWidth="*" VerticalAlignment="Stretch">
+                              ColumnWidth="*" VerticalAlignment="Stretch"
+                              AlternationCount="1000">
                         <DataGrid.Columns>
+                            <!-- عمود الترقيم التسلسلي # -->
+                            <DataGridTemplateColumn Header="#" Width="45">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock FontSize="12" FontWeight="SemiBold"
+                                                   FontFamily="Segoe UI"
+                                                   Foreground="{DynamicResource TextSecondary}"
+                                                   TextAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center">
+                                            <TextBlock.Text>
+                                                <MultiBinding Converter="{StaticResource RowIndexConverter}">
+                                                    <Binding Path="(ItemsControl.AlternationIndex)" RelativeSource="{RelativeSource AncestorType=DataGridRow}"/>
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
                             <DataGridTextColumn Header="{DynamicResource ColSerialNumber}" Binding="{Binding SerialNumber}" Width="Auto" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding SourceCode}" Width="Auto" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColRadioisotopes}" Binding="{Binding DisplayIsotopes}" Width="1.2*" ElementStyle="{StaticResource WrappingCenterAligned}"/>
@@ -480,7 +501,7 @@
                         </StackPanel>
 
                         <!-- Chart (When enough data >= 2 isotopes) -->
-                        <Grid Grid.Row="1" FlowDirection="LeftToRight"
+                        <Grid Grid.Row="1"
                               Visibility="{Binding HasEnoughIsotopeData, Converter={StaticResource BoolToVis}}">
                             <lvc:PieChart Series="{Binding SourcesByIsotopeSeries}"
                                           LegendPosition="Right"
@@ -517,7 +538,7 @@
                         </StackPanel>
 
                         <!-- Chart (When enough data >= 2 locations) -->
-                        <Grid Grid.Row="1" FlowDirection="LeftToRight"
+                        <Grid Grid.Row="1"
                               Visibility="{Binding HasEnoughLocationData, Converter={StaticResource BoolToVis}}">
                             <lvc:PieChart Series="{Binding SourcesByLocationSeries}"
                                           LegendPosition="Right"
