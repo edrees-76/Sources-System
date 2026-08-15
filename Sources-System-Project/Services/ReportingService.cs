@@ -92,6 +92,8 @@ namespace Sources.Services
             });
         }
 
+        private void ComposeHeader(IContainer container, string reportTitle) => ComposeHeaderInventory(container, reportTitle);
+
         private void ComposeHeaderInventory(IContainer container, string reportTitle)
         {
             container.Row(row =>
@@ -629,6 +631,229 @@ namespace Sources.Services
                                         static IContainer CellStyle(IContainer c) => c.BorderBottom(1).BorderColor(Colors.Grey.Lighten3).PaddingVertical(4);
                                     }
                                 }
+                            });
+                        });
+
+                        page.Footer().Element(ComposeFooter);
+                    });
+                }).GeneratePdf(filePath);
+            });
+        }
+
+        public async Task GenerateUsersReportExcelAsync(IEnumerable<User> users, string filePath)
+        {
+            await Task.Run(() =>
+            {
+                using var workbook = new XLWorkbook();
+                var worksheet = workbook.Worksheets.Add("المستخدمين والكوادر");
+                worksheet.RightToLeft = true;
+
+                string[] headers = { "#", "الاسم الكامل", "اسم المستخدم", "الدور / الصلاحية", "البريد الإلكتروني", "الحالة", "حالة القفل", "آخر تسجيل دخول" };
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    worksheet.Cell(1, i + 1).Value = headers[i];
+                    worksheet.Cell(1, i + 1).Style.Font.Bold = true;
+                    worksheet.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+                }
+
+                int row = 2;
+                int index = 1;
+                foreach (var u in users ?? Enumerable.Empty<User>())
+                {
+                    worksheet.Cell(row, 1).Value = index++;
+                    worksheet.Cell(row, 2).Value = u.FullName;
+                    worksheet.Cell(row, 3).Value = u.Username;
+                    worksheet.Cell(row, 4).Value = u.Role?.DisplayName ?? "-";
+                    worksheet.Cell(row, 5).Value = u.Email ?? "-";
+                    worksheet.Cell(row, 6).Value = u.StatusDisplayName;
+                    worksheet.Cell(row, 7).Value = (u.LockoutEnd.HasValue && u.LockoutEnd.Value > DateTime.Now) ? "مقفل مؤقتاً" : "طبيعي";
+                    worksheet.Cell(row, 8).Value = u.LastLoginDate.HasValue ? u.LastLoginDate.Value.ToString("yyyy/MM/dd HH:mm") : "لم يسجل بعد";
+                    row++;
+                }
+
+                worksheet.Columns().AdjustToContents();
+                workbook.SaveAs(filePath);
+            });
+        }
+
+        public async Task GenerateUsersReportPdfAsync(IEnumerable<User> users, string filePath)
+        {
+            await Task.Run(() =>
+            {
+                var list = users?.ToList() ?? new List<User>();
+                string noDataText = GetNoDataText();
+
+                Document.Create(container =>
+                {
+                    container.Page(page =>
+                    {
+                        page.Size(PageSizes.A4);
+                        page.Margin(2, Unit.Centimetre);
+                        page.PageColor(Colors.White);
+                        page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
+                        page.ContentFromRightToLeft();
+
+                        page.Header().Element(c => ComposeHeader(c, "منظومة مصادر — تقرير الكوادر والمستخدمين"));
+
+                        page.Content().PaddingVertical(1, Unit.Centimetre).Column(column =>
+                        {
+                            column.Item().Table(table =>
+                            {
+                                table.ColumnsDefinition(columns =>
+                                {
+                                    columns.RelativeColumn(1); // #
+                                    columns.RelativeColumn(3); // Full Name
+                                    columns.RelativeColumn(2.5f); // Username
+                                    columns.RelativeColumn(2.5f); // Role
+                                    columns.RelativeColumn(3); // Email
+                                    columns.RelativeColumn(2); // Status
+                                    columns.RelativeColumn(2.5f); // Last Login
+                                });
+
+                                table.Header(header =>
+                                {
+                                    header.Cell().Element(HeaderStyle).Text("#");
+                                    header.Cell().Element(HeaderStyle).Text("الاسم الكامل");
+                                    header.Cell().Element(HeaderStyle).Text("اسم المستخدم");
+                                    header.Cell().Element(HeaderStyle).Text("الدور");
+                                    header.Cell().Element(HeaderStyle).Text("البريد الإلكتروني");
+                                    header.Cell().Element(HeaderStyle).Text("الحالة");
+                                    header.Cell().Element(HeaderStyle).Text("آخر تسجيل دخول");
+
+                                    static IContainer HeaderStyle(IContainer c) => c.Background(Colors.Blue.Medium).PaddingVertical(6).AlignCenter().DefaultTextStyle(x => x.SemiBold().FontColor(Colors.White));
+                                });
+
+                                if (!list.Any())
+                                {
+                                    table.Cell().ColumnSpan(7).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
+                                }
+                                else
+                                {
+                                    int i = 1;
+                                    foreach (var u in list)
+                                    {
+                                        var bg = i % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(i.ToString());
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(u.FullName);
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(u.Username);
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(u.Role?.DisplayName ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(u.Email ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(u.StatusDisplayName);
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(u.LastLoginDate.HasValue ? u.LastLoginDate.Value.ToString("yyyy/MM/dd HH:mm") : "-");
+                                        i++;
+                                    }
+                                }
+
+                                static IContainer CellStyle(IContainer c, string bg) => c.Background(bg).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(4).AlignCenter();
+                            });
+                        });
+
+                        page.Footer().Element(ComposeFooter);
+                    });
+                }).GeneratePdf(filePath);
+            });
+        }
+
+        public async Task GenerateAuditLogsExcelAsync(IEnumerable<AuditLog> logs, string filePath)
+        {
+            await Task.Run(() =>
+            {
+                using var workbook = new XLWorkbook();
+                var worksheet = workbook.Worksheets.Add("سجل التدقيق والنشاطات");
+                worksheet.RightToLeft = true;
+
+                string[] headers = { "#", "المستخدم", "نوع العملية", "الجدول المتأثر", "التفاصيل", "التاريخ والوقت" };
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    worksheet.Cell(1, i + 1).Value = headers[i];
+                    worksheet.Cell(1, i + 1).Style.Font.Bold = true;
+                    worksheet.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+                }
+
+                int row = 2;
+                int index = 1;
+                foreach (var log in logs ?? Enumerable.Empty<AuditLog>())
+                {
+                    worksheet.Cell(row, 1).Value = index++;
+                    worksheet.Cell(row, 2).Value = log.User?.FullName ?? "مدير النظام / تلقائي";
+                    worksheet.Cell(row, 3).Value = log.Action;
+                    worksheet.Cell(row, 4).Value = log.TableName ?? "-";
+                    worksheet.Cell(row, 5).Value = log.Details ?? "-";
+                    worksheet.Cell(row, 6).Value = log.ActionDate.ToString("yyyy/MM/dd HH:mm:ss");
+                    row++;
+                }
+
+                worksheet.Columns().AdjustToContents();
+                workbook.SaveAs(filePath);
+            });
+        }
+
+        public async Task GenerateAuditLogsPdfAsync(IEnumerable<AuditLog> logs, string filePath)
+        {
+            await Task.Run(() =>
+            {
+                var list = logs?.ToList() ?? new List<AuditLog>();
+                string noDataText = GetNoDataText();
+
+                Document.Create(container =>
+                {
+                    container.Page(page =>
+                    {
+                        page.Size(PageSizes.A4);
+                        page.Margin(2, Unit.Centimetre);
+                        page.PageColor(Colors.White);
+                        page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
+                        page.ContentFromRightToLeft();
+
+                        page.Header().Element(c => ComposeHeader(c, "منظومة مصادر — تقرير سجل التدقيق والنشاطات"));
+
+                        page.Content().PaddingVertical(1, Unit.Centimetre).Column(column =>
+                        {
+                            column.Item().Table(table =>
+                            {
+                                table.ColumnsDefinition(columns =>
+                                {
+                                    columns.RelativeColumn(1); // #
+                                    columns.RelativeColumn(2.5f); // User
+                                    columns.RelativeColumn(2); // Action
+                                    columns.RelativeColumn(2); // Table
+                                    columns.RelativeColumn(4.5f); // Details
+                                    columns.RelativeColumn(2.5f); // Date
+                                });
+
+                                table.Header(header =>
+                                {
+                                    header.Cell().Element(HeaderStyle).Text("#");
+                                    header.Cell().Element(HeaderStyle).Text("المستخدم");
+                                    header.Cell().Element(HeaderStyle).Text("العملية");
+                                    header.Cell().Element(HeaderStyle).Text("الجدول");
+                                    header.Cell().Element(HeaderStyle).Text("التفاصيل");
+                                    header.Cell().Element(HeaderStyle).Text("التاريخ والوقت");
+
+                                    static IContainer HeaderStyle(IContainer c) => c.Background(Colors.Blue.Medium).PaddingVertical(6).AlignCenter().DefaultTextStyle(x => x.SemiBold().FontColor(Colors.White));
+                                });
+
+                                if (!list.Any())
+                                {
+                                    table.Cell().ColumnSpan(6).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
+                                }
+                                else
+                                {
+                                    int i = 1;
+                                    foreach (var log in list)
+                                    {
+                                        var bg = i % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(i.ToString());
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(log.User?.FullName ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(log.Action);
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(log.TableName ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(log.Details ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(log.ActionDate.ToString("yyyy/MM/dd HH:mm"));
+                                        i++;
+                                    }
+                                }
+
+                                static IContainer CellStyle(IContainer c, string bg) => c.Background(bg).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(4).AlignCenter();
                             });
                         });
 

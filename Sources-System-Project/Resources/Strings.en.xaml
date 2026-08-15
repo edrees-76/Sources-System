@@ -263,7 +263,9 @@
 
     <!-- Users Page -->
     <system:String x:Key="UsersManagementTitle">Personnel and Users Management</system:String>
-    <system:String x:Key="UsersManagementSubtitle">Control access permissions and manage Sources accounts</system:String>
+    <system:String x:Key="UsersManagementSubtitle">Control access permissions, accounts and audit logs of Sources system</system:String>
+    <system:String x:Key="TabUsersManagement">Users Management</system:String>
+    <system:String x:Key="TabRolesPermissions">Roles &amp; Permissions</system:String>
 
     <system:String x:Key="RoleAdmin">System Administrator</system:String>
     <system:String x:Key="RoleUser">User</system:String>
@@ -273,6 +275,24 @@
     <system:String x:Key="ColRole">Role / Permission</system:String>
     <system:String x:Key="ColEmail">Email</system:String>
     <system:String x:Key="ColActive">Active</system:String>
+    <system:String x:Key="ColLastLogin">Last Login</system:String>
+    <system:String x:Key="ColLockoutStatus">Account Status</system:String>
+    <system:String x:Key="StatusLocked">Temporarily Locked</system:String>
+    <system:String x:Key="StatusFrozen">Frozen</system:String>
+    <system:String x:Key="BtnUnlockAccount">Unlock</system:String>
+    <system:String x:Key="ToolTipUnlockAccount">Unlock user account and reset failed login attempts</system:String>
+    <system:String x:Key="MsgConfirmUnlock">Are you sure you want to unlock this user account and reset failed login attempts?</system:String>
+    <system:String x:Key="MsgAccountUnlocked">Account unlocked successfully</system:String>
+    <system:String x:Key="SearchUsersHint">Search by name, username or email...</system:String>
+    <system:String x:Key="FilterStatusAll">All Statuses</system:String>
+    <system:String x:Key="FilterStatusActive">Active Only</system:String>
+    <system:String x:Key="FilterStatusFrozen">Frozen Only</system:String>
+    <system:String x:Key="FilterStatusLocked">Locked Only</system:String>
+    <system:String x:Key="FilterRoleAll">All Roles</system:String>
+    <system:String x:Key="FilterActionAll">All Operations</system:String>
+    <system:String x:Key="SelectDateHint">Select a date...</system:String>
+    <system:String x:Key="FailedAttemptsPrefix">Failed attempts:</system:String>
+
     <system:String x:Key="UserDataTitle">User Details</system:String>
     <system:String x:Key="FieldFullNameReq">Full Name *</system:String>
     <system:String x:Key="FieldUsernameReq">Username *</system:String>
@@ -283,20 +303,40 @@
     <system:String x:Key="LabelIsEditor">Edit Permission</system:String>
     <system:String x:Key="LabelPermissions">Section Access Permissions</system:String>
     <system:String x:Key="ColStatus">Status</system:String>
-    <system:String x:Key="ColDate">Date</system:String>
+    <system:String x:Key="ColDate">Date &amp; Time</system:String>
     <system:String x:Key="ColDetails">Details</system:String>
+    <system:String x:Key="ColAffectedTable">Table</system:String>
     <system:String x:Key="BtnToggleFreeze">Freeze / Activate</system:String>
     <system:String x:Key="UserStatsTotal">Total Users</system:String>
     <system:String x:Key="UserStatsActive">Active Accounts</system:String>
     <system:String x:Key="UserStatsAdmins">Administrators</system:String>
     <system:String x:Key="TabAuditLog">Audit Log &amp; Activities</system:String>
     <system:String x:Key="FilterByUser">Filter by User</system:String>
+    <system:String x:Key="FilterByAction">Action Type</system:String>
     <system:String x:Key="FilterFromDate">From Date</system:String>
     <system:String x:Key="FilterToDate">To Date</system:String>
     <system:String x:Key="BtnClearFilters">Clear Filters</system:String>
     <system:String x:Key="StatActivitiesToday">Today's Activities</system:String>
     <system:String x:Key="StatModificationsToday">Today's Modifications</system:String>
     <system:String x:Key="StatMostActiveUser">Most Active</system:String>
+
+    <!-- Diff Viewer -->
+    <system:String x:Key="BtnViewDiff">View Changes</system:String>
+    <system:String x:Key="AuditDiffTitle">Change Details &amp; Diff</system:String>
+    <system:String x:Key="AuditOldValue">Previous Value</system:String>
+    <system:String x:Key="AuditNewValue">New Value</system:String>
+    <system:String x:Key="AuditFieldName">Field / Property</system:String>
+    <system:String x:Key="AuditNoChanges">No recorded JSON diff details for this operation.</system:String>
+    <system:String x:Key="AuditRecordInfo">Record &amp; Operation Info</system:String>
+
+    <!-- Roles & Permissions Tab -->
+    <system:String x:Key="RolesOverviewTitle">System Roles &amp; Permissions Overview</system:String>
+    <system:String x:Key="RolesOverviewSubtitle">Overview of configured system roles and associated personnel count</system:String>
+    <system:String x:Key="RoleUsersCount">Associated Users</system:String>
+    <system:String x:Key="RoleDescriptionTitle">Description &amp; Permissions</system:String>
+    <system:String x:Key="RoleNoDescription">No additional description specified for this role</system:String>
+    <system:String x:Key="RolePermissionsPreview">Granted Access Scope</system:String>
+
     <system:String x:Key="PermRadioisotopes">Radioisotopes</system:String>
     <system:String x:Key="PermSources">Radioactive Sources</system:String>
     <system:String x:Key="PermLocations">Locations</system:String>

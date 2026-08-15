@@ -260,7 +260,9 @@
 
     <!-- Users Page -->
     <system:String x:Key="UsersManagementTitle">إدارة الكوادر والمستخدمين</system:String>
-    <system:String x:Key="UsersManagementSubtitle">التحكم في صلاحيات الوصول وإدارة حسابات مصادر</system:String>
+    <system:String x:Key="UsersManagementSubtitle">التحكم في صلاحيات الوصول وإدارة حسابات وسجلات مصادر</system:String>
+    <system:String x:Key="TabUsersManagement">إدارة المستخدمين</system:String>
+    <system:String x:Key="TabRolesPermissions">الأدوار والصلاحيات</system:String>
     
     <system:String x:Key="RoleAdmin">مدير النظام</system:String>
     <system:String x:Key="RoleUser">مستخدم</system:String>
@@ -270,6 +272,25 @@
     <system:String x:Key="ColRole">الصلاحية</system:String>
     <system:String x:Key="ColEmail">البريد</system:String>
     <system:String x:Key="ColActive">نشط</system:String>
+    <system:String x:Key="ColLastLogin">آخر دخول</system:String>
+    <system:String x:Key="ColLockoutStatus">حالة الحساب</system:String>
+    <system:String x:Key="StatusLocked">مقفل مؤقتاً</system:String>
+    <system:String x:Key="StatusFrozen">مجمّد</system:String>
+    <system:String x:Key="BtnUnlockAccount">فك القفل</system:String>
+    <system:String x:Key="ToolTipUnlockAccount">فك قفل الحساب وتصفير عداد المحاولات الفاشلة</system:String>
+    <system:String x:Key="MsgConfirmUnlock">هل أنت متأكد من فك قفل حساب المستخدم وتصفير عداد المحاولات الفاشلة؟</system:String>
+    <system:String x:Key="MsgAccountUnlocked">تم فك قفل الحساب بنجاح</system:String>
+    <system:String x:Key="SearchUsersHint">بحث بالاسم أو اسم المستخدم أو البريد...</system:String>
+    <system:String x:Key="FilterStatusAll">كافة الحالات</system:String>
+    <system:String x:Key="FilterStatusActive">الحسابات النشطة فقط</system:String>
+    <system:String x:Key="FilterStatusFrozen">الحسابات المجمدة فقط</system:String>
+    <system:String x:Key="FilterStatusLocked">الحسابات المقفلة فقط</system:String>
+    <system:String x:Key="FilterRoleAll">كافة الأدوار</system:String>
+    <system:String x:Key="FilterActionAll">كافة العمليات</system:String>
+    <system:String x:Key="SelectDateHint">اختر التاريخ...</system:String>
+    <system:String x:Key="FailedAttemptsPrefix">محاولات فاشلة:</system:String>
+
+    <system:String x:Key="UserDataTitle">بيانات المستخدم</system:String>
     <system:String x:Key="FieldFullNameReq">الاسم الكامل *</system:String>
     <system:String x:Key="FieldUsernameReq">اسم المستخدم *</system:String>
     <system:String x:Key="FieldPassword">كلمة المرور</system:String>
@@ -279,20 +300,40 @@
     <system:String x:Key="LabelIsEditor">صلاحية التعديل</system:String>
     <system:String x:Key="LabelPermissions">صلاحيات الوصول للأقسام</system:String>
     <system:String x:Key="ColStatus">الحالة</system:String>
-    <system:String x:Key="ColDate">التاريخ</system:String>
+    <system:String x:Key="ColDate">التاريخ والوقت</system:String>
     <system:String x:Key="ColDetails">التفاصيل</system:String>
+    <system:String x:Key="ColAffectedTable">الجدول</system:String>
     <system:String x:Key="BtnToggleFreeze">تجميد / تنشيط</system:String>
     <system:String x:Key="UserStatsTotal">إجمالي المستخدمين</system:String>
     <system:String x:Key="UserStatsActive">الحسابات النشطة</system:String>
     <system:String x:Key="UserStatsAdmins">المديرون</system:String>
     <system:String x:Key="TabAuditLog">سجل التدقيق والنشاطات</system:String>
     <system:String x:Key="FilterByUser">تصفية حسب المستخدم</system:String>
+    <system:String x:Key="FilterByAction">نوع العملية</system:String>
     <system:String x:Key="FilterFromDate">من تاريخ</system:String>
     <system:String x:Key="FilterToDate">إلى تاريخ</system:String>
     <system:String x:Key="BtnClearFilters">مسح الفلاتر</system:String>
     <system:String x:Key="StatActivitiesToday">نشاطات اليوم</system:String>
     <system:String x:Key="StatModificationsToday">تعديلات اليوم</system:String>
     <system:String x:Key="StatMostActiveUser">الأكثر نشاطاً</system:String>
+    
+    <!-- عارض الفروقات Diff Viewer -->
+    <system:String x:Key="BtnViewDiff">عرض التغييرات</system:String>
+    <system:String x:Key="AuditDiffTitle">تفاصيل التغييرات والفروقات</system:String>
+    <system:String x:Key="AuditOldValue">القيمة السابقة</system:String>
+    <system:String x:Key="AuditNewValue">القيمة الجديدة</system:String>
+    <system:String x:Key="AuditFieldName">الحقل / البيان</system:String>
+    <system:String x:Key="AuditNoChanges">لا توجد تفاصيل مقارنة JSON مسجلة لهذه العملية.</system:String>
+    <system:String x:Key="AuditRecordInfo">معلومات السجل والعملية</system:String>
+
+    <!-- تبويب الأدوار والصلاحيات -->
+    <system:String x:Key="RolesOverviewTitle">نظرة عامة على أدوار وصلاحيات النظام</system:String>
+    <system:String x:Key="RolesOverviewSubtitle">استعراض الأدوار المحددة بالمنظومة وعدد الكوادر المرتبطة بكل دور</system:String>
+    <system:String x:Key="RoleUsersCount">مستخدمون مرتبطون</system:String>
+    <system:String x:Key="RoleDescriptionTitle">الوصف والصلاحيات</system:String>
+    <system:String x:Key="RoleNoDescription">لا يوجد وصف إضافي محدد لهذا الدور</system:String>
+    <system:String x:Key="RolePermissionsPreview">نطاق الوصول الممنوح</system:String>
+
     <system:String x:Key="PermRadioisotopes">النظائر المشعة</system:String>
     <system:String x:Key="PermSources">المصادر المشعة</system:String>
     <system:String x:Key="PermLocations">المواقع</system:String>

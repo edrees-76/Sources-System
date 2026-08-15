@@ -462,6 +462,9 @@ public class User
     [NotMapped]
     public string StatusDisplayName => IsActive ? "نشط" : "موقوف";
 
+    [NotMapped]
+    public bool IsLocked => LockoutEnd.HasValue && LockoutEnd.Value > DateTime.Now;
+
     /// <summary>التحقق من صلاحية الوصول لقسم معين</summary>
     [NotMapped]
     public bool IsAdmin => Role?.RoleName == "مدير النظام";

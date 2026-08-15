@@ -1,264 +1,843 @@
 <UserControl x:Class="Sources.Views.UsersView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:converters="clr-namespace:Sources.Converters">
+
+    <UserControl.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVis"/>
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVis"/>
+
+        <!-- ─── النمط الأساسي لأزرار التبويبات ─── -->
+        <Style x:Key="UserTabButtonBase" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource DataGridRowHover}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource PrimaryLightBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- تبويب إدارة المستخدمين -->
+        <Style x:Key="UsersManagementTabBtn" TargetType="Button" BasedOn="{StaticResource UserTabButtonBase}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SelectedTab}" Value="UsersManagement">
+                    <Setter Property="Background" Value="{DynamicResource DataGridRowSelected}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="BorderThickness" Value="1.5"/>
+                    <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.12" Color="{StaticResource PrimaryColor}"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- تبويب سجل التدقيق والنشاطات -->
+        <Style x:Key="AuditLogTabBtn" TargetType="Button" BasedOn="{StaticResource UserTabButtonBase}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SelectedTab}" Value="AuditLog">
+                    <Setter Property="Background" Value="{DynamicResource DataGridRowSelected}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="BorderThickness" Value="1.5"/>
+                    <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.12" Color="{StaticResource PrimaryColor}"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- تبويب الأدوار والصلاحيات -->
+        <Style x:Key="RolesPermissionsTabBtn" TargetType="Button" BasedOn="{StaticResource UserTabButtonBase}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SelectedTab}" Value="RolesPermissions">
+                    <Setter Property="Background" Value="{DynamicResource DataGridRowSelected}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="BorderThickness" Value="1.5"/>
+                    <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.12" Color="{StaticResource PrimaryColor}"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
     <Grid Margin="24">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/> <!-- Row 0: Header Banner -->
+            <RowDefinition Height="Auto"/> <!-- Row 1: Tabs Navigation -->
+            <RowDefinition Height="*"/>    <!-- Row 2: Tab Content -->
         </Grid.RowDefinitions>
 
-        <!-- ─── الترويسة + زر إضافة ─── -->
-        <DockPanel Grid.Row="0" Margin="0,0,0,16">
-            <Button Content="{DynamicResource BtnAddUser}" Style="{StaticResource PrimaryButton}" Command="{Binding AddNewCommand}"
-                    HorizontalAlignment="Left" VerticalAlignment="Center">
-                <Button.Effect>
-                    <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.2" Color="{StaticResource GoldColor}"/>
-                </Button.Effect>
-            </Button>
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- 1. شريط ترويسة الصفحة الموحد                          -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <Border Grid.Row="0" Margin="0,0,0,16" Padding="20,16" Background="{DynamicResource CardBackground}"
+                CornerRadius="10" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="12" ShadowDepth="1" Opacity="0.06"/>
+            </Border.Effect>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- العنوان والأيقونة -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <materialDesign:PackIcon Kind="AccountGroup" Width="34" Height="34"
+                                             Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="{DynamicResource UsersManagementTitle}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="{DynamicResource UsersManagementSubtitle}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- أزرار الإجراءات العلوية والتصدير -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- أزرار تبويب المستخدمين -->
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding SelectedTab}" Value="UsersManagement"/>
+                                            <Condition Binding="{Binding IsEditing}" Value="False"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+
+                        <Button Command="{Binding AddNewCommand}" Style="{StaticResource PrimaryButton}" Margin="0,0,8,0" Height="40" Padding="16,0">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="AccountPlus" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource BtnAddUser}" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                            </StackPanel>
+                            <Button.Effect>
+                                <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.15" Color="{StaticResource PrimaryColor}"/>
+                            </Button.Effect>
+                        </Button>
+
+                        <Button Command="{Binding ExportUsersToPdfCommand}" Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Foreground="{DynamicResource DangerBrush}" BorderBrush="{DynamicResource DangerBrush}" Margin="0,0,8,0" Height="40">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="FilePdfBox" Margin="-4,0,4,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource BtnExportPdf}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Command="{Binding ExportUsersToExcelCommand}" Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Foreground="{DynamicResource SuccessBrush}" BorderBrush="{DynamicResource SuccessBrush}" Height="40">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="FileExcelBox" Margin="-4,0,4,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource BtnExportExcel}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- أزرار تبويب سجل التدقيق -->
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedTab}" Value="AuditLog">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+
+                        <Button Command="{Binding ExportAuditLogsToPdfCommand}" Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Foreground="{DynamicResource DangerBrush}" BorderBrush="{DynamicResource DangerBrush}" Margin="0,0,8,0" Height="40">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="FilePdfBox" Margin="-4,0,4,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource BtnExportPdf}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Command="{Binding ExportAuditLogsToExcelCommand}" Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Foreground="{DynamicResource SuccessBrush}" BorderBrush="{DynamicResource SuccessBrush}" Height="40">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="FileExcelBox" Margin="-4,0,4,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource BtnExportExcel}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- 2. مركز التبويبات العلوي                              -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <DockPanel Grid.Row="1" Margin="0,0,0,16">
+            <WrapPanel DockPanel.Dock="Right">
+                <Button Style="{StaticResource UsersManagementTabBtn}" Command="{Binding SelectTabCommand}" CommandParameter="UsersManagement">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="AccountMultiple" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource TabUsersManagement}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Style="{StaticResource AuditLogTabBtn}" Command="{Binding SelectTabCommand}" CommandParameter="AuditLog">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="History" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource TabAuditLog}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Style="{StaticResource RolesPermissionsTabBtn}" Command="{Binding SelectTabCommand}" CommandParameter="RolesPermissions">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="ShieldKeyOutline" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource TabRolesPermissions}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </WrapPanel>
         </DockPanel>
 
-        <!-- ─── بطاقات إحصائية ─── -->
-        <UniformGrid Grid.Row="1" Columns="3" Margin="0,0,0,16">
-            <Border Style="{StaticResource DashboardStatCard}" BorderBrush="{StaticResource GoldBrush}">
-                <StackPanel HorizontalAlignment="Center">
-                    <materialDesign:PackIcon Kind="AccountGroup" Width="32" Height="32" Foreground="{StaticResource GoldBrush}" HorizontalAlignment="Center"/>
-                    <TextBlock Text="{Binding TotalUsersCount}" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0,8,0,0"/>
-                    <TextBlock Text="{DynamicResource UserStatsTotal}" FontSize="13" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
-                </StackPanel>
-            </Border>
-            <Border Style="{StaticResource DashboardStatCard}" BorderBrush="{DynamicResource SuccessBrush}">
-                <StackPanel HorizontalAlignment="Center">
-                    <materialDesign:PackIcon Kind="AccountCheck" Width="32" Height="32" Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Center"/>
-                    <TextBlock Text="{Binding ActiveUsersCount}" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0,8,0,0"/>
-                    <TextBlock Text="{DynamicResource UserStatsActive}" FontSize="13" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
-                </StackPanel>
-            </Border>
-            <Border Style="{StaticResource DashboardStatCard}" BorderBrush="{DynamicResource InfoBrush}">
-                <StackPanel HorizontalAlignment="Center">
-                    <materialDesign:PackIcon Kind="ShieldAccount" Width="32" Height="32" Foreground="{DynamicResource InfoBrush}" HorizontalAlignment="Center"/>
-                    <TextBlock Text="{Binding AdminUsersCount}" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0,8,0,0"/>
-                    <TextBlock Text="{DynamicResource UserStatsAdmins}" FontSize="13" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
-                </StackPanel>
-            </Border>
-        </UniformGrid>
-
-        <!-- ─── القسم الرئيسي: جدول المستخدمين أو النموذج ─── -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- 3. محتوى التبويبات                                    -->
+        <!-- ═══════════════════════════════════════════════════════ -->
         <Grid Grid.Row="2">
-            <!-- جدول المستخدمين -->
-            <Border Style="{StaticResource ContentCard}" Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVis}}">
-                <DataGrid ItemsSource="{Binding Users}" SelectedItem="{Binding Selected}" Style="{StaticResource ModernDataGrid}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                        <DataGridTextColumn Header="{DynamicResource ColFullName}" Binding="{Binding FullName}" Width="180"/>
-                        <DataGridTextColumn Header="{DynamicResource ColUsername}" Binding="{Binding Username}" Width="130"/>
-                        <DataGridTextColumn Header="{DynamicResource ColRole}" Binding="{Binding Role.DisplayName}" Width="130"/>
-                        <DataGridTextColumn Header="{DynamicResource ColEmail}" Binding="{Binding Email}" Width="180"/>
-                        <DataGridTemplateColumn Header="{DynamicResource ColStatus}" Width="110">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Border CornerRadius="12" Padding="8,2" HorizontalAlignment="Center" MinWidth="75">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Setter Property="Background" Value="{DynamicResource SuccessBrush}"/>
-                                                <Setter Property="Opacity" Value="0.1"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsActive}" Value="False">
-                                                        <Setter Property="Background" Value="{DynamicResource DangerBrush}"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                        <TextBlock Text="{Binding StatusDisplayName}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsActive}" Value="False">
-                                                            <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
-                                    </Border>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                        <DataGridTemplateColumn Header="{DynamicResource ColActions}" Width="160">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                        <Button Style="{StaticResource MaterialDesignIconButton}" ToolTip="{DynamicResource CtxEdit}"
-                                                Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                Width="32" Height="32" Margin="0,0,4,0">
-                                            <materialDesign:PackIcon Kind="Pencil" Width="16" Height="16" Foreground="{StaticResource GoldBrush}"/>
-                                        </Button>
-                                        <Button Style="{StaticResource MaterialDesignIconButton}" ToolTip="{DynamicResource BtnToggleFreeze}"
-                                                Command="{Binding DataContext.ToggleUserFreezeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                CommandParameter="{Binding}"
-                                                Width="32" Height="32">
-                                            <Grid>
-                                                <!-- أيقونة تجميد (تظهر عندما الحساب نشط) -->
-                                                <materialDesign:PackIcon Kind="AccountCancel" Width="16" Height="16" Foreground="{DynamicResource DangerBrush}"
-                                                                         Visibility="{Binding IsActive, Converter={StaticResource BoolToVis}}"/>
-                                                <!-- أيقونة تنشيط (تظهر عندما الحساب مجمد) -->
-                                                <materialDesign:PackIcon Kind="AccountCheck" Width="16" Height="16" Foreground="{DynamicResource SuccessBrush}"
-                                                                         Visibility="{Binding IsActive, Converter={StaticResource InverseBoolToVis}}"/>
-                                            </Grid>
-                                        </Button>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                    </DataGrid.Columns>
-                    <DataGrid.ContextMenu>
-                        <ContextMenu>
-                            <MenuItem Header="{DynamicResource CtxEdit}" Command="{Binding EditCommand}"/>
-                            <MenuItem Header="{DynamicResource CtxDelete}" Command="{Binding DeleteCommand}"/>
-                        </ContextMenu>
-                    </DataGrid.ContextMenu>
-                </DataGrid>
-            </Border>
 
-            <!-- نموذج الإضافة/التعديل -->
-            <Border Style="{StaticResource ContentCard}" Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}">
-                <Border.InputBindings>
-                    <KeyBinding Key="Escape" Command="{Binding CancelEditCommand}"/>
-                </Border.InputBindings>
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel MaxWidth="600">
-                        <TextBlock Text="{DynamicResource UserDataTitle}" Style="{StaticResource CardTitle}" FontSize="20" Margin="0,0,0,20"/>
+            <!-- ─────────────────────────────────────────────────── -->
+            <!-- التبويب 1: إدارة المستخدمين (List ↔ Form)            -->
+            <!-- ─────────────────────────────────────────────────── -->
+            <Grid>
+                <Grid.Style>
+                    <Style TargetType="Grid">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedTab}" Value="UsersManagement">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Grid.Style>
 
-                        <!-- البيانات الأساسية -->
-                        <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="{DynamicResource FieldFullNameReq}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
-                            <TextBox Text="{Binding EditFullName}" Style="{StaticResource FormTextBox}"/>
-                        </StackPanel>
-                        <UniformGrid Columns="2" Margin="0,0,0,12">
-                            <StackPanel Margin="0,0,12,0">
-                                <TextBlock Text="{DynamicResource FieldUsernameReq}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
-                                <TextBox Text="{Binding EditUsername}" Style="{StaticResource FormTextBox}" IsEnabled="{Binding IsNew}"/>
-                            </StackPanel>
-                            <StackPanel>
-                                <TextBlock Text="{DynamicResource FieldPassword}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
-                                <PasswordBox materialDesign:PasswordBoxAssist.Password="{Binding EditPassword, Mode=TwoWay}" Style="{StaticResource FormPasswordBox}"/>
-                            </StackPanel>
-                        </UniformGrid>
-                        <UniformGrid Columns="2" Margin="0,0,0,12">
-                            <StackPanel Margin="0,0,12,0">
-                                <TextBlock Text="{DynamicResource FieldEmail}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
-                                <TextBox Text="{Binding EditEmail}" Style="{StaticResource FormTextBox}"/>
-                            </StackPanel>
-                            <StackPanel>
-                                <TextBlock Text="{DynamicResource FieldRoleReq}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
-                                <ComboBox ItemsSource="{Binding Roles}" SelectedValue="{Binding EditRoleId}"
-                                          SelectedValuePath="Id" DisplayMemberPath="DisplayName" Style="{StaticResource FormComboBox}"/>
-                            </StackPanel>
-                        </UniformGrid>
+                <!-- المشهد 1: قائمة المستخدمين والبحث (يختفي عند التحرير) -->
+                <Grid Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVis}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/> <!-- الإحصائيات -->
+                        <RowDefinition Height="Auto"/> <!-- شريط البحث والفلترة -->
+                        <RowDefinition Height="*"/>    <!-- جدول المستخدمين -->
+                    </Grid.RowDefinitions>
 
-                        <UniformGrid Columns="2" Margin="0,0,0,16">
-                            <CheckBox Content="{DynamicResource FieldIsActive}" IsChecked="{Binding EditIsActive}" Margin="0,0,12,0" Foreground="{DynamicResource TextPrimary}"/>
-                            <CheckBox Content="{DynamicResource LabelIsEditor}" IsChecked="{Binding EditIsEditor}" Foreground="{DynamicResource TextPrimary}"/>
-                        </UniformGrid>
-
-                        <!-- قسم الصلاحيات (يظهر فقط لغير المدير) -->
-                        <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,16"
-                                Visibility="{Binding IsPermissionsSectionVisible, Converter={StaticResource BoolToVis}}">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                                    <materialDesign:PackIcon Kind="ShieldKey" Width="20" Height="20" Foreground="{StaticResource GoldBrush}" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{DynamicResource LabelPermissions}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                                </StackPanel>
-                                <UniformGrid Columns="2" Rows="4">
-                                    <CheckBox Content="{DynamicResource PermRadioisotopes}" IsChecked="{Binding PermRadioisotopes}" Margin="0,4" Foreground="{DynamicResource TextPrimary}"/>
-                                    <CheckBox Content="{DynamicResource PermSources}" IsChecked="{Binding PermSources}" Margin="0,4" Foreground="{DynamicResource TextPrimary}"/>
-                                    <CheckBox Content="{DynamicResource PermLocations}" IsChecked="{Binding PermLocations}" Margin="0,4" Foreground="{DynamicResource TextPrimary}"/>
-                                    <CheckBox Content="{DynamicResource PermBorrowing}" IsChecked="{Binding PermBorrowing}" Margin="0,4" Foreground="{DynamicResource TextPrimary}"/>
-                                    <CheckBox Content="{DynamicResource PermReports}" IsChecked="{Binding PermReports}" Margin="0,4" Foreground="{DynamicResource TextPrimary}"/>
-                                    <CheckBox Content="{DynamicResource PermCalculator}" IsChecked="{Binding PermCalculator}" Margin="0,4" Foreground="{DynamicResource TextPrimary}"/>
-                                    <CheckBox Content="{DynamicResource PermUsers}" IsChecked="{Binding PermUsers}" Margin="0,4" Foreground="{DynamicResource TextPrimary}"/>
-                                    <CheckBox Content="{DynamicResource PermSettings}" IsChecked="{Binding PermSettings}" Margin="0,4" Foreground="{DynamicResource TextPrimary}"/>
-                                </UniformGrid>
+                    <!-- البطاقات الإحصائية الثلاث -->
+                    <UniformGrid Grid.Row="0" Columns="3" Margin="0,0,0,16">
+                        <Border Style="{StaticResource DashboardStatCard}" BorderBrush="{DynamicResource PrimaryBrush}">
+                            <StackPanel HorizontalAlignment="Center">
+                                <materialDesign:PackIcon Kind="AccountGroup" Width="30" Height="30" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{Binding TotalUsersCount}" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                                <TextBlock Text="{DynamicResource UserStatsTotal}" FontSize="13" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Border>
-
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                            <Button Content="{DynamicResource BtnSave}" Style="{StaticResource PrimaryButton}" Command="{Binding SaveCommand}" IsDefault="True" Margin="0,0,12,0"/>
-                            <Button Content="{DynamicResource BtnCancel}" Style="{StaticResource SecondaryButton}" Command="{Binding CancelEditCommand}" IsCancel="True"/>
-                        </StackPanel>
-                    </StackPanel>
-                </ScrollViewer>
-            </Border>
-        </Grid>
-
-        <!-- ─── سجل التدقيق ─── -->
-        <Expander Grid.Row="3" Margin="0,8,0,0" IsExpanded="False">
-            <Expander.Header>
-                <StackPanel Orientation="Horizontal">
-                    <materialDesign:PackIcon Kind="History" Width="20" Height="20" Foreground="{StaticResource GoldBrush}" VerticalAlignment="Center"/>
-                    <TextBlock Text="{DynamicResource TabAuditLog}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                </StackPanel>
-            </Expander.Header>
-            <Border Style="{StaticResource ContentCard}">
-                <DockPanel>
-                    <!-- فلاتر -->
-                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
-                        <StackPanel Margin="0,0,16,0">
-                            <TextBlock Text="{DynamicResource FilterByUser}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
-                            <ComboBox ItemsSource="{Binding Users}" SelectedItem="{Binding SelectedUserFilter}" DisplayMemberPath="FullName"
-                                      Width="180" Style="{StaticResource FormComboBox}"/>
-                        </StackPanel>
-                        <StackPanel Margin="0,0,16,0">
-                            <TextBlock Text="{DynamicResource FilterFromDate}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
-                            <DatePicker SelectedDate="{Binding FilterStartDate}" Width="150"/>
-                        </StackPanel>
-                        <StackPanel Margin="0,0,16,0">
-                            <TextBlock Text="{DynamicResource FilterToDate}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
-                            <DatePicker SelectedDate="{Binding FilterEndDate}" Width="150"/>
-                        </StackPanel>
-                        <Button Content="{DynamicResource BtnClearFilters}" Style="{StaticResource SecondaryButton}" Command="{Binding ClearFiltersCommand}" VerticalAlignment="Bottom" Margin="0,0,0,0"/>
-                    </StackPanel>
-
-                    <!-- إحصائيات سريعة -->
-                    <UniformGrid DockPanel.Dock="Top" Columns="3" Margin="0,0,0,12">
-                        <Border Style="{StaticResource StatCard}" Padding="12">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <materialDesign:PackIcon Kind="CalendarToday" Width="20" Height="20" Foreground="{StaticResource GoldBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <TextBlock Text="{Binding ActivitiesTodayCount}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
-                                <TextBlock Text="{DynamicResource StatActivitiesToday}" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                        <Border Style="{StaticResource DashboardStatCard}" BorderBrush="{DynamicResource SuccessBrush}">
+                            <StackPanel HorizontalAlignment="Center">
+                                <materialDesign:PackIcon Kind="AccountCheck" Width="30" Height="30" Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{Binding ActiveUsersCount}" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                                <TextBlock Text="{DynamicResource UserStatsActive}" FontSize="13" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Border>
-                        <Border Style="{StaticResource StatCard}" Padding="12">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <materialDesign:PackIcon Kind="Pencil" Width="20" Height="20" Foreground="{DynamicResource WarningBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <TextBlock Text="{Binding ModificationsTodayCount}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
-                                <TextBlock Text="{DynamicResource StatModificationsToday}" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                            </StackPanel>
-                        </Border>
-                        <Border Style="{StaticResource StatCard}" Padding="12">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <materialDesign:PackIcon Kind="AccountStar" Width="20" Height="20" Foreground="{DynamicResource SuccessBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <TextBlock Text="{Binding MostActiveUser}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
-                                <TextBlock Text="{DynamicResource StatMostActiveUser}" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                        <Border Style="{StaticResource DashboardStatCard}" BorderBrush="{DynamicResource InfoBrush}">
+                            <StackPanel HorizontalAlignment="Center">
+                                <materialDesign:PackIcon Kind="ShieldAccount" Width="30" Height="30" Foreground="{DynamicResource InfoBrush}" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{Binding AdminUsersCount}" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                                <TextBlock Text="{DynamicResource UserStatsAdmins}" FontSize="13" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Border>
                     </UniformGrid>
 
-                    <!-- جدول السجل -->
-                    <DataGrid ItemsSource="{Binding AuditLogs}" Style="{StaticResource ModernDataGrid}" MaxHeight="300">
+                    <!-- شريط البحث والفلترة الموحد -->
+                    <Border Grid.Row="1" Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="14,10"
+                            Margin="0,0,0,16" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                        <DockPanel>
+                            <!-- حقل البحث الفوري -->
+                            <Border DockPanel.Dock="Right" Background="{DynamicResource InputBackground}" CornerRadius="8"
+                                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" MinWidth="320" MaxWidth="450" Padding="10,2" Margin="0,0,16,0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                             materialDesign:HintAssist.Hint="{DynamicResource SearchUsersHint}"
+                                             materialDesign:TextFieldAssist.DecorationVisibility="Collapsed"
+                                             materialDesign:TextFieldAssist.HasClearButton="True"
+                                             BorderThickness="0" Background="Transparent" VerticalAlignment="Center"
+                                             FontSize="13" Foreground="{DynamicResource TextPrimary}" CaretBrush="{DynamicResource PrimaryBrush}"/>
+                                    <materialDesign:PackIcon Grid.Column="1" Kind="Magnify" Foreground="{DynamicResource PrimaryBrush}" Width="20" Height="20" VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- فلتر الحالة -->
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+                                <TextBlock Text="{DynamicResource ColStatus}" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,8,0"/>
+                                <ComboBox SelectedValue="{Binding SelectedStatusFilter}" SelectedValuePath="Tag" Width="140" Style="{StaticResource FormComboBox}">
+                                    <ComboBoxItem Content="{DynamicResource FilterStatusAll}" Tag="All" IsSelected="True"/>
+                                    <ComboBoxItem Content="{DynamicResource FilterStatusActive}" Tag="Active"/>
+                                    <ComboBoxItem Content="{DynamicResource FilterStatusFrozen}" Tag="Frozen"/>
+                                    <ComboBoxItem Content="{DynamicResource FilterStatusLocked}" Tag="Locked"/>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- فلتر الدور -->
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="{DynamicResource ColRole}" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,8,0"/>
+                                <ComboBox ItemsSource="{Binding Roles}" SelectedValue="{Binding SelectedRoleFilter}"
+                                          SelectedValuePath="Id" DisplayMemberPath="DisplayName" Width="160" Style="{StaticResource FormComboBox}"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- جدول المستخدمين الرئيسي -->
+                    <Border Grid.Row="2" Style="{StaticResource ContentCard}" Margin="0" Padding="0" ClipToBounds="True">
+                        <DataGrid ItemsSource="{Binding FilteredUsers}" SelectedItem="{Binding Selected}" Style="{StaticResource ModernDataGrid}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                                <DataGridTextColumn Header="{DynamicResource ColFullName}" Binding="{Binding FullName}" Width="180"/>
+                                <DataGridTextColumn Header="{DynamicResource ColUsername}" Binding="{Binding Username}" Width="130"/>
+                                <DataGridTextColumn Header="{DynamicResource ColRole}" Binding="{Binding Role.DisplayName}" Width="130"/>
+                                <DataGridTextColumn Header="{DynamicResource ColEmail}" Binding="{Binding Email}" Width="180"/>
+                                <DataGridTextColumn Header="{DynamicResource ColLastLogin}" Binding="{Binding LastLoginDate, StringFormat='yyyy/MM/dd HH:mm'}" Width="140" ElementStyle="{StaticResource CenterAligned}"/>
+                                
+                                <!-- عمود الحالة (خلفية شفافة مع نص واضح بدون بهتان) -->
+                                <DataGridTemplateColumn Header="{DynamicResource ColStatus}" Width="100">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border CornerRadius="12" Padding="8,3" HorizontalAlignment="Center" MinWidth="75">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background" Value="#1A3FAE7A"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                                                <Setter Property="Background" Value="#1AC25B4A"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock Text="{Binding StatusDisplayName}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- عمود أمان الحساب / القفل -->
+                                <DataGridTemplateColumn Header="{DynamicResource ColLockoutStatus}" Width="120">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                <Border CornerRadius="10" Padding="6,2">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="Background" Value="Transparent"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsLocked}" Value="True">
+                                                                    <Setter Property="Background" Value="#1AE0A93E"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <materialDesign:PackIcon Kind="LockAlert" Width="14" Height="14" Foreground="{DynamicResource WarningBrush}"
+                                                                                 Margin="0,0,4,0" VerticalAlignment="Center"
+                                                                                 Visibility="{Binding IsLocked, Converter={StaticResource BoolToVis}}"/>
+                                                        <TextBlock Text="{DynamicResource StatusLocked}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WarningBrush}"
+                                                                   VerticalAlignment="Center"
+                                                                   Visibility="{Binding IsLocked, Converter={StaticResource BoolToVis}}"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- عمود الإجراءات السريعة -->
+                                <DataGridTemplateColumn Header="{DynamicResource ColActions}" Width="160">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                <!-- زر التعديل -->
+                                                <Button Style="{StaticResource MaterialDesignIconButton}" ToolTip="{DynamicResource CtxEdit}"
+                                                        Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        Width="30" Height="30" Margin="0,0,4,0">
+                                                    <materialDesign:PackIcon Kind="Pencil" Width="16" Height="16" Foreground="{DynamicResource PrimaryBrush}"/>
+                                                </Button>
+
+                                                <!-- زر تجميد / تنشيط -->
+                                                <Button Style="{StaticResource MaterialDesignIconButton}" ToolTip="{DynamicResource BtnToggleFreeze}"
+                                                        Command="{Binding DataContext.ToggleUserFreezeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}" Width="30" Height="30" Margin="0,0,4,0">
+                                                    <Grid>
+                                                        <materialDesign:PackIcon Kind="AccountCancel" Width="16" Height="16" Foreground="{DynamicResource DangerBrush}"
+                                                                                 Visibility="{Binding IsActive, Converter={StaticResource BoolToVis}}"/>
+                                                        <materialDesign:PackIcon Kind="AccountCheck" Width="16" Height="16" Foreground="{DynamicResource SuccessBrush}"
+                                                                                 Visibility="{Binding IsActive, Converter={StaticResource InverseBoolToVis}}"/>
+                                                    </Grid>
+                                                </Button>
+
+                                                <!-- زر فك القفل (يظهر عند القفل أو وجود محاولات فاشلة) -->
+                                                <Button Style="{StaticResource MaterialDesignIconButton}" ToolTip="{DynamicResource ToolTipUnlockAccount}"
+                                                        Command="{Binding DataContext.UnlockAccountCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}" Width="30" Height="30"
+                                                        Visibility="{Binding IsLocked, Converter={StaticResource BoolToVis}}">
+                                                    <materialDesign:PackIcon Kind="LockOpenVariant" Width="16" Height="16" Foreground="{DynamicResource WarningBrush}"/>
+                                                </Button>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+
+                            <DataGrid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="{DynamicResource CtxEdit}" Command="{Binding EditCommand}"/>
+                                    <MenuItem Header="{DynamicResource BtnUnlockAccount}" Command="{Binding UnlockAccountCommand}" CommandParameter="{Binding Selected}"/>
+                                    <MenuItem Header="{DynamicResource CtxDelete}" Command="{Binding DeleteCommand}"/>
+                                </ContextMenu>
+                            </DataGrid.ContextMenu>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+
+                <!-- المشهد 2: نموذج الإضافة / التعديل (يظهر عند التحرير) -->
+                <Border Style="{StaticResource ContentCard}" Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}">
+                    <Border.InputBindings>
+                        <KeyBinding Key="Escape" Command="{Binding CancelEditCommand}"/>
+                    </Border.InputBindings>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel MaxWidth="600">
+                            <TextBlock Text="{DynamicResource UserDataTitle}" Style="{StaticResource CardTitle}" FontSize="20" Margin="0,0,0,20"/>
+
+                            <!-- البيانات الأساسية -->
+                            <StackPanel Margin="0,0,0,12">
+                                <TextBlock Text="{DynamicResource FieldFullNameReq}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
+                                <TextBox Text="{Binding EditFullName}" Style="{StaticResource FormTextBox}"/>
+                            </StackPanel>
+                            
+                            <UniformGrid Columns="2" Margin="0,0,0,12">
+                                <StackPanel Margin="0,0,12,0">
+                                    <TextBlock Text="{DynamicResource FieldUsernameReq}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
+                                    <TextBox Text="{Binding EditUsername}" Style="{StaticResource FormTextBox}" IsEnabled="{Binding IsNew}"/>
+                                </StackPanel>
+                                <StackPanel>
+                                    <TextBlock Text="{DynamicResource FieldPassword}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
+                                    <PasswordBox materialDesign:PasswordBoxAssist.Password="{Binding EditPassword, Mode=TwoWay}" Style="{StaticResource FormPasswordBox}"/>
+                                </StackPanel>
+                            </UniformGrid>
+                            
+                            <UniformGrid Columns="2" Margin="0,0,0,12">
+                                <StackPanel Margin="0,0,12,0">
+                                    <TextBlock Text="{DynamicResource FieldEmail}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
+                                    <TextBox Text="{Binding EditEmail}" Style="{StaticResource FormTextBox}"/>
+                                </StackPanel>
+                                <StackPanel>
+                                    <TextBlock Text="{DynamicResource FieldRoleReq}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
+                                    <ComboBox ItemsSource="{Binding Roles}" SelectedValue="{Binding EditRoleId}"
+                                              SelectedValuePath="Id" DisplayMemberPath="DisplayName" Style="{StaticResource FormComboBox}"/>
+                                </StackPanel>
+                            </UniformGrid>
+
+                            <UniformGrid Columns="2" Margin="0,0,0,16">
+                                <CheckBox Content="{DynamicResource FieldIsActive}" IsChecked="{Binding EditIsActive}" Margin="0,0,12,0" Foreground="{DynamicResource TextPrimary}"/>
+                                <CheckBox Content="{DynamicResource LabelIsEditor}" IsChecked="{Binding EditIsEditor}" Foreground="{DynamicResource TextPrimary}"/>
+                            </UniformGrid>
+
+                            <!-- قسم الصلاحيات التفصيلية (يظهر فقط لغير المدير) -->
+                            <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,16"
+                                    Visibility="{Binding IsPermissionsSectionVisible, Converter={StaticResource BoolToVis}}">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                        <materialDesign:PackIcon Kind="ShieldKey" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource LabelPermissions}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <UniformGrid Columns="2" Rows="4">
+                                        <CheckBox Content="{DynamicResource PermRadioisotopes}" IsChecked="{Binding PermRadioisotopes}" Margin="0,4" Foreground="{DynamicResource TextPrimary}"/>
+                                        <CheckBox Content="{DynamicResource PermSources}" IsChecked="{Binding PermSources}" Margin="0,4" Foreground="{DynamicResource TextPrimary}"/>
+                                        <CheckBox Content="{DynamicResource PermLocations}" IsChecked="{Binding PermLocations}" Margin="0,4" Foreground="{DynamicResource TextPrimary}"/>
+                                        <CheckBox Content="{DynamicResource PermBorrowing}" IsChecked="{Binding PermBorrowing}" Margin="0,4" Foreground="{DynamicResource TextPrimary}"/>
+                                        <CheckBox Content="{DynamicResource PermReports}" IsChecked="{Binding PermReports}" Margin="0,4" Foreground="{DynamicResource TextPrimary}"/>
+                                        <CheckBox Content="{DynamicResource PermCalculator}" IsChecked="{Binding PermCalculator}" Margin="0,4" Foreground="{DynamicResource TextPrimary}"/>
+                                        <CheckBox Content="{DynamicResource PermUsers}" IsChecked="{Binding PermUsers}" Margin="0,4" Foreground="{DynamicResource TextPrimary}"/>
+                                        <CheckBox Content="{DynamicResource PermSettings}" IsChecked="{Binding PermSettings}" Margin="0,4" Foreground="{DynamicResource TextPrimary}"/>
+                                    </UniformGrid>
+                                </StackPanel>
+                            </Border>
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                <Button Content="{DynamicResource BtnSave}" Style="{StaticResource PrimaryButton}" Command="{Binding SaveCommand}" IsDefault="True" Margin="0,0,12,0"/>
+                                <Button Content="{DynamicResource BtnCancel}" Style="{StaticResource SecondaryButton}" Command="{Binding CancelEditCommand}" IsCancel="True"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+
+            <!-- ─────────────────────────────────────────────────── -->
+            <!-- التبويب 2: سجل التدقيق والنشاطات (Audit Log)         -->
+            <!-- ─────────────────────────────────────────────────── -->
+            <Grid>
+                <Grid.Style>
+                    <Style TargetType="Grid">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedTab}" Value="AuditLog">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Grid.Style>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <!-- الفلاتر -->
+                    <RowDefinition Height="Auto"/> <!-- الإحصائيات -->
+                    <RowDefinition Height="*"/>    <!-- جدول السجل -->
+                </Grid.RowDefinitions>
+
+                <!-- شريط الفلاتر المتقدم -->
+                <Border Grid.Row="0" Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="14,10"
+                        Margin="0,0,0,16" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                    <DockPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <!-- المستخدم -->
+                            <StackPanel Margin="0,0,14,0">
+                                <TextBlock Text="{DynamicResource FilterByUser}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
+                                <ComboBox ItemsSource="{Binding Users}" SelectedItem="{Binding SelectedUserFilter}" DisplayMemberPath="FullName"
+                                          Width="160" Style="{StaticResource FormComboBox}"/>
+                            </StackPanel>
+
+                            <!-- نوع العملية -->
+                            <StackPanel Margin="0,0,14,0">
+                                <TextBlock Text="{DynamicResource FilterByAction}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
+                                <ComboBox SelectedValue="{Binding SelectedActionFilter}" SelectedValuePath="Tag" Width="130" Style="{StaticResource FormComboBox}">
+                                    <ComboBoxItem Content="{DynamicResource FilterActionAll}" Tag="All" IsSelected="True"/>
+                                    <ComboBoxItem Content="Create" Tag="Create"/>
+                                    <ComboBoxItem Content="Update" Tag="Update"/>
+                                    <ComboBoxItem Content="Delete" Tag="Delete"/>
+                                    <ComboBoxItem Content="Login" Tag="Login"/>
+                                    <ComboBoxItem Content="Logout" Tag="Logout"/>
+                                    <ComboBoxItem Content="Freeze" Tag="Freeze"/>
+                                    <ComboBoxItem Content="Unlock" Tag="Unlock"/>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- من تاريخ -->
+                            <StackPanel Margin="0,0,14,0">
+                                <TextBlock Text="{DynamicResource FilterFromDate}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
+                                <DatePicker SelectedDate="{Binding FilterStartDate}"
+                                            Style="{StaticResource MaterialDesignOutlinedDatePicker}"
+                                            materialDesign:HintAssist.Hint="{DynamicResource SelectDateHint}"
+                                            Width="145" Height="38" FontSize="12" Padding="8,4"
+                                            VerticalContentAlignment="Center"
+                                            Foreground="{DynamicResource TextPrimary}"
+                                            Background="{DynamicResource InputBackground}"
+                                            BorderBrush="{DynamicResource BorderColor}"/>
+                            </StackPanel>
+
+                            <!-- إلى تاريخ -->
+                            <StackPanel Margin="0,0,14,0">
+                                <TextBlock Text="{DynamicResource FilterToDate}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
+                                <DatePicker SelectedDate="{Binding FilterEndDate}"
+                                            Style="{StaticResource MaterialDesignOutlinedDatePicker}"
+                                            materialDesign:HintAssist.Hint="{DynamicResource SelectDateHint}"
+                                            Width="145" Height="38" FontSize="12" Padding="8,4"
+                                            VerticalContentAlignment="Center"
+                                            Foreground="{DynamicResource TextPrimary}"
+                                            Background="{DynamicResource InputBackground}"
+                                            BorderBrush="{DynamicResource BorderColor}"/>
+                            </StackPanel>
+
+                            <Button Content="{DynamicResource BtnClearFilters}" Style="{StaticResource SecondaryButton}"
+                                    Command="{Binding ClearFiltersCommand}" VerticalAlignment="Bottom" Height="36" Padding="14,0"/>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+
+                <!-- بطاقات إحصائيات النشاط -->
+                <UniformGrid Grid.Row="1" Columns="3" Margin="0,0,0,16">
+                    <Border Style="{StaticResource DashboardStatCard}" BorderBrush="{DynamicResource PrimaryBrush}">
+                        <StackPanel HorizontalAlignment="Center">
+                            <materialDesign:PackIcon Kind="CalendarToday" Width="28" Height="28" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding ActivitiesTodayCount}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                            <TextBlock Text="{DynamicResource StatActivitiesToday}" FontSize="12" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource DashboardStatCard}" BorderBrush="{DynamicResource WarningBrush}">
+                        <StackPanel HorizontalAlignment="Center">
+                            <materialDesign:PackIcon Kind="PencilOutline" Width="28" Height="28" Foreground="{DynamicResource WarningBrush}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding ModificationsTodayCount}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                            <TextBlock Text="{DynamicResource StatModificationsToday}" FontSize="12" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource DashboardStatCard}" BorderBrush="{DynamicResource SuccessBrush}">
+                        <StackPanel HorizontalAlignment="Center">
+                            <materialDesign:PackIcon Kind="AccountStar" Width="28" Height="28" Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding MostActiveUser}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                            <TextBlock Text="{DynamicResource StatMostActiveUser}" FontSize="12" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+
+                <!-- جدول سجل النشاطات الكامل -->
+                <Border Grid.Row="2" Style="{StaticResource ContentCard}" Margin="0" Padding="0" ClipToBounds="True">
+                    <DataGrid ItemsSource="{Binding AuditLogs}" SelectedItem="{Binding SelectedAuditLog}" Style="{StaticResource ModernDataGrid}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColUser}" Binding="{Binding User.FullName}" Width="150"/>
-                            <DataGridTextColumn Header="{DynamicResource ColOperation}" Binding="{Binding Action}" Width="120"/>
+                            <DataGridTextColumn Header="{DynamicResource ColOperation}" Binding="{Binding Action}" Width="110"/>
+                            <DataGridTextColumn Header="{DynamicResource ColAffectedTable}" Binding="{Binding TableName}" Width="110"/>
                             <DataGridTextColumn Header="{DynamicResource ColDetails}" Binding="{Binding Details}" Width="*"/>
-                            <DataGridTextColumn Header="{DynamicResource ColDate}" Binding="{Binding ActionDate, StringFormat=G}" Width="160"/>
+                            <DataGridTextColumn Header="{DynamicResource ColDate}" Binding="{Binding ActionDate, StringFormat='yyyy/MM/dd HH:mm:ss'}" Width="160" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTemplateColumn Header="{DynamicResource BtnViewDiff}" Width="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Style="{StaticResource MaterialDesignIconButton}" ToolTip="{DynamicResource BtnViewDiff}"
+                                                Command="{Binding DataContext.OpenDiffViewerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}" Width="30" Height="30" HorizontalAlignment="Center">
+                                            <materialDesign:PackIcon Kind="FileDocumentEditOutline" Width="16" Height="16" Foreground="{DynamicResource PrimaryBrush}"/>
+                                        </Button>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
-                </DockPanel>
-            </Border>
-        </Expander>
+                </Border>
+
+                <!-- ─── لوحة عارض الفروقات المنبثقة (Diff Viewer Overlay) ─── -->
+                <Grid Grid.Row="0" Grid.RowSpan="3" Background="#80000000"
+                      Visibility="{Binding IsDiffViewerOpen, Converter={StaticResource BoolToVis}}">
+                    <Border Background="{DynamicResource CardBackground}" CornerRadius="12"
+                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
+                            MaxWidth="750" MaxHeight="600" Margin="24" Padding="20">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="25" ShadowDepth="4" Opacity="0.25"/>
+                        </Border.Effect>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/> <!-- Title & Close -->
+                                <RowDefinition Height="Auto"/> <!-- Summary Info -->
+                                <RowDefinition Height="*"/>    <!-- Diff Table -->
+                                <RowDefinition Height="Auto"/> <!-- Footer Button -->
+                            </Grid.RowDefinitions>
+
+                            <!-- Header -->
+                            <DockPanel Grid.Row="0" Margin="0,0,0,12">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="FileCompare" Width="24" Height="24" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource AuditDiffTitle}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <Button Style="{StaticResource MaterialDesignIconButton}" Command="{Binding CloseDiffViewerCommand}" HorizontalAlignment="Left" Width="30" Height="30">
+                                    <materialDesign:PackIcon Kind="Close" Width="18" Height="18" Foreground="{DynamicResource TextSecondary}"/>
+                                </Button>
+                            </DockPanel>
+
+                            <!-- Summary info -->
+                            <Border Grid.Row="1" Background="{DynamicResource InputBackground}" CornerRadius="8" Padding="12,8" Margin="0,0,0,12" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                                <UniformGrid Columns="4">
+                                    <StackPanel>
+                                        <TextBlock Text="{DynamicResource ColUser}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                        <TextBlock Text="{Binding SelectedAuditLog.User.FullName}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                    </StackPanel>
+                                    <StackPanel>
+                                        <TextBlock Text="{DynamicResource ColOperation}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                        <TextBlock Text="{Binding SelectedAuditLog.Action}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryBrush}"/>
+                                    </StackPanel>
+                                    <StackPanel>
+                                        <TextBlock Text="{DynamicResource ColAffectedTable}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                        <TextBlock Text="{Binding SelectedAuditLog.TableName}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                    </StackPanel>
+                                    <StackPanel>
+                                        <TextBlock Text="{DynamicResource ColDate}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                        <TextBlock Text="{Binding SelectedAuditLog.ActionDate, StringFormat='yyyy/MM/dd HH:mm'}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                    </StackPanel>
+                                </UniformGrid>
+                            </Border>
+
+                            <!-- Diff Table -->
+                            <Border Grid.Row="2" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+                                <DataGrid ItemsSource="{Binding AuditDiffItems}" Style="{StaticResource ModernDataGrid}" AutoGenerateColumns="False">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="{DynamicResource AuditFieldName}" Binding="{Binding FieldName}" Width="160" FontWeight="SemiBold"/>
+                                        
+                                        <!-- القيمة السابقة (تمييز تحذير خفيف) -->
+                                        <DataGridTemplateColumn Header="{DynamicResource AuditOldValue}" Width="*">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="#12E0A93E" CornerRadius="4" Padding="6,2" Margin="2">
+                                                        <TextBlock Text="{Binding OldValue}" Foreground="{DynamicResource WarningBrush}" TextWrapping="Wrap"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+
+                                        <!-- القيمة الجديدة (تمييز نجاح خفيف) -->
+                                        <DataGridTemplateColumn Header="{DynamicResource AuditNewValue}" Width="*">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="#123FAE7A" CornerRadius="4" Padding="6,2" Margin="2">
+                                                        <TextBlock Text="{Binding NewValue}" Foreground="{DynamicResource SuccessBrush}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Border>
+
+                            <!-- Close Button -->
+                            <StackPanel Grid.Row="3" Margin="0,14,0,0" HorizontalAlignment="Left">
+                                <Button Content="{DynamicResource BtnClose}" Style="{StaticResource SecondaryButton}" Command="{Binding CloseDiffViewerCommand}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+
+            <!-- ─────────────────────────────────────────────────── -->
+            <!-- التبويب 3: الأدوار والصلاحيات (عرض فقط)              -->
+            <!-- ─────────────────────────────────────────────────── -->
+            <Grid>
+                <Grid.Style>
+                    <Style TargetType="Grid">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedTab}" Value="RolesPermissions">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Grid.Style>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- ترويسة توضيحية للتبويب -->
+                <Border Grid.Row="0" Background="{DynamicResource CardBackground}" CornerRadius="10"
+                        Padding="16,12" Margin="0,0,0,16" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="ShieldLockOutline" Width="26" Height="26" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                        <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="{DynamicResource RolesOverviewTitle}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock Text="{DynamicResource RolesOverviewSubtitle}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- بطاقات الأدوار -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding RoleSummaries}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{DynamicResource ModernCardListItemStyle}" Margin="0,0,0,12" Padding="20,16">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <!-- عنوان الدور وعدد المستخدمين -->
+                                        <DockPanel Grid.Row="0" Margin="0,0,0,10">
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <materialDesign:PackIcon Kind="ShieldAccount" Width="24" Height="24" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Role.DisplayName}" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                            </StackPanel>
+
+                                            <!-- شارة عدد المستخدمين -->
+                                            <Border CornerRadius="12" Background="{DynamicResource DataGridRowSelected}" Padding="10,4" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <materialDesign:PackIcon Kind="AccountMultiple" Width="16" Height="16" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                                    <TextBlock Text="{Binding UsersCount}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{DynamicResource RoleUsersCount}" FontSize="12" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </DockPanel>
+
+                                        <!-- الوصف -->
+                                        <TextBlock Grid.Row="1" Text="{Binding Description}" FontSize="13" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" Margin="0,0,0,12"/>
+
+                                        <!-- الصلاحيات الممنوحة -->
+                                        <Border Grid.Row="2" Background="{DynamicResource InputBackground}" CornerRadius="8" Padding="12,8" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                                            <StackPanel>
+                                                <TextBlock Text="{DynamicResource RolePermissionsPreview}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                                <ItemsControl ItemsSource="{Binding GrantedSections}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <WrapPanel Orientation="Horizontal"/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border Background="{DynamicResource DataGridRowSelected}" CornerRadius="6" Padding="8,4" Margin="0,0,8,4">
+                                                                <TextBlock Text="{Binding}" FontSize="12" Foreground="{DynamicResource PrimaryBrush}" FontWeight="SemiBold"/>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
     </Grid>
 </UserControl>

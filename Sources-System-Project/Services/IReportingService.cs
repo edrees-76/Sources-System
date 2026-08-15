@@ -14,5 +14,9 @@ namespace Sources.Services
         Task GenerateCalibrationReportExcelAsync(IEnumerable<Source> sources, string filePath);
         Task GenerateGeneralReportPdfAsync(IEnumerable<Source> inventory, IEnumerable<BorrowRequest> borrowing, IEnumerable<Source> lowActivity, IEnumerable<Source> calibration, string filePath);
         Task GenerateGeneralReportExcelAsync(IEnumerable<Source> inventory, IEnumerable<BorrowRequest> borrowing, IEnumerable<Source> lowActivity, IEnumerable<Source> calibration, string filePath);
+        Task GenerateUsersReportPdfAsync(IEnumerable<User> users, string filePath);
+        Task GenerateUsersReportExcelAsync(IEnumerable<User> users, string filePath);
+        Task GenerateAuditLogsPdfAsync(IEnumerable<AuditLog> logs, string filePath);
+        Task GenerateAuditLogsExcelAsync(IEnumerable<AuditLog> logs, string filePath);
     }
 }
