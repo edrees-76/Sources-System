@@ -281,3 +281,46 @@ public class HexStringToBrushConverter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         => throw new NotImplementedException();
 }
+
+// ─── محول ترقيم الصفوف التلقائي (يدعم التنقل بين الصفحات Pagination) ───
+public class RowIndexConverter : IMultiValueConverter
+{
+    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+    {
+        try
+        {
+            int alternationIndex = 0;
+            int currentPage = 1;
+            int pageSize = 16;
+
+            if (values.Length > 0 && values[0] != null && values[0] != DependencyProperty.UnsetValue)
+            {
+                if (int.TryParse(values[0].ToString(), out int parsedAlt))
+                    alternationIndex = parsedAlt;
+            }
+
+            if (values.Length > 1 && values[1] != null && values[1] != DependencyProperty.UnsetValue)
+            {
+                if (int.TryParse(values[1].ToString(), out int parsedPage))
+                    currentPage = parsedPage;
+            }
+
+            if (values.Length > 2 && values[2] != null && values[2] != DependencyProperty.UnsetValue)
+            {
+                if (int.TryParse(values[2].ToString(), out int parsedSize))
+                    pageSize = parsedSize;
+            }
+
+            if (currentPage < 1) currentPage = 1;
+            int globalIndex = (currentPage - 1) * pageSize + (alternationIndex + 1);
+            return globalIndex.ToString();
+        }
+        catch
+        {
+            return "1";
+        }
+    }
+
+    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}

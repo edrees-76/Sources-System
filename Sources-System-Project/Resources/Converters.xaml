@@ -17,5 +17,6 @@
     <converters:IndexConverter x:Key="IndexConverter"/>
     <converters:SeverityToColorConverter x:Key="SeverityToColor"/>
     <converters:HexStringToBrushConverter x:Key="HexToBrush"/>
+    <converters:RowIndexConverter x:Key="RowIndexConverter"/>
     
 </ResourceDictionary>
