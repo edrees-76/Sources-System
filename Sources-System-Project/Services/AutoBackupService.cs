@@ -1,0 +1,181 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Timers;
+using System.Windows;
+
+namespace Sources.Services;
+
+public class AutoBackupService : IAutoBackupService, IDisposable
+{
+    private readonly IBackupService _backupService;
+    private readonly ISystemSettingsService _settingsService;
+    private System.Timers.Timer? _timer;
+    private bool _isChecking;
+
+    public event EventHandler? BackupCompleted;
+
+    public AutoBackupService(IBackupService backupService, ISystemSettingsService settingsService)
+    {
+        _backupService = backupService;
+        _settingsService = settingsService;
+    }
+
+    public void Start()
+    {
+        if (_timer != null) return;
+
+        // Check every 30 minutes in the background
+        _timer = new System.Timers.Timer(TimeSpan.FromMinutes(30).TotalMilliseconds);
+        _timer.Elapsed += (s, e) => CheckAndPerformAutoBackup();
+        _timer.AutoReset = true;
+        _timer.Start();
+
+        // Perform an initial check asynchronously shortly after startup
+        System.Threading.Tasks.Task.Run(async () =>
+        {
+            await System.Threading.Tasks.Task.Delay(5000); // Wait 5 seconds after startup
+            CheckAndPerformAutoBackup();
+        });
+    }
+
+    public void Stop()
+    {
+        _timer?.Stop();
+        _timer?.Dispose();
+        _timer = null;
+    }
+
+    public void TriggerImmediateCheck()
+    {
+        System.Threading.Tasks.Task.Run(() => CheckAndPerformAutoBackup());
+    }
+
+    private void CheckAndPerformAutoBackup()
+    {
+        if (_isChecking) return;
+        _isChecking = true;
+
+        try
+        {
+            var isEnabled = _settingsService.GetSetting<bool>("AutoBackupEnabled", false);
+            if (!isEnabled)
+            {
+                LoggerService.LogInfo("فحص النسخ الاحتياطي التلقائي: تم الفحص — النسخ التلقائي معطل حالياً (AutoBackupEnabled = false).");
+                return;
+            }
+
+            var frequency = _settingsService.GetSetting("AutoBackupFrequency", "Daily");
+            var backupPath = _settingsService.GetSetting("BackupPath", string.Empty);
+
+            var requiredInterval = frequency switch
+            {
+                "Weekly" => TimeSpan.FromDays(7),
+                "Monthly" => TimeSpan.FromDays(30),
+                _ => TimeSpan.FromDays(1) // Default Daily
+            };
+
+            var lastBackupDate = GetLatestBackupDate(backupPath);
+            var shouldBackup = !lastBackupDate.HasValue || (DateTime.Now - lastBackupDate.Value) >= requiredInterval;
+
+            var elapsedText = lastBackupDate.HasValue
+                ? $"{(DateTime.Now - lastBackupDate.Value).TotalHours:F1} ساعة"
+                : "لا توجد نسخ سابقة";
+
+            LoggerService.LogInfo($"فحص النسخ الاحتياطي التلقائي: الجدولة={frequency} (الفاصل={requiredInterval.TotalHours:F1} ساعة)، آخر نسخة={(lastBackupDate.HasValue ? lastBackupDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : "لا يوجد")}، المنقضي={elapsedText}، القرار={(shouldBackup ? "تنفيذ نسخة احتياطية الآن" : "تخطي — لم يحن الموعد بعد")}");
+
+            if (shouldBackup)
+            {
+                LoggerService.LogInfo($"بدء تنفيذ النسخ الاحتياطي التلقائي (الجدولة: {frequency})...");
+
+                var result = string.IsNullOrWhiteSpace(backupPath)
+                    ? _backupService.CreateBackup()
+                    : _backupService.CreateBackup(backupPath);
+
+                if (result.Success)
+                {
+                    LoggerService.LogInfo($"نجح النسخ الاحتياطي التلقائي بنجاح: {result.BackupPath}");
+                    
+                    // Dispatch notification event to UI thread safely
+                    if (Application.Current != null)
+                    {
+                        Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            BackupCompleted?.Invoke(this, EventArgs.Empty);
+                        });
+                    }
+                    else
+                    {
+                        BackupCompleted?.Invoke(this, EventArgs.Empty);
+                    }
+                }
+                else
+                {
+                    LoggerService.LogWarning($"تعذر إتمام النسخ الاحتياطي التلقائي: {result.Message}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggerService.LogError("خطأ غير معالج أثناء محاولة النسخ الاحتياطي التلقائي", ex);
+        }
+        finally
+        {
+            _isChecking = false;
+        }
+    }
+
+    private DateTime? GetLatestBackupDate(string backupPath)
+    {
+        try
+        {
+            var targetFolders = new System.Collections.Generic.List<string>();
+
+            if (!string.IsNullOrWhiteSpace(backupPath) && Directory.Exists(backupPath))
+            {
+                targetFolders.Add(Path.Combine(backupPath, BackupService.BackupFolderName));
+                targetFolders.Add(Path.Combine(backupPath, BackupService.LegacyBackupFolderName));
+                targetFolders.Add(backupPath);
+            }
+
+            var defaultAppDataDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Sources", "Backups");
+            if (Directory.Exists(defaultAppDataDir))
+            {
+                targetFolders.Add(defaultAppDataDir);
+            }
+
+            DateTime? latest = null;
+
+            foreach (var folder in targetFolders.Distinct())
+            {
+                if (!Directory.Exists(folder)) continue;
+
+                var files = Directory.GetFiles(folder, "*_backup_*.db")
+                    .Select(f => new FileInfo(f))
+                    .OrderByDescending(f => f.CreationTime)
+                    .ToList();
+
+                if (files.Count > 0)
+                {
+                    var fileDate = files[0].CreationTime;
+                    if (!latest.HasValue || fileDate > latest.Value)
+                    {
+                        latest = fileDate;
+                    }
+                }
+            }
+
+            return latest;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public void Dispose()
+    {
+        Stop();
+    }
+}

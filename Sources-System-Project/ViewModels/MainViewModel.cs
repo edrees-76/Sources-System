@@ -14,6 +14,7 @@ public partial class MainViewModel : ObservableObject
 {
     private readonly IUserService _userService;
     private readonly IAlertService _alertService;
+    private readonly ISystemSettingsService _settingsService;
 
     [ObservableProperty] private ObservableObject? _currentView;
     [ObservableProperty] private string _currentViewName = "Dashboard";
@@ -26,11 +27,13 @@ public partial class MainViewModel : ObservableObject
     // ─── التنبيهات ───
     [ObservableProperty] private System.Collections.ObjectModel.ObservableCollection<Sources.Models.AlertNotification> _notifications = new();
     [ObservableProperty] private int _unreadNotificationsCount;
+    private System.Windows.Threading.DispatcherTimer? _alertTimer;
 
-    public MainViewModel(IUserService userService, IAlertService alertService)
+    public MainViewModel(IUserService userService, IAlertService alertService, ISystemSettingsService settingsService)
     {
         _userService = userService;
         _alertService = alertService;
+        _settingsService = settingsService;
         IsDarkMode = SettingsHelper.IsDarkMode;
         InitializeUserSession();
     }
@@ -49,6 +52,7 @@ public partial class MainViewModel : ObservableObject
         CurrentUserName = _userService.CurrentUser?.FullName ?? "";
         CurrentUserRole = _userService.CurrentUser?.Role?.RoleName ?? "";
         RefreshNotifications();
+        StartAlertCheckTimer();
         RefreshSidebarPermissions();
         NavigateTo("Dashboard");
     }
@@ -150,6 +154,7 @@ public partial class MainViewModel : ObservableObject
         if (DialogHelper.ShowConfirmation(TranslationHelper.GetString("MsgConfirmLogout"), TranslationHelper.GetString("TitleLogout")))
         {
             StopInactivityTimer();
+            StopAlertCheckTimer();
             _userService.Logout();
             CurrentUserName = string.Empty;
             CurrentUserRole = string.Empty;
@@ -162,9 +167,37 @@ public partial class MainViewModel : ObservableObject
             if (currentWindow != null && currentWindow != loginWindow)
             {
                 Application.Current.MainWindow = loginWindow;
-                currentWindow.Close();
+                try { currentWindow.Close(); } catch { }
             }
         }
+    }
+
+    public void StartAlertCheckTimer()
+    {
+        var intervalMinutes = _settingsService.GetSetting<int>("NotificationCheckIntervalMinutes", 60);
+        if (intervalMinutes < 1) intervalMinutes = 1;
+
+        if (_alertTimer == null)
+        {
+            _alertTimer = new System.Windows.Threading.DispatcherTimer();
+            _alertTimer.Tick += (s, e) => RefreshNotifications();
+        }
+        _alertTimer.Interval = TimeSpan.FromMinutes(intervalMinutes);
+        _alertTimer.Start();
+    }
+
+    public void UpdateAlertCheckInterval(int intervalMinutes)
+    {
+        if (intervalMinutes < 1) intervalMinutes = 1;
+        if (_alertTimer != null)
+        {
+            _alertTimer.Interval = TimeSpan.FromMinutes(intervalMinutes);
+        }
+    }
+
+    public void StopAlertCheckTimer()
+    {
+        _alertTimer?.Stop();
     }
 
     // ─── Inactivity Timer (شاشة التوقف بعد 15 دقيقة) ───

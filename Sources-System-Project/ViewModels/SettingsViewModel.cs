@@ -3,6 +3,8 @@ using CommunityToolkit.Mvvm.Input;
 using Sources.Helpers;
 using Sources.Services;
 using System;
+using System.IO;
+using System.Linq;
 using System.Windows;
 
 namespace Sources.ViewModels;
@@ -11,78 +13,126 @@ public partial class SettingsViewModel : ObservableObject
 {
     private readonly IBackupService _backupService;
     private readonly ISystemSettingsService _settingsService;
+    private readonly IAutoBackupService? _autoBackupService;
 
-    [ObservableProperty] private bool _isDarkMode;
+    // ─── التحكم في التبويبات ───
+    [ObservableProperty] private string _selectedTab = "General";
+
+    // ─── تبويب العام ───
     [ObservableProperty] private string _language;
-    [ObservableProperty] private string _generalMessage = string.Empty;
-    [ObservableProperty] private bool _hasGeneralMessage;
 
-    // ─── النسخ الاحتياطي ───
+    // ─── تبويب النسخ الاحتياطي ───
     [ObservableProperty] private string _backupPath = string.Empty;
     [ObservableProperty] private bool _autoBackupEnabled;
     [ObservableProperty] private string _selectedFrequency = "Daily";
     [ObservableProperty] private bool _isBusy;
     [ObservableProperty] private string _busyMessage = string.Empty;
     [ObservableProperty] private string _lastBackupInfo = string.Empty;
-    
-    [ObservableProperty] private string _backupMessage = string.Empty;
-    [ObservableProperty] private bool _hasBackupMessage;
 
-    public SettingsViewModel(IBackupService backupService, ISystemSettingsService settingsService)
+    // ─── تبويب إعدادات النظام ───
+    [ObservableProperty] private double _lowActivityThresholdPercent = 10.0;
+    [ObservableProperty] private int _notificationCheckIntervalMinutes = 60;
+    [ObservableProperty] private string _facilityName = string.Empty;
+    [ObservableProperty] private string _facilityAddress = string.Empty;
+    [ObservableProperty] private string _technicalDirector = string.Empty;
+
+    public SettingsViewModel(
+        IBackupService backupService, 
+        ISystemSettingsService settingsService,
+        IAutoBackupService? autoBackupService = null)
     {
         _backupService = backupService;
         _settingsService = settingsService;
+        _autoBackupService = autoBackupService;
 
-        IsDarkMode = SettingsHelper.IsDarkMode;
         Language = SettingsHelper.Language;
 
         // تحميل إعدادات النسخ الاحتياطي المحفوظة
         BackupPath = _settingsService.GetSetting("BackupPath", string.Empty);
         AutoBackupEnabled = _settingsService.GetSetting<bool>("AutoBackupEnabled", false);
         
-        // تغيير القديم لو وجد (يومي -> Daily)
         var freq = _settingsService.GetSetting("AutoBackupFrequency", "Daily");
         if (freq == "يومي") freq = "Daily";
         if (freq == "أسبوعي") freq = "Weekly";
         if (freq == "شهري") freq = "Monthly";
         SelectedFrequency = freq;
 
+        // تحميل إعدادات النظام العامة
+        LowActivityThresholdPercent = _settingsService.GetSetting("LowActivityThresholdPercent", 10.0);
+        NotificationCheckIntervalMinutes = _settingsService.GetSetting("NotificationCheckIntervalMinutes", 60);
+        FacilityName = _settingsService.GetSetting("FacilityName", string.Empty);
+        FacilityAddress = _settingsService.GetSetting("FacilityAddress", string.Empty);
+        TechnicalDirector = _settingsService.GetSetting("TechnicalDirector", string.Empty);
+
         UpdateLastBackupInfo();
+
+        // الاشتراك في حدث اكتمال النسخ الاحتياطي التلقائي لتحديث الواجهة فوراً
+        if (_autoBackupService != null)
+        {
+            _autoBackupService.BackupCompleted += (s, e) =>
+            {
+                Application.Current?.Dispatcher.InvokeAsync(UpdateLastBackupInfo);
+            };
+        }
     }
 
-    private void UpdateLastBackupInfo()
+    // ─── أوامر التبديل بين التبويبات ───
+    [RelayCommand]
+    private void SelectTab(string tabName)
+    {
+        if (!string.IsNullOrWhiteSpace(tabName))
+        {
+            SelectedTab = tabName;
+        }
+    }
+
+    public void UpdateLastBackupInfo()
     {
         try
         {
-            // البحث في المسار المخصص أولاً
-            var customFolder = string.IsNullOrWhiteSpace(BackupPath)
-                ? string.Empty
-                : System.IO.Path.Combine(BackupPath, "النسخ الاحتياطى منظومة مسار");
+            var targetFolders = new System.Collections.Generic.List<string>();
 
-            if (!string.IsNullOrEmpty(customFolder) && System.IO.Directory.Exists(customFolder))
+            if (!string.IsNullOrWhiteSpace(BackupPath) && Directory.Exists(BackupPath))
             {
-                var files = System.IO.Directory.GetFiles(customFolder, "MASAR_backup_*.db")
-                    .Select(f => new System.IO.FileInfo(f))
+                targetFolders.Add(Path.Combine(BackupPath, BackupService.BackupFolderName));
+                targetFolders.Add(Path.Combine(BackupPath, BackupService.LegacyBackupFolderName));
+                targetFolders.Add(BackupPath);
+            }
+
+            var defaultAppDataDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Sources", "Backups");
+            if (Directory.Exists(defaultAppDataDir))
+            {
+                targetFolders.Add(defaultAppDataDir);
+            }
+
+            FileInfo? latestFile = null;
+
+            foreach (var folder in targetFolders.Distinct())
+            {
+                if (!Directory.Exists(folder)) continue;
+
+                var files = Directory.GetFiles(folder, "*_backup_*.db")
+                    .Select(f => new FileInfo(f))
                     .OrderByDescending(f => f.CreationTime)
                     .ToList();
 
                 if (files.Count > 0)
                 {
-                    var latest = files[0];
-                    var sizeDisplay = latest.Length < 1024 * 1024
-                        ? $"{latest.Length / 1024.0:F1} KB"
-                        : $"{latest.Length / (1024.0 * 1024.0):F1} MB";
-                    LastBackupInfo = $"{latest.CreationTime:yyyy/MM/dd HH:mm} ({sizeDisplay})";
-                    return;
+                    var file = files[0];
+                    if (latestFile == null || file.CreationTime > latestFile.CreationTime)
+                    {
+                        latestFile = file;
+                    }
                 }
             }
 
-            // إذا لم يوجد بيانات في المسار المخصص، نبحث في المسار الافتراضي
-            var backups = _backupService.GetBackups();
-            if (backups.Count > 0)
+            if (latestFile != null)
             {
-                var latest = backups[0];
-                LastBackupInfo = $"{latest.CreatedAt:yyyy/MM/dd HH:mm} ({latest.SizeDisplay})";
+                var sizeDisplay = latestFile.Length < 1024 * 1024
+                    ? $"{latestFile.Length / 1024.0:F1} KB"
+                    : $"{latestFile.Length / (1024.0 * 1024.0):F1} MB";
+                LastBackupInfo = $"{latestFile.CreationTime:yyyy/MM/dd HH:mm} ({sizeDisplay})";
             }
             else
             {
@@ -95,22 +145,13 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
-    [RelayCommand]
-    private void ToggleTheme()
-    {
-        IsDarkMode = !IsDarkMode;
-        SettingsHelper.IsDarkMode = IsDarkMode;
-        App.ApplyTheme(IsDarkMode);
-        ShowGeneralMsg(TranslationHelper.GetString(IsDarkMode ? "MsgThemeDark" : "MsgThemeLight"));
-    }
-
+    // ─── أوامر العام واللغة ───
     [RelayCommand]
     private void SetArabic()
     {
         Language = "ar";
         SettingsHelper.Language = "ar";
         App.ApplyLanguage("ar");
-        ShowGeneralMsg(TranslationHelper.GetString("MsgLangArabic"));
         
         DialogHelper.ShowInfo(
             TranslationHelper.GetString("MsgRestartRequiredForLang"), 
@@ -123,7 +164,6 @@ public partial class SettingsViewModel : ObservableObject
         Language = "en";
         SettingsHelper.Language = "en";
         App.ApplyLanguage("en");
-        ShowGeneralMsg(TranslationHelper.GetString("MsgLangEnglish"));
         
         DialogHelper.ShowInfo(
             TranslationHelper.GetString("MsgRestartRequiredForLang"), 
@@ -131,14 +171,13 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     // ─── أوامر النسخ الاحتياطي ───
-
     [RelayCommand]
     private void BrowseBackupPath()
     {
         var dialog = new Microsoft.Win32.OpenFolderDialog
         {
             Title = TranslationHelper.GetString("BrowseBackupTitle"),
-            InitialDirectory = System.IO.Directory.Exists(BackupPath) ? BackupPath : string.Empty
+            InitialDirectory = Directory.Exists(BackupPath) ? BackupPath : string.Empty
         };
 
         if (dialog.ShowDialog() == true)
@@ -154,7 +193,12 @@ public partial class SettingsViewModel : ObservableObject
         _settingsService.SaveSetting("AutoBackupEnabled", AutoBackupEnabled.ToString());
         _settingsService.SaveSetting("AutoBackupFrequency", SelectedFrequency);
 
-        ShowBackupMsg(TranslationHelper.GetString("MsgSettingsSaved"));
+        // إشعار الخدمة الخلفية بتحديث الجدولة فوراً
+        _autoBackupService?.TriggerImmediateCheck();
+
+        DialogHelper.ShowInfo(
+            TranslationHelper.GetString("MsgSettingsSaved"),
+            TranslationHelper.GetString("TabBackup"));
     }
 
     [RelayCommand]
@@ -179,8 +223,8 @@ public partial class SettingsViewModel : ObservableObject
             {
                 // حفظ المسار في الإعدادات تلقائياً بعد نجاح النسخ
                 _settingsService.SaveSetting("BackupPath", BackupPath);
-                ShowBackupMsg(result.Message);
                 UpdateLastBackupInfo();
+                DialogHelper.ShowInfo(result.Message, TranslationHelper.GetString("BackupTitle"));
             }
             else
             {
@@ -207,20 +251,16 @@ public partial class SettingsViewModel : ObservableObject
         {
             Title = TranslationHelper.GetString("RestoreBackupTitle"),
             Filter = "Database files (*.db)|*.db",
-            InitialDirectory = System.IO.Directory.Exists(BackupPath) ? BackupPath : string.Empty
+            InitialDirectory = Directory.Exists(BackupPath) ? BackupPath : string.Empty
         };
 
         if (dialog.ShowDialog() != true) return;
 
-        var confirmResult = MessageBox.Show(
+        var confirmed = DialogHelper.ShowConfirmation(
             TranslationHelper.GetString("MsgRestoreWarning"),
-            TranslationHelper.GetString("RestoreBackupTitle"),
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning,
-            MessageBoxResult.No,
-            MessageBoxOptions.RightAlign | MessageBoxOptions.RtlReading);
+            TranslationHelper.GetString("RestoreBackupTitle"));
 
-        if (confirmResult != MessageBoxResult.Yes) return;
+        if (!confirmed) return;
 
         IsBusy = true;
         BusyMessage = TranslationHelper.GetString("MsgRestoringBackup");
@@ -231,7 +271,7 @@ public partial class SettingsViewModel : ObservableObject
 
             if (result.Success)
             {
-                ShowBackupMsg(result.Message);
+                DialogHelper.ShowInfo(result.Message, TranslationHelper.GetString("RestoreBackupTitle"));
             }
             else
             {
@@ -251,6 +291,36 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
-    private void ShowGeneralMsg(string m) { GeneralMessage = m; HasGeneralMessage = true; }
-    private void ShowBackupMsg(string m) { BackupMessage = m; HasBackupMessage = true; }
+    // ─── أوامر إعدادات النظام ───
+    [RelayCommand]
+    private void SaveSystemSettings()
+    {
+        if (LowActivityThresholdPercent <= 0 || LowActivityThresholdPercent > 100)
+        {
+            DialogHelper.ShowWarning("يجب أن تكون نسبة عتبة النشاط بين 0.1% و 100%", TranslationHelper.GetString("TabSystemSettings"));
+            return;
+        }
+
+        if (NotificationCheckIntervalMinutes < 1 || NotificationCheckIntervalMinutes > 1440)
+        {
+            DialogHelper.ShowWarning("يجب أن تكون فترة فحص التنبيهات بين 1 دقيقة و 1440 دقيقة (24 ساعة)", TranslationHelper.GetString("TabSystemSettings"));
+            return;
+        }
+
+        _settingsService.SaveSetting("LowActivityThresholdPercent", LowActivityThresholdPercent.ToString());
+        _settingsService.SaveSetting("NotificationCheckIntervalMinutes", NotificationCheckIntervalMinutes.ToString());
+        _settingsService.SaveSetting("FacilityName", FacilityName ?? string.Empty);
+        _settingsService.SaveSetting("FacilityAddress", FacilityAddress ?? string.Empty);
+        _settingsService.SaveSetting("TechnicalDirector", TechnicalDirector ?? string.Empty);
+
+        // تحديث دورية فحص التنبيهات في MainViewModel إن كان نشطاً
+        if (App.ServiceProvider.GetService(typeof(MainViewModel)) is MainViewModel mainVm)
+        {
+            mainVm.UpdateAlertCheckInterval(NotificationCheckIntervalMinutes);
+        }
+
+        DialogHelper.ShowInfo(
+            TranslationHelper.GetString("MsgSystemSettingsSaved"),
+            TranslationHelper.GetString("TabSystemSettings"));
+    }
 }

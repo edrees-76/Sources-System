@@ -75,6 +75,9 @@ public partial class App : Application
             ApplyTheme(SettingsHelper.IsDarkMode);
             ApplyLanguage(SettingsHelper.Language);
 
+            // بدء خدمة النسخ الاحتياطي التلقائي في الخلفية
+            ServiceProvider.GetRequiredService<IAutoBackupService>().Start();
+
             LoggerService.LogInfo("تم بدء تشغيل منظومة مصادر بنجاح");
             base.OnStartup(e);
 
@@ -107,6 +110,7 @@ public partial class App : Application
         services.AddSingleton<IDecayCalculationService, DecayCalculationService>();
         services.AddSingleton<IAlertService, AlertService>();
         services.AddSingleton<IBackupService, BackupService>();
+        services.AddSingleton<IAutoBackupService, AutoBackupService>();
         services.AddSingleton<IReportingService, ReportingService>();
         services.AddTransient<ISourceService, SourceService>();
         services.AddTransient<IRadioisotopeService, RadioisotopeService>();

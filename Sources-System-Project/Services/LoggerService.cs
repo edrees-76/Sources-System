@@ -9,6 +9,7 @@ public static class LoggerService
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Sources", "Logs");
 
     public static void LogInfo(string message) => WriteLog("INFO", message);
+    public static void LogWarning(string message) => WriteLog("WARN", message);
     public static void LogError(string message, Exception? ex = null) =>
         WriteLog("ERROR", $"{message}{(ex != null ? $"\n{ex}" : "")}");
 

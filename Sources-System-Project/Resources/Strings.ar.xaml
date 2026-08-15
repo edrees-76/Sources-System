@@ -86,7 +86,8 @@
 
     <!-- Settings Page -->
     <system:String x:Key="SettingsTitle">الإعدادات</system:String>
-    <system:String x:Key="SettingsSubtitle">تخصيص مظهر النظام وتفضيلات المستخدم</system:String>
+    <system:String x:Key="SettingsSubtitle">تخصيص مظهر النظام، النسخ الاحتياطي، وإعدادات المنظومة</system:String>
+    <system:String x:Key="TabSystemSettings">إعدادات النظام</system:String>
     <system:String x:Key="AppearanceTitle">المظهر</system:String>
     <system:String x:Key="DarkMode">الوضع الداكن</system:String>
     <system:String x:Key="DarkModeDescription">التبديل بين الوضع الفاتح والداكن</system:String>
@@ -99,6 +100,19 @@
     <system:String x:Key="MsgLanguageChanged">تم تغيير اللغة بنجاح</system:String>
     <system:String x:Key="MsgRestartRequiredForLang">يرجى تسجيل الخروج والدخول مرة أخرى (أو إعادة تشغيل البرنامج) لتطبيق تغييرات اتجاه الواجهة بشكل كامل.</system:String>
     <system:String x:Key="TitleLanguageChange">تغيير لغة الواجهة</system:String>
+    
+    <!-- System Settings Tab -->
+    <system:String x:Key="AlertSettingsTitle">عتبات التنبيهات الذكية</system:String>
+    <system:String x:Key="LabelLowActivityThreshold">عتبة النشاط المنخفض (%)</system:String>
+    <system:String x:Key="DescLowActivityThreshold">النسبة المئوية من النشاط الابتدائي التي يُعتبر المصدر عندها منخفض النشاط في التقارير</system:String>
+    <system:String x:Key="LabelNotificationCheckInterval">دورية فحص التنبيهات (بالدقائق)</system:String>
+    <system:String x:Key="DescNotificationCheckInterval">الفاصل الزمني بالدقائق لإعادة فحص التنبيهات تلقائياً في الخلفية</system:String>
+    <system:String x:Key="ReportHeaderSettingsTitle">بيانات المنشأة وترويسة التقارير</system:String>
+    <system:String x:Key="LabelFacilityName">اسم المؤسسة / المختبر</system:String>
+    <system:String x:Key="LabelFacilityAddress">عنوان المنشأة</system:String>
+    <system:String x:Key="LabelTechnicalDirector">المسؤول / المدير الفني</system:String>
+    <system:String x:Key="BtnSaveSystemSettings">حفظ إعدادات النظام</system:String>
+    <system:String x:Key="MsgSystemSettingsSaved">تم حفظ إعدادات النظام بنجاح</system:String>
 
     <!-- Dashboard Page -->
     <system:String x:Key="StrategicDashboardTitle">اللوحة الاستراتيجية للتنمية الوطنية</system:String>

@@ -89,7 +89,8 @@
 
     <!-- Settings Page -->
     <system:String x:Key="SettingsTitle">Settings</system:String>
-    <system:String x:Key="SettingsSubtitle">Customize application appearance and user preferences</system:String>
+    <system:String x:Key="SettingsSubtitle">Customize appearance, backups, and system configuration</system:String>
+    <system:String x:Key="TabSystemSettings">System Settings</system:String>
     <system:String x:Key="AppearanceTitle">Appearance</system:String>
     <system:String x:Key="DarkMode">Dark Mode</system:String>
     <system:String x:Key="DarkModeDescription">Switch between light and dark themes</system:String>
@@ -102,6 +103,19 @@
     <system:String x:Key="MsgLanguageChanged">Language changed successfully</system:String>
     <system:String x:Key="MsgRestartRequiredForLang">Please logout and login again (or restart the app) to fully apply layout direction changes.</system:String>
     <system:String x:Key="TitleLanguageChange">Language Change</system:String>
+
+    <!-- System Settings Tab -->
+    <system:String x:Key="AlertSettingsTitle">Smart Alert Thresholds</system:String>
+    <system:String x:Key="LabelLowActivityThreshold">Low Activity Threshold (%)</system:String>
+    <system:String x:Key="DescLowActivityThreshold">Percentage of initial activity below which a source is considered low activity in reports</system:String>
+    <system:String x:Key="LabelNotificationCheckInterval">Alert Check Interval (Minutes)</system:String>
+    <system:String x:Key="DescNotificationCheckInterval">Interval in minutes to automatically re-check alerts in the background</system:String>
+    <system:String x:Key="ReportHeaderSettingsTitle">Facility Info &amp; Report Header</system:String>
+    <system:String x:Key="LabelFacilityName">Facility / Lab Name</system:String>
+    <system:String x:Key="LabelFacilityAddress">Facility Address</system:String>
+    <system:String x:Key="LabelTechnicalDirector">Responsible Person / Technical Director</system:String>
+    <system:String x:Key="BtnSaveSystemSettings">Save System Settings</system:String>
+    <system:String x:Key="MsgSystemSettingsSaved">System settings saved successfully</system:String>
 
     <!-- Dashboard Page -->
     <system:String x:Key="StrategicDashboardTitle">National Strategic Dashboard</system:String>

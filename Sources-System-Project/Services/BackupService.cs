@@ -24,7 +24,8 @@ public class BackupService : IBackupService
             Directory.CreateDirectory(_backupDir);
     }
 
-    private const string BackupFolderName = "النسخ الاحتياطى منظومة مسار";
+    public const string BackupFolderName = "النسخ الاحتياطي لمنظومة مصادر";
+    public const string LegacyBackupFolderName = "النسخ الاحتياطى منظومة مسار";
 
     /// <summary>إنشاء نسخة احتياطية في المسار الافتراضي</summary>
     public (bool Success, string Message, string? BackupPath) CreateBackup()
@@ -40,13 +41,16 @@ public class BackupService : IBackupService
             if (!File.Exists(_dbPath))
                 return (false, "قاعدة البيانات غير موجودة", null);
 
-            // إنشاء المجلد بالاسم المطلوب داخل المسار المختار
-            var targetDir = Path.Combine(customPath, BackupFolderName);
+            // إنشاء المجلد بالاسم المطلوب داخل المسار المختار (إن لم يكن هو نفسه مجلد النسخ)
+            var targetDir = customPath.EndsWith(BackupFolderName, StringComparison.OrdinalIgnoreCase)
+                ? customPath
+                : Path.Combine(customPath, BackupFolderName);
+
             if (!Directory.Exists(targetDir))
                 Directory.CreateDirectory(targetDir);
 
             var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-            var backupFile = Path.Combine(targetDir, $"MASAR_backup_{timestamp}.db");
+            var backupFile = Path.Combine(targetDir, $"SOURCES_backup_{timestamp}.db");
 
             File.Copy(_dbPath, backupFile, overwrite: true);
 
@@ -72,7 +76,7 @@ public class BackupService : IBackupService
                 return (false, "ملف النسخة الاحتياطية غير موجود");
 
             // نسخة أمان قبل الاستعادة
-            var safetyBackup = Path.Combine(_backupDir, $"MASAR_pre_restore_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.db");
+            var safetyBackup = Path.Combine(_backupDir, $"SOURCES_pre_restore_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.db");
             if (File.Exists(_dbPath))
                 File.Copy(_dbPath, safetyBackup, overwrite: true);
 
@@ -94,7 +98,7 @@ public class BackupService : IBackupService
         if (!Directory.Exists(_backupDir))
             return new List<BackupInfo>();
 
-        return Directory.GetFiles(_backupDir, "MASAR_backup_*.db")
+        var files = Directory.GetFiles(_backupDir, "*_backup_*.db")
             .Select(f => new FileInfo(f))
             .OrderByDescending(f => f.CreationTime)
             .Select(f => new BackupInfo
@@ -106,6 +110,8 @@ public class BackupService : IBackupService
                 SizeDisplay = FormatSize(f.Length)
             })
             .ToList();
+
+        return files;
     }
 
     /// <summary>حذف النسخ الأقدم من عدد أيام محدد</summary>
@@ -115,7 +121,7 @@ public class BackupService : IBackupService
         {
             var targetDir = dir ?? _backupDir;
             var cutoff = DateTime.Now.AddDays(-maxAgeDays);
-            var oldFiles = Directory.GetFiles(targetDir, "MASAR_backup_*.db")
+            var oldFiles = Directory.GetFiles(targetDir, "*_backup_*.db")
                 .Select(f => new FileInfo(f))
                 .Where(f => f.CreationTime < cutoff);
 
