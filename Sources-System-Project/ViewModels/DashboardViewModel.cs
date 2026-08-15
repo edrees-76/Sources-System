@@ -516,7 +516,7 @@ public partial class DashboardViewModel : ObservableObject
                 {
                     legend.Add(new LegendItem 
                     { 
-                        Label = $"{s.Name} ({byIsotope[i].Count})", 
+                        Label = s.Name ?? string.Empty, 
                         Color = ChartPalette[i % ChartPalette.Length]
                     });
                 }
@@ -564,7 +564,7 @@ public partial class DashboardViewModel : ObservableObject
                 {
                     legend.Add(new LegendItem 
                     { 
-                        Label = $"{s.Name} ({locations[i].Count})", 
+                        Label = s.Name ?? string.Empty, 
                         Color = ChartPalette[i % ChartPalette.Length]
                     });
                 }

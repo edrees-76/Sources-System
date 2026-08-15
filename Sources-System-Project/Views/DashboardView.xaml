@@ -501,13 +501,34 @@
                         </StackPanel>
 
                         <!-- Chart (When enough data >= 2 isotopes) -->
-                        <Grid Grid.Row="1" FlowDirection="LeftToRight"
+                        <Grid Grid.Row="1"
                               Visibility="{Binding HasEnoughIsotopeData, Converter={StaticResource BoolToVis}}">
-                            <lvc:PieChart Series="{Binding SourcesByIsotopeSeries}"
-                                          LegendPosition="Right"
-                                          LegendTextPaint="{Binding ChartTextPaint}"
-                                          TooltipTextPaint="{Binding ChartTextPaint}"
-                                          TooltipBackgroundPaint="{Binding ChartTooltipBackgroundPaint}"/>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Grid Grid.Column="0" FlowDirection="LeftToRight">
+                                <lvc:PieChart Series="{Binding SourcesByIsotopeSeries}"
+                                              LegendPosition="Hidden"
+                                              TooltipPosition="Hidden"/>
+                            </Grid>
+
+                            <!-- مفتاح الرسم المخصص بتقنية WPF لعرض النصوص العربية والإنجليزية بشكل سليم ومثالي -->
+                            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                                          VerticalAlignment="Center" Margin="8,0,0,0" MaxHeight="220">
+                                <ItemsControl ItemsSource="{Binding PieLegendItems}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" Margin="0,5">
+                                                <Ellipse Width="11" Height="11" Fill="{Binding Color, Converter={StaticResource HexToBrush}}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Label}" FontSize="12" FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
                         </Grid>
 
                         <!-- Insufficient Data Fallback Message -->
@@ -538,13 +559,34 @@
                         </StackPanel>
 
                         <!-- Chart (When enough data >= 2 locations) -->
-                        <Grid Grid.Row="1" FlowDirection="LeftToRight"
+                        <Grid Grid.Row="1"
                               Visibility="{Binding HasEnoughLocationData, Converter={StaticResource BoolToVis}}">
-                            <lvc:PieChart Series="{Binding SourcesByLocationSeries}"
-                                          LegendPosition="Right"
-                                          LegendTextPaint="{Binding ChartTextPaint}"
-                                          TooltipTextPaint="{Binding ChartTextPaint}"
-                                          TooltipBackgroundPaint="{Binding ChartTooltipBackgroundPaint}"/>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Grid Grid.Column="0" FlowDirection="LeftToRight">
+                                <lvc:PieChart Series="{Binding SourcesByLocationSeries}"
+                                              LegendPosition="Hidden"
+                                              TooltipPosition="Hidden"/>
+                            </Grid>
+
+                            <!-- مفتاح الرسم المخصص بتقنية WPF لعرض النصوص العربية والإنجليزية بشكل سليم ومثالي -->
+                            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                                          VerticalAlignment="Center" Margin="8,0,0,0" MaxHeight="220">
+                                <ItemsControl ItemsSource="{Binding LocationLegendItems}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" Margin="0,5">
+                                                <Ellipse Width="11" Height="11" Fill="{Binding Color, Converter={StaticResource HexToBrush}}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Label}" FontSize="12" FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
                         </Grid>
 
                         <!-- Insufficient Data Fallback Message -->
