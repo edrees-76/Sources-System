@@ -24,6 +24,17 @@ public class BackupService : IBackupService
             Directory.CreateDirectory(_backupDir);
     }
 
+    public BackupService(string? customDbPath = null, string? customBackupDir = null)
+    {
+        var appDataDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Sources");
+        _dbPath = !string.IsNullOrEmpty(customDbPath) ? customDbPath : Path.Combine(appDataDir, "Sources.db");
+        _backupDir = !string.IsNullOrEmpty(customBackupDir) ? customBackupDir : Path.Combine(appDataDir, "Backups");
+
+        if (!Directory.Exists(_backupDir))
+            Directory.CreateDirectory(_backupDir);
+    }
+
     public const string BackupFolderName = "النسخ الاحتياطي لمنظومة مصادر";
     public const string LegacyBackupFolderName = "النسخ الاحتياطى منظومة مسار";
 
