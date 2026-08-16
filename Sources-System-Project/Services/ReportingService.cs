@@ -51,7 +51,7 @@ namespace Sources.Services
                 }
 
                 int row = 2;
-                foreach (var source in sources)
+                foreach (var source in sources ?? Enumerable.Empty<Source>())
                 {
                     worksheet.Cell(row, 1).Value = source.SourceCode;
                     worksheet.Cell(row, 2).Value = source.DisplayIsotopes;
@@ -198,7 +198,7 @@ namespace Sources.Services
                 }
 
                 int row = 2;
-                foreach (var req in requests)
+                foreach (var req in requests ?? Enumerable.Empty<BorrowRequest>())
                 {
                     worksheet.Cell(row, 1).Value = req.Source?.SourceCode ?? "-";
                     worksheet.Cell(row, 2).Value = req.DisplayBorrowerName;
@@ -325,7 +325,7 @@ namespace Sources.Services
                 }
 
                 int row = 2;
-                foreach (var source in sources)
+                foreach (var source in sources ?? Enumerable.Empty<Source>())
                 {
                     worksheet.Cell(row, 1).Value = source.SourceCode;
                     worksheet.Cell(row, 2).Value = source.DisplayIsotopes;
@@ -429,7 +429,7 @@ namespace Sources.Services
                     wsInventory.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
                 }
                 int row = 2;
-                foreach (var s in inventory)
+                foreach (var s in inventory ?? Enumerable.Empty<Source>())
                 {
                     wsInventory.Cell(row, 1).Value = s.SourceCode;
                     wsInventory.Cell(row, 2).Value = s.DisplayIsotopes;
@@ -452,7 +452,7 @@ namespace Sources.Services
                     wsBorrowing.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
                 }
                 row = 2;
-                foreach (var req in borrowing)
+                foreach (var req in borrowing ?? Enumerable.Empty<BorrowRequest>())
                 {
                     wsBorrowing.Cell(row, 1).Value = req.Source?.SourceCode ?? "-";
                     wsBorrowing.Cell(row, 2).Value = req.DisplayBorrowerName;
@@ -476,7 +476,7 @@ namespace Sources.Services
                     wsLowAct.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.YellowGreen;
                 }
                 row = 2;
-                foreach (var s in lowActivity)
+                foreach (var s in lowActivity ?? Enumerable.Empty<Source>())
                 {
                     wsLowAct.Cell(row, 1).Value = s.SourceCode;
                     wsLowAct.Cell(row, 2).Value = s.DisplayIsotopes;
@@ -500,7 +500,7 @@ namespace Sources.Services
                     wsCalib.Cell(1, i + 1).Style.Font.FontColor = XLColor.White;
                 }
                 row = 2;
-                foreach (var s in calibration)
+                foreach (var s in calibration ?? Enumerable.Empty<Source>())
                 {
                     wsCalib.Cell(row, 1).Value = s.SourceCode;
                     wsCalib.Cell(row, 2).Value = s.DisplayIsotopes;
