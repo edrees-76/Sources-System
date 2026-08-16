@@ -5,17 +5,296 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:viewmodels="clr-namespace:Sources.ViewModels"
+             xmlns:models="clr-namespace:Sources.Models"
              mc:Ignorable="d" 
-             d:DesignHeight="700" d:DesignWidth="1100"
+             d:DesignHeight="750" d:DesignWidth="1150"
              d:DataContext="{d:DesignInstance Type=viewmodels:HelpViewModel}"
              Background="Transparent">
 
     <UserControl.Resources>
-        <!-- Unified accent color for icons/numbers -->
-        <SolidColorBrush x:Key="HelpAccent" Color="{DynamicResource GoldColor}"/>
-        <SolidColorBrush x:Key="HelpAccentLight" Color="{DynamicResource GoldLightColor}"/>
-        <SolidColorBrush x:Key="TipBgLight" Color="#151F5A66"/>
-        <SolidColorBrush x:Key="StepBgLight" Color="#0A1F5A66"/>
+        <!-- ══════════════════════════════════════════════════════════
+             قوالب كتل المحتوى التفاعلية (MVVM Content Blocks)
+             ══════════════════════════════════════════════════════════ -->
+
+        <!-- 1. قالب الفقرة النصية -->
+        <DataTemplate DataType="{x:Type models:HelpParagraphBlock}">
+            <TextBlock Text="{Binding TextKey, Converter={StaticResource StringToResource}}"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource TextPrimary}"
+                       LineHeight="26"
+                       Margin="0,0,0,14">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="FontSize" Value="14.5"/>
+                        <Setter Property="FontWeight" Value="Normal"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsLead}" Value="True">
+                                <Setter Property="FontSize" Value="16"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                                <Setter Property="Margin" Value="0,0,0,18"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </DataTemplate>
+
+        <!-- 2. قالب الخطوة الإجرائية المرقمة -->
+        <DataTemplate DataType="{x:Type models:HelpStepBlock}">
+            <Border Background="{DynamicResource CardBackground}"
+                    BorderBrush="{DynamicResource BorderColor}"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Padding="16,14"
+                    Margin="0,0,0,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="14"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- شارة الترقيم -->
+                    <Border Width="34" Height="34"
+                            CornerRadius="17"
+                            Background="{DynamicResource PrimaryLightBrush}"
+                            VerticalAlignment="Top">
+                        <TextBlock Text="{Binding StepNumber}"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource PrimaryBrush}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+
+                    <!-- نصوص الخطوة -->
+                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding TitleKey, Converter={StaticResource StringToResource}}"
+                                   FontSize="15"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimary}"
+                                   Margin="0,0,0,4"/>
+                        <TextBlock Text="{Binding DescriptionKey, Converter={StaticResource StringToResource}}"
+                                   TextWrapping="Wrap"
+                                   FontSize="13.5"
+                                   Foreground="{DynamicResource TextSecondary}"
+                                   LineHeight="22"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <!-- 3. قالب صندوق النصائح والإرشادات (أخضر/Success) -->
+        <DataTemplate DataType="{x:Type models:HelpTipBlock}">
+            <Border Background="#1210B981"
+                    BorderBrush="{DynamicResource SuccessBrush}"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Padding="16,12"
+                    Margin="0,6,0,14">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <materialDesign:PackIcon Kind="LightbulbOnOutline"
+                                             Width="22" Height="22"
+                                             Foreground="{DynamicResource SuccessBrush}"
+                                             VerticalAlignment="Top"
+                                             Margin="0,2,0,0"/>
+
+                    <TextBlock Grid.Column="2"
+                               Text="{Binding TextKey, Converter={StaticResource StringToResource}}"
+                               TextWrapping="Wrap"
+                               FontSize="14"
+                               Foreground="{DynamicResource TextPrimary}"
+                               LineHeight="22"
+                               VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <!-- 4. قالب صندوق التحذيرات والتنبيهات (برتقالي/Warning) -->
+        <DataTemplate DataType="{x:Type models:HelpWarningBlock}">
+            <Border Background="#15F59E0B"
+                    BorderBrush="{DynamicResource WarningBrush}"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Padding="16,12"
+                    Margin="0,6,0,14">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <materialDesign:PackIcon Kind="AlertCircleOutline"
+                                             Width="22" Height="22"
+                                             Foreground="{DynamicResource WarningBrush}"
+                                             VerticalAlignment="Top"
+                                             Margin="0,2,0,0"/>
+
+                    <TextBlock Grid.Column="2"
+                               Text="{Binding TextKey, Converter={StaticResource StringToResource}}"
+                               TextWrapping="Wrap"
+                               FontSize="14"
+                               Foreground="{DynamicResource TextPrimary}"
+                               LineHeight="22"
+                               VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <!-- 5. قالب صندوق الأمثلة والمعادلات التوضيحية (أزرق/Info) -->
+        <DataTemplate DataType="{x:Type models:HelpExampleBlock}">
+            <Border Background="#103B82F6"
+                    BorderBrush="{DynamicResource InfoBrush}"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Padding="16,14"
+                    Margin="0,6,0,14">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <materialDesign:PackIcon Kind="CodeBraces"
+                                                 Width="18" Height="18"
+                                                 Foreground="{DynamicResource InfoBrush}"
+                                                 VerticalAlignment="Center"
+                                                 Margin="0,0,8,0"/>
+                        <TextBlock Text="{Binding TitleKey, Converter={StaticResource StringToResource}}"
+                                   FontSize="13.5"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource InfoBrush}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding ContentKey, Converter={StaticResource StringToResource}}"
+                               TextWrapping="Wrap"
+                               FontSize="13"
+                               Foreground="{DynamicResource TextPrimary}"
+                               LineHeight="22"
+                               FontFamily="Consolas, Segoe UI, monospace"/>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <!-- 6. قالب القائمة النقطية -->
+        <DataTemplate DataType="{x:Type models:HelpBulletListBlock}">
+            <StackPanel Margin="6,2,0,12">
+                <TextBlock Text="{Binding TitleKey, Converter={StaticResource StringToResource}}"
+                           FontSize="14.5"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimary}"
+                           Margin="0,0,0,8"
+                           Visibility="{Binding HasTitle, Converter={StaticResource BoolToVis}}"/>
+
+                <ItemsControl ItemsSource="{Binding ItemKeys}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,3,0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="●"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource PrimaryBrush}"
+                                           VerticalAlignment="Top"
+                                           Margin="0,4,0,0"/>
+
+                                <TextBlock Grid.Column="2"
+                                           Text="{Binding ., Converter={StaticResource StringToResource}}"
+                                           TextWrapping="Wrap"
+                                           FontSize="14"
+                                           Foreground="{DynamicResource TextPrimary}"
+                                           LineHeight="22"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- 7. قالب الأسئلة الشائعة FAQ -->
+        <DataTemplate DataType="{x:Type models:HelpFaqBlock}">
+            <Border Background="{DynamicResource CardBackground}"
+                    BorderBrush="{DynamicResource BorderColor}"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Padding="16,14"
+                    Margin="0,0,0,10">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="HelpCircleOutline"
+                                                 Width="20" Height="20"
+                                                 Foreground="{DynamicResource PrimaryBrush}"
+                                                 VerticalAlignment="Center"
+                                                 Margin="0,0,10,0"/>
+                        <TextBlock Text="{Binding QuestionKey, Converter={StaticResource StringToResource}}"
+                                   FontSize="14.5"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource TextPrimary}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding AnswerKey, Converter={StaticResource StringToResource}}"
+                               TextWrapping="Wrap"
+                               FontSize="13.5"
+                               Foreground="{DynamicResource TextSecondary}"
+                               LineHeight="22"
+                               Margin="30,8,0,0"/>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <!-- 8. قالب آخر التحديثات What's New -->
+        <DataTemplate DataType="{x:Type models:HelpWhatsNewBlock}">
+            <Border Background="{DynamicResource CardBackground}"
+                    BorderBrush="{DynamicResource BorderColor}"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Padding="16,14"
+                    Margin="0,0,0,10">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Background="{DynamicResource PrimaryLightBrush}"
+                                CornerRadius="6"
+                                Padding="8,2"
+                                Margin="0,0,10,0">
+                            <TextBlock Text="{Binding VersionBadge}"
+                                       FontSize="11.5"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource PrimaryBrush}"/>
+                        </Border>
+
+                        <TextBlock Text="{Binding TitleKey, Converter={StaticResource StringToResource}}"
+                                   FontSize="14.5"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource TextPrimary}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <TextBlock Grid.Row="1"
+                               Text="{Binding DescriptionKey, Converter={StaticResource StringToResource}}"
+                               TextWrapping="Wrap"
+                               FontSize="13.5"
+                               Foreground="{DynamicResource TextSecondary}"
+                               LineHeight="22"
+                               Margin="0,8,0,0"/>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
     </UserControl.Resources>
 
     <Grid Margin="20">
@@ -25,36 +304,38 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- ═══════ Header ═══════ -->
+        <!-- ══════════════════════════════════════════════════════════
+             الترويسة الرئيسية لشاشة الدليل
+             ══════════════════════════════════════════════════════════ -->
         <Border Grid.Row="0" 
                 Background="{DynamicResource CardBackground}" 
                 CornerRadius="14"
-                Padding="28,22"
+                Padding="24,20"
                 BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="20" Direction="-90" RenderingBias="Quality" Opacity="0.08" ShadowDepth="2"/>
+                <DropShadowEffect BlurRadius="16" Direction="-90" RenderingBias="Quality" Opacity="0.06" ShadowDepth="2"/>
             </Border.Effect>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="18"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Logo circle -->
-                <Border Width="56" Height="56" CornerRadius="28" 
-                        Background="#1AD4AF37">
+                <!-- أيقونة الدليل الرئيسية -->
+                <Border Width="52" Height="52" CornerRadius="26" 
+                        Background="{DynamicResource PrimaryLightBrush}">
                     <materialDesign:PackIcon Kind="BookOpenPageVariant" 
-                                           Width="30" Height="30" 
-                                           Foreground="{StaticResource HelpAccent}"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"/>
+                                             Width="28" Height="28" 
+                                             Foreground="{DynamicResource PrimaryBrush}"
+                                             HorizontalAlignment="Center"
+                                             VerticalAlignment="Center"/>
                 </Border>
                 
                 <StackPanel Grid.Column="2" VerticalAlignment="Center">
                     <TextBlock Text="{DynamicResource TitleHelp}" 
-                               FontSize="26" 
+                               FontSize="22" 
                                FontWeight="Bold" 
                                Foreground="{DynamicResource TextPrimary}"/>
                     <TextBlock Text="{DynamicResource HelpSubtitle}" 
@@ -65,153 +346,297 @@
             </Grid>
         </Border>
 
-        <!-- ═══════ Main Content ═══════ -->
+        <!-- ══════════════════════════════════════════════════════════
+             محتوى الشاشة: القائمة الجانبية + تفاصيل الموضوع
+             ══════════════════════════════════════════════════════════ -->
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="270"/>
+                <ColumnDefinition Width="350"/>
                 <ColumnDefinition Width="16"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- ─── Sidebar: Topics List ─── -->
+            <!-- ─── العمود الأيمن: قائمة المواضيع والبحث والفلترة ─── -->
             <Border Grid.Column="0" 
                     Background="{DynamicResource CardBackground}" 
                     CornerRadius="14"
                     BorderBrush="{DynamicResource BorderColor}"
                     BorderThickness="1">
                 <Border.Effect>
-                    <DropShadowEffect BlurRadius="20" Direction="-90" RenderingBias="Quality" Opacity="0.08" ShadowDepth="2"/>
+                    <DropShadowEffect BlurRadius="16" Direction="-90" RenderingBias="Quality" Opacity="0.06" ShadowDepth="2"/>
                 </Border.Effect>
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Section Header -->
-                    <Border Padding="20,16" 
+                    <!-- 1. عنوان القسم الجانبي -->
+                    <Border Padding="18,14" 
                             BorderBrush="{DynamicResource BorderColor}" 
                             BorderThickness="0,0,0,1">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="FormatListBulleted" 
                                                      Width="20" Height="20" 
-                                                     Foreground="{StaticResource HelpAccent}"
+                                                     Foreground="{DynamicResource PrimaryBrush}"
                                                      VerticalAlignment="Center"
                                                      Margin="0,0,10,0"/>
                             <TextBlock Text="{DynamicResource TitleHelpTopics}" 
-                                       FontSize="17" 
-                                       FontWeight="SemiBold" 
+                                       FontSize="16" 
+                                       FontWeight="Bold" 
                                        Foreground="{DynamicResource TextPrimary}"/>
                         </StackPanel>
                     </Border>
 
-                    <!-- Topics ListBox -->
-                    <ListBox Grid.Row="1"
-                             x:Name="TopicsList"
-                             ItemsSource="{Binding Topics}"
-                             SelectedItem="{Binding SelectedTopic}"
-                             Margin="8,8,8,8"
-                             Background="Transparent"
-                             BorderThickness="0"
-                             HorizontalContentAlignment="Stretch"
-                             SelectionChanged="TopicsList_SelectionChanged">
-                        <ListBox.ItemContainerStyle>
-                            <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
-                                <Setter Property="Padding" Value="16,12"/>
-                                <Setter Property="Margin" Value="2"/>
-                                <Setter Property="Cursor" Value="Hand"/>
-                                <Setter Property="Background" Value="Transparent"/>
-                                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="ListBoxItem">
-                                            <Border x:Name="Bd" 
-                                                    Background="{TemplateBinding Background}" 
-                                                    CornerRadius="10" 
-                                                    Padding="{TemplateBinding Padding}"
-                                                    Margin="2">
-                                                <ContentPresenter/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="Bd" Property="Background" Value="#0AD4AF37"/>
-                                                </Trigger>
-                                                <Trigger Property="IsSelected" Value="True">
-                                                    <Setter TargetName="Bd" Property="Background" Value="#20D4AF37"/>
-                                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource HelpAccent}"/>
-                                                    <Setter TargetName="Bd" Property="BorderThickness" Value="0,0,3,0"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </ListBox.ItemContainerStyle>
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="12"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    
-                                    <Border Width="32" Height="32" CornerRadius="8" Background="#0AD4AF37">
-                                        <materialDesign:PackIcon Kind="{Binding IconKind}" 
-                                                                 Width="18" Height="18" 
-                                                                 Foreground="{StaticResource HelpAccent}"
-                                                                 HorizontalAlignment="Center"
-                                                                 VerticalAlignment="Center"/>
-                                    </Border>
+                    <!-- 2. شريط البحث السريع المباشر -->
+                    <Border Grid.Row="1" Padding="14,10,14,6">
+                        <Grid>
+                            <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                     materialDesign:HintAssist.Hint="{DynamicResource HelpSearchPlaceholder}"
+                                     materialDesign:TextFieldAssist.HasClearButton="True"
+                                     FontSize="12.5"
+                                     Height="40"
+                                     Padding="8,8,32,8"/>
+                            <materialDesign:PackIcon Kind="Magnify"
+                                                     Width="18" Height="18"
+                                                     Foreground="{DynamicResource TextSecondary}"
+                                                     HorizontalAlignment="Right"
+                                                     VerticalAlignment="Center"
+                                                     Margin="0,0,10,0"
+                                                     IsHitTestVisible="False"/>
+                        </Grid>
+                    </Border>
 
-                                    <TextBlock Grid.Column="2" 
-                                               Text="{Binding DisplayTitle}" 
-                                               VerticalAlignment="Center" 
-                                               FontSize="14"
-                                               FontWeight="Medium"
+                    <!-- 3. فلتر مسارات التعلم السريع حسب الدور -->
+                    <Border Grid.Row="2" Padding="14,4,14,10"
+                            BorderBrush="{DynamicResource BorderColor}"
+                            BorderThickness="0,0,0,1">
+                        <ComboBox ItemsSource="{Binding RoleFilterOptions}"
+                                  SelectedItem="{Binding SelectedRoleFilter}"
+                                  Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                  FontSize="12.5"
+                                  Height="40"
+                                  Padding="10,6"
+                                  HorizontalContentAlignment="Stretch">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplayTitle}"
+                                               FontSize="12.5"
                                                Foreground="{DynamicResource TextPrimary}"
-                                               TextTrimming="CharacterEllipsis"/>
-                                </Grid>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
+                                               VerticalAlignment="Center"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Border>
+
+                    <!-- 4. قائمة المواضيع التفاعلية -->
+                    <Grid Grid.Row="3">
+                        <ListBox ItemsSource="{Binding FilteredTopics}"
+                                 SelectedItem="{Binding SelectedTopic, Mode=TwoWay}"
+                                 Margin="6,6,6,6"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 HorizontalContentAlignment="Stretch"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="Margin" Value="2,2"/>
+                                    <Setter Property="Cursor" Value="Hand"/>
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ListBoxItem">
+                                                <Border x:Name="Bd" 
+                                                        Background="{TemplateBinding Background}" 
+                                                        CornerRadius="10" 
+                                                        Padding="12,10"
+                                                        Margin="1">
+                                                    <Grid>
+                                                        <!-- مؤشر التحديد الحركي التلقائي (يتكيف ذاتياً مع RTL/LTR) -->
+                                                        <Border x:Name="ActiveIndicator"
+                                                                Width="4"
+                                                                HorizontalAlignment="Left"
+                                                                Background="{DynamicResource PrimaryBrush}"
+                                                                CornerRadius="2"
+                                                                Visibility="Collapsed"
+                                                                Margin="-10,-8,0,-8"/>
+                                                        <ContentPresenter/>
+                                                    </Grid>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SidebarHover}"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsSelected" Value="True">
+                                                        <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
+                                                        <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Visible"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,2,0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="10"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <Border Width="32" Height="32" CornerRadius="8" 
+                                                Background="{DynamicResource PrimaryLightBrush}"
+                                                VerticalAlignment="Center">
+                                            <materialDesign:PackIcon Kind="{Binding IconKind}" 
+                                                                     Width="18" Height="18" 
+                                                                     Foreground="{DynamicResource PrimaryBrush}"
+                                                                     HorizontalAlignment="Center"
+                                                                     VerticalAlignment="Center"/>
+                                        </Border>
+
+                                        <TextBlock Grid.Column="2" 
+                                                   Text="{Binding DisplayTitle}" 
+                                                   VerticalAlignment="Center" 
+                                                   FontSize="13"
+                                                   FontWeight="Medium"
+                                                   Foreground="{DynamicResource TextPrimary}"
+                                                   TextWrapping="Wrap"
+                                                   LineHeight="18"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+
+                        <!-- رسالة عند عدم وجود نتائج تطابق البحث -->
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                                    Margin="20"
+                                    Visibility="{Binding HasSearchResults, Converter={StaticResource InverseBoolToVis}}">
+                            <materialDesign:PackIcon Kind="FolderSearchOutline" 
+                                                     Width="40" Height="40" 
+                                                     Foreground="{DynamicResource TextSecondary}"
+                                                     HorizontalAlignment="Center"
+                                                     Opacity="0.6"/>
+                            <TextBlock Text="{DynamicResource HelpNoResultsTitle}"
+                                       FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextSecondary}"
+                                       HorizontalAlignment="Center"
+                                       TextAlignment="Center"
+                                       Margin="0,8,0,0"/>
+                            <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                    Content="{DynamicResource HelpBtnClearSearch}"
+                                    Command="{Binding ClearSearchCommand}"
+                                    Foreground="{DynamicResource PrimaryBrush}"
+                                    HorizontalAlignment="Center"
+                                    Margin="0,6,0,0"
+                                    FontSize="11"/>
+                        </StackPanel>
+                    </Grid>
                 </Grid>
             </Border>
 
-            <!-- ─── Main Content Panel ─── -->
+            <!-- ─── العمود الأيسر: منطقة عرض المحتوى الغني بالتفصيل ─── -->
             <Border Grid.Column="2" 
                     Background="{DynamicResource CardBackground}" 
                     CornerRadius="14"
                     BorderBrush="{DynamicResource BorderColor}"
                     BorderThickness="1">
                 <Border.Effect>
-                    <DropShadowEffect BlurRadius="20" Direction="-90" RenderingBias="Quality" Opacity="0.08" ShadowDepth="2"/>
+                    <DropShadowEffect BlurRadius="16" Direction="-90" RenderingBias="Quality" Opacity="0.06" ShadowDepth="2"/>
                 </Border.Effect>
                 
                 <ScrollViewer VerticalScrollBarVisibility="Auto" 
-                              HorizontalScrollBarVisibility="Disabled"
-                              Padding="0">
-                    <StackPanel x:Name="ContentPanel" Margin="32,28,32,28">
-                        <!-- Dynamic Title -->
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                            <Border Width="40" Height="40" CornerRadius="10" Background="#20D4AF37" Margin="0,0,14,0">
-                                <materialDesign:PackIcon x:Name="ContentIcon" Kind="InformationOutline" 
-                                                         Width="22" Height="22" 
-                                                         Foreground="{StaticResource HelpAccent}"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="30,24,30,30">
+
+                        <!-- ترويسة الموضوع المختار + زر الانتقال المباشر للشاشة -->
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="14"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border Width="46" Height="46" CornerRadius="12" 
+                                    Background="{DynamicResource PrimaryLightBrush}"
+                                    VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="{Binding SelectedTopic.IconKind, FallbackValue=InformationOutline}" 
+                                                         Width="26" Height="26" 
+                                                         Foreground="{DynamicResource PrimaryBrush}"
                                                          HorizontalAlignment="Center"
                                                          VerticalAlignment="Center"/>
                             </Border>
-                            <TextBlock x:Name="ContentTitle" 
-                                       Text="" 
-                                       FontSize="24" FontWeight="Bold" 
-                                       Foreground="{StaticResource HelpAccent}"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                        
-                        <Border Height="2" Background="{StaticResource HelpAccent}" Opacity="0.3" CornerRadius="1" Margin="0,10,0,20"/>
 
-                        <!-- Rich Content Area -->
-                        <StackPanel x:Name="RichContentArea"/>
+                            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding SelectedTopic.DisplayTitle}" 
+                                           FontSize="20" FontWeight="Bold" 
+                                           Foreground="{DynamicResource PrimaryBrush}"/>
+                                <TextBlock Text="{Binding SelectedTopic.DisplaySubtitle}" 
+                                           FontSize="13"
+                                           Foreground="{DynamicResource TextSecondary}"
+                                           Margin="0,3,0,0"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+
+                            <!-- زر "الانتقال إلى هذه الشاشة الآن" -->
+                            <Button Grid.Column="3"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Command="{Binding GoToTargetViewCommand}"
+                                    CommandParameter="{Binding SelectedTopic.TargetViewName}"
+                                    Visibility="{Binding SelectedTopic.HasTargetView, Converter={StaticResource BoolToVis}}"
+                                    VerticalAlignment="Center"
+                                    Padding="14,8"
+                                    Height="38">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="OpenInNew" Width="18" Height="18" 
+                                                             VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock Text="{Binding SelectedTopic.TargetViewButtonTextKey, Converter={StaticResource StringToResource}}" 
+                                               FontSize="12.5" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                        
+                        <!-- خط فاصل جمالي -->
+                        <Border Height="1.5" Background="{DynamicResource BorderColor}" Margin="0,0,0,20"/>
+
+                        <!-- محتوى الأقسام والكتل المنظمة عبر ItemsControl -->
+                        <ItemsControl ItemsSource="{Binding SelectedTopic.Sections}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,0,0,20">
+                                        <!-- عنوان القسم الفرعي إن وُجد -->
+                                        <Border Visibility="{Binding HasTitle, Converter={StaticResource BoolToVis}}"
+                                                Margin="0,4,0,12" Padding="0,0,0,6"
+                                                BorderBrush="{DynamicResource PrimaryBrush}"
+                                                BorderThickness="0,0,0,1" Opacity="0.85">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="{Binding IconKind, FallbackValue=InformationOutline}" 
+                                                                         Width="20" Height="20"
+                                                                         Foreground="{DynamicResource PrimaryBrush}"
+                                                                         VerticalAlignment="Center" 
+                                                                         Margin="0,0,8,0"/>
+                                                <TextBlock Text="{Binding TitleKey, Converter={StaticResource StringToResource}}"
+                                                           FontSize="16" FontWeight="Bold"
+                                                           Foreground="{DynamicResource TextPrimary}"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- كتل المحتوى التابعة لهذا القسم -->
+                                        <ItemsControl ItemsSource="{Binding Blocks}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
                     </StackPanel>
                 </ScrollViewer>
             </Border>

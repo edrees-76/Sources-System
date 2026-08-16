@@ -20,22 +20,52 @@
     <system:String x:Key="MenuLogout">خروج</system:String>
 
     <!-- About System -->
-    <system:String x:Key="AboutTitle">عن المنظومة والمُصمم</system:String>
+    <system:String x:Key="AboutTitle">عن المنظومة</system:String>
     <system:String x:Key="AboutSystemTitle">عن منظومة مصادر (Sources)</system:String>
     <system:String x:Key="AboutSystemDesc">مصادر هي حل برمجي ذكي ومتكامل يهدف إلى الرقابة الصارمة والتتبع الدقيق للمصادر والنظائر المشعة. توفر المنظومة أدوات متقدمة لحساب النشاط الإشعاعي، إدارة حركة المصادر، وربطها بالمستخدمين والمواقع.</system:String>
-    <system:String x:Key="AboutCapabilitiesTitle">المميزات التقنية</system:String>
-    <system:String x:Key="AboutCapabilities1">• واجهة مستخدم حديثة وتفاعلية بدعم الوضعين الداكن والفاتح.</system:String>
-    <system:String x:Key="AboutCapabilities2">• نظام إدارة قواعد بيانات آمن وموثوق للحفظ والاسترجاع.</system:String>
-    <system:String x:Key="AboutCapabilities3">• واجهة ثنائية اللغة (عربي/إنجليزي) تتيح التبديل الفوري.</system:String>
-    <system:String x:Key="AboutCapabilities4">• حاسبة مدمجة للنشاط الإشعاعي بناءً على قوانين التحلل.</system:String>
-    <system:String x:Key="AboutFeaturesTitle">إمكانيات الإدارة</system:String>
-    <system:String x:Key="AboutFeatures1">• تتبع شامل لحركة جميع المصادر وربطها بالعهد.</system:String>
-    <system:String x:Key="AboutFeatures2">• استخراج وتصدير التقارير الإحصائية بصيغ PDF و Excel.</system:String>
-    <system:String x:Key="AboutFeatures3">• إدارة المستخدمين بصلاحيات وأدوار مخصصة.</system:String>
-    <system:String x:Key="AboutFeatures4">• نظام تنبيهات مبكر للمصادر منتهية الصلاحية.</system:String>
-    <system:String x:Key="AboutDesignerTitle">معلومات المُصمم والمطور</system:String>
-    <system:String x:Key="AboutRights">جميع الحقوق محفوظة © 2026 مصادر</system:String>
-    <system:String x:Key="AboutSidebarDesc">تم التصميم ليتوافق مع متطلبات الرقابة الإشعاعية ويعمل بكفاءة عالية على أجهزة الكمبيوتر دون الحاجة لموارد كبيرة.</system:String>
+
+    <!-- Header &amp; Mission -->
+    <system:String x:Key="AboutHeaderTitle">منظومة مصادر — Sources System</system:String>
+    <system:String x:Key="AboutHeaderSubtitle">المنظومة المتكاملة للرقابة الصارمة وتتبع المصادر والنظائر المشعة</system:String>
+    <system:String x:Key="AboutHeaderTagline">الأمان الإشعاعي • الرقابة المؤسسية • الحسابات النووية الدقيقة</system:String>
+    <system:String x:Key="AboutMissionTitle">الرسالة والغاية التشغيلية</system:String>
+    <system:String x:Key="AboutMissionText">صُممت منظومة مصادر لتوفير رقابة إشعاعية صارمة وموثوقية عالية في تتبع وحصر حركة المصادر والنظائر المشعة في البيئات البحثية والمؤسسية، بما يضمن أعلى معايير السلامة والأمان وسرعة اتخاذ القرار وتوثيق المعاملات الإشعاعية بدقة متناهية.</system:String>
+
+    <!-- Compliance &amp; Tech Specs -->
+    <system:String x:Key="AboutComplianceTitle">معايير الالتزام والبيئة التقنية</system:String>
+    <system:String x:Key="AboutStandardIaeaTitle">المعيار الدولي للسلامة</system:String>
+    <system:String x:Key="AboutStandardIaeaDesc">IAEA Categorization of Radioactive Sources (RS-G-1.9)</system:String>
+    <system:String x:Key="AboutDatabaseEngineTitle">محرك قاعدة البيانات</system:String>
+    <system:String x:Key="AboutDatabaseEngineDesc">SQLite 3 (محلي مشفر ومستقل للبيانات الحساسة)</system:String>
+    <system:String x:Key="AboutFrameworkTitle">البيئة والتقنية</system:String>
+    <system:String x:Key="AboutFrameworkDesc">WPF / .NET 8 (هندسة مكتبية عالية الاستقرار)</system:String>
+    <system:String x:Key="AboutReleaseYearTitle">سنة وحالة الإصدار</system:String>
+    <system:String x:Key="AboutReleaseYearDesc">2026 (النسخة المستقرة المعتمدة)</system:String>
+
+    <!-- Core Capabilities -->
+    <system:String x:Key="AboutCapabilitiesHeader">أبرز القدرات الوظيفية للمنظومة</system:String>
+    <system:String x:Key="AboutCap1Title">تتبع التحلل والنشاط الإشعاعي</system:String>
+    <system:String x:Key="AboutCap1Desc">حساب فوري لتلاشي النشاط الإشعاعي وفق قانون التحلل الأسي وعمر النصف الدقيق لكل نظير.</system:String>
+    <system:String x:Key="AboutCap2Title">نظام التنبيهات الذكي وعمر النصف</system:String>
+    <system:String x:Key="AboutCap2Desc">مراقبة آلية واستباقية للمصادر المنتهية، العهد المعارة المتأخرة، وتجاوز حدود النشاط الحرجة.</system:String>
+    <system:String x:Key="AboutCap3Title">النسخ الاحتياطي والتعافي التلقائي</system:String>
+    <system:String x:Key="AboutCap3Desc">جدولة ذكية للنسخ الاحتياطي وتدوير تلقائي للملفات مع إمكانية استعادة فورية بضغطة واحدة.</system:String>
+    <system:String x:Key="AboutCap4Title">إدارة المستخدمين وسجل التدقيق</system:String>
+    <system:String x:Key="AboutCap4Desc">تحكم محكم في الصلاحيات والأدوار مع توثيق زمني شامل لكل عملية إدخال أو تعديل أو استعارة.</system:String>
+
+    <!-- Beneficiary (TNRC) -->
+    <system:String x:Key="AboutBeneficiaryTitle">الجهة المستفيدة</system:String>
+    <system:String x:Key="AboutBeneficiaryOrgName">مركز البحوث النووية - تاجوراء</system:String>
+    <system:String x:Key="AboutBeneficiaryOrgEn">TNRC | Tajoura Nuclear Research Center</system:String>
+    <system:String x:Key="AboutBeneficiaryDesc">طُوّرت المنظومة خصيصاً لتلبية متطلبات الرقابة الميدانية وإدارة المصادر والنظائر المشعة لدى مركز البحوث النووية - تاجوراء، لضمان أعلى مستويات الأمان الإشعاعي والحوكمة المؤسسية.</system:String>
+
+    <!-- Development &amp; Engineering -->
+    <system:String x:Key="AboutDevTeamTitle">التصميم والتطوير والتنفيذ</system:String>
+    <system:String x:Key="AboutLeadEngineer1">م . ادريس فتح الله الهرى</system:String>
+    <system:String x:Key="AboutLeadRole1">هندسة النظم والتطوير البرمجي</system:String>
+    <system:String x:Key="AboutLeadEngineer2">م . رضا المريمى</system:String>
+    <system:String x:Key="AboutLeadRole2">التحليل الفني وإدارة المتطلبات</system:String>
+    <system:String x:Key="AboutRightsText">جميع الحقوق محفوظة © 2026 لمنظومة مصادر ومركز البحوث النووية - تاجوراء</system:String>
 
     <!-- Backup Settings -->
     <system:String x:Key="TabGeneral">العام</system:String>
@@ -547,30 +577,183 @@
     
     <!-- Help View Strings -->
     <system:String x:Key="TitleHelp">دليل مستخدم المنظومة</system:String>
-    <system:String x:Key="TitleHelpTopics">المواضيع</system:String>
-    <system:String x:Key="HelpSubtitle">دليل شامل يساعدك على التنقل واستخدام جميع ميزات المنظومة بفعالية</system:String>
+    <system:String x:Key="TitleHelpTopics">مواضيع الدليل</system:String>
+    <system:String x:Key="HelpSubtitle">دليل تدريبي وتطبيقي شامل لإتقان العمل على منظومة مصادر وفق أعلى معايير السلامة</system:String>
+    <system:String x:Key="HelpFilterAll">جميع المواضيع</system:String>
+    <system:String x:Key="HelpFilterStorekeeper">دليل أمين المستودع</system:String>
+    <system:String x:Key="HelpFilterSafetyOfficer">دليل مسؤول الوقاية والمدير</system:String>
+    <system:String x:Key="HelpSearchPlaceholder">ابحث في مواضيع ودليل المساعدة...</system:String>
+    <system:String x:Key="HelpBtnGoToSection">الانتقال إلى هذه الشاشة الآن</system:String>
+    <system:String x:Key="HelpBtnClearSearch">مسح البحث</system:String>
+    <system:String x:Key="HelpNoResultsTitle">لم يتم العثور على أي موضوع يطابق بحثك</system:String>
+    <system:String x:Key="HelpNoResultsDesc">جرب البحث بكلمات أخرى أو اختر "جميع المواضيع" من القائمة أعلاه.</system:String>
 
-    <!-- Help Topics (Arabic) -->
-    <system:String x:Key="HelpTopicIntroTitle">1. مقدمة عن النظام</system:String>
-    <system:String x:Key="HelpTopicIntroContent">مرحباً بك في منظومة مصادر.&#xA;&#xA;تم تصميم هذا النظام لإدارة وتتبع المصادر المشعة بشكل احترافي وسلس. من خلال هذا الدليل، ستتعلم كيفية التنقل بين أقسام المنظومة، إدارة الجرد، التعامل مع طلبات الاستعارة، واستخراج التقارير الشاملة.&#xA;&#xA;استخدم القائمة الجانبية للتنقل بين وحدات النظام المختلفة. يحتوي الشريط العلوي على جرس التنبيهات وزر طي القائمة الجانبية لتوفير مساحة عرض أكبر.</system:String>
+    <!-- 1. Intro -->
+    <system:String x:Key="HelpTopicIntroTitle">1. مقدمة عن المنظومة</system:String>
+    <system:String x:Key="HelpTopicIntroSubtitle">دليل البداية السريعة والتعرف على واجهة الاستخدام ومكونات المنظومة</system:String>
+    <system:String x:Key="HelpIntroLeadText">مرحباً بك في منظومة مصادر — المنصة المتكاملة لإدارة وتتبع وجرد المصادر المشعة ومراقبة الاضمحلال الإشعاعي بأعلى معايير الدقة والسلامة المهنية.</system:String>
+    <system:String x:Key="HelpIntroSectionWorkflow">كيف تبدأ العمل على المنظومة؟</system:String>
+    <system:String x:Key="HelpIntroStep1Title">تسجيل الدخول والتحقق</system:String>
+    <system:String x:Key="HelpIntroStep1Desc">أدخل اسم المستخدم وكلمة المرور المسجلة لك لدى المشرف. يمكنك تفعيل خاصية "تذكرني" لتسجيل الدخول السريع في الجلسات القادمة.</system:String>
+    <system:String x:Key="HelpIntroStep2Title">استعراض لوحة القيادة</system:String>
+    <system:String x:Key="HelpIntroStep2Desc">بمجرد الدخول، تظهر لك لوحة القيادة التفاعلية التي تمنحك ملخصاً إحصائياً شاملاً للمصادر النشطة والمخزنة وحالات التنبيه الفورية.</system:String>
+    <system:String x:Key="HelpIntroStep3Title">استخدام شريط التنقل السفلي</system:String>
+    <system:String x:Key="HelpIntroStep3Desc">الشريط السفلي يتيح لك الوصول الفوري لجميع وحدات المنظومة المسموح لك بالدخول إليها وفق صلاحيات حسابك مع تأثيرات بصرية تفاعلية.</system:String>
+    <system:String x:Key="HelpIntroTip1">💡 نصيحة عملية: يمكنك تصغير شريط التنقل السفلي في أي وقت بالضغط على أيقونة القائمة (☰) بالركن السفلي لتوسيع مساحة عرض الجداول والشاشات الكبيرة.</system:String>
+    <system:String x:Key="HelpIntroSectionUI">عناصر الواجهة الرئيسية</system:String>
+    <system:String x:Key="HelpIntroBullet1">شريط التنقل السفلي: يضم أيقونات الأقسام مع دعم التكبير والتركيز عند المرور (Dock Effect).</system:String>
+    <system:String x:Key="HelpIntroBullet2">جرس التنبيهات العلوي: يعرض فورياً المصادر التي تجاوزت 5 أو 6 فترات نصف عمر وطلبات الاستعارة المتأخرة.</system:String>
+    <system:String x:Key="HelpIntroBullet3">زر المظهر (الوضع الداكن/الفاتح): يتيح لك التبديل الفوري مع ملاءمة مريحة للعين في كافة ظروف الإضاءة.</system:String>
 
-    <system:String x:Key="HelpTopicDashboardTitle">2. لوحة القيادة</system:String>
-    <system:String x:Key="HelpTopicDashboardContent">توفر لوحة القيادة نظرة عامة وشاملة لحالة النظام بأكمله.&#xA;&#xA;أهم الخصائص:&#xA;• بطاقات المؤشرات (KPI): تعرض إجمالي عدد المصادر، تفصيل النشط والمخزن، وإجمالي النشاط الإشعاعي.&#xA;• التنبيهات الحديثة: تسلط الضوء على العناصر التي تتطلب تدخلاً فورياً (مثل المصادر التي انخفض نشاطها الإشعاعي بعد مرور 6 فترات نصف عمر أو الاستعارات المتأخرة).&#xA;• الرسوم البيانية: تعرض توزيع النشاط الإشعاعي بمرور الوقت وتوزيع النظائر المشعة.</system:String>
+    <!-- 2. Dashboard -->
+    <system:String x:Key="HelpTopicDashboardTitle">2. لوحة القيادة والإحصائيات</system:String>
+    <system:String x:Key="HelpTopicDashboardSubtitle">نظرة شاملة ومؤشرات حية لمخزون المواد المشعة وحالات التنبيه</system:String>
+    <system:String x:Key="HelpBtnGoToDashboard">الانتقال إلى لوحة القيادة</system:String>
+    <system:String x:Key="HelpDashboardLeadText">توفر لوحة القيادة لمدير المنشأة ومسؤول الوقاية الإشعاعية لوحة تحكم مركزية لمراقبة النشاط الإجمالي، المصادر الحرجة، وحركة الاستعارة النشطة لحظة بلحظة.</system:String>
+    <system:String x:Key="HelpDashboardSectionKpi">بطاقات المؤشرات الحيوية (KPIs)</system:String>
+    <system:String x:Key="HelpDashboardBullet1">إجمالي المصادر المسجلة: العدد الكلي للمصادر في قاعدة البيانات مع تصنيف حالتها (نشط، مخزن، نفايات).</system:String>
+    <system:String x:Key="HelpDashboardBullet2">إجمالي النشاط الإشعاعي الفعلي: مجموع النشاط المحسوب حالياً لجميع المصادر بوحدة Becquerel أو Curie.</system:String>
+    <system:String x:Key="HelpDashboardBullet3">المصادر التي تحتاج إجراء: يسلط الضوء على المصادر التي انخفض نشاطها الإشعاعي بعد مرور 6 فترات نصف عمر أو متأخرة الإرجاع.</system:String>
+    <system:String x:Key="HelpDashboardSectionCharts">الرسوم البيانية التفاعلية</system:String>
+    <system:String x:Key="HelpDashboardStep1Title">رسم توزيع النظائر المشعة</system:String>
+    <system:String x:Key="HelpDashboardStep1Desc">يعرض حصة كل نظير مشع في المنشأة (مثل Cs-137، Co-60، Am-241) ونسبته المئوية في إجمالي المخزون.</system:String>
+    <system:String x:Key="HelpDashboardStep2Title">رسم توزيع النشاط الإشعاعي الزمني</system:String>
+    <system:String x:Key="HelpDashboardStep2Desc">يوضح معدل اضمحلال النشاط الإشعاعي الإجمالي وتوقعات الانخفاض المستقبلية على مدى زمني واسع.</system:String>
+    <system:String x:Key="HelpDashboardTip1">💡 ممارسة موصى بها: راجع مؤشر "تحتاج إجراء" في بداية كل نوبة عمل لمعالجة المصادر التي تتطلب إعادة معايرة أو ترتيبات التخلص الآمن.</system:String>
 
-    <system:String x:Key="HelpTopicRadioisotopesTitle">3. النظائر المشعة</system:String>
-    <system:String x:Key="HelpTopicRadioisotopesContent">تتيح لك وحدة النظائر المشعة إدارة أنواع المواد المشعة المستخدمة في منشأتك.&#xA;&#xA;طريقة الاستخدام:&#xA;• الإضافة: اضغط على "إضافة نظير جديد"، وأدخل الرمز (مثل Cs-137)، والاسم، وعمر النصف.&#xA;• التعديل/الحذف: استخدم أزرار الإجراءات بجانب كل نظير في القائمة لتعديل البيانات أو حذفها.</system:String>
+    <!-- 3. Radioisotopes -->
+    <system:String x:Key="HelpTopicRadioisotopesTitle">3. النظائر المشعة ونظام التنبيهات</system:String>
+    <system:String x:Key="HelpTopicRadioisotopesSubtitle">إدارة النظائر، جداول نصف العمر، والمعادلات الفيزيائية لحساب التنبيهات</system:String>
+    <system:String x:Key="HelpBtnGoToRadioisotopes">الانتقال إلى شاشة النظائر المشعة</system:String>
+    <system:String x:Key="HelpRadioisotopesLeadText">قاعدة بيانات النظائر هي المرجع الفيزيائي للمنظومة؛ حيث تعتمد كافة حسابات الاضمحلال وتواريخ التحذير على قيم نصف العمر ونوع الإشعاع وطاقة الانبعاث المسجلة لكل نظير.</system:String>
+    <system:String x:Key="HelpRadioisotopesSectionAlerts">المنطق الفيزيائي لنظام التنبيهات الإشعاعية</system:String>
+    <system:String x:Key="HelpRadioisotopesStep1Title">مرحلة التحذير المبكر (5 إلى 6 أضعاف عمر النصف)</system:String>
+    <system:String x:Key="HelpRadioisotopesStep1Desc">عندما يمر زمن بين 5 و 6 فترات نصف عمر (t ≥ 5 × T½)، يكون النشاط قد انخفض إلى أقل من 3.125% من قيمته الابتدائية، ويصدر النظام تنبيهاً باللون الأصفر (تحذير انخفاض النشاط).</system:String>
+    <system:String x:Key="HelpRadioisotopesStep2Title">المرحلة الحرجة (≥ 6 أضعاف عمر النصف)</system:String>
+    <system:String x:Key="HelpRadioisotopesStep2Desc">عندما يتجاوز الزمن 6 أضعاف عمر النصف (t ≥ 6 × T½)، يتبقى أقل من 1.56% من النشاط الأصلي، مما يجعل المصدر غير ملائم للاستخدام المخبري القياسي ويصدر تنبيهاً أحمر حرجاً يوصي بالعزل أو الاستبدال.</system:String>
+    <system:String x:Key="HelpRadioisotopesStep3Title">المصادر متعددة النظائر (Multi-isotope Rule)</system:String>
+    <system:String x:Key="HelpRadioisotopesStep3Desc">في حال احتواء المصدر على أكثر من نظير، يعتمد محرك التنبيهات على "أسرع نظير تحللاً" (النظير صاحب أقصر نصف عمر) لتحديد زمن التنبيه لضمان أقصى درجات اليقظة والأمان.</system:String>
+    <system:String x:Key="HelpRadioisotopesWarning1">⚠ تنبيه هام: لا يمكن حذف نظير مشع إذا كان مرتبطاً بمصادر مسجلة في الجرد؛ يجب تعديل أو نقل المصادر المرتبطة أولاً.</system:String>
 
-    <system:String x:Key="HelpTopicSourcesTitle">4. جرد المصادر</system:String>
-    <system:String x:Key="HelpTopicSourcesContent">هذا القسم هو قلب منظومة مصادر، حيث يتم تتبع جميع المصادر المشعة الفعلية.&#xA;&#xA;إضافة مصدر:&#xA;1. انتقل لقسم المصادر واضغط على "إضافة مصدر جديد".&#xA;2. قم بتعبئة الحقول المطلوبة: الرقم التشغيلي، النظير، النشاط الابتدائي ووحدته، والجهة المصنعة، وموقع التخزين.&#xA;3. يقوم النظام تلقائياً بحساب "النشاط الحالي" بناءً على عمر النصف التابع للنظير.&#xA;&#xA;إدارة المصادر:&#xA;• استخدم زر "تعديل" لتغيير الحالة (مستخدم، مخزن، نفايات).&#xA;• لعرض السجل الكامل للمصدر، اضغط على تفاصيل المصدر.</system:String>
+    <!-- 4. Sources -->
+    <system:String x:Key="HelpTopicSourcesTitle">4. جرد المصادر وسيناريوهات الاستلام</system:String>
+    <system:String x:Key="HelpTopicSourcesSubtitle">دليل استلام، فحص، معايرة، وتسجيل المصادر المشعة في المنظومة</system:String>
+    <system:String x:Key="HelpBtnGoToSources">الانتقال إلى جرد المصادر</system:String>
+    <system:String x:Key="HelpSourcesLeadText">يمثل جرد المصادر القلب النابض للمنظومة، حيث يتم تسجيل وتتبع كل قطعة إشعاعية بدقة فائقة منذ وصولها للمنشأة وحتى خروجها أو استهلاكها.</system:String>
+    <system:String x:Key="HelpSourcesSectionScenario">سيناريو عمل واقعي: استلام وفحص مصدر سيزيوم Cs-137 جديد</system:String>
+    <system:String x:Key="HelpSourcesStep1Title">الخطوة 1: الفحص المادي وتدقيق شهادة المعايرة</system:String>
+    <system:String x:Key="HelpSourcesStep1Desc">تأكد من سلامة الحاوية الدرعية، وقارن الرقم التسلسلي (Serial Number) والنشاط الابتدائي وتاريخ المعايرة المذكور في شهادة المصنع مع لوحة بيانات المصدر.</system:String>
+    <system:String x:Key="HelpSourcesStep2Title">الخطوة 2: الدخول لشاشة المصادر والضغط على "إضافة مصدر جديد"</system:String>
+    <system:String x:Key="HelpSourcesStep2Desc">انتقل لقسم المصادر المشعة، واضغط على زر "إضافة مصدر جديد" في الترويسة لفتح نموذج التسجيل المنظم.</system:String>
+    <system:String x:Key="HelpSourcesStep3Title">الخطوة 3: تعبئة البيانات والخصائص الإشعاعية</system:String>
+    <system:String x:Key="HelpSourcesStep3Desc">أدخل الكود التشغيلي الداخلي (مثل CS-2026-01)، اختر النظير (Cs-137)، أدخل النشاط الابتدائي ووحدته (مثل 370 kBq أو 10 µCi)، وحدد تاريخ المعايرة الدقيق والموديل والجهة المصنعة.</system:String>
+    <system:String x:Key="HelpSourcesStep4Title">الخطوة 4: تحديد موقع التخزين الأولي وإرفاق الصورة</system:String>
+    <system:String x:Key="HelpSourcesStep4Desc">اختر الموقع أو القاصة المخصصة (مثل مستودع النظائر - قاصة A)، وأرفق صورة واضحة لشهادة المعايرة أو لوحة البيانات ثم اضغط حفظ.</system:String>
+    <system:String x:Key="HelpSourcesTip1">💡 الحساب التلقائي للنشاط: بمجرد حفظ المصدر، تحسب المنظومة النشاط الحالي لحظياً وتحدثه تلقائياً بناءً على قانون التحلل الإشعاعي: A(t) = A₀ · e^(-λt).</system:String>
 
-    <system:String x:Key="HelpTopicBorrowingTitle">5. نظام الاستعارة</system:String>
-    <system:String x:Key="HelpTopicBorrowingContent">إدارة طلبات استلام وإرجاع المصادر المشعة بين طاقم العمل.&#xA;&#xA;إنشاء طلب:&#xA;• اذهب إلى قسم الاستعارة واضغط على "طلب استعارة جديد".&#xA;• اختر المصدر، اسم المستعير، الغرض من الاستخدام، وتاريخ الإرجاع المتوقع.&#xA;&#xA;الموافقات والإرجاع:&#xA;• يستطيع المشرف "الموافقة" أو "الرفض" للطلبات المعلقة.&#xA;• بمجرد إعادة المصدر، يجب تسجيله كـ "مرتجع" ليعود النظام لحالته الطبيعية ويتم تحديث موقع المصدر الرئيسي.</system:String>
+    <!-- 5. Locations -->
+    <system:String x:Key="HelpTopicLocationsTitle">5. المواقع ومستودعات التخزين</system:String>
+    <system:String x:Key="HelpTopicLocationsSubtitle">تنظيم قاعات التخزين، القاصات المصفحة، وتتبع سعة وأماكن تموضع المصادر</system:String>
+    <system:String x:Key="HelpBtnGoToLocations">الانتقال إلى شاشة المواقع</system:String>
+    <system:String x:Key="HelpLocationsLeadText">تتيح لك وحدة المواقع تعريف وتوثيق كافة الأماكن المعتمدة لحفظ وتخزين المصادر المشعة، مما يسهل جردها ويضمن تطبيق اشتراطات السلامة والوقاية الإشعاعية.</system:String>
+    <system:String x:Key="HelpLocationsSectionGuide">إدارة وتنظيم مواقع التخزين</system:String>
+    <system:String x:Key="HelpLocationsStep1Title">إنشاء موقع تخزين جديد</system:String>
+    <system:String x:Key="HelpLocationsStep1Desc">اضغط على "إضافة موقع جديد"، وحدد اسم الموقع (مثل: مستودع النظائر المركزي، القاصة المصفحة 1)، والنوع (مستودع، قاصة، معمل، غرفة تدريب).</system:String>
+    <system:String x:Key="HelpLocationsStep2Title">تحديد سعة التخزين والمسؤول المباشر</system:String>
+    <system:String x:Key="HelpLocationsStep2Desc">أدخل السعة القصوى لعدد المصادر المسموح بتخزينها في هذا الموقع، وحدد اسم المسؤول المباشر لتثبيت المسؤولية الإدارية.</system:String>
+    <system:String x:Key="HelpLocationsStep3Title">مراقبة حركة المصادر وسعات الإشغال</system:String>
+    <system:String x:Key="HelpLocationsStep3Desc">تعرض لك الشاشة عدد المصادر الفعلية الموجودة بكل موقع حالياً مع إجمالي النشاط الإشعاعي المخزن به ومؤشرات التنبيه عند اقتراب امتلاء السعة.</system:String>
+    <system:String x:Key="HelpLocationsTip1">💡 نصيحة تنظيمية: قم بتسمية المواقع برموز واضحة تشمل رقم الغرفة ورقم القاصة (مثل: LAB-102-SAFE-A) لتسهيل عمليات التفتيش والجرد الدوري.</system:String>
 
-    <system:String x:Key="HelpTopicReportsTitle">6. التقارير والأنظمة</system:String>
-    <system:String x:Key="HelpTopicReportsContent">استخراج مستندات رسمية تلخص بيانات النظام بشكل دقيق.&#xA;&#xA;التقارير المتاحة:&#xA;• التقرير العام: تقرير شامل يدمج جميع التقارير في ملف واحد.&#xA;• تقرير الجرد: قائمة كاملة بجميع المصادر المسجلة.&#xA;• تقرير الاستعارة: سجل تاريخي لجميع عمليات الصرف والإرجاع.&#xA;• تنبيهات انخفاض النشاط: يسرد المصادر التي اضمحلت بشكل كبير أو انخفض نشاطها الإشعاعي بعد مرور 6 فترات نصف عمر.&#xA;&#xA;التصدير:&#xA;اضغط على أزرار PDF أو Excel أعلى الشاشة لتحميل التقرير المعروض حالياً.</system:String>
+    <!-- 6. Borrowing -->
+    <system:String x:Key="HelpTopicBorrowingTitle">6. نظام ودورة استعارة المصادر</system:String>
+    <system:String x:Key="HelpTopicBorrowingSubtitle">إجراءات طلب الاستعارة، مراجعة المشرف، التسليم، وتأكيد الاسترجاع</system:String>
+    <system:String x:Key="HelpBtnGoToBorrowing">الانتقال إلى شاشة الاستعارة</system:String>
+    <system:String x:Key="HelpBorrowingLeadText">ينظم نظام الاستعارة حركة تداول المصادر المشعة بين الفنيين والباحثين داخل المنشأة ويضمن وجود سجل تدقيق دائم وموثق لكل عملية استلام وتسليم.</system:String>
+    <system:String x:Key="HelpBorrowingSectionWorkflow">دورة الاستعارة الكاملة في 4 خطوات</system:String>
+    <system:String x:Key="HelpBorrowingStep1Title">1. إنشاء طلب الاستعارة</system:String>
+    <system:String x:Key="HelpBorrowingStep1Desc">يقوم الباحث أو الفني بالضغط على "طلب استعارة جديد"، واختيار المصدر المطلوب من المصادر المتاحة، وكتابة اسم المستعير والغرض وتاريخ الإرجاع المتوقع.</system:String>
+    <system:String x:Key="HelpBorrowingStep2Title">2. مراجعة المشرف والموافقة</system:String>
+    <system:String x:Key="HelpBorrowingStep2Desc">يقوم مسؤول الوقاية أو المشرف بمراجعة الطلب المعلق واتخاذ قرار "الموافقة" أو "الرفض" وفق اشتراطات السلامة وجدول العمل.</system:String>
+    <system:String x:Key="HelpBorrowingStep3Title">3. صرف وتسليم المصدر</system:String>
+    <system:String x:Key="HelpBorrowingStep3Desc">يقوم أمين المستودع بتسليم المصدر الفعلي وتأكيد تسليمه في المنظومة فتتحول الحالة إلى "مُسلَّم" (Delivered) وتنتقل مسؤولية الحيازة للمستعير.</system:String>
+    <system:String x:Key="HelpBorrowingStep4Title">4. الإرجاع وفحص السلامة</system:String>
+    <system:String x:Key="HelpBorrowingStep4Desc">عند انتهاء الاستخدام، يعاد المصدر للمستودع ويؤكد المسؤول استلامه فتتحول الحالة إلى "مُرتجع" (Returned) ويعود المصدر لجرد المخزن المتاح.</system:String>
+    <system:String x:Key="HelpBorrowingWarning1">⚠ متابعة التأخير: إذا تجاوز المستعير تاريخ الإرجاع المتوقع دون إعادة المصدر، يدرج الطلب تلقائياً في التنبيهات العاجلة ويظهر باللون الأحمر في لوحة القيادة وجرس التنبيهات.</system:String>
 
-    <system:String x:Key="HelpTopicSettingsTitle">7. الإعدادات والمستخدمين</system:String>
-    <system:String x:Key="HelpTopicSettingsContent">إدارة النظام وتهيئته الخاصة.&#xA;&#xA;إدارة المستخدمين:&#xA;• إنشاء حسابات جديدة وتحديد الصلاحيات (مدير النظام، مستخدم).&#xA;• تحدد الصلاحيات الأقسام التي يمكن للمستخدم الوصول إليها.&#xA;&#xA;إعدادات النظام:&#xA;• النسخ الاحتياطي: أخذ نسخة احتياطية من قواعد البيانات لضمان عدم فقدان البيانات.&#xA;• تغيير سمة التطبيق (الوضع الداكن / الفاتح) وتغيير لغة العرض المطابقة للنظام.</system:String>
+    <!-- 7. Activity Calculator -->
+    <system:String x:Key="HelpTopicCalculatorTitle">7. حاسبة النشاط وتتبع الاضمحلال</system:String>
+    <system:String x:Key="HelpTopicCalculatorSubtitle">أداة فيزيائية متطورة لحساب النشاط الحالي والمستقبلي وزمن الوصول للنشاط المستهدف</system:String>
+    <system:String x:Key="HelpBtnGoToCalculator">الانتقال إلى حاسبة النشاط</system:String>
+    <system:String x:Key="HelpCalculatorLeadText">حاسبة النشاط الإشعاعي هي أداة علمية مدمجة تتيح لك إجراء الحسابات النووية الفورية دون الحاجة إلى جداول حسابية يدوية خارجية مع دعم كافة الوحدات العالمية.</system:String>
+    <system:String x:Key="HelpCalculatorSectionFeatures">وظائف الحاسبة الرئيسية</system:String>
+    <system:String x:Key="HelpCalculatorStep1Title">1. حساب النشاط في أي تاريخ (الحالي أو المستقبلي)</system:String>
+    <system:String x:Key="HelpCalculatorStep1Desc">أدخل النشاط الابتدائي ونصف العمر وتاريخ المعايرة وتاريخ الهدف؛ لتحسب لك المنظومة النشاط بدقة بالغة مع دعم كافة الوحدات (Bq, kBq, MBq, GBq, Ci, mCi, µCi).</system:String>
+    <system:String x:Key="HelpCalculatorStep2Title">2. حساب الزمن اللازم للوصول لنشاط مستهدف</system:String>
+    <system:String x:Key="HelpCalculatorStep2Desc">أدخل النشاط المستهدف المطلوب، وستحسب لك الحاسبة المدة الزمنية الدقيقة (بالأيام والسنوات) والتاريخ المستقبلي الذي سيصل فيه المصدر لهذا المستوى.</system:String>
+    <system:String x:Key="HelpCalculatorStep3Title">3. التكامل المباشر مع قاعدة بيانات النظائر والمصادر</system:String>
+    <system:String x:Key="HelpCalculatorStep3Desc">يمكنك اختيار أي نظير أو مصدر مسجل في المنظومة ليتم تعبئة كافة ثوابته الفيزيائية ونصف العمر تلقائياً بضغطة زر واحدة.</system:String>
+    <system:String x:Key="HelpCalculatorExample1Title">المعادلة الفيزيائية للاضمحلال الإشعاعي</system:String>
+    <system:String x:Key="HelpCalculatorExample1Content">A(t) = A₀ × e^(-λ × t)&#xA;حيث:&#xA;λ = ln(2) / T½ = 0.693147 / نصف العمر&#xA;t = الفرق الزمني الدقيق بين تاريخ القياس وتاريخ المعايرة</system:String>
+
+    <!-- 8. Reports -->
+    <system:String x:Key="HelpTopicReportsTitle">8. مركز التقارير والرقابة</system:String>
+    <system:String x:Key="HelpTopicReportsSubtitle">استخراج السجلات الرسمية، تقارير الجرد، وسجلات الاستعارة بصيغتي PDF و Excel</system:String>
+    <system:String x:Key="HelpBtnGoToReports">الانتقال إلى مركز التقارير</system:String>
+    <system:String x:Key="HelpReportsLeadText">يوفر مركز التقارير أدوات تصدير موثوقة تلبي كافة متطلبات التفتيش والرقابة الوطنية والدولية للسلامة الإشعاعية بجودة طباعة عالية.</system:String>
+    <system:String x:Key="HelpReportsSectionTypes">أنواع التقارير المتوفرة في المنظومة</system:String>
+    <system:String x:Key="HelpReportsBullet1">📋 تقرير الجرد الشامل: بيان كامل بالمصادر المشعة المسجلة وخصائصها ومواقعها الحالية.</system:String>
+    <system:String x:Key="HelpReportsBullet2">🔄 تقرير حركة الاستعارة: سجل تاريخي مفصل لكافة طلبات الصرف والإرجاع مع أسماء المستعيرين والتواريخ.</system:String>
+    <system:String x:Key="HelpReportsBullet3">☢ تقرير النشاط الإشعاعي: بيان النشاط المحسوب الفعلي لكل مصدر ومقدار الاضمحلال المتبقي.</system:String>
+    <system:String x:Key="HelpReportsBullet4">⚠ تقرير المصادر المنخفضة والحرجة: قائمة بالمصادر التي تجاوزت 5 أو 6 فترات نصف عمر.</system:String>
+    <system:String x:Key="HelpReportsBullet5">📑 التقرير العام المجمع: وثيقة متكاملة تجمع كافة التقارير السابقة في مستند رسمي واحد.</system:String>
+    <system:String x:Key="HelpReportsTip1">💡 التصدير المباشر: يمكنك تصدير أي تقرير بنقرة واحدة إلى PDF احترافي جاهز للطباعة أو ملف Excel لتحليله إحصائياً ومشاركته مع الجهات الرقابية.</system:String>
+
+    <!-- 9. Settings -->
+    <system:String x:Key="HelpTopicSettingsTitle">9. الإعدادات وإدارة المستخدمين</system:String>
+    <system:String x:Key="HelpTopicSettingsSubtitle">الصلاحيات، الأمان، ثيمات الواجهة، والنسخ الاحتياطي التلقائي المركزي</system:String>
+    <system:String x:Key="HelpBtnGoToSettings">الانتقال إلى شاشة الإعدادات</system:String>
+    <system:String x:Key="HelpSettingsLeadText">تتيح لوحة الإعدادات لمدير النظام ضبط إعدادات الأمان، إدارة حسابات المستخدمين وصلاحياتهم، وضمان سلامة البيانات عبر النسخ الاحتياطي الدوري.</system:String>
+    <system:String x:Key="HelpSettingsSectionUsers">إدارة المستخدمين والأدوار</system:String>
+    <system:String x:Key="HelpSettingsStep1Title">إنشاء حساب وتعيين الصلاحيات</system:String>
+    <system:String x:Key="HelpSettingsStep1Desc">أدخل الاسم الكامل، اسم المستخدم، البريد، وكلمة المرور. حدد دور المستخدم (مدير أو مستخدم) وحدد الأقسام المسموح له بالوصول إليها والتعديل فيها.</system:String>
+    <system:String x:Key="HelpSettingsStep2Title">قفل الحسابات والأمان</system:String>
+    <system:String x:Key="HelpSettingsStep2Desc">توفر المنظومة حماية متقدمة ضد محاولات الاختراق، وقفل تلقائي للحساب بعد المحاولات الخاطئة، مع شاشة توقف وقفل خمول تلقائي بعد 15 دقيقة.</system:String>
+    <system:String x:Key="HelpSettingsSectionBackup">النسخ الاحتياطي التلقائي واليدوي</system:String>
+    <system:String x:Key="HelpSettingsStep3Title">خدمة النسخ الاحتياطي التلقائي</system:String>
+    <system:String x:Key="HelpSettingsStep3Desc">تقوم المنظومة بأخذ نسخ احتياطية تلقائية دورية في الخلفية إلى المجلد المحدد مع تدوير النسخ القديمة لضمان الحفاظ على البيانات دون استنزاف مساحة القرص.</system:String>
+    <system:String x:Key="HelpSettingsWarning1">⚠ تنبيه استعادة النسخة الاحتياطية: استعادة نسخة احتياطية سابقة ستستبدل البيانات الحالية بالكامل. احرص على أخذ نسخة حديثة قبل البدء بالاستعادة.</system:String>
+
+    <!-- 10. FAQ -->
+    <system:String x:Key="HelpTopicFaqTitle">10. الأسئلة الشائعة (FAQ)</system:String>
+    <system:String x:Key="HelpTopicFaqSubtitle">إجابات وافية لأبرز الأسئلة العملية والفيزيائية المتكررة</system:String>
+    <system:String x:Key="HelpFaqLeadText">جمعنا هنا أكثر الأسئلة شيوعاً التي يطرحها مستخدمو المنظومة الجدد والمشرفون حول تشغيل النظام وتفسير النتائج الفيزيائية ونظام التنبيهات.</system:String>
+    <system:String x:Key="HelpFaqSectionGeneral">الأسئلة الأكثر تكراراً</system:String>
+    <system:String x:Key="HelpFaqQ1">س1: كيف تحسب المنظومة النشاط الإشعاعي الحالي تلقائياً؟</system:String>
+    <system:String x:Key="HelpFaqA1">ج: تطبق المنظومة قانون التحلل الإشعاعي A(t) = A₀ · e^(-λt) لحظياً، بحساب الفارق الزمني الدقيق بين تاريخ المعايرة/الصنع المسجل وتاريخ اللحظة الراهنة مع ثابت الانحلال λ الخاص بالنظير.</system:String>
+    <system:String x:Key="HelpFaqQ2">س2: ما هو المنطق وراء تنبيهات فترات نصف العمر (5 و 6 أضعاف)؟</system:String>
+    <system:String x:Key="HelpFaqA2">ج: في الفيزياء الإشعاعية، بعد مرور 5 فترات نصف عمر يتبقى 3.125% من النشاط فيصدر تحذير أصفر، وبعد 6 فترات يتبقى أقل من 1.56% من النشاط الإشعاعي (وهو الحد المعياري المعتمد دولياً لاعتبار المصدر مستهلكاً أو متطلباً لإجراء استبدال/عزل) فيصدر تنبيه أحمر حرج.</system:String>
+    <system:String x:Key="HelpFaqQ3">س3: كيف يتم التعامل مع المصادر التي تحتوي على خليط من النظائر؟</system:String>
+    <system:String x:Key="HelpFaqA3">ج: تطبق المنظومة قاعدة "أسرع نظير تحللاً" (Shortest Half-Life Rule)، حيث يُعتمد نصف العمر الأقصر لحساب فترة التنبيه لضمان عدم إغفال أي انخفاض سريع في النشاط وتحقيق أقصى درجات الحيطة.</system:String>
+    <system:String x:Key="HelpFaqQ4">س4: هل يمكن تعديل بيانات مصدر بعد حفظه؟</system:String>
+    <system:String x:Key="HelpFaqA4">ج: نعم، يمكن للمستخدمين ذوي الصلاحية تعديل الموقع، الحالة، الملاحظات، أو صورة لوحة البيانات، بينما يتم تدقيق التعديلات الحساسة في سجل العمليات (Audit Log).</system:String>
+    <system:String x:Key="HelpFaqQ5">س5: ماذا يحدث عند انتهاء جلسة العمل أو ترك الجهاز دون استخدام؟</system:String>
+    <system:String x:Key="HelpFaqA5">ج: بعد 15 دقيقة من عدم النشاط، تفعل المنظومة شاشة التوقف وتغلق الجلسة تلقائياً لحماية سرية البيانات وسلامة السجلات.</system:String>
+
+    <!-- 11. What's New -->
+    <system:String x:Key="HelpTopicWhatsNewTitle">11. آخر التحديثات والميزات</system:String>
+    <system:String x:Key="HelpTopicWhatsNewSubtitle">سجل بأحدث التحسينات والميزات النوعية المضافة لمنظومة مصادر</system:String>
+    <system:String x:Key="HelpWhatsNewLeadText">نعمل باستمرار على تطوير وتحديث منظومة مصادر لتوفير تجربة مستخدم استثنائية وأعلى درجات الاعتمادية والدقة الفيزيائية والأمان.</system:String>
+    <system:String x:Key="HelpWhatsNewSectionRecent">أبرز الإضافات في الإصدار الحالي</system:String>
+    <system:String x:Key="HelpWhatsNew1Title">خدمة النسخ الاحتياطي التلقائي في الخلفية</system:String>
+    <system:String x:Key="HelpWhatsNew1Desc">نظام نسخ احتياطي حقيقي يعمل في الخلفية وفق جدول زمني مخصص مع إدارة تلقائية لمساحة التخزين وتدوير النسخ القديمة لضمان عدم فقدان أي بيانات.</system:String>
+    <system:String x:Key="HelpWhatsNew2Title">حاسبة النشاط الإشعاعي المتطورة</system:String>
+    <system:String x:Key="HelpWhatsNew2Desc">أداة فيزيائية تفاعلية متصلة بمحرك الاضمحلال المركزي لحساب النشاط المستقبلي وزمن الوصول للنشاط المستهدف والتحويل بين كافة الوحدات النووية.</system:String>
+    <system:String x:Key="HelpWhatsNew3Title">إعادة تصميم شاملة لشاشة المستخدمين وإدارة الصلاحيات</system:String>
+    <system:String x:Key="HelpWhatsNew3Desc">واجهة مستخدم عصرية توفر تحكماً دقيقاً بصلاحيات الوصول لكل قسم مع بطاقات أمان ومراقبة محاولات تسجيل الدخول غير المصرح بها.</system:String>
+    <system:String x:Key="HelpWhatsNew4Title">دعم كامل ومتزامن للمظهرين الداكن والفاتح</system:String>
+    <system:String x:Key="HelpWhatsNew4Desc">تناغم بصري كامل لجميع الشاشات والجداول والبطاقات لراحة العين مع تبديل فوري وحفظ للتفضيلات عبر جلسات العمل.</system:String>
+
 
     <system:String x:Key="CalcTitle">حاسبة النشاط الإشعاعي</system:String>
     <system:String x:Key="CalcSubtitle">حساب النشاط وتتبع الاضمحلال وفق قوانين الفيزياء النووية</system:String>

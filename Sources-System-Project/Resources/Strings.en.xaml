@@ -20,22 +20,52 @@
     <system:String x:Key="MenuLogout">Logout</system:String>
 
     <!-- About System -->
-    <system:String x:Key="AboutTitle">About System &#38; Designer</system:String>
+    <system:String x:Key="AboutTitle">About System</system:String>
     <system:String x:Key="AboutSystemTitle">About Sources System</system:String>
     <system:String x:Key="AboutSystemDesc">Sources is a smart, integrated software solution aimed at strict control and precise tracking of radioactive sources and isotopes. The system provides advanced tools for calculating radioactivity, managing the movement of sources, and linking them to users and locations.</system:String>
-    <system:String x:Key="AboutCapabilitiesTitle">Technical Capabilities</system:String>
-    <system:String x:Key="AboutCapabilities1">• Modern, interactive UI with Full Dark/Light mode support.</system:String>
-    <system:String x:Key="AboutCapabilities2">• Secure and reliable database management system for storage and retrieval.</system:String>
-    <system:String x:Key="AboutCapabilities3">• Bilingual interface (Arabic/English) allowing instant switching.</system:String>
-    <system:String x:Key="AboutCapabilities4">• Built-in radioactivity calculator based on decay laws.</system:String>
-    <system:String x:Key="AboutFeaturesTitle">Management Features</system:String>
-    <system:String x:Key="AboutFeatures1">• Comprehensive tracking of movement for all sources.</system:String>
-    <system:String x:Key="AboutFeatures2">• Extract and export statistical reports in PDF and Excel formats.</system:String>
-    <system:String x:Key="AboutFeatures3">• User management with custom roles and permissions.</system:String>
-    <system:String x:Key="AboutFeatures4">• Early warning system for expired sources.</system:String>
-    <system:String x:Key="AboutDesignerTitle">Designer &#38; Developer Info</system:String>
-    <system:String x:Key="AboutRights">All Rights Reserved © 2026 Sources</system:String>
-    <system:String x:Key="AboutSidebarDesc">Designed to comply with radiation control requirements and operate highly efficiently on computers without needing heavy resources.</system:String>
+
+    <!-- Header &amp; Mission -->
+    <system:String x:Key="AboutHeaderTitle">Sources System — منظومة مصادر</system:String>
+    <system:String x:Key="AboutHeaderSubtitle">Integrated System for Strict Control &amp; Precision Tracking of Radioactive Sources &amp; Isotopes</system:String>
+    <system:String x:Key="AboutHeaderTagline">Radiation Safety • Institutional Control • Precision Nuclear Calculations</system:String>
+    <system:String x:Key="AboutMissionTitle">Operational Mission &amp; Purpose</system:String>
+    <system:String x:Key="AboutMissionText">Sources System is engineered to deliver strict radiation control and high reliability in tracking and managing radioactive sources and isotopes across research and institutional environments, ensuring compliance with the highest safety standards and instant decision-making capabilities.</system:String>
+
+    <!-- Compliance &amp; Tech Specs -->
+    <system:String x:Key="AboutComplianceTitle">Compliance Standards &amp; Technical Specifications</system:String>
+    <system:String x:Key="AboutStandardIaeaTitle">International Safety Standard</system:String>
+    <system:String x:Key="AboutStandardIaeaDesc">IAEA Categorization of Radioactive Sources (RS-G-1.9)</system:String>
+    <system:String x:Key="AboutDatabaseEngineTitle">Database Engine</system:String>
+    <system:String x:Key="AboutDatabaseEngineDesc">SQLite 3 (Encrypted &amp; Isolated Local Storage for Sensitive Data)</system:String>
+    <system:String x:Key="AboutFrameworkTitle">Platform &amp; Framework</system:String>
+    <system:String x:Key="AboutFrameworkDesc">WPF / .NET 8 (High-Stability Windows Desktop Architecture)</system:String>
+    <system:String x:Key="AboutReleaseYearTitle">Release Year &amp; Status</system:String>
+    <system:String x:Key="AboutReleaseYearDesc">2026 (Certified Stable Release)</system:String>
+
+    <!-- Core Capabilities -->
+    <system:String x:Key="AboutCapabilitiesHeader">Core System Capabilities</system:String>
+    <system:String x:Key="AboutCap1Title">Radioactive Decay &amp; Activity Tracking</system:String>
+    <system:String x:Key="AboutCap1Desc">Instant radioactivity decay computation based on exponential decay laws and isotope half-lives.</system:String>
+    <system:String x:Key="AboutCap2Title">Smart Half-Life &amp; Overdue Alerts</system:String>
+    <system:String x:Key="AboutCap2Desc">Automated proactive monitoring for expiring sources, overdue loans, and critical activity thresholds.</system:String>
+    <system:String x:Key="AboutCap3Title">Automated Backup &amp; Recovery</system:String>
+    <system:String x:Key="AboutCap3Desc">Intelligent snapshot scheduling, automatic file rotation, and one-click database restore.</system:String>
+    <system:String x:Key="AboutCap4Title">User Permissions &amp; Full Audit Trail</system:String>
+    <system:String x:Key="AboutCap4Desc">Strict role-based access control with comprehensive chronological logging for all operations.</system:String>
+
+    <!-- Beneficiary (TNRC) -->
+    <system:String x:Key="AboutBeneficiaryTitle">Beneficiary Institution</system:String>
+    <system:String x:Key="AboutBeneficiaryOrgName">Tajoura Nuclear Research Center (TNRC)</system:String>
+    <system:String x:Key="AboutBeneficiaryOrgEn">TNRC | Tajoura Nuclear Research Center — Libya</system:String>
+    <system:String x:Key="AboutBeneficiaryDesc">The system was specifically engineered to meet field radiation control and radioactive isotope management requirements at Tajoura Nuclear Research Center, ensuring the highest standards of radiological safety and institutional governance.</system:String>
+
+    <!-- Development &amp; Engineering -->
+    <system:String x:Key="AboutDevTeamTitle">Design, Development &amp; Implementation</system:String>
+    <system:String x:Key="AboutLeadEngineer1">Eng. Edrees Fathallah El-Hery</system:String>
+    <system:String x:Key="AboutLeadRole1">Systems Engineering &amp; Software Development</system:String>
+    <system:String x:Key="AboutLeadEngineer2">Eng. Reda El-Mrimi</system:String>
+    <system:String x:Key="AboutLeadRole2">Technical Analysis &amp; Requirements Management</system:String>
+    <system:String x:Key="AboutRightsText">All Rights Reserved © 2026 Sources System &amp; Tajoura Nuclear Research Center</system:String>
 
     <!-- Backup Settings -->
     <system:String x:Key="TabGeneral">General</system:String>
@@ -549,30 +579,183 @@
     
     <!-- Help View Strings -->
     <system:String x:Key="TitleHelp">System User Guide</system:String>
-    <system:String x:Key="TitleHelpTopics">Topics</system:String>
-    <system:String x:Key="HelpSubtitle">A comprehensive guide to help you navigate and use all system features effectively</system:String>
-    
-    <!-- Help Topics -->
-    <system:String x:Key="HelpTopicIntroTitle">1. Introduction</system:String>
-    <system:String x:Key="HelpTopicIntroContent">Welcome to the Sources System.&#xA;&#xA;This system is designed to seamlessly manage and track radioactive sources. Using this guide, you will learn how to navigate the system, manage inventory, handle borrowing requests, and generate comprehensive reports.&#xA;&#xA;Use the sidebar on the right to navigate between different system modules. The top bar contains your notifications bell and the ability to collapse the sidebar for more screen space.</system:String>
+    <system:String x:Key="TitleHelpTopics">Guide Topics</system:String>
+    <system:String x:Key="HelpSubtitle">Comprehensive practical training guide to master Sources System operations and safety standards</system:String>
+    <system:String x:Key="HelpFilterAll">All Topics</system:String>
+    <system:String x:Key="HelpFilterStorekeeper">Storekeeper Guide</system:String>
+    <system:String x:Key="HelpFilterSafetyOfficer">Safety Officer &amp; Manager</system:String>
+    <system:String x:Key="HelpSearchPlaceholder">Search topics and guide content...</system:String>
+    <system:String x:Key="HelpBtnGoToSection">Go to this screen now</system:String>
+    <system:String x:Key="HelpBtnClearSearch">Clear Search</system:String>
+    <system:String x:Key="HelpNoResultsTitle">No matching topics found</system:String>
+    <system:String x:Key="HelpNoResultsDesc">Try searching for different keywords or select 'All Topics' from the menu above.</system:String>
 
-    <system:String x:Key="HelpTopicDashboardTitle">2. Dashboard</system:String>
-    <system:String x:Key="HelpTopicDashboardContent">The Dashboard provides a high-level overview of the entire system.&#xA;&#xA;Key Features:&#xA;• KPI Cards: Displays the total number of sources, active vs. stored breakdown, and total current activity.&#xA;• Recent Alerts: Highlights items requiring immediate attention (e.g., sources with low activity after 6 half-lives or overdue returns).&#xA;• Activity Charts: Visualizes the distribution of source activities over time and by isotope.</system:String>
+    <!-- 1. Intro -->
+    <system:String x:Key="HelpTopicIntroTitle">1. System Overview</system:String>
+    <system:String x:Key="HelpTopicIntroSubtitle">Quick start guide and system interface overview</system:String>
+    <system:String x:Key="HelpIntroLeadText">Welcome to Sources System — the integrated platform for managing, tracking, and inventorying radioactive sources with full safety compliance.</system:String>
+    <system:String x:Key="HelpIntroSectionWorkflow">How to Get Started?</system:String>
+    <system:String x:Key="HelpIntroStep1Title">Login and Verification</system:String>
+    <system:String x:Key="HelpIntroStep1Desc">Enter your assigned username and password. You can enable 'Remember Me' for quick access on your next sessions.</system:String>
+    <system:String x:Key="HelpIntroStep2Title">Explore the Dashboard</system:String>
+    <system:String x:Key="HelpIntroStep2Desc">Upon login, the dashboard gives a real-time statistical summary of active/stored sources, total radioactivity, and urgent alerts.</system:String>
+    <system:String x:Key="HelpIntroStep3Title">Use the Bottom Navigation Bar</system:String>
+    <system:String x:Key="HelpIntroStep3Desc">The bottom navigation bar provides instant access to all authorized modules with interactive visual focus effects.</system:String>
+    <system:String x:Key="HelpIntroTip1">💡 Practical Tip: You can collapse the bottom navigation bar anytime by clicking the menu icon (☰) at the corner to expand viewing space.</system:String>
+    <system:String x:Key="HelpIntroSectionUI">Key Interface Elements</system:String>
+    <system:String x:Key="HelpIntroBullet1">Bottom Navigation: Contains module buttons with smooth magnification dock effects.</system:String>
+    <system:String x:Key="HelpIntroBullet2">Top Notification Bell: Displays real-time alerts for overdue returns and decayed sources past 5 or 6 half-lives.</system:String>
+    <system:String x:Key="HelpIntroBullet3">Theme Switcher: Instant toggle between Dark and Light themes with eye comfort in all environments.</system:String>
 
-    <system:String x:Key="HelpTopicRadioisotopesTitle">3. Radioisotopes</system:String>
-    <system:String x:Key="HelpTopicRadioisotopesContent">The Radioisotopes module allows you to manage the types of radioactive materials used in your facility.&#xA;&#xA;Features:&#xA;• Add New: Click 'Add Isotope', enter the symbol (e.g., Cs-137), atomic number, mass number, and half-life.&#xA;• Edit/Delete: Use the action buttons next to each isotope in the list to modify or remove records.</system:String>
+    <!-- 2. Dashboard -->
+    <system:String x:Key="HelpTopicDashboardTitle">2. Dashboard &amp; Statistics</system:String>
+    <system:String x:Key="HelpTopicDashboardSubtitle">Comprehensive real-time KPIs and system alerts</system:String>
+    <system:String x:Key="HelpBtnGoToDashboard">Go to Dashboard</system:String>
+    <system:String x:Key="HelpDashboardLeadText">The Dashboard provides radiation safety officers and facility managers a centralized control view for total radioactivity, critical sources, and active borrowings in real time.</system:String>
+    <system:String x:Key="HelpDashboardSectionKpi">Key Performance Indicators (KPIs)</system:String>
+    <system:String x:Key="HelpDashboardBullet1">Total Registered Sources: Total count with status breakdown (Active, Stored, Waste).</system:String>
+    <system:String x:Key="HelpDashboardBullet2">Total Current Activity: Sum of decay-adjusted activity across all facility sources in Becquerels or Curies.</system:String>
+    <system:String x:Key="HelpDashboardBullet3">Sources Requiring Action: Highlights sources decayed past 6 half-lives or overdue return requests.</system:String>
+    <system:String x:Key="HelpDashboardSectionCharts">Interactive Visual Charts</system:String>
+    <system:String x:Key="HelpDashboardStep1Title">Radioisotope Distribution Chart</system:String>
+    <system:String x:Key="HelpDashboardStep1Desc">Displays the inventory breakdown and proportion of each radioisotope (e.g. Cs-137, Co-60, Am-241).</system:String>
+    <system:String x:Key="HelpDashboardStep2Title">Radioactivity Decay Over Time Chart</system:String>
+    <system:String x:Key="HelpDashboardStep2Desc">Illustrates overall decay rate trends and future activity projections across the facility.</system:String>
+    <system:String x:Key="HelpDashboardTip1">💡 Best Practice: Review the 'Requires Action' indicator at the start of each shift to handle sources requiring recalibration or safe disposal.</system:String>
 
-    <system:String x:Key="HelpTopicSourcesTitle">4. Sources Inventory</system:String>
-    <system:String x:Key="HelpTopicSourcesContent">The core of the Sources system. Here you track all physical radioactive sources.&#xA;&#xA;Adding a Source:&#xA;1. Navigate to the Sources section and click 'Add Source'.&#xA;2. Fill in the required fields: Source Code, Isotope, Initial Activity and its Unit, Manufacturer, and Location.&#xA;3. The system automatically calculates the Current Activity based on the isotope's half-life.&#xA;&#xA;Managing Sources:&#xA;• Use the 'Edit' button to update details like Status (Active, Stored, Disposed).&#xA;• View complete tracking history by clicking on the source details.</system:String>
+    <!-- 3. Radioisotopes -->
+    <system:String x:Key="HelpTopicRadioisotopesTitle">3. Radioisotopes &amp; Alert Engine</system:String>
+    <system:String x:Key="HelpTopicRadioisotopesSubtitle">Managing isotopes, half-life tables, and physical alert thresholds</system:String>
+    <system:String x:Key="HelpBtnGoToRadioisotopes">Go to Radioisotopes</system:String>
+    <system:String x:Key="HelpRadioisotopesLeadText">The radioisotopes database serves as the physical benchmark for all decay calculations and alert intervals based on half-life and radiation type.</system:String>
+    <system:String x:Key="HelpRadioisotopesSectionAlerts">Physics Logic of the Radiation Alert System</system:String>
+    <system:String x:Key="HelpRadioisotopesStep1Title">Early Warning Phase (5 to 6 Half-lives)</system:String>
+    <system:String x:Key="HelpRadioisotopesStep1Desc">When elapsed time t is between 5 and 6 half-lives (t ≥ 5 × T½), activity drops below 3.125% of initial value, triggering a yellow low-activity warning.</system:String>
+    <system:String x:Key="HelpRadioisotopesStep2Title">Critical Threshold (≥ 6 Half-lives)</system:String>
+    <system:String x:Key="HelpRadioisotopesStep2Desc">When elapsed time exceeds 6 half-lives (t ≥ 6 × T½), remaining activity drops below 1.56%, rendering the source unsuitable for standard use and issuing a critical red alert for disposal/isolation.</system:String>
+    <system:String x:Key="HelpRadioisotopesStep3Title">Multi-isotope Calculation Rule</system:String>
+    <system:String x:Key="HelpRadioisotopesStep3Desc">For composite sources containing multiple radioisotopes, the alert engine uses the shortest half-life isotope to ensure maximum vigilance and safety.</system:String>
+    <system:String x:Key="HelpRadioisotopesWarning1">⚠ Important Notice: An isotope linked to registered sources cannot be deleted until its associated sources are reassigned or removed.</system:String>
 
-    <system:String x:Key="HelpTopicBorrowingTitle">5. Borrowing System</system:String>
-    <system:String x:Key="HelpTopicBorrowingContent">Manage the checkout and return of radioactive sources.&#xA;&#xA;Creating a Request:&#xA;• Go to the Borrowing section and click 'New Request'.&#xA;• Select the source, the borrower's name, the purpose of use, and the expected return date.&#xA;&#xA;Approvals &amp; Returns:&#xA;• Supervisors can 'Approve' or 'Reject' pending requests.&#xA;• Once a source is returned, it must be marked as 'Returned' to update the primary inventory status.</system:String>
+    <!-- 4. Sources -->
+    <system:String x:Key="HelpTopicSourcesTitle">4. Sources Inventory &amp; Workflows</system:String>
+    <system:String x:Key="HelpTopicSourcesSubtitle">Receiving, inspecting, calibrating, and logging radioactive sources</system:String>
+    <system:String x:Key="HelpBtnGoToSources">Go to Sources Inventory</system:String>
+    <system:String x:Key="HelpSourcesLeadText">The inventory tracks each radioactive source with high precision from facility arrival through operational lifecycle to safe disposal.</system:String>
+    <system:String x:Key="HelpSourcesSectionScenario">Real-world Scenario: Receiving a New Cesium Cs-137 Source</system:String>
+    <system:String x:Key="HelpSourcesStep1Title">Step 1: Physical Inspection &amp; Certificate Verification</system:String>
+    <system:String x:Key="HelpSourcesStep1Desc">Verify shielded container integrity, match serial number, initial activity, and calibration date against the manufacturer certificate.</system:String>
+    <system:String x:Key="HelpSourcesStep2Title">Step 2: Open Sources Section &amp; Click 'Add New Source'</system:String>
+    <system:String x:Key="HelpSourcesStep2Desc">Navigate to Radioactive Sources section and click 'Add New Source' to open the registration form.</system:String>
+    <system:String x:Key="HelpSourcesStep3Title">Step 3: Fill Properties &amp; Radiological Constants</system:String>
+    <system:String x:Key="HelpSourcesStep3Desc">Input internal operational code (e.g. CS-2026-01), select isotope (Cs-137), enter initial activity &amp; unit (e.g. 370 kBq), and set exact calibration date.</system:String>
+    <system:String x:Key="HelpSourcesStep4Title">Step 4: Assign Storage Location &amp; Attach Image</system:String>
+    <system:String x:Key="HelpSourcesStep4Desc">Choose storage vault/shelf (e.g. Isotope Vault - Safe A), attach a clear photo of the certificate/data plate, and save.</system:String>
+    <system:String x:Key="HelpSourcesTip1">💡 Automatic Decay: The system continuously calculates current activity using decay law: A(t) = A₀ · e^(-λt) without manual intervention.</system:String>
 
-    <system:String x:Key="HelpTopicReportsTitle">6. Analytics &amp; Reports</system:String>
-    <system:String x:Key="HelpTopicReportsContent">Generate official documents summarizing system data.&#xA;&#xA;Available Reports:&#xA;• General Report: A comprehensive report combining all data below.&#xA;• Inventory Report: Full list of all registered sources.&#xA;• Borrowing Report: History of all source checkouts and returns.&#xA;• Low Activity Alerts: Lists sources that have decayed significantly or passed 6 half-lives.&#xA;&#xA;Exporting:&#xA;Click the PDF or Excel buttons at the top of the screen to download the currently viewed report.</system:String>
+    <!-- 5. Locations -->
+    <system:String x:Key="HelpTopicLocationsTitle">5. Storage Locations &amp; Vaults</system:String>
+    <system:String x:Key="HelpTopicLocationsSubtitle">Managing storage vaults, shielded safes, and location capacities</system:String>
+    <system:String x:Key="HelpBtnGoToLocations">Go to Locations</system:String>
+    <system:String x:Key="HelpLocationsLeadText">The Locations module manages all authorized storage vaults, shielded safes, and laboratories to ensure safe storage capacity compliance.</system:String>
+    <system:String x:Key="HelpLocationsSectionGuide">Managing Storage Locations</system:String>
+    <system:String x:Key="HelpLocationsStep1Title">Create New Storage Location</system:String>
+    <system:String x:Key="HelpLocationsStep1Desc">Click 'Add New Location', enter name (e.g. Central Shielded Vault, Safe 1), and select location type (Vault, Safe, Lab, Training Room).</system:String>
+    <system:String x:Key="HelpLocationsStep2Title">Set Capacity Limit &amp; Custodian</system:String>
+    <system:String x:Key="HelpLocationsStep2Desc">Specify maximum allowed source capacity and assign the responsible supervisor or custodian.</system:String>
+    <system:String x:Key="HelpLocationsStep3Title">Monitor Source Occupancy</system:String>
+    <system:String x:Key="HelpLocationsStep3Desc">View live source counts per location and total stored activity with alert indicators when approaching max capacity.</system:String>
+    <system:String x:Key="HelpLocationsTip1">💡 Organizational Tip: Name storage locations with clear room and safe codes (e.g. LAB-102-SAFE-A) for quick audit inspections.</system:String>
 
-    <system:String x:Key="HelpTopicSettingsTitle">7. Settings &amp; Users</system:String>
-    <system:String x:Key="HelpTopicSettingsContent">System Administration and Configuration.&#xA;&#xA;User Management:&#xA;• Create new accounts and assign roles (Admin, Supervisor, User).&#xA;• Roles determine which sections of the application are accessible.&#xA;&#xA;System Settings:&#xA;• Backup &amp; Restore database ensuring data integrity.&#xA;• Toggle Application Theme (Light/Dark mode) and Language.</system:String>
+    <!-- 6. Borrowing -->
+    <system:String x:Key="HelpTopicBorrowingTitle">6. Source Borrowing &amp; Circulation</system:String>
+    <system:String x:Key="HelpTopicBorrowingSubtitle">Borrow requests, supervisor approvals, delivery, and return confirmation</system:String>
+    <system:String x:Key="HelpBtnGoToBorrowing">Go to Borrowing</system:String>
+    <system:String x:Key="HelpBorrowingLeadText">Manages radioactive source checkout workflows between staff, ensuring a complete and permanent audit trail for every transfer.</system:String>
+    <system:String x:Key="HelpBorrowingSectionWorkflow">The 4-Stage Borrowing Lifecycle</system:String>
+    <system:String x:Key="HelpBorrowingStep1Title">1. Create Borrow Request</system:String>
+    <system:String x:Key="HelpBorrowingStep1Desc">Researcher creates request, selecting available source, borrower name, operational purpose, and expected return date.</system:String>
+    <system:String x:Key="HelpBorrowingStep2Title">2. Supervisor Review &amp; Approval</system:String>
+    <system:String x:Key="HelpBorrowingStep2Desc">Supervisor reviews pending request and approves/rejects based on safety compliance and lab schedule.</system:String>
+    <system:String x:Key="HelpBorrowingStep3Title">3. Source Delivery &amp; Handover</system:String>
+    <system:String x:Key="HelpBorrowingStep3Desc">Custodian hands over physical source and confirms delivery in the system, updating status to 'Delivered'.</system:String>
+    <system:String x:Key="HelpBorrowingStep4Title">4. Return &amp; Safety Confirmation</system:String>
+    <system:String x:Key="HelpBorrowingStep4Desc">Upon return, the officer confirms receipt, returning the source to available inventory status.</system:String>
+    <system:String x:Key="HelpBorrowingWarning1">⚠ Overdue Warning: Unreturned sources past expected return date automatically trigger urgent red alerts on Dashboard and top notification bell.</system:String>
+
+    <!-- 7. Activity Calculator -->
+    <system:String x:Key="HelpTopicCalculatorTitle">7. Activity &amp; Decay Calculator</system:String>
+    <system:String x:Key="HelpTopicCalculatorSubtitle">Advanced nuclear physics decay calculator and future activity projections</system:String>
+    <system:String x:Key="HelpBtnGoToCalculator">Go to Calculator</system:String>
+    <system:String x:Key="HelpCalculatorLeadText">The Activity Calculator provides instant decay and target-activity computations following nuclear physics laws with universal radiation unit support.</system:String>
+    <system:String x:Key="HelpCalculatorSectionFeatures">Core Calculator Capabilities</system:String>
+    <system:String x:Key="HelpCalculatorStep1Title">1. Calculate Activity at Any Date</system:String>
+    <system:String x:Key="HelpCalculatorStep1Desc">Input initial activity, half-life, calibration date, and target date for precise activity output in all standard units (Bq, kBq, MBq, GBq, Ci, mCi, µCi).</system:String>
+    <system:String x:Key="HelpCalculatorStep2Title">2. Calculate Time to Reach Target Activity</system:String>
+    <system:String x:Key="HelpCalculatorStep2Desc">Enter target activity to compute exact elapsed time (days/years) and the future calendar date when the source reaches that level.</system:String>
+    <system:String x:Key="HelpCalculatorStep3Title">3. Direct Database Integration</system:String>
+    <system:String x:Key="HelpCalculatorStep3Desc">Select any registered isotope or source to auto-populate all physical half-life constants with one click.</system:String>
+    <system:String x:Key="HelpCalculatorExample1Title">Radiological Decay Law Formula</system:String>
+    <system:String x:Key="HelpCalculatorExample1Content">A(t) = A₀ × e^(-λ × t)&#xA;Where:&#xA;λ = ln(2) / T½ = 0.693147 / Half-Life&#xA;t = Elapsed time between calibration date and measurement date</system:String>
+
+    <!-- 8. Reports -->
+    <system:String x:Key="HelpTopicReportsTitle">8. Reports &amp; Regulatory Auditing</system:String>
+    <system:String x:Key="HelpTopicReportsSubtitle">Official system records, inventory logs, and PDF/Excel exports</system:String>
+    <system:String x:Key="HelpBtnGoToReports">Go to Reports</system:String>
+    <system:String x:Key="HelpReportsLeadText">The Reports module produces official documents compliant with national and international radiation protection regulatory standards.</system:String>
+    <system:String x:Key="HelpReportsSectionTypes">Available Report Types</system:String>
+    <system:String x:Key="HelpReportsBullet1">📋 Comprehensive Inventory: Full listing of all radioactive sources, isotopes, and storage locations.</system:String>
+    <system:String x:Key="HelpReportsBullet2">🔄 Borrowing History: Full checkout and return history with borrower identities and timestamps.</system:String>
+    <system:String x:Key="HelpReportsBullet3">☢ Radioactive Activity Report: Current decay status and remaining activity per source.</system:String>
+    <system:String x:Key="HelpReportsBullet4">⚠ Low/Critical Activity Report: Sources exceeding 5 or 6 half-lives requiring action.</system:String>
+    <system:String x:Key="HelpReportsBullet5">📑 General Consolidated Report: Combines all above sections into a single master document.</system:String>
+    <system:String x:Key="HelpReportsTip1">💡 Instant Export: Export any report to print-ready PDF or Excel with one click for regulatory compliance audits.</system:String>
+
+    <!-- 9. Settings -->
+    <system:String x:Key="HelpTopicSettingsTitle">9. Settings, Users &amp; Backup</system:String>
+    <system:String x:Key="HelpTopicSettingsSubtitle">Permissions, security, UI themes, and centralized auto-backup</system:String>
+    <system:String x:Key="HelpBtnGoToSettings">Go to Settings</system:String>
+    <system:String x:Key="HelpSettingsLeadText">Settings allow system administrators to configure security, roles, and automated database backups to maintain zero data loss.</system:String>
+    <system:String x:Key="HelpSettingsSectionUsers">User &amp; Role Management</system:String>
+    <system:String x:Key="HelpSettingsStep1Title">Create Account &amp; Assign Roles</system:String>
+    <system:String x:Key="HelpSettingsStep1Desc">Enter full name, username, email, and password. Select role (Admin or User) and grant granular access to system sections.</system:String>
+    <system:String x:Key="HelpSettingsStep2Title">Account Locking &amp; Security</system:String>
+    <system:String x:Key="HelpSettingsStep2Desc">Includes brute-force lockout protection and automatic screensaver lock after 15 minutes of inactivity.</system:String>
+    <system:String x:Key="HelpSettingsSectionBackup">Automated &amp; Manual Backup</system:String>
+    <system:String x:Key="HelpSettingsStep3Title">Auto-Backup Background Engine</system:String>
+    <system:String x:Key="HelpSettingsStep3Desc">Performs scheduled background backups with retention policies to safeguard all records without exhausting disk space.</system:String>
+    <system:String x:Key="HelpSettingsWarning1">⚠ Backup Restore Notice: Restoring will overwrite existing database records. Always save a current backup first.</system:String>
+
+    <!-- 10. FAQ -->
+    <system:String x:Key="HelpTopicFaqTitle">10. Frequently Asked Questions (FAQ)</system:String>
+    <system:String x:Key="HelpTopicFaqSubtitle">Answers to common practical and physics-related questions</system:String>
+    <system:String x:Key="HelpFaqLeadText">Frequently asked questions by system users, laboratory technicians, and radiation safety officers regarding system operations and decay alerts.</system:String>
+    <system:String x:Key="HelpFaqSectionGeneral">Frequently Asked Questions</system:String>
+    <system:String x:Key="HelpFaqQ1">Q1: How does the system calculate current activity automatically?</system:String>
+    <system:String x:Key="HelpFaqA1">A: The system applies the decay law A(t) = A₀ · e^(-λt) in real-time, computing the exact elapsed time from calibration date with the isotope decay constant λ.</system:String>
+    <system:String x:Key="HelpFaqQ2">Q2: What is the logic behind the 5 and 6 half-life alerts?</system:String>
+    <system:String x:Key="HelpFaqA2">A: After 5 half-lives, 3.125% of activity remains (yellow warning); after 6 half-lives, &lt;1.56% remains (critical red alert for replacement/disposal based on international safety criteria).</system:String>
+    <system:String x:Key="HelpFaqQ3">Q3: How are multi-isotope composite sources handled in alerts?</system:String>
+    <system:String x:Key="HelpFaqA3">A: The system applies the shortest half-life rule among all isotopes in the source to trigger alert thresholds earliest for maximum safety.</system:String>
+    <system:String x:Key="HelpFaqQ4">Q4: Can source details be edited after saving?</system:String>
+    <system:String x:Key="HelpFaqA4">A: Yes, authorized users can edit location, status, notes, or data plate photo with all modifications tracked in the Audit Log.</system:String>
+    <system:String x:Key="HelpFaqQ5">Q5: What happens if the workstation is left unattended?</system:String>
+    <system:String x:Key="HelpFaqA5">A: After 15 minutes of inactivity, the system auto-locks and engages the screensaver for data security.</system:String>
+
+    <!-- 11. What's New -->
+    <system:String x:Key="HelpTopicWhatsNewTitle">11. What's New &amp; System Updates</system:String>
+    <system:String x:Key="HelpTopicWhatsNewSubtitle">Overview of recent improvements and new features in Sources System</system:String>
+    <system:String x:Key="HelpWhatsNewLeadText">We continuously improve Sources System to provide top-tier performance, reliability, physical precision, and security.</system:String>
+    <system:String x:Key="HelpWhatsNewSectionRecent">Key Features in the Current Release</system:String>
+    <system:String x:Key="HelpWhatsNew1Title">Automated Background Backup Engine</system:String>
+    <system:String x:Key="HelpWhatsNew1Desc">True background scheduled backup service with automated storage retention to safeguard all records against data loss.</system:String>
+    <system:String x:Key="HelpWhatsNew2Title">Integrated Nuclear Activity Calculator</system:String>
+    <system:String x:Key="HelpWhatsNew2Desc">Interactive decay computation tool connected to the central decay engine with full unit conversions and forward/backward calculations.</system:String>
+    <system:String x:Key="HelpWhatsNew3Title">Refreshed User &amp; Permission Management UI</system:String>
+    <system:String x:Key="HelpWhatsNew3Desc">Modern user management interface with granular section permissions, security cards, and failed-login monitors.</system:String>
+    <system:String x:Key="HelpWhatsNew4Title">Seamless Dark &amp; Light Theme Synchronization</system:String>
+    <system:String x:Key="HelpWhatsNew4Desc">Instant theme switching across all views and cards with eye comfort and persistent user preferences.</system:String>
+
 
     <system:String x:Key="CalcTitle">Radioactivity Activity Calculator</system:String>
     <system:String x:Key="CalcSubtitle">Calculate activity and track decay following nuclear physics laws</system:String>

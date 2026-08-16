@@ -5,154 +5,368 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d" 
-             d:DesignHeight="800" d:DesignWidth="1000">
+             d:DesignHeight="1050" d:DesignWidth="1100">
+
     <UserControl.Resources>
-        <!-- Card Style specific to this view to ensure uniformity -->
-        <Style TargetType="materialDesign:Card" BasedOn="{StaticResource {x:Type materialDesign:Card}}">
+        <!-- كارت موحد للمواصفات والقدرات -->
+        <Style x:Key="AboutFeatureCardStyle" TargetType="Border">
             <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
-            <Setter Property="UniformCornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="24"/>
-            <Setter Property="Margin" Value="0,0,0,16"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="16,14"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.05"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- كارت المواصفات الفنية المدمج -->
+        <Style x:Key="AboutSpecCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="14,12"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="6" ShadowDepth="1" Opacity="0.04"/>
+                </Setter.Value>
+            </Setter>
         </Style>
     </UserControl.Resources>
 
-    <Grid Margin="24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid MaxWidth="1050" Margin="24,20,24,32">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- 0: Hero Header -->
+                <RowDefinition Height="Auto"/> <!-- 1: Operational Mission -->
+                <RowDefinition Height="Auto"/> <!-- 2: Compliance & Specs -->
+                <RowDefinition Height="Auto"/> <!-- 3: Core Capabilities -->
+                <RowDefinition Height="Auto"/> <!-- 4: Beneficiary Institution (TNRC) -->
+                <RowDefinition Height="Auto"/> <!-- 5: Design & Engineering -->
+            </Grid.RowDefinitions>
 
-        <!-- Header Banner (مركز البحوث النووية - تاجوراء | TNRC) -->
-        <Border Grid.Row="0" Margin="0,0,0,24" Background="{DynamicResource PrimaryBrush}" CornerRadius="12" Padding="20,14">
-            <Grid>
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- 1. ترويسة رئيسية فاخرة (Hero Header)                    -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <Border Grid.Row="0" Margin="0,0,0,20" Background="{StaticResource PrimaryGradient}" CornerRadius="16" Padding="24,20">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="16" ShadowDepth="2" Opacity="0.18" Color="{StaticResource PrimaryDarkColor}"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- شعار المنظومة الأساسي في كادر أبيض أنيق بظل ناعم -->
+                    <Border Grid.Column="0" Width="80" Height="80" CornerRadius="16" Background="White" Margin="0,0,18,0" VerticalAlignment="Center">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.2" Color="Black"/>
+                        </Border.Effect>
+                        <Image Source="pack://siteoforigin:,,,/Assets/sources_logo.png"
+                               Stretch="Uniform"
+                               Margin="10"
+                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                    </Border>
+
+                    <!-- عناوين المنظومة والشعار -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="{DynamicResource AboutHeaderTitle}" FontSize="24" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock Text="{DynamicResource AboutHeaderSubtitle}" FontSize="13" FontWeight="SemiBold" Foreground="White" Opacity="0.95" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                        <Border Background="#25FFFFFF" CornerRadius="6" HorizontalAlignment="Left" Padding="8,3" Margin="0,8,0,0">
+                            <TextBlock Text="{DynamicResource AboutHeaderTagline}" FontSize="11" FontWeight="SemiBold" Foreground="White" Opacity="0.9"/>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- بادج الإصدار والحالة -->
+                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="16,0,0,0">
+                        <Border Background="#26FFFFFF" CornerRadius="10" Padding="14,8" FlowDirection="LeftToRight">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <materialDesign:PackIcon Kind="ShieldCheck" Width="18" Height="18" Foreground="White" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <TextBlock Text="{Binding Version}" FontSize="13" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- 2. بطاقة الرسالة التشغيلية (Operational Mission)       -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <Border Grid.Row="1" Margin="0,0,0,18" Style="{StaticResource AboutFeatureCardStyle}" BorderBrush="{DynamicResource PrimaryLightBrush}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Width="44" Height="44" CornerRadius="10" Background="{DynamicResource WindowBackground}" Margin="0,0,14,0" VerticalAlignment="Top">
+                        <materialDesign:PackIcon Kind="ShieldLockOutline" Width="26" Height="26" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="{DynamicResource AboutMissionTitle}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,0,4"/>
+                        <TextBlock Text="{DynamicResource AboutMissionText}" FontSize="13" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" LineHeight="22"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- 3. شبكة معايير الالتزام والمواصفات الفنية (4 بطاقات)    -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <Grid Grid.Row="2" Margin="0,0,0,18">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Right Side: Nuclear Research Center Logo & Title -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Image Source="pack://siteoforigin:,,,/Assets/tnrc_3d_final.png" 
-                           Width="65" Height="65" 
-                           Stretch="Uniform" 
-                           RenderOptions.BitmapScalingMode="HighQuality" 
-                           Margin="0,0,14,0" 
-                           VerticalAlignment="Center">
-                        <Image.Effect>
-                            <DropShadowEffect BlurRadius="10" Color="{StaticResource SecondaryColor}" Opacity="0.4" ShadowDepth="1"/>
-                        </Image.Effect>
-                    </Image>
-                    
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="مركز البحوث النووية - تاجوراء" FontSize="22" FontWeight="Bold" Foreground="White"/>
-                        <TextBlock Text="TNRC | Tajoura Nuclear Research Center" FontSize="13" FontWeight="Bold" Foreground="White" Opacity="0.9" FlowDirection="LeftToRight" Margin="0,3,0,0"/>
+                <!-- المعيار الدولي IAEA -->
+                <Border Grid.Column="0" Style="{StaticResource AboutSpecCardStyle}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <materialDesign:PackIcon Kind="Atom" Width="18" Height="18" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="{DynamicResource AboutStandardIaeaTitle}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <TextBlock Text="{DynamicResource AboutStandardIaeaDesc}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" LineHeight="16"/>
                     </StackPanel>
-                </StackPanel>
+                </Border>
 
-                <!-- Left Side: System Version Badge (LeftToRight to preserve English parentheses) -->
-                <Border Grid.Column="2" VerticalAlignment="Center" Background="#1AFFFFFF" CornerRadius="8" Padding="12,6" FlowDirection="LeftToRight">
-                    <TextBlock Text="{Binding Version}" FontSize="13" FontWeight="SemiBold" Foreground="White" Opacity="0.9" FlowDirection="LeftToRight"/>
+                <!-- محرك قاعدة البيانات SQLite -->
+                <Border Grid.Column="2" Style="{StaticResource AboutSpecCardStyle}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <materialDesign:PackIcon Kind="DatabaseOutline" Width="18" Height="18" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="{DynamicResource AboutDatabaseEngineTitle}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <TextBlock Text="{DynamicResource AboutDatabaseEngineDesc}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" LineHeight="16"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- بيئة العمل .NET 8 / WPF -->
+                <Border Grid.Column="4" Style="{StaticResource AboutSpecCardStyle}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <materialDesign:PackIcon Kind="MicrosoftWindows" Width="18" Height="18" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="{DynamicResource AboutFrameworkTitle}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <TextBlock Text="{DynamicResource AboutFrameworkDesc}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" LineHeight="16"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- سنة الإصدار -->
+                <Border Grid.Column="6" Style="{StaticResource AboutSpecCardStyle}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <materialDesign:PackIcon Kind="CalendarCheckOutline" Width="18" Height="18" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="{DynamicResource AboutReleaseYearTitle}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <TextBlock Text="{DynamicResource AboutReleaseYearDesc}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" LineHeight="16"/>
+                    </StackPanel>
                 </Border>
             </Grid>
-        </Border>
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="30"/>
-                    <ColumnDefinition Width="280"/>
-                </Grid.ColumnDefinitions>
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- 4. شبكة القدرات الوظيفية الحقيقية (Core Capabilities)   -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <Border Grid.Row="3" Margin="0,0,0,18" Style="{StaticResource AboutFeatureCardStyle}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                        <materialDesign:PackIcon Kind="CheckDecagramOutline" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock Text="{DynamicResource AboutCapabilitiesHeader}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                    </StackPanel>
 
-                <StackPanel Grid.Column="0">
-                    <!-- Section: System Description -->
-                    <materialDesign:Card>
-                        <StackPanel>
-                            <TextBlock Text="{DynamicResource AboutSystemTitle}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,12" Foreground="{DynamicResource PrimaryBrush}"/>
-                            <TextBlock Text="{DynamicResource AboutSystemDesc}" FontSize="14" TextWrapping="Wrap" LineHeight="24" Foreground="{DynamicResource TextPrimary}"/>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="12"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="14"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- القدرة 1: تتبع التحلل والنشاط -->
+                        <Border Grid.Row="0" Grid.Column="0" Background="{DynamicResource WindowBackground}" CornerRadius="10" Padding="14,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <materialDesign:PackIcon Grid.Column="0" Kind="ChartTimelineVariant" Width="24" Height="24" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,10,0" VerticalAlignment="Top"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{DynamicResource AboutCap1Title}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{DynamicResource AboutCap1Desc}" FontSize="12" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" LineHeight="18"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- القدرة 2: التنبيهات الذكية وعمر النصف -->
+                        <Border Grid.Row="0" Grid.Column="2" Background="{DynamicResource WindowBackground}" CornerRadius="10" Padding="14,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <materialDesign:PackIcon Grid.Column="0" Kind="BellAlertOutline" Width="24" Height="24" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,10,0" VerticalAlignment="Top"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{DynamicResource AboutCap2Title}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{DynamicResource AboutCap2Desc}" FontSize="12" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" LineHeight="18"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- القدرة 3: النسخ الاحتياطي والتعافي -->
+                        <Border Grid.Row="2" Grid.Column="0" Background="{DynamicResource WindowBackground}" CornerRadius="10" Padding="14,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <materialDesign:PackIcon Grid.Column="0" Kind="CloudSyncOutline" Width="24" Height="24" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,10,0" VerticalAlignment="Top"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{DynamicResource AboutCap3Title}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{DynamicResource AboutCap3Desc}" FontSize="12" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" LineHeight="18"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- القدرة 4: إدارة الصلاحيات وسجل التدقيق -->
+                        <Border Grid.Row="2" Grid.Column="2" Background="{DynamicResource WindowBackground}" CornerRadius="10" Padding="14,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <materialDesign:PackIcon Grid.Column="0" Kind="AccountKeyOutline" Width="24" Height="24" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,10,0" VerticalAlignment="Top"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{DynamicResource AboutCap4Title}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{DynamicResource AboutCap4Desc}" FontSize="12" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" LineHeight="18"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- 5. قسم الجهة المستفيدة (TNRC) — مستقل وبارز             -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <Border Grid.Row="4" Margin="0,0,0,18" Style="{StaticResource AboutFeatureCardStyle}" BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="1.5">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- شعار مركز البحوث النووية - تاجوراء (بارز وكبير) -->
+                    <Border Grid.Column="0" Width="95" Height="95" CornerRadius="14" Background="{DynamicResource WindowBackground}" Margin="0,0,18,0" VerticalAlignment="Center">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.12" Color="{StaticResource PrimaryDarkColor}"/>
+                        </Border.Effect>
+                        <Image Source="pack://siteoforigin:,,,/Assets/tnrc_3d_final.png" 
+                               Stretch="Uniform" 
+                               Margin="8"
+                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                    </Border>
+
+                    <!-- بيانات وتوصيف الجهة المستفيدة -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <Border Background="{DynamicResource PrimaryBrush}" CornerRadius="6" Padding="8,3" Margin="0,0,8,0">
+                                <TextBlock Text="{DynamicResource AboutBeneficiaryTitle}" FontSize="11" FontWeight="Bold" Foreground="White"/>
+                            </Border>
+                            <TextBlock Text="{DynamicResource AboutBeneficiaryOrgEn}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </materialDesign:Card>
 
-                    <!-- Section: Capabilities -->
+                        <TextBlock Text="{DynamicResource AboutBeneficiaryOrgName}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,4"/>
+                        <TextBlock Text="{DynamicResource AboutBeneficiaryDesc}" FontSize="13" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" LineHeight="20"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- 6. بطاقة التصميم والتطوير والتنفيذ                     -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <Border Grid.Row="5" Style="{StaticResource AboutFeatureCardStyle}">
+                <StackPanel>
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="16"/>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        
-                        <materialDesign:Card Grid.Column="0">
-                            <StackPanel>
-                                <TextBlock Text="{DynamicResource AboutCapabilitiesTitle}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12" Foreground="{DynamicResource GoldBrush}"/>
-                                <StackPanel>
-                                    <TextBlock Text="{DynamicResource AboutCapabilities1}" Margin="0,4" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap"/>
-                                    <TextBlock Text="{DynamicResource AboutCapabilities2}" Margin="0,4" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap"/>
-                                    <TextBlock Text="{DynamicResource AboutCapabilities3}" Margin="0,4" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap"/>
-                                    <TextBlock Text="{DynamicResource AboutCapabilities4}" Margin="0,4" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </StackPanel>
-                        </materialDesign:Card>
 
-                        <materialDesign:Card Grid.Column="2">
-                            <StackPanel>
-                                <TextBlock Text="{DynamicResource AboutFeaturesTitle}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12" Foreground="{DynamicResource GoldBrush}"/>
-                                <StackPanel>
-                                    <TextBlock Text="{DynamicResource AboutFeatures1}" Margin="0,4" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap"/>
-                                    <TextBlock Text="{DynamicResource AboutFeatures2}" Margin="0,4" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap"/>
-                                    <TextBlock Text="{DynamicResource AboutFeatures3}" Margin="0,4" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap"/>
-                                    <TextBlock Text="{DynamicResource AboutFeatures4}" Margin="0,4" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap"/>
-                                </StackPanel>
+                        <!-- فريق التطوير والتنفيذ -->
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                <materialDesign:PackIcon Kind="CodeTags" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="{DynamicResource AboutDevTeamTitle}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                             </StackPanel>
-                        </materialDesign:Card>
-                    </Grid>
 
-                    <!-- Section: Designer & Developer Card (تصميم و تطوير و تنفيذ) -->
-                    <materialDesign:Card Margin="0,0,0,16" Padding="24" UniformCornerRadius="12" Background="{DynamicResource CardBackground}">
-                        <StackPanel>
-                            <TextBlock Text="تصميم و تطوير و تنفيذ" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Right"/>
-                            
-                            <Grid>
+                            <Grid Margin="4,0,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="20"/>
-                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                
-                                <!-- Left/Center Side: Developer Names Only -->
-                                <StackPanel Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <TextBlock Text="م . ادريس فتح الله الهرى" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0,0,0,10" />
-                                    <TextBlock Text="م . رضا المريمى" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0,0,0,0" />
-                                </StackPanel>
 
-                                <!-- Right Side: EFH Designer Logo Badge (Mug-sized large badge) -->
-                                <Border Grid.Column="2" Width="185" Height="185" CornerRadius="18" Background="#F4F6F9" BorderThickness="1.5" BorderBrush="#E1E6ED" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                    <Border.Effect>
-                                        <DropShadowEffect BlurRadius="10" Color="Black" Opacity="0.08" ShadowDepth="2"/>
-                                    </Border.Effect>
-                                    <Image Source="pack://siteoforigin:,,,/Assets/designer_logo.png" Stretch="Uniform" Margin="8" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <!-- المطور الأول -->
+                                <Border Grid.Column="0" Background="{DynamicResource WindowBackground}" CornerRadius="8" Padding="12,10">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <materialDesign:PackIcon Grid.Column="0" Kind="AccountTieOutline" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="{DynamicResource AboutLeadEngineer1}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                            <TextBlock Text="{DynamicResource AboutLeadRole1}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
                                 </Border>
 
+                                <!-- المطور الثاني -->
+                                <Border Grid.Column="2" Background="{DynamicResource WindowBackground}" CornerRadius="8" Padding="12,10">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <materialDesign:PackIcon Grid.Column="0" Kind="AccountTieOutline" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="{DynamicResource AboutLeadEngineer2}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                            <TextBlock Text="{DynamicResource AboutLeadRole2}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
                             </Grid>
                         </StackPanel>
-                    </materialDesign:Card>
-                </StackPanel>
 
-                <!-- System Logo Sidebar -->
-                <materialDesign:Card Grid.Column="2" VerticalAlignment="Top">
-                    <StackPanel>
-                        <Border Width="160" Height="160" Background="{DynamicResource WindowBackground}" CornerRadius="12" Margin="0,0,0,20" BorderThickness="1" BorderBrush="{DynamicResource BorderColor}">
-                             <Image Source="/Assets/sources_logo.png" Stretch="Uniform" Margin="16"/>
+                        <!-- شعار المصمم والمطور (كادر يتكيف مع الوضعين الداكن والفاتح بحجم أهدأ وأصغر) -->
+                        <Border Grid.Column="1" Width="85" Height="85" CornerRadius="12" Background="{DynamicResource WindowBackground}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Margin="20,0,0,0" VerticalAlignment="Center">
+                            <Image Source="pack://siteoforigin:,,,/Assets/designer_logo.png" 
+                                   Stretch="Uniform" 
+                                   Margin="8" 
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
                         </Border>
-                        <TextBlock Text="{DynamicResource AppTitleHeader}" FontSize="16" FontWeight="SemiBold" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,12" Foreground="{DynamicResource TextPrimary}"/>
-                        <Border Height="1" Background="{DynamicResource BorderColor}" Margin="0,12"/>
-                        <TextBlock Text="{DynamicResource AboutSidebarDesc}" 
-                                 FontSize="12" Foreground="{DynamicResource TextSecondary}" TextAlignment="Center" TextWrapping="Wrap" LineHeight="20"/>
-                    </StackPanel>
-                </materialDesign:Card>
-            </Grid>
-        </ScrollViewer>
+                    </Grid>
 
-    </Grid>
+                    <!-- فاصل وحقوق الملكية -->
+                    <Border Height="1" Background="{DynamicResource BorderColor}" Margin="0,14,0,10"/>
+                    <TextBlock Text="{DynamicResource AboutRightsText}" FontSize="11" Foreground="{DynamicResource TextSecondary}" TextAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+        </Grid>
+    </ScrollViewer>
 </UserControl>

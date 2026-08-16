@@ -18,7 +18,7 @@ public static class LoggerService
         try
         {
             Directory.CreateDirectory(LogDir);
-            var logFile = Path.Combine(LogDir, $"masar_{DateTime.Now:yyyy-MM-dd}.log");
+            var logFile = Path.Combine(LogDir, $"sources_{DateTime.Now:yyyy-MM-dd}.log");
             var line = $"[{DateTime.Now:HH:mm:ss}] [{level}] {message}\n";
             File.AppendAllText(logFile, line);
         }

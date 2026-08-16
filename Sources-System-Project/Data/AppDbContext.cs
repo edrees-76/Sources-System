@@ -340,7 +340,7 @@ public class AppDbContext : DbContext
                 Username = "admin",
                 PasswordHash = Helpers.PasswordHelper.HashPassword("admin"),
                 RoleId = adminRole.Id,
-                Email = "admin@masar.local",
+                Email = "admin@sources.local",
                 IsActive = true
             });
             SaveChanges();

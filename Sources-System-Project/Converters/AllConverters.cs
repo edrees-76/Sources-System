@@ -345,3 +345,22 @@ public class RowIndexConverter : IMultiValueConverter
     public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         => throw new NotImplementedException();
 }
+
+// ─── محول مفتاح المورد إلى نص مترجم ───
+public class StringToResourceConverter : IValueConverter
+{
+    public object? Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is string key && !string.IsNullOrEmpty(key))
+        {
+            if (Application.Current != null && Application.Current.Resources.Contains(key))
+                return Application.Current.FindResource(key);
+            return key;
+        }
+        return value;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}
+

@@ -41,8 +41,9 @@ public class BackupService : IBackupService
             if (!File.Exists(_dbPath))
                 return (false, "قاعدة البيانات غير موجودة", null);
 
-            // إنشاء المجلد بالاسم المطلوب داخل المسار المختار (إن لم يكن هو نفسه مجلد النسخ)
-            var targetDir = customPath.EndsWith(BackupFolderName, StringComparison.OrdinalIgnoreCase)
+            // إنشاء المجلد بالاسم المطلوب داخل المسار المختار (إن لم يكن هو نفسه مجلد النسخ الاحتياطي الحديث أو القديم)
+            var targetDir = (customPath.EndsWith(BackupFolderName, StringComparison.OrdinalIgnoreCase) ||
+                             customPath.EndsWith(LegacyBackupFolderName, StringComparison.OrdinalIgnoreCase))
                 ? customPath
                 : Path.Combine(customPath, BackupFolderName);
 

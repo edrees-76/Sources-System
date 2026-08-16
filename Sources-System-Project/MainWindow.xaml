@@ -15,11 +15,14 @@
         <Style x:Key="BottomNavItem" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="{DynamicResource SidebarForeground}"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="11"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Padding" Value="6,4"/>
-            <Setter Property="MinWidth" Value="56"/>
+            <Setter Property="Padding" Value="2,2"/>
+            <Setter Property="MinWidth" Value="40"/>
+            <Setter Property="TextBlock.TextAlignment" Value="Center"/>
+            <Setter Property="TextBlock.TextWrapping" Value="Wrap"/>
+            <Setter Property="TextBlock.LineHeight" Value="13"/>
             <Setter Property="RenderTransformOrigin" Value="0.5,1"/>
             <Setter Property="RenderTransform">
                 <Setter.Value>
@@ -180,7 +183,7 @@
                                   VerticalScrollBarVisibility="Disabled"
                                   VerticalAlignment="Center"
                                   ClipToBounds="False">
-                        <UniformGrid Rows="1" VerticalAlignment="Center" Margin="0,14,0,0">
+                        <UniformGrid Rows="1" VerticalAlignment="Center" Margin="0,6,0,0">
 
                             <!-- لوحة التحكم -->
                             <Button Style="{StaticResource BottomNavItem}"
@@ -189,7 +192,9 @@
                                     <materialDesign:PackIcon Kind="ViewDashboard" Width="22" Height="22"
                                                              HorizontalAlignment="Center"/>
                                     <TextBlock Text="{DynamicResource MenuDashboard}"
-                                               HorizontalAlignment="Center" Margin="0,2,0,0"
+                                               HorizontalAlignment="Center" TextAlignment="Center"
+                                               TextWrapping="Wrap" LineHeight="13" FontSize="11"
+                                               Margin="0,2,0,0"
                                                Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
                                 </StackPanel>
                             </Button>
@@ -202,7 +207,9 @@
                                     <materialDesign:PackIcon Kind="Atom" Width="22" Height="22"
                                                              HorizontalAlignment="Center"/>
                                     <TextBlock Text="{DynamicResource MenuRadioisotopes}"
-                                               HorizontalAlignment="Center" Margin="0,2,0,0"
+                                               HorizontalAlignment="Center" TextAlignment="Center"
+                                               TextWrapping="Wrap" LineHeight="13" FontSize="11"
+                                               Margin="0,2,0,0"
                                                Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
                                 </StackPanel>
                             </Button>
@@ -215,7 +222,9 @@
                                     <materialDesign:PackIcon Kind="Radioactive" Width="22" Height="22"
                                                              HorizontalAlignment="Center"/>
                                     <TextBlock Text="{DynamicResource MenuSources}"
-                                               HorizontalAlignment="Center" Margin="0,2,0,0"
+                                               HorizontalAlignment="Center" TextAlignment="Center"
+                                               TextWrapping="Wrap" LineHeight="13" FontSize="11"
+                                               Margin="0,2,0,0"
                                                Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
                                 </StackPanel>
                             </Button>
@@ -228,7 +237,9 @@
                                     <materialDesign:PackIcon Kind="MapMarker" Width="22" Height="22"
                                                              HorizontalAlignment="Center"/>
                                     <TextBlock Text="{DynamicResource MenuLocations}"
-                                               HorizontalAlignment="Center" Margin="0,2,0,0"
+                                               HorizontalAlignment="Center" TextAlignment="Center"
+                                               TextWrapping="Wrap" LineHeight="13" FontSize="11"
+                                               Margin="0,2,0,0"
                                                Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
                                 </StackPanel>
                             </Button>
@@ -241,7 +252,9 @@
                                     <materialDesign:PackIcon Kind="BookArrowRight" Width="22" Height="22"
                                                              HorizontalAlignment="Center"/>
                                     <TextBlock Text="{DynamicResource MenuBorrowing}"
-                                               HorizontalAlignment="Center" Margin="0,2,0,0"
+                                               HorizontalAlignment="Center" TextAlignment="Center"
+                                               TextWrapping="Wrap" LineHeight="13" FontSize="11"
+                                               Margin="0,2,0,0"
                                                Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
                                 </StackPanel>
                             </Button>
@@ -254,7 +267,9 @@
                                     <materialDesign:PackIcon Kind="FileChart" Width="22" Height="22"
                                                              HorizontalAlignment="Center"/>
                                     <TextBlock Text="{DynamicResource MenuReports}"
-                                               HorizontalAlignment="Center" Margin="0,2,0,0"
+                                               HorizontalAlignment="Center" TextAlignment="Center"
+                                               TextWrapping="Wrap" LineHeight="13" FontSize="11"
+                                               Margin="0,2,0,0"
                                                Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
                                 </StackPanel>
                             </Button>
@@ -267,7 +282,9 @@
                                     <materialDesign:PackIcon Kind="AccountGroup" Width="22" Height="22"
                                                              HorizontalAlignment="Center"/>
                                     <TextBlock Text="{DynamicResource MenuUsers}"
-                                               HorizontalAlignment="Center" Margin="0,2,0,0"
+                                               HorizontalAlignment="Center" TextAlignment="Center"
+                                               TextWrapping="Wrap" LineHeight="13" FontSize="11"
+                                               Margin="0,2,0,0"
                                                Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
                                 </StackPanel>
                             </Button>
@@ -280,7 +297,9 @@
                                     <materialDesign:PackIcon Kind="Calculator" Width="22" Height="22"
                                                              HorizontalAlignment="Center"/>
                                     <TextBlock Text="{DynamicResource MenuActivityCalculator}"
-                                               HorizontalAlignment="Center" Margin="0,2,0,0"
+                                               HorizontalAlignment="Center" TextAlignment="Center"
+                                               TextWrapping="Wrap" LineHeight="13" FontSize="11"
+                                               Margin="0,2,0,0"
                                                Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
                                 </StackPanel>
                             </Button>
@@ -293,7 +312,9 @@
                                     <materialDesign:PackIcon Kind="HelpCircleOutline" Width="22" Height="22"
                                                              HorizontalAlignment="Center"/>
                                     <TextBlock Text="{DynamicResource MenuHelp}"
-                                               HorizontalAlignment="Center" Margin="0,2,0,0"
+                                               HorizontalAlignment="Center" TextAlignment="Center"
+                                               TextWrapping="Wrap" LineHeight="13" FontSize="11"
+                                               Margin="0,2,0,0"
                                                Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
                                 </StackPanel>
                             </Button>
@@ -306,7 +327,9 @@
                                     <materialDesign:PackIcon Kind="Cog" Width="22" Height="22"
                                                              HorizontalAlignment="Center"/>
                                     <TextBlock Text="{DynamicResource MenuSettings}"
-                                               HorizontalAlignment="Center" Margin="0,2,0,0"
+                                               HorizontalAlignment="Center" TextAlignment="Center"
+                                               TextWrapping="Wrap" LineHeight="13" FontSize="11"
+                                               Margin="0,2,0,0"
                                                Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
                                 </StackPanel>
                             </Button>
@@ -319,7 +342,9 @@
                                     <materialDesign:PackIcon Kind="Brightness6" Width="22" Height="22"
                                                              HorizontalAlignment="Center"/>
                                     <TextBlock Text="{DynamicResource MenuToggleTheme}"
-                                               HorizontalAlignment="Center" Margin="0,2,0,0"
+                                               HorizontalAlignment="Center" TextAlignment="Center"
+                                               TextWrapping="Wrap" LineHeight="13" FontSize="11"
+                                               Margin="0,2,0,0"
                                                Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
                                 </StackPanel>
                             </Button>
@@ -331,7 +356,9 @@
                                     <materialDesign:PackIcon Kind="InformationOutline" Width="22" Height="22"
                                                              HorizontalAlignment="Center"/>
                                     <TextBlock Text="{DynamicResource MenuAbout}"
-                                               HorizontalAlignment="Center" Margin="0,2,0,0"
+                                               HorizontalAlignment="Center" TextAlignment="Center"
+                                               TextWrapping="Wrap" LineHeight="13" FontSize="11"
+                                               Margin="0,2,0,0"
                                                Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
                                 </StackPanel>
                             </Button>
@@ -344,7 +371,9 @@
                                     <materialDesign:PackIcon Kind="Logout" Width="22" Height="22"
                                                              HorizontalAlignment="Center" Foreground="#EF4444"/>
                                     <TextBlock Text="{DynamicResource MenuLogout}"
-                                               HorizontalAlignment="Center" Margin="0,2,0,0"
+                                               HorizontalAlignment="Center" TextAlignment="Center"
+                                               TextWrapping="Wrap" LineHeight="13" FontSize="11"
+                                               Margin="0,2,0,0"
                                                Foreground="#EF4444"
                                                Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
                                 </StackPanel>
@@ -393,11 +422,12 @@
 
                     <!-- ترويسة المحتوى: الجرس ومعلومات المستخدم -->
                     <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                        <!-- جرس التنبيهات -->
+                        <!-- جرس التنبيهات (يظهر فقط في شاشة لوحة القيادة Dashboard) -->
                         <materialDesign:PopupBox Style="{StaticResource MaterialDesignMultiFloatingActionPopupBox}"
                                                PlacementMode="BottomAndAlignRightEdges"
                                                ToolTip="{DynamicResource ToolTipNotifications}"
-                                               Margin="0,0,16,0">
+                                               Margin="0,0,16,0"
+                                               Visibility="{Binding CurrentViewName, Converter={StaticResource EqualityToVis}, ConverterParameter=Dashboard}">
                             <materialDesign:PopupBox.ToggleContent>
                                 <Grid>
                                     <materialDesign:PackIcon Kind="Bell" Width="24" Height="24" Foreground="{DynamicResource TextSecondary}"/>
@@ -409,6 +439,7 @@
                                     </Border>
                                 </Grid>
                             </materialDesign:PopupBox.ToggleContent>
+
 
                             <Border Width="380" MinHeight="100" Background="{DynamicResource CardBackground}" CornerRadius="12"
                                     BorderThickness="1" BorderBrush="{DynamicResource GoldBrush}"
