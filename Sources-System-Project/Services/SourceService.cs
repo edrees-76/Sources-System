@@ -86,6 +86,9 @@ public class SourceService : ISourceService
         var existing = db.Sources.Include(s => s.SourceIsotopes).FirstOrDefault(s => s.Id == source.Id);
         if (existing == null) return (false, "المصدر غير موجود");
 
+        if (db.Sources.Any(s => s.Id != source.Id && s.SourceCode == source.SourceCode))
+            return (false, "كود المصدر موجود بالفعل");
+
         existing.SourceCode = source.SourceCode;
         existing.RadioisotopeId = source.RadioisotopeId;
         existing.SerialNumber = source.SerialNumber;
@@ -134,6 +137,10 @@ public class SourceService : ISourceService
         using var db = _dbFactory.CreateDbContext();
         var source = db.Sources.Find(id);
         if (source == null) return (false, "المصدر غير موجود");
+
+        bool hasActiveBorrow = db.BorrowRequests.Any(b => b.SourceId == id && (b.Status == "Delivered" || b.Status == "Overdue"));
+        if (hasActiveBorrow)
+            return (false, "لا يمكن حذف المصدر لوجود استعارة نشطة عليه");
 
         source.IsDeleted = true;
         db.SaveChanges();

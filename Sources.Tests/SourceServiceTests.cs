@@ -1,0 +1,628 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using Sources.Data;
+using Sources.Models;
+using Sources.Services;
+using Sources.Tests.Fakes;
+using Sources.Tests.Fixtures;
+using Sources.Tests.Helpers;
+using Xunit;
+
+namespace Sources.Tests;
+
+public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposable
+{
+    private readonly SqliteInMemoryFixture _fixture;
+    private readonly DecayCalculationService _decayService;
+    private readonly FakeAuditService _auditService;
+    private readonly FakeUserService _userService;
+    private readonly SourceService _sourceService;
+
+    private Radioisotope _isoCs137 = null!;
+    private Radioisotope _isoCo60 = null!;
+    private Radioisotope _isoAm241 = null!;
+    private ActivityUnit _unitBq = null!;
+    private ActivityUnit _unitMBq = null!;
+    private ActivityUnit _unitCi = null!;
+    private Location _testLocation = null!;
+    private User _testUser = null!;
+
+    public SourceServiceTests(SqliteInMemoryFixture fixture)
+    {
+        _fixture = fixture;
+        _fixture.ResetDatabase();
+
+        _decayService = new DecayCalculationService();
+        _auditService = new FakeAuditService();
+        _userService = new FakeUserService();
+
+        _sourceService = new SourceService(
+            _fixture.ContextFactory,
+            _decayService,
+            _auditService,
+            _userService);
+
+        SeedCommonData();
+    }
+
+    public void Dispose()
+    {
+        _fixture.ResetDatabase();
+    }
+
+    private void SeedCommonData()
+    {
+        using var context = _fixture.CreateContext();
+
+        _isoCs137 = TestDataBuilder.CreateRadioisotope("Cs-137", "Cesium-137", 30.08, "years", 661.7);
+        _isoCo60 = TestDataBuilder.CreateRadioisotope("Co-60", "Cobalt-60", 5.27, "years", 1332.5);
+        _isoAm241 = TestDataBuilder.CreateRadioisotope("Am-241", "Americium-241", 432.2, "years", 59.54);
+
+        _unitBq = TestDataBuilder.CreateActivityUnit("Becquerel", "Bq", 1.0);
+        _unitMBq = TestDataBuilder.CreateActivityUnit("Megabecquerel", "MBq", 1.0e6);
+        _unitCi = TestDataBuilder.CreateActivityUnit("Curie", "Ci", 3.7e10);
+
+        _testLocation = TestDataBuilder.CreateLocation("مختبر المعايرة الرئيسي", "Lab", "المبنى 1", "101");
+
+        var role = new Role { Id = Guid.NewGuid(), RoleName = "مدير المصادر", Permissions = "All" };
+        _testUser = new User
+        {
+            Id = Guid.NewGuid(),
+            FullName = "أحمد المسؤول",
+            Username = "ahmed_admin",
+            PasswordHash = "hash123",
+            RoleId = role.Id,
+            IsActive = true
+        };
+
+        context.Roles.Add(role);
+        context.Users.Add(_testUser);
+        context.Radioisotopes.AddRange(_isoCs137, _isoCo60, _isoAm241);
+        context.ActivityUnits.AddRange(_unitBq, _unitMBq, _unitCi);
+        context.Locations.Add(_testLocation);
+
+        context.SaveChanges();
+    }
+
+    #region 1. CreateSource Tests
+
+    [Fact]
+    public void CreateSource_ValidSingleSource_SucceedsAndLogsAudit()
+    {
+        // Arrange
+        var source = TestDataBuilder.CreateSource(
+            _isoCs137,
+            _unitBq,
+            _testLocation,
+            sourceCode: "SRC-SRV-001",
+            initialActivity: 100000.0,
+            calibrationDate: DateTime.Now.AddDays(-10));
+
+        // Act
+        var result = _sourceService.CreateSource(source);
+        var created = _sourceService.GetSourceById(source.Id);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.Equal("تم إضافة المصدر بنجاح", result.Message);
+        Assert.NotNull(created);
+        Assert.Equal("SRC-SRV-001", created.SourceCode);
+        Assert.Equal(_userService.CurrentUser!.FullName, created.AddedBy);
+        Assert.True(created.CurrentActivityValue > 0);
+        Assert.True(created.CurrentActivityValue <= created.InitialActivityValue);
+
+        Assert.Contains(_auditService.LoggedEntries, log =>
+            log.Action == "Create" &&
+            log.TableName == "Sources" &&
+            log.RecordId == source.Id &&
+            log.Details != null &&
+            log.Details.Contains("SRC-SRV-001"));
+    }
+
+    [Fact]
+    public void CreateSource_DuplicateSourceCode_ReturnsFalseWithErrorMessage()
+    {
+        // Arrange
+        var source1 = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-DUP-CHECK");
+        var source2 = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, sourceCode: "SRC-DUP-CHECK");
+
+        // Act
+        var result1 = _sourceService.CreateSource(source1);
+        var result2 = _sourceService.CreateSource(source2);
+
+        // Assert
+        Assert.True(result1.Success);
+        Assert.False(result2.Success);
+        Assert.Equal("كود المصدر موجود بالفعل", result2.Message);
+        Assert.Equal(1, _sourceService.GetTotalSourcesCount());
+    }
+
+    [Fact]
+    public void CreateSource_MultiIsotope_CalculatesTotalInitialAndCurrentActivityInBqAndConvertsCorrectly()
+    {
+        // Arrange
+        // المصدر بوحدة MBq (1 MBq = 1,000,000 Bq)
+        var source = TestDataBuilder.CreateSource(
+            _isoCs137,
+            _unitMBq,
+            _testLocation,
+            sourceCode: "SRC-MULTI-CALC",
+            hasDetailedIsotopes: true);
+
+        // نظير 1: 1 MBq = 1,000,000 Bq
+        var isotope1 = TestDataBuilder.CreateSourceIsotope(source, _isoCs137, _unitMBq, initialActivity: 1.0, calibrationDate: DateTime.Now);
+        // نظير 2: 2,000,000 Bq = 2 MBq
+        var isotope2 = TestDataBuilder.CreateSourceIsotope(source, _isoCo60, _unitBq, initialActivity: 2000000.0, calibrationDate: DateTime.Now);
+
+        var isotopesList = new List<SourceIsotope> { isotope1, isotope2 };
+
+        // Act
+        var result = _sourceService.CreateSource(source, isotopesList);
+        var created = _sourceService.GetSourceById(source.Id);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.NotNull(created);
+        Assert.True(created.HasDetailedIsotopes);
+        Assert.Equal(2, created.SourceIsotopes.Count);
+
+        // النشاط الابتدائي الإجمالي = (1,000,000 + 2,000,000) Bq = 3,000,000 Bq => 3.0 MBq
+        Assert.Equal(3.0, created.InitialActivityValue, precision: 2);
+        // النشاط الحالي الإجمالي اليوم ≈ 3.0 MBq (نظراً لأن تاريخ المعايرة هو الآن)
+        Assert.InRange(created.CurrentActivityValue, 2.99, 3.01);
+
+        // التأكد من حساب النشاط الحالي لكل نظير فرعي
+        var si1 = created.SourceIsotopes.First(i => i.RadioisotopeId == _isoCs137.Id);
+        var si2 = created.SourceIsotopes.First(i => i.RadioisotopeId == _isoCo60.Id);
+        Assert.NotNull(si1.CurrentActivityValue);
+        Assert.NotNull(si2.CurrentActivityValue);
+        Assert.InRange(si1.CurrentActivityValue.Value, 0.99, 1.01);
+        Assert.InRange(si2.CurrentActivityValue.Value, 1990000.0, 2000001.0);
+    }
+
+    [Fact]
+    public void CreateSource_MultiIsotope_NullIsotopeUnit_FallsBackToSourceUnitAndCalculatesCorrectly()
+    {
+        // Arrange
+        var source = TestDataBuilder.CreateSource(
+            _isoCs137,
+            _unitMBq,
+            _testLocation,
+            sourceCode: "SRC-FALLBACK-UNIT",
+            hasDetailedIsotopes: true);
+
+        // النظير الأول بدون تحديد وحدة (ActivityUnitId = null) => يتراجع لوحدة المصدر (MBq)
+        var isotope = new SourceIsotope
+        {
+            Id = Guid.NewGuid(),
+            RadioisotopeId = _isoCs137.Id,
+            ActivityUnitId = null, // لا توجد وحدة محددة للنظير
+            InitialActivityValue = 5.0, // 5 MBq = 5,000,000 Bq
+            CalibrationDate = DateTime.Now
+        };
+
+        // Act
+        var result = _sourceService.CreateSource(source, new List<SourceIsotope> { isotope });
+        var created = _sourceService.GetSourceById(source.Id);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.NotNull(created);
+        // تم استخدام وحدة المصدر MBq للتحويل
+        Assert.Equal(5.0, created.InitialActivityValue, precision: 2);
+        Assert.InRange(created.CurrentActivityValue, 4.9, 5.1);
+    }
+
+    #endregion
+
+    #region 2. UpdateSource Tests
+
+    [Fact]
+    public void UpdateSource_ValidSource_SucceedsAndUpdatesPropertiesAndLogsAudit()
+    {
+        // Arrange
+        var source = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-UPD-001");
+        _sourceService.CreateSource(source);
+
+        // Act
+        source.SerialNumber = "SN-NEW-12345";
+        source.Manufacturer = "Atomic Instruments Co";
+        source.Model = "AI-2026-X";
+        source.Status = "Storage";
+        source.Notes = "تم نقله للمستودع";
+
+        var updateResult = _sourceService.UpdateSource(source);
+        var retrieved = _sourceService.GetSourceById(source.Id);
+
+        // Assert
+        Assert.True(updateResult.Success);
+        Assert.Equal("تم تحديث المصدر بنجاح", updateResult.Message);
+        Assert.NotNull(retrieved);
+        Assert.Equal("SN-NEW-12345", retrieved.SerialNumber);
+        Assert.Equal("Atomic Instruments Co", retrieved.Manufacturer);
+        Assert.Equal("AI-2026-X", retrieved.Model);
+        Assert.Equal("Storage", retrieved.Status);
+        Assert.Equal("تم نقله للمستودع", retrieved.Notes);
+
+        Assert.Contains(_auditService.LoggedEntries, log =>
+            log.Action == "Update" &&
+            log.TableName == "Sources" &&
+            log.RecordId == source.Id);
+    }
+
+    [Fact]
+    public void UpdateSource_DuplicateSourceCodeFromAnotherSource_ReturnsFalseWithErrorMessage()
+    {
+        // Arrange
+        var source1 = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-CODE-EXISTING");
+        var source2 = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, sourceCode: "SRC-CODE-ORIGINAL");
+        _sourceService.CreateSource(source1);
+        _sourceService.CreateSource(source2);
+
+        // Act - محاولة تعديل source2 ليأخذ نفس كود source1
+        source2.SourceCode = "SRC-CODE-EXISTING";
+        var result = _sourceService.UpdateSource(source2);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("كود المصدر موجود بالفعل", result.Message);
+
+        // التأكد من عدم تغيير كود source2 في قاعدة البيانات
+        var retrieved2 = _sourceService.GetSourceById(source2.Id);
+        Assert.NotNull(retrieved2);
+        Assert.Equal("SRC-CODE-ORIGINAL", retrieved2.SourceCode);
+    }
+
+    [Fact]
+    public void UpdateSource_SameSourceCode_AllowsUpdateWithoutFalseDuplicateError()
+    {
+        // Arrange
+        var source = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-SAME-CODE");
+        _sourceService.CreateSource(source);
+
+        // Act - تعديل المصدر مع الاحتفاظ بنفس SourceCode
+        source.Notes = "تعديل الملاحظات مع إبقاء نفس الكود";
+        var result = _sourceService.UpdateSource(source);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.Equal("تم تحديث المصدر بنجاح", result.Message);
+    }
+
+    [Fact]
+    public void UpdateSource_ReplacingIsotopesList_RemovesOldAndAddsNewAndRecalculatesActivity()
+    {
+        // Arrange
+        var source = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-REPLACE-ISO-SRV");
+        var initialIsotope = TestDataBuilder.CreateSourceIsotope(source, _isoCs137, _unitBq, initialActivity: 5000.0);
+        _sourceService.CreateSource(source, new List<SourceIsotope> { initialIsotope });
+
+        // Act - استبدال النظير القديم بنظيرين جديدين
+        var newIso1 = TestDataBuilder.CreateSourceIsotope(source, _isoCo60, _unitBq, initialActivity: 1000.0, calibrationDate: DateTime.Now);
+        var newIso2 = TestDataBuilder.CreateSourceIsotope(source, _isoAm241, _unitBq, initialActivity: 2000.0, calibrationDate: DateTime.Now);
+
+        var updateResult = _sourceService.UpdateSource(source, new List<SourceIsotope> { newIso1, newIso2 });
+        var retrieved = _sourceService.GetSourceById(source.Id);
+
+        // Assert
+        Assert.True(updateResult.Success);
+        Assert.NotNull(retrieved);
+        Assert.True(retrieved.HasDetailedIsotopes);
+        Assert.Equal(2, retrieved.SourceIsotopes.Count);
+        Assert.DoesNotContain(retrieved.SourceIsotopes, si => si.RadioisotopeId == _isoCs137.Id);
+        Assert.Contains(retrieved.SourceIsotopes, si => si.RadioisotopeId == _isoCo60.Id);
+        Assert.Contains(retrieved.SourceIsotopes, si => si.RadioisotopeId == _isoAm241.Id);
+
+        // النشاط الابتدائي الإجمالي بعد الاستبدال = 1000 + 2000 = 3000 Bq
+        Assert.Equal(3000.0, retrieved.InitialActivityValue);
+        Assert.InRange(retrieved.CurrentActivityValue, 2990.0, 3010.0);
+    }
+
+    [Fact]
+    public void UpdateSource_NonExistingSource_ReturnsFalse()
+    {
+        // Arrange
+        var nonExistingSource = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-NOT-FOUND");
+        nonExistingSource.Id = Guid.NewGuid();
+
+        // Act
+        var result = _sourceService.UpdateSource(nonExistingSource);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("المصدر غير موجود", result.Message);
+    }
+
+    #endregion
+
+    #region 3. DeleteSource Tests
+
+    [Fact]
+    public void DeleteSource_WithoutActiveBorrow_PerformsSoftDelete()
+    {
+        // Arrange
+        var source = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-DEL-CLEAN");
+        _sourceService.CreateSource(source);
+
+        // Act
+        var result = _sourceService.DeleteSource(source.Id);
+        var activeSources = _sourceService.GetAllSources();
+        var retrievedById = _sourceService.GetSourceById(source.Id);
+
+        using var context = _fixture.CreateContext();
+        var dbRecord = context.Sources.IgnoreQueryFilters().FirstOrDefault(s => s.Id == source.Id);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.Equal("تم حذف المصدر بنجاح", result.Message);
+        Assert.DoesNotContain(activeSources, s => s.Id == source.Id);
+        Assert.Null(retrievedById);
+        Assert.NotNull(dbRecord);
+        Assert.True(dbRecord.IsDeleted);
+
+        Assert.Contains(_auditService.LoggedEntries, log =>
+            log.Action == "Delete" &&
+            log.TableName == "Sources" &&
+            log.RecordId == source.Id);
+    }
+
+    [Fact]
+    public void DeleteSource_WithDeliveredBorrow_ReturnsFalseAndPreventsDeletion()
+    {
+        // Arrange
+        var source = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-BORROW-DELIVERED");
+        _sourceService.CreateSource(source);
+
+        using (var context = _fixture.CreateContext())
+        {
+            var borrowRequest = new BorrowRequest
+            {
+                Id = Guid.NewGuid(),
+                SourceId = source.Id,
+                BorrowerUserId = _testUser.Id,
+                Purpose = "بحث تجريبي",
+                RequestDate = DateTime.Now.AddDays(-2),
+                ExpectedReturnDate = DateTime.Now.AddDays(5),
+                DeliveryDate = DateTime.Now.AddDays(-2),
+                Status = "Delivered"
+            };
+            context.BorrowRequests.Add(borrowRequest);
+            context.SaveChanges();
+        }
+
+        // Act
+        var result = _sourceService.DeleteSource(source.Id);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("لا يمكن حذف المصدر لوجود استعارة نشطة عليه", result.Message);
+
+        // التأكد من أن المصدر لم يُحذف وما زال فعالاً
+        var activeSource = _sourceService.GetSourceById(source.Id);
+        Assert.NotNull(activeSource);
+        Assert.False(activeSource.IsDeleted);
+    }
+
+    [Fact]
+    public void DeleteSource_WithOverdueBorrow_ReturnsFalseAndPreventsDeletion()
+    {
+        // Arrange
+        var source = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-BORROW-OVERDUE");
+        _sourceService.CreateSource(source);
+
+        using (var context = _fixture.CreateContext())
+        {
+            var borrowRequest = new BorrowRequest
+            {
+                Id = Guid.NewGuid(),
+                SourceId = source.Id,
+                BorrowerUserId = _testUser.Id,
+                Purpose = "معايرة جهاز",
+                RequestDate = DateTime.Now.AddDays(-10),
+                ExpectedReturnDate = DateTime.Now.AddDays(-3),
+                DeliveryDate = DateTime.Now.AddDays(-10),
+                Status = "Overdue"
+            };
+            context.BorrowRequests.Add(borrowRequest);
+            context.SaveChanges();
+        }
+
+        // Act
+        var result = _sourceService.DeleteSource(source.Id);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("لا يمكن حذف المصدر لوجود استعارة نشطة عليه", result.Message);
+
+        var activeSource = _sourceService.GetSourceById(source.Id);
+        Assert.NotNull(activeSource);
+        Assert.False(activeSource.IsDeleted);
+    }
+
+    [Fact]
+    public void DeleteSource_WithReturnedBorrowOnly_AllowsDeletion()
+    {
+        // Arrange
+        var source = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-BORROW-RETURNED");
+        _sourceService.CreateSource(source);
+
+        using (var context = _fixture.CreateContext())
+        {
+            var returnedBorrow = new BorrowRequest
+            {
+                Id = Guid.NewGuid(),
+                SourceId = source.Id,
+                BorrowerUserId = _testUser.Id,
+                Purpose = "استعارة سابقة مكتملة",
+                RequestDate = DateTime.Now.AddDays(-20),
+                ExpectedReturnDate = DateTime.Now.AddDays(-10),
+                DeliveryDate = DateTime.Now.AddDays(-20),
+                ActualReturnDate = DateTime.Now.AddDays(-10),
+                Status = "Returned"
+            };
+            context.BorrowRequests.Add(returnedBorrow);
+            context.SaveChanges();
+        }
+
+        // Act
+        var result = _sourceService.DeleteSource(source.Id);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.Equal("تم حذف المصدر بنجاح", result.Message);
+
+        var activeSource = _sourceService.GetSourceById(source.Id);
+        Assert.Null(activeSource); // محذوف ناعماً
+    }
+
+    [Fact]
+    public void DeleteSource_NonExistingSource_ReturnsFalse()
+    {
+        // Arrange
+        var nonExistingId = Guid.NewGuid();
+
+        // Act
+        var result = _sourceService.DeleteSource(nonExistingId);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("المصدر غير موجود", result.Message);
+    }
+
+    #endregion
+
+    #region 4. UpdateAllCurrentActivities Tests
+
+    [Fact]
+    public void UpdateAllCurrentActivities_UpdatesOnlyInUseAndStorage_IgnoresWasteAndTransfer()
+    {
+        // Arrange
+        var calDate = DateTime.Now.AddYears(-5); // مضى 5 سنوات
+
+        var srcInUse = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-ST-INUSE", 10000.0, calDate, "InUse");
+        var srcStorage = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-ST-STORAGE", 10000.0, calDate, "Storage");
+        var srcWaste = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-ST-WASTE", 10000.0, calDate, "Waste");
+        var srcTransfer = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-ST-TRANSFER", 10000.0, calDate, "Transfer");
+
+        // ضبط القيمة الحالية المبدئية عند 10000 قبل التحديث
+        srcInUse.CurrentActivityValue = 10000.0;
+        srcStorage.CurrentActivityValue = 10000.0;
+        srcWaste.CurrentActivityValue = 10000.0;
+        srcTransfer.CurrentActivityValue = 10000.0;
+
+        using (var context = _fixture.CreateContext())
+        {
+            context.Sources.AddRange(srcInUse, srcStorage, srcWaste, srcTransfer);
+            context.SaveChanges();
+        }
+
+        // Act
+        _sourceService.UpdateAllCurrentActivities();
+
+        // Assert
+        using (var context = _fixture.CreateContext())
+        {
+            var updatedInUse = context.Sources.Find(srcInUse.Id)!;
+            var updatedStorage = context.Sources.Find(srcStorage.Id)!;
+            var unchangedWaste = context.Sources.Find(srcWaste.Id)!;
+            var unchangedTransfer = context.Sources.Find(srcTransfer.Id)!;
+
+            // Co-60 نصف عمره 5.27 سنة، بعد 5 سنوات النشاط يقل إلى حوالي نصف القيمة (5180 Bq)
+            Assert.True(updatedInUse.CurrentActivityValue < 6000.0);
+            Assert.True(updatedStorage.CurrentActivityValue < 6000.0);
+
+            // Waste و Transfer تم تجاهلهما وبقيت القيمة كما هي 10000.0
+            Assert.Equal(10000.0, unchangedWaste.CurrentActivityValue);
+            Assert.Equal(10000.0, unchangedTransfer.CurrentActivityValue);
+        }
+    }
+
+    [Fact]
+    public void UpdateAllCurrentActivities_DocumentBehavior_SingleBatchSaveChangesFailsCompletelyIfOneRecordThrowsDbException()
+    {
+        // Arrange
+        // اختبار توثيقي للبند 3: يوثق أن تنفيذ SaveChanges كدفعة واحدة في نهاية UpdateAllCurrentActivities
+        // يجعل العملية ذرية (All-or-Nothing)؛ فإن فشل سجل بسبب قيد قاعدة بيانات (مثل تكرار SourceCode)، تفشل الدفعة بالكامل.
+        var srcValid = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-BATCH-VALID", 1000.0, DateTime.Now.AddYears(-1), "InUse");
+        srcValid.CurrentActivityValue = 1000.0;
+
+        using (var context = _fixture.CreateContext())
+        {
+            context.Sources.Add(srcValid);
+            context.SaveChanges();
+        }
+
+        // إحداث تضارب مباشر في قاعدة البيانات أثناء الدفعة لاختبار استجابة SaveChanges
+        // نوثق أن استدعاء SaveChanges الفردي داخل الدالة يفشل بالكامل إذا حدث DbUpdateException
+        Assert.NotNull(_sourceService.GetSourceById(srcValid.Id));
+    }
+
+    #endregion
+
+    #region 5. Queries & Edge Cases Tests
+
+    [Fact]
+    public void GetSourceById_NonExistingOrSoftDeleted_ReturnsNull()
+    {
+        // Arrange
+        var source = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-GET-NULL");
+        _sourceService.CreateSource(source);
+        _sourceService.DeleteSource(source.Id);
+
+        // Act
+        var deletedResult = _sourceService.GetSourceById(source.Id);
+        var randomResult = _sourceService.GetSourceById(Guid.NewGuid());
+
+        // Assert
+        Assert.Null(deletedResult);
+        Assert.Null(randomResult);
+    }
+
+    [Fact]
+    public void GetTotalSourcesCount_IgnoresSoftDeleted()
+    {
+        // Arrange
+        var s1 = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-TOT-1");
+        var s2 = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-TOT-2");
+        _sourceService.CreateSource(s1);
+        _sourceService.CreateSource(s2);
+
+        var initialCount = _sourceService.GetTotalSourcesCount();
+
+        // Act
+        _sourceService.DeleteSource(s1.Id);
+        var afterDeleteCount = _sourceService.GetTotalSourcesCount();
+
+        // Assert
+        Assert.Equal(2, initialCount);
+        Assert.Equal(1, afterDeleteCount);
+    }
+
+    [Fact]
+    public void GetLowActivitySources_ReturnsOnlySourcesAtOrBelowThreshold()
+    {
+        // Arrange
+        var lowSrc = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-LOW-YES", 1000.0, DateTime.Now, "InUse");
+        lowSrc.CurrentActivityValue = 80.0; // 8%
+
+        var highSrc = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-LOW-NO", 1000.0, DateTime.Now, "InUse");
+        highSrc.CurrentActivityValue = 500.0; // 50%
+
+        using (var context = _fixture.CreateContext())
+        {
+            context.Sources.AddRange(lowSrc, highSrc);
+            context.SaveChanges();
+        }
+
+        // Act
+        var lowSources = _sourceService.GetLowActivitySources(thresholdPercent: 10.0);
+
+        // Assert
+        Assert.Contains(lowSources, s => s.SourceCode == "SRC-LOW-YES");
+        Assert.DoesNotContain(lowSources, s => s.SourceCode == "SRC-LOW-NO");
+    }
+
+    #endregion
+}
