@@ -104,11 +104,16 @@ public partial class MainWindow : Window
         var viewModel = DataContext as MainViewModel;
         if (viewModel != null && viewModel.IsLoggedIn)
         {
-            e.Cancel = true;
-            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+            bool confirmed = DialogHelper.ShowConfirmation(
+                TranslationHelper.GetString("MsgConfirmExitPrompt"),
+                TranslationHelper.GetString("MsgConfirmExitTitle")
+            );
+
+            if (!confirmed)
             {
-                viewModel.LogoutCommand.Execute(null);
-            }));
+                e.Cancel = true;
+                return;
+            }
         }
     }
 
