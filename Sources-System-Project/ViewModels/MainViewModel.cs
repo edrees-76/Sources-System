@@ -6,6 +6,7 @@ using Sources.Services;
 using Sources.Interfaces;
 using Sources.Models;
 using System;
+using System.Linq;
 using System.Windows;
 
 namespace Sources.ViewModels;
@@ -162,12 +163,14 @@ public partial class MainViewModel : ObservableObject
 
             var loginWindow = App.ServiceProvider.GetService(typeof(Views.LoginWindow)) as Views.LoginWindow;
             loginWindow?.Show();
+            loginWindow?.Activate();
 
-            var currentWindow = Application.Current.MainWindow;
-            if (currentWindow != null && currentWindow != loginWindow)
+            Application.Current.MainWindow = loginWindow;
+
+            var mainWin = Application.Current.Windows.OfType<MainWindow>().FirstOrDefault();
+            if (mainWin != null)
             {
-                Application.Current.MainWindow = loginWindow;
-                try { currentWindow.Close(); } catch { }
+                mainWin.Close();
             }
         }
     }

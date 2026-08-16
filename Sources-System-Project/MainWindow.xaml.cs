@@ -58,24 +58,28 @@ public partial class MainWindow : Window
 
     protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
     {
+        base.OnClosing(e);
+
         if (_isLockingScreen)
         {
-            base.OnClosing(e);
             return;
         }
 
         var viewModel = DataContext as MainViewModel;
-        
-        // إذا كان المستخدم مسجلاً دخوله، نقوم بتحويل "الإغلاق" إلى "تسجيل خروج"
         if (viewModel != null && viewModel.IsLoggedIn)
         {
-            e.Cancel = true; // نمنع إغلاق النافذة فوراً
-            viewModel.LogoutCommand.Execute(null); // نفتح رسالة التأكيد الموحدة
+            e.Cancel = true;
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+            {
+                viewModel.LogoutCommand.Execute(null);
+            }));
         }
-        else
-        {
-            // إذا كان في واجهة الدخول، يتم إغلاق البرنامج بشكل طبيعي
-            base.OnClosing(e);
-        }
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        _viewModel.LockRequested -= ViewModel_LockRequested;
+        _viewModel.StopInactivityTimer();
+        base.OnClosed(e);
     }
 }
