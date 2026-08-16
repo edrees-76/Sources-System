@@ -101,18 +101,52 @@
     <system:String x:Key="BtnSearch">بحث</system:String>
     <system:String x:Key="PlaceholderSearch">بحث...</system:String>
 
-    <!-- Login Screen -->
+    <!-- Splash & Login Screens -->
+    <system:String x:Key="SplashWindowTitle">مصادر | SOURCES</system:String>
+    <system:String x:Key="SplashSystemTitle">مــصــادر | SOURCES</system:String>
+    <system:String x:Key="SplashSystemSubtitle">منظومة إدارة وتتبع المصادر والنظائر المشعة</system:String>
+    <system:String x:Key="SplashStatusInit">جاري تهيئة منظومة مصادر وقاعدة البيانات...</system:String>
+    <system:String x:Key="SplashStatusConnecting">جاري الاتصال بقاعدة البيانات...</system:String>
+    <system:String x:Key="SplashStatusLoadingAssets">جاري تحميل الهوية والأصول...</system:String>
+    <system:String x:Key="SplashStatusReady">اكتمل التجهيز!</system:String>
+    <system:String x:Key="CreditsDesignedBy">تصميم و تطوير و تنفيذ</system:String>
+    <system:String x:Key="DesignerName1">م . ادريس فتح الله الهرى</system:String>
+    <system:String x:Key="DesignerName2">م . رضا المريمى</system:String>
+
+    <system:String x:Key="LoginWindowTitle">تسجيل الدخول | مصادر</system:String>
+    <system:String x:Key="CenterName">مركز البحوث النووية - تاجوراء</system:String>
+    <system:String x:Key="CenterAcronym">TNRC</system:String>
+    <system:String x:Key="SystemTitlePart1">منظومة مصادر / </system:String>
+    <system:String x:Key="SystemTitlePart2">SOURCES</system:String>
+    <system:String x:Key="SystemSubtitle">منظومة إدارة وتتبع المصادر والنظائر المشعة</system:String>
     <system:String x:Key="LoginTitle">تسجيل الدخول</system:String>
     <system:String x:Key="LoginSubtitle">أهلاً بك في منظومة مصادر لتتبع المصادر المشعة</system:String>
     <system:String x:Key="BrandNameAr">مصادر</system:String>
     <system:String x:Key="BrandNameEn">SOURCES</system:String>
     <system:String x:Key="LabelUsername">اسم المستخدم</system:String>
+    <system:String x:Key="HintUsername">أدخل اسم المستخدم</system:String>
     <system:String x:Key="LabelPassword">كلمة المرور</system:String>
-    <system:String x:Key="BtnLogin">دخول للمنظومة</system:String>
+    <system:String x:Key="HintPassword">أدخل كلمة المرور</system:String>
+    <system:String x:Key="BtnLogin">تسجيل الدخول</system:String>
     <system:String x:Key="LabelRememberMe">تذكرني</system:String>
-    <system:String x:Key="TextDesignedBy">تصميم وتنفيذ</system:String>
+    <system:String x:Key="TextDesignedBy">تصميم و تطوير و تنفيذ</system:String>
     <system:String x:Key="TextAllRightsReserved">جميع الحقوق محفوظة 2026</system:String>
-    <system:String x:Key="LoginWelcome">مرحباً بكل سهولة وأمان</system:String>
+    <system:String x:Key="LoginWelcome">مرحباً بكم في منظومة مصادر</system:String>
+    <system:String x:Key="WelcomeGreeting">مرحباً</system:String>
+
+    <system:String x:Key="TooltipMinimize">تصغير</system:String>
+    <system:String x:Key="TooltipMaximize">تكبير</system:String>
+    <system:String x:Key="TooltipRestore">استعادة</system:String>
+    <system:String x:Key="TooltipClose">إغلاق</system:String>
+    <system:String x:Key="TooltipShowPassword">إظهار كلمة المرور</system:String>
+    <system:String x:Key="TooltipHidePassword">إخفاء كلمة المرور</system:String>
+
+    <system:String x:Key="MsgConfirmExitPrompt">هل تريد الخروج من المنظومة؟</system:String>
+    <system:String x:Key="MsgConfirmExitTitle">تأكيد الخروج</system:String>
+    <system:String x:Key="MsgErrUsernamePasswordReq">يرجى إدخال اسم المستخدم وكلمة المرور.</system:String>
+    <system:String x:Key="MsgLoginErrorPrefix">حدث خطأ أثناء تسجيل الدخول: </system:String>
+    <system:String x:Key="MsgAttemptCount">(محاولة {0} من 3)</system:String>
+    <system:String x:Key="MsgLockoutActive">تم حظر الدخول مؤقتاً بسبب المحاولات الخاطئة. يرجى الانتظار {0} ثانية...</system:String>
 
     <!-- Settings Page -->
     <system:String x:Key="SettingsTitle">الإعدادات</system:String>

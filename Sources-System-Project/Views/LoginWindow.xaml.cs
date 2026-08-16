@@ -18,11 +18,18 @@ namespace Sources.Views
         private int _failedAttempts = 0;
         private DispatcherTimer? _lockoutTimer;
         private int _lockoutSecondsRemaining = 0;
+        private DispatcherTimer? _welcomeTimer;
 
         public LoginWindow(IUserService userService)
         {
             InitializeComponent();
             _userService = userService;
+
+            // تطبيق اتجاه الواجهة وموضع أزرار التحكم وفق اللغة المحفوظة
+            bool isEn = SettingsHelper.Language == "en";
+            this.FlowDirection = isEn ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
+            WindowControlsPanel.HorizontalAlignment = isEn ? HorizontalAlignment.Right : HorizontalAlignment.Left;
+
             Loaded += LoginWindow_Loaded;
         }
 
@@ -38,6 +45,36 @@ namespace Sources.Views
             {
                 TxtUsername.Focus();
             }
+
+            StartWelcomeTimer();
+        }
+
+        private void StartWelcomeTimer()
+        {
+            _welcomeTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(3)
+            };
+            _welcomeTimer.Tick += WelcomeTimer_Tick;
+            _welcomeTimer.Start();
+        }
+
+        private void WelcomeTimer_Tick(object? sender, EventArgs e)
+        {
+            _welcomeTimer?.Stop();
+
+            // إخفاء أنيق مع Fade-out لبانر الترحيب
+            var fadeOut = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 1.0,
+                To = 0.0,
+                Duration = TimeSpan.FromMilliseconds(400)
+            };
+            fadeOut.Completed += (s, args) =>
+            {
+                WelcomeBanner.Visibility = Visibility.Collapsed;
+            };
+            WelcomeBanner.BeginAnimation(UIElement.OpacityProperty, fadeOut);
         }
 
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -50,16 +87,14 @@ namespace Sources.Views
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show(this, 
-                "هل تريد الخروج من المنظومة؟", 
-                "تأكيد الخروج", 
-                MessageBoxButton.YesNo, 
-                MessageBoxImage.Question, 
-                MessageBoxResult.No, 
-                MessageBoxOptions.RightAlign | MessageBoxOptions.RtlReading);
+            bool confirmed = Helpers.DialogHelper.ShowConfirmation(
+                TranslationHelper.GetString("MsgConfirmExitPrompt"),
+                TranslationHelper.GetString("MsgConfirmExitTitle")
+            );
 
-            if (result == MessageBoxResult.Yes)
+            if (confirmed)
             {
+                _welcomeTimer?.Stop();
                 _lockoutTimer?.Stop();
                 Environment.Exit(0);
             }
@@ -76,11 +111,13 @@ namespace Sources.Views
             {
                 this.WindowState = WindowState.Normal;
                 IconMaximize.Kind = MaterialDesignThemes.Wpf.PackIconKind.WindowMaximize;
+                BtnMaximize.ToolTip = TranslationHelper.GetString("TooltipMaximize");
             }
             else
             {
                 this.WindowState = WindowState.Maximized;
                 IconMaximize.Kind = MaterialDesignThemes.Wpf.PackIconKind.WindowRestore;
+                BtnMaximize.ToolTip = TranslationHelper.GetString("TooltipRestore");
             }
         }
 
@@ -92,6 +129,7 @@ namespace Sources.Views
                 TxtPasswordReveal.Visibility = Visibility.Visible;
                 TxtPassword.Visibility = Visibility.Collapsed;
                 IconRevealPassword.Kind = MaterialDesignThemes.Wpf.PackIconKind.EyeOff;
+                BtnRevealPassword.ToolTip = TranslationHelper.GetString("TooltipHidePassword");
                 TxtPasswordReveal.Focus();
                 if (TxtPasswordReveal.Text.Length > 0)
                     TxtPasswordReveal.CaretIndex = TxtPasswordReveal.Text.Length;
@@ -102,6 +140,7 @@ namespace Sources.Views
                 TxtPassword.Visibility = Visibility.Visible;
                 TxtPasswordReveal.Visibility = Visibility.Collapsed;
                 IconRevealPassword.Kind = MaterialDesignThemes.Wpf.PackIconKind.Eye;
+                BtnRevealPassword.ToolTip = TranslationHelper.GetString("TooltipShowPassword");
                 TxtPassword.Focus();
             }
         }
@@ -144,7 +183,7 @@ namespace Sources.Views
 
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
-                ShowError("يرجى إدخال اسم المستخدم وكلمة المرور.");
+                ShowError(TranslationHelper.GetString("MsgErrUsernamePasswordReq"));
                 return;
             }
 
@@ -167,6 +206,8 @@ namespace Sources.Views
                         SettingsHelper.SavedUsername = string.Empty;
                     }
 
+                    _welcomeTimer?.Stop();
+                    _lockoutTimer?.Stop();
                     var mainWindow = App.ServiceProvider.GetRequiredService<MainWindow>();
                     if (mainWindow.DataContext is ViewModels.MainViewModel mainVm)
                     {
@@ -186,14 +227,15 @@ namespace Sources.Views
                     }
                     else
                     {
-                        ShowError($"{message}. (محاولة {_failedAttempts} من 3)");
+                        var attemptStr = TranslationHelper.GetFormat("MsgAttemptCount", _failedAttempts);
+                        ShowError($"{message}. {attemptStr}");
                         BtnLogin.IsEnabled = true;
                     }
                 }
             }
             catch (Exception ex)
             {
-                ShowError($"حدث خطأ أثناء تسجيل الدخول: {ex.Message}");
+                ShowError(TranslationHelper.GetString("MsgLoginErrorPrefix") + ex.Message);
                 BtnLogin.IsEnabled = true;
             }
         }
@@ -207,7 +249,7 @@ namespace Sources.Views
             TxtPasswordReveal.IsEnabled = false;
             BtnRevealPassword.IsEnabled = false;
 
-            ShowError($"تم حظر الدخول مؤقتاً بسبب المحاولات الخاطئة. يرجى الانتظار {_lockoutSecondsRemaining} ثانية...");
+            ShowError(TranslationHelper.GetFormat("MsgLockoutActive", _lockoutSecondsRemaining));
 
             _lockoutTimer = new DispatcherTimer
             {
@@ -238,7 +280,7 @@ namespace Sources.Views
             }
             else
             {
-                ShowError($"تم حظر الدخول مؤقتاً بسبب المحاولات الخاطئة. يرجى الانتظار {_lockoutSecondsRemaining} ثانية...");
+                ShowError(TranslationHelper.GetFormat("MsgLockoutActive", _lockoutSecondsRemaining));
             }
         }
 

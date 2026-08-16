@@ -6,8 +6,12 @@
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
-        Title="مصادر | Sources" Height="480" Width="620">
-    <Border Background="#0B1320" CornerRadius="16" BorderBrush="#D4AF37" BorderThickness="2">
+        Title="{DynamicResource SplashWindowTitle}"
+        Height="450" Width="580">
+    <Border Background="#0F1E33" CornerRadius="16" BorderBrush="#C97A4A" BorderThickness="1.5">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="25" Color="#070D17" Opacity="0.6" ShadowDepth="4"/>
+        </Border.Effect>
         <Grid Margin="24">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
@@ -18,31 +22,40 @@
             </Grid.RowDefinitions>
 
             <!-- App Logo Badge -->
-            <Border Grid.Row="0" Width="130" Height="130" CornerRadius="65" Background="White" BorderBrush="#D4AF37" BorderThickness="2" Padding="10" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10">
+            <Border Grid.Row="0" Width="180" Height="180" CornerRadius="90" Background="Transparent" 
+                    BorderBrush="#C97A4A" BorderThickness="2" Padding="6" 
+                    VerticalAlignment="Center" HorizontalAlignment="Center" Margin="5">
                 <Border.Effect>
-                    <DropShadowEffect BlurRadius="15" Color="#D4AF37" Opacity="0.4" ShadowDepth="0"/>
+                    <DropShadowEffect BlurRadius="16" Color="#C97A4A" Opacity="0.3" ShadowDepth="0"/>
                 </Border.Effect>
                 <Image Source="pack://siteoforigin:,,,/Assets/sources_logo.png" RenderOptions.BitmapScalingMode="HighQuality" />
             </Border>
 
             <!-- App Title -->
-            <StackPanel Grid.Row="1" HorizontalAlignment="Center" Margin="10,5,10,15">
-                <TextBlock Text="مــصــادر | SOURCES" FontSize="26" FontWeight="Bold" Foreground="#D4AF37" HorizontalAlignment="Center"/>
-                <TextBlock Text="منظومة إدارة وتتبع المصادر والنظائر المشعة" FontSize="16" Foreground="#7FC3E8" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+            <StackPanel Grid.Row="1" HorizontalAlignment="Center" Margin="10,4,10,12">
+                <TextBlock Text="{DynamicResource SplashSystemTitle}" FontSize="24" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center"/>
+                <TextBlock Text="{DynamicResource SplashSystemSubtitle}" FontSize="14" Foreground="#94A3B8" HorizontalAlignment="Center" Margin="0,5,0,0"/>
             </StackPanel>
 
             <!-- Loading Progress -->
-            <ProgressBar Grid.Row="2" x:Name="ProgressBar" Height="6" Background="#162235" Foreground="#D4AF37" IsIndeterminate="False" Minimum="0" Maximum="100" Value="10" Margin="40,10,40,10" BorderThickness="0" />
+            <ProgressBar Grid.Row="2" x:Name="ProgressBar" Height="5" 
+                         Background="#162D4D" Foreground="#C97A4A" 
+                         IsIndeterminate="False" Minimum="0" Maximum="100" Value="10" 
+                         Margin="40,8,40,8" BorderThickness="0" />
 
             <!-- Status Text -->
-            <TextBlock Grid.Row="3" x:Name="TxtStatus" Text="جاري تهيئة منظومة مصادر وقاعدة البيانات..." Foreground="#9FB2CC" FontSize="13" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+            <TextBlock Grid.Row="3" x:Name="TxtStatus" Text="{DynamicResource SplashStatusInit}" 
+                       Foreground="#CBD5E1" FontSize="12.5" HorizontalAlignment="Center" Margin="0,0,0,12"/>
 
             <!-- Credits Footer -->
-            <StackPanel Grid.Row="4" Margin="0,5,0,0">
-                <Separator Background="#162235" Margin="40,0,40,10" />
-                <TextBlock Text="تصميم و تطوير و تنفيذ" Foreground="#9FB2CC" FontSize="11" HorizontalAlignment="Center" Opacity="0.8"/>
-                <TextBlock Text="م . ادريس فتح الله الهرى" Foreground="#D4AF37" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,2,0,0"/>
-                <TextBlock Text="م . رضا المريمى" Foreground="#D4AF37" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+            <StackPanel Grid.Row="4" Margin="0,4,0,0">
+                <Separator Background="#1E3A5F" Margin="40,0,40,8" />
+                <TextBlock Text="{DynamicResource CreditsDesignedBy}" Foreground="#94A3B8" FontSize="11" HorizontalAlignment="Center" Opacity="0.85"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,3,0,0">
+                    <TextBlock Text="{DynamicResource DesignerName1}" Foreground="#C97A4A" FontSize="12" FontWeight="SemiBold"/>
+                    <TextBlock Text="  •  " Foreground="#64748B" FontSize="12"/>
+                    <TextBlock Text="{DynamicResource DesignerName2}" Foreground="#C97A4A" FontSize="12" FontWeight="SemiBold"/>
+                </StackPanel>
             </StackPanel>
         </Grid>
     </Border>

@@ -507,5 +507,44 @@
                 <ContentControl Content="{Binding CurrentView}"/>
             </DockPanel>
         </DockPanel>
+
+        <!-- ══ Welcome Overlay ══ -->
+        <Grid x:Name="WelcomeOverlay" Visibility="Collapsed" Panel.ZIndex="999">
+            <!-- خلفية شفافة داكنة -->
+            <Border Background="#88000000"/>
+            <!-- البطاقة المركزية -->
+            <Border HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Background="{DynamicResource CardBackground}"
+                    CornerRadius="20" Padding="48,36"
+                    MinWidth="380">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="40" Color="#000000" Opacity="0.35" ShadowDepth="0"/>
+                </Border.Effect>
+                <StackPanel HorizontalAlignment="Center">
+                    <!-- شعار المنظومة -->
+                    <Border Width="80" Height="80" CornerRadius="40" 
+                            Background="Transparent"
+                            HorizontalAlignment="Center" Margin="0,0,0,12">
+                        <Image Source="pack://siteoforigin:,,,/Assets/sources_logo.png" 
+                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                    </Border>
+                    <!-- أيقونة الترحيب -->
+                    <materialDesign:PackIcon Kind="HandWave" Width="36" Height="36"
+                                             Foreground="{DynamicResource PrimaryBrush}"
+                                             HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                    <!-- نص الترحيب الرئيسي -->
+                    <TextBlock x:Name="TxtWelcomeOverlay"
+                               FontSize="22" FontWeight="Bold"
+                               Foreground="{DynamicResource TextPrimary}"
+                               HorizontalAlignment="Center" TextAlignment="Center"
+                               Margin="0,0,0,8"/>
+                    <!-- اسم المنظومة -->
+                    <TextBlock Text="{DynamicResource SplashSystemTitle}"
+                               FontSize="14" Foreground="{DynamicResource PrimaryBrush}"
+                               HorizontalAlignment="Center" TextAlignment="Center"
+                               FontWeight="SemiBold"/>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </Window>

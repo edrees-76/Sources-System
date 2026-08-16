@@ -1,5 +1,7 @@
 using System;
 using System.Windows;
+using System.Windows.Media.Animation;
+using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Sources.ViewModels;
 using Sources.Helpers;
@@ -12,6 +14,7 @@ public partial class MainWindow : Window
 {
     private readonly MainViewModel _viewModel;
     private bool _isLockingScreen = false;
+    private DispatcherTimer? _welcomeTimer;
 
     public MainWindow()
     {
@@ -29,6 +32,39 @@ public partial class MainWindow : Window
         this.PreviewMouseDown += (s, e) => _viewModel.ResetInactivity();
 
         _viewModel.StartInactivityTimer();
+        this.Loaded += MainWindow_Loaded;
+    }
+
+    private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+    {
+        var userName = _viewModel.CurrentUserName;
+        if (string.IsNullOrWhiteSpace(userName)) return;
+
+        var greeting = TranslationHelper.GetString("WelcomeGreeting");
+        TxtWelcomeOverlay.Text = $"{greeting}، {userName}";
+        WelcomeOverlay.Visibility = Visibility.Visible;
+        WelcomeOverlay.Opacity = 1;
+
+        _welcomeTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(3)
+        };
+        _welcomeTimer.Tick += (s, args) =>
+        {
+            _welcomeTimer.Stop();
+            var fadeOut = new DoubleAnimation
+            {
+                From = 1.0,
+                To = 0.0,
+                Duration = TimeSpan.FromMilliseconds(500)
+            };
+            fadeOut.Completed += (_, __) =>
+            {
+                WelcomeOverlay.Visibility = Visibility.Collapsed;
+            };
+            WelcomeOverlay.BeginAnimation(UIElement.OpacityProperty, fadeOut);
+        };
+        _welcomeTimer.Start();
     }
 
     private void ViewModel_LockRequested(object? sender, EventArgs e)

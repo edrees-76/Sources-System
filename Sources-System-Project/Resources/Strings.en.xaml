@@ -104,18 +104,52 @@
     <system:String x:Key="BtnSearch">Search</system:String>
     <system:String x:Key="PlaceholderSearch">Search...</system:String>
 
-    <!-- Login Screen -->
+    <!-- Splash & Login Screens -->
+    <system:String x:Key="SplashWindowTitle">SOURCES | مصادر</system:String>
+    <system:String x:Key="SplashSystemTitle">SOURCES | مصادر</system:String>
+    <system:String x:Key="SplashSystemSubtitle">Radioactive Sources &amp; Isotopes Tracking System</system:String>
+    <system:String x:Key="SplashStatusInit">Initializing Sources System and database...</system:String>
+    <system:String x:Key="SplashStatusConnecting">Connecting to database...</system:String>
+    <system:String x:Key="SplashStatusLoadingAssets">Loading branding and assets...</system:String>
+    <system:String x:Key="SplashStatusReady">Ready!</system:String>
+    <system:String x:Key="CreditsDesignedBy">Designed, Developed &amp; Implemented By</system:String>
+    <system:String x:Key="DesignerName1">Eng. Edrees Fathallah Elhri</system:String>
+    <system:String x:Key="DesignerName2">Eng. Reda Elmrimi</system:String>
+
+    <system:String x:Key="LoginWindowTitle">Login | SOURCES</system:String>
+    <system:String x:Key="CenterName">Tajoura Nuclear Research Center</system:String>
+    <system:String x:Key="CenterAcronym">TNRC</system:String>
+    <system:String x:Key="SystemTitlePart1">SOURCES / </system:String>
+    <system:String x:Key="SystemTitlePart2">مصادر</system:String>
+    <system:String x:Key="SystemSubtitle">Radioactive Sources &amp; Isotopes Tracking System</system:String>
     <system:String x:Key="LoginTitle">Login</system:String>
     <system:String x:Key="LoginSubtitle">Welcome to Sources Radioactive Source Tracking System</system:String>
     <system:String x:Key="BrandNameAr">مصادر</system:String>
     <system:String x:Key="BrandNameEn">SOURCES</system:String>
     <system:String x:Key="LabelUsername">Username</system:String>
+    <system:String x:Key="HintUsername">Enter username</system:String>
     <system:String x:Key="LabelPassword">Password</system:String>
-    <system:String x:Key="BtnLogin">Login to System</system:String>
+    <system:String x:Key="HintPassword">Enter password</system:String>
+    <system:String x:Key="BtnLogin">Login</system:String>
     <system:String x:Key="LabelRememberMe">Remember Me</system:String>
-    <system:String x:Key="TextDesignedBy">Designed &amp; Developed by</system:String>
+    <system:String x:Key="TextDesignedBy">Designed, Developed &amp; Implemented By</system:String>
     <system:String x:Key="TextAllRightsReserved">All rights reserved 2026</system:String>
-    <system:String x:Key="LoginWelcome">Welcome with ease and security</system:String>
+    <system:String x:Key="LoginWelcome">Welcome to Sources System</system:String>
+    <system:String x:Key="WelcomeGreeting">Welcome</system:String>
+
+    <system:String x:Key="TooltipMinimize">Minimize</system:String>
+    <system:String x:Key="TooltipMaximize">Maximize</system:String>
+    <system:String x:Key="TooltipRestore">Restore</system:String>
+    <system:String x:Key="TooltipClose">Close</system:String>
+    <system:String x:Key="TooltipShowPassword">Show password</system:String>
+    <system:String x:Key="TooltipHidePassword">Hide password</system:String>
+
+    <system:String x:Key="MsgConfirmExitPrompt">Are you sure you want to exit the system?</system:String>
+    <system:String x:Key="MsgConfirmExitTitle">Confirm Exit</system:String>
+    <system:String x:Key="MsgErrUsernamePasswordReq">Please enter username and password.</system:String>
+    <system:String x:Key="MsgLoginErrorPrefix">An error occurred during login: </system:String>
+    <system:String x:Key="MsgAttemptCount">(Attempt {0} of 3)</system:String>
+    <system:String x:Key="MsgLockoutActive">Login temporarily locked due to repeated failed attempts. Please wait {0} seconds...</system:String>
 
     <!-- Settings Page -->
     <system:String x:Key="SettingsTitle">Settings</system:String>
