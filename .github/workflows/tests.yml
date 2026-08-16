@@ -1,0 +1,30 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore Dependencies
+        run: dotnet restore Sources.sln
+
+      - name: Build Solution
+        run: dotnet build Sources.sln --configuration Release --no-restore
+
+      - name: Run Unit Tests
+        run: dotnet test Sources.Tests/Sources.Tests.csproj --configuration Release --no-build --verbosity normal
