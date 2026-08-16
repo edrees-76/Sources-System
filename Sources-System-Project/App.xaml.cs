@@ -120,7 +120,6 @@ public partial class App : Application
 
         // ViewModels
         services.AddSingleton<MainViewModel>();
-        services.AddTransient<LoginViewModel>();
         services.AddTransient<DashboardViewModel>();
         services.AddTransient<SourcesViewModel>();
         services.AddTransient<RadioisotopesViewModel>();

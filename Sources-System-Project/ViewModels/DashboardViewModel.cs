@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using LiveChartsCore;
+using LiveChartsCore.Defaults;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using SkiaSharp;
@@ -145,8 +146,9 @@ public partial class DashboardViewModel : ObservableObject
     [ObservableProperty] private DrawMarginFrame? _decayDrawMarginFrame = new DrawMarginFrame { Stroke = null };
     [ObservableProperty] private DrawMarginFrame? _barDrawMarginFrame = new DrawMarginFrame { Stroke = null };
 
-    // ألوان متعددة لمنحنيات التحلل
-    private static readonly string[] DecayColors = { "#1F5A66", "#C97A4A", "#3FAE7A", "#E0A93E", "#4F7FA3" };
+    // ألوان متعددة لمنحنيات التحلل من لوحة الألوان المعتمدة (Colors.xaml)
+    private static readonly string[] DecayStrokeColors = { "#1F5A66", "#C97A4A", "#3FAE7A", "#4F7FA3", "#8E44AD" };
+    private static readonly string[] DecayFillColors = { "#1A1F5A66", "#1AC97A4A", "#1A3FAE7A", "#1A4F7FA3", "#1A8E44AD" };
 
     // دهان النصوص في الرسوم البيانية - أزرق للوضع الفاتح، أبيض للوضع الداكن
     private static SolidColorPaint GetAxisPaint()
@@ -260,7 +262,10 @@ public partial class DashboardViewModel : ObservableObject
 
             // ═══ منحنى التحلل: أعلى 5 مصادر + اختيار ═══
             AvailableSources = new ObservableCollection<Source>(
-                sources.Where(s => s.Radioisotope != null).ToList());
+                sources.Where(s =>
+                    (s.Radioisotope != null && s.InitialActivityUnit != null) ||
+                    (s.HasDetailedIsotopes && s.SourceIsotopes != null && s.SourceIsotopes.Any(si => si.Radioisotope != null))
+                ).ToList());
             UpdateDecayCurves(sources, SelectedDecaySource);
 
             // ═══ مصادر لوحة القيادة (كائنات Source مباشرة) ═══
@@ -561,15 +566,14 @@ public partial class DashboardViewModel : ObservableObject
         }
     }
 
-    // ───────────── منحنى التحلل الزمني — محاور بالإنجليزية + تواريخ ─────────────
+    // ───────────── منحنى التحلل الزمني — وضع المقارنة (أ) ووضع المصدر المفرد (ب) ─────────────
     private void UpdateDecayCurves(List<Source>? allSources, Source? selectedSource)
     {
         var axisPaint = GetAxisPaint();
-        var axisLinePaint = new SolidColorPaint(new SKColor(180, 180, 180, 100)) { StrokeThickness = 1 };
+        var axisLinePaint = GetAxisLinePaint();
         var seriesList = new List<ISeries>();
-        var dateLabels = new List<string>();
 
-        // Labeler helper to convert log10 values back to readable format
+        // Labeler helper to convert log10 values back to readable format for Top 5 comparison
         Func<double, string> logLabeler = value =>
         {
             double real = Math.Pow(10, value);
@@ -584,39 +588,103 @@ public partial class DashboardViewModel : ObservableObject
         {
             var sources = allSources ?? _sourceService.GetAllSources();
 
-            List<Source> sourcesToRender = new();
-
-            // Debug: trace selection logic
             if (selectedSource != null)
             {
-                Console.Error.WriteLine($"[DecayCurve] Selected: {selectedSource.SourceCode}, " +
-                    $"Radioisotope={selectedSource.Radioisotope?.Symbol ?? "NULL"}, " +
-                    $"InitialActivityUnit={(selectedSource.InitialActivityUnit != null ? "OK" : "NULL")}, " +
-                    $"InitialActivityValue={selectedSource.InitialActivityValue}");
-            }
+                // ═══════════════════════════════════════════════════════════
+                // الوضع (ب) — اختيار مصدر محدد: نسخة طبق الأصل من الحاسبة
+                // ═══════════════════════════════════════════════════════════
+                var targetSource = sources.FirstOrDefault(s => s.Id == selectedSource.Id || s.SourceCode == selectedSource.SourceCode) ?? selectedSource;
 
-            if (selectedSource?.Radioisotope != null && selectedSource.InitialActivityUnit != null)
-            {
-                sourcesToRender.Add(selectedSource);
-            }
-            else if (selectedSource != null)
-            {
-                // The selected source is missing navigation properties — try to find the full version from DB
-                var fullSource = sources.FirstOrDefault(s => s.SourceCode == selectedSource.SourceCode);
-                if (fullSource?.Radioisotope != null && fullSource.InitialActivityUnit != null)
+                var rawCurve = _decayService.GetSourceCompositeDecayCurve(targetSource, 60);
+
+                if (rawCurve.Count > 0)
                 {
-                    sourcesToRender.Add(fullSource);
-                    Console.Error.WriteLine($"[DecayCurve] Recovered full source for: {fullSource.SourceCode}");
-                }
-                else
-                {
-                    Console.Error.WriteLine($"[DecayCurve] Could not recover source: {selectedSource.SourceCode}");
+                    // اختيار الوحدة الأنسب تلقائياً بناءً على النشاط الأقصى في المنحنى
+                    double maxBq = rawCurve.Max(pt => pt.ActivityBq);
+                    string chosenUnit;
+                    if (maxBq >= 1e12) chosenUnit = "TBq";
+                    else if (maxBq >= 1e9) chosenUnit = "GBq";
+                    else if (maxBq >= 1e6) chosenUnit = "MBq";
+                    else if (maxBq >= 1e3) chosenUnit = "kBq";
+                    else chosenUnit = "Bq";
+
+                    var curvePoints = rawCurve.Select(pt => new DateTimePoint(
+                        pt.Time, _decayService.ConvertFromBq(pt.ActivityBq, chosenUnit)
+                    )).ToList();
+
+                    // حساب النشاط الحالي بالـ Bq ثم تحويله للوحدة المختارة
+                    double curUnitConv = targetSource.CurrentActivityUnit?.ConversionToBq ?? 1;
+                    double currentBq = targetSource.CurrentActivityValue * curUnitConv;
+                    double currentConverted = _decayService.ConvertFromBq(currentBq, chosenUnit);
+
+                    var currentPoint = new List<DateTimePoint> { new DateTimePoint(DateTime.Now, currentConverted) };
+
+                    var strokeColor = SKColor.Parse("#1F5A66"); // Petroleum Blue
+                    var fillColor = SKColor.Parse("#1A1F5A66"); // 10% Alpha Fill
+                    var pointColor = SKColor.Parse("#C25B4A");  // Danger/Terracotta Red
+
+                    seriesList.Add(new LineSeries<DateTimePoint>
+                    {
+                        Name = "Decay Curve",
+                        Values = curvePoints,
+                        Stroke = new SolidColorPaint(strokeColor) { StrokeThickness = 3 },
+                        Fill = new SolidColorPaint(fillColor),
+                        GeometrySize = 0,
+                        LineSmoothness = 0.65,
+                        XToolTipLabelFormatter = point => point.Model?.DateTime.ToString("yyyy/MM/dd") ?? "",
+                        YToolTipLabelFormatter = point => $"{(point.Model?.Value ?? 0):N2} {chosenUnit}"
+                    });
+
+                    seriesList.Add(new ScatterSeries<DateTimePoint>
+                    {
+                        Name = "Calculated Point",
+                        Values = currentPoint,
+                        Stroke = new SolidColorPaint(SKColors.White) { StrokeThickness = 2 },
+                        Fill = new SolidColorPaint(pointColor),
+                        GeometrySize = 14,
+                        XToolTipLabelFormatter = point => point.Model?.DateTime.ToString("yyyy/MM/dd") ?? "",
+                        YToolTipLabelFormatter = point => $"{(point.Model?.Value ?? 0):N2} {chosenUnit}"
+                    });
+
+
+
+                    DecayXAxes = new Axis[]
+                    {
+                        new DateTimeAxis(TimeSpan.FromDays(1), date => date.ToString("yyyy/MM/dd"))
+                        {
+                            TextSize = 11,
+                            LabelsPaint = axisPaint,
+                            SeparatorsPaint = axisLinePaint
+                        }
+                    };
+
+                    DecayYAxes = new Axis[]
+                    {
+                        new Axis
+                        {
+                            TextSize = 11,
+                            Labeler = val => $"{val:N2} {chosenUnit}",
+                            LabelsPaint = axisPaint,
+                            SeparatorsPaint = axisLinePaint,
+                            Position = LiveChartsCore.Measure.AxisPosition.Start
+                        }
+                    };
+
+                    DecayLegendItems = new ObservableCollection<LegendItem>
+                    {
+                        new LegendItem { Label = TranslationHelper.GetString("CalcChartLegendCurve"), Color = "#1F5A66" },
+                        new LegendItem { Label = TranslationHelper.GetString("CalcChartLegendCurrent"), Color = "#C25B4A" }
+                    };
                 }
             }
             else
             {
-                sourcesToRender = sources
-                    .Where(s => s.Radioisotope != null && s.InitialActivityUnit != null)
+                // ═══════════════════════════════════════════════════════════
+                // الوضع (أ) — لا يوجد اختيار: مقارنة "أعلى 5 مصادر"
+                // ═══════════════════════════════════════════════════════════
+                var sourcesToRender = sources
+                    .Where(s => (s.Radioisotope != null && s.InitialActivityUnit != null) ||
+                                (s.HasDetailedIsotopes && s.SourceIsotopes != null && s.SourceIsotopes.Any(si => si.Radioisotope != null)))
                     .OrderByDescending(s =>
                     {
                         var unit = s.CurrentActivityUnit;
@@ -624,92 +692,150 @@ public partial class DashboardViewModel : ObservableObject
                     })
                     .Take(5)
                     .ToList();
-            }
 
-            if (sourcesToRender.Any())
-            {
-                // توحيد النطاق الزمني لجميع النطاقات المعروضة
-                DateTime startDate = sourcesToRender.Min(s => s.CalibrationDate);
-
-                // البحث عن أطول نصف عمر لاحتساب نهاية المنحنى (5 أنصاف أعمار في المستقبل)
-                double maxHalfLifeSeconds = 0;
-                foreach (var s in sourcesToRender)
+                if (sourcesToRender.Any())
                 {
-                    double val = s.Radioisotope!.HalfLife;
-                    string unit = s.Radioisotope.HalfLifeUnit?.ToLower() ?? "years";
-                    double seconds = unit switch
+                    // توحيد النطاق الزمني لجميع النطاقات المعروضة
+                    DateTime startDate = sourcesToRender.Min(s =>
                     {
-                        "seconds" => val,
-                        "minutes" => val * 60,
-                        "hours" => val * 3600,
-                        "days" => val * 86400,
-                        "years" => val * 365.25 * 86400,
-                        _ => val * 365.25 * 86400
-                    };
-                    if (seconds > maxHalfLifeSeconds) maxHalfLifeSeconds = seconds;
-                }
+                        if (s.HasDetailedIsotopes && s.SourceIsotopes != null && s.SourceIsotopes.Any(si => si.Radioisotope != null))
+                            return s.SourceIsotopes.Where(si => si.Radioisotope != null).Min(si => si.CalibrationDate ?? (s.CalibrationDate != default ? s.CalibrationDate : DateTime.Today));
+                        return s.CalibrationDate != default ? s.CalibrationDate : DateTime.Today;
+                    });
+                    if (startDate == default) startDate = DateTime.Today;
 
-                DateTime endDate;
-                try
-                {
-                    double secondsToAdd = maxHalfLifeSeconds * 5;
-                    // Cap seconds to avoid overflowing DateTime.MaxValue
-                    double maxSecondsAllowed = (DateTime.MaxValue - DateTime.Now).TotalSeconds;
-                    if (secondsToAdd > maxSecondsAllowed) secondsToAdd = maxSecondsAllowed - 86400; // Leave 1 day buffer
-                    
-                    endDate = DateTime.Now.AddSeconds(secondsToAdd);
-                    
-                    if ((endDate - startDate).TotalSeconds < secondsToAdd)
+                    // البحث عن أطول نصف عمر لاحتساب نهاية المنحنى (5 أنصاف أعمار في المستقبل)
+                    double maxHalfLifeSeconds = 0;
+                    foreach (var s in sourcesToRender)
                     {
-                        double maxStartSecondsAllowed = (DateTime.MaxValue - startDate).TotalSeconds;
-                        if (secondsToAdd > maxStartSecondsAllowed) secondsToAdd = maxStartSecondsAllowed - 86400;
-                        endDate = startDate.AddSeconds(secondsToAdd);
+                        if (s.HasDetailedIsotopes && s.SourceIsotopes != null && s.SourceIsotopes.Any(si => si.Radioisotope != null))
+                        {
+                            foreach (var si in s.SourceIsotopes.Where(si => si.Radioisotope != null))
+                            {
+                                double sec = ConvertHalfLifeToSeconds(si.Radioisotope!.HalfLife, si.Radioisotope.HalfLifeUnit);
+                                if (sec > maxHalfLifeSeconds) maxHalfLifeSeconds = sec;
+                            }
+                        }
+                        else if (s.Radioisotope != null)
+                        {
+                            double sec = ConvertHalfLifeToSeconds(s.Radioisotope.HalfLife, s.Radioisotope.HalfLifeUnit);
+                            if (sec > maxHalfLifeSeconds) maxHalfLifeSeconds = sec;
+                        }
                     }
-                }
-                catch
-                {
-                    // Fallback to max possible date if any math overflow occurs
-                    endDate = DateTime.MaxValue.AddDays(-1);
-                }
+                    if (maxHalfLifeSeconds <= 0) maxHalfLifeSeconds = 86400;
 
-                bool labelsSet = false;
-
-                for (int i = 0; i < sourcesToRender.Count; i++)
-                {
+                    DateTime endDate;
                     try
                     {
-                        var source = sourcesToRender[i];
-                        var initialBq = source.InitialActivityValue * source.InitialActivityUnit!.ConversionToBq;
-                        
-                        var curve = _decayService.GenerateUnifiedDecayCurve(
-                            initialBq, source.Radioisotope!.HalfLife, source.Radioisotope.HalfLifeUnit,
-                            source.CalibrationDate, startDate, endDate, 50);
+                        double secondsToAdd = maxHalfLifeSeconds * 5;
+                        double maxSecondsAllowed = (DateTime.MaxValue - DateTime.Now).TotalSeconds;
+                        if (secondsToAdd > maxSecondsAllowed) secondsToAdd = maxSecondsAllowed - 86400;
+                        endDate = DateTime.Now.AddSeconds(secondsToAdd);
 
-                        if (!labelsSet && curve.Any())
+                        if ((endDate - startDate).TotalSeconds < secondsToAdd)
                         {
-                            dateLabels = curve.Select(c => c.Time.ToString("M-yyyy")).ToList();
-                            labelsSet = true;
+                            double maxStartSecondsAllowed = (DateTime.MaxValue - startDate).TotalSeconds;
+                            if (secondsToAdd > maxStartSecondsAllowed) secondsToAdd = maxStartSecondsAllowed - 86400;
+                            endDate = startDate.AddSeconds(secondsToAdd);
                         }
+                    }
+                    catch
+                    {
+                        endDate = DateTime.MaxValue.AddDays(-1);
+                    }
 
-                        var values = curve.Select(c => c.Activity > 0 ? Math.Log10(c.Activity) : 0).ToArray();
-                        var color = selectedSource != null ? SKColor.Parse("#4A86E8") : SKColor.Parse(DecayColors[i % DecayColors.Length]);
-                        var thickness = selectedSource != null ? 4f : 2.5f;
-
-                        seriesList.Add(new LineSeries<double>
+                    for (int i = 0; i < sourcesToRender.Count; i++)
+                    {
+                        try
                         {
-                            Values = values,
-                            Name = source.SourceCode,
-                            Fill = null,
-                            GeometrySize = 0,
-                            GeometryFill = null,
-                            GeometryStroke = null,
-                            Stroke = new SolidColorPaint(color, thickness)
+                            var source = sourcesToRender[i];
+                            List<(DateTime Time, double Activity)> curve;
+
+                            if (source.HasDetailedIsotopes && source.SourceIsotopes != null && source.SourceIsotopes.Any(si => si.Radioisotope != null))
+                            {
+                                curve = new List<(DateTime Time, double Activity)>();
+                                double totalSec = (endDate - startDate).TotalSeconds;
+                                if (totalSec <= 0) totalSec = 1;
+                                double interval = totalSec / 50;
+
+                                for (int step = 0; step <= 50; step++)
+                                {
+                                    var t = startDate.AddSeconds(step * interval);
+                                    double totalAct = 0;
+                                    foreach (var si in source.SourceIsotopes.Where(si => si.Radioisotope != null))
+                                    {
+                                        var calib = si.CalibrationDate ?? (source.CalibrationDate != default ? source.CalibrationDate : startDate);
+                                        double unitConv = si.ActivityUnit?.ConversionToBq ?? source.InitialActivityUnit?.ConversionToBq ?? 1;
+                                        double initBq = (si.InitialActivityValue ?? 0) * unitConv;
+                                        double hlSec = ConvertHalfLifeToSeconds(si.Radioisotope!.HalfLife, si.Radioisotope.HalfLifeUnit);
+                                        double el = (t - calib).TotalSeconds;
+                                        if (el <= 0) totalAct += initBq;
+                                        else totalAct += initBq * Math.Pow(0.5, el / hlSec);
+                                    }
+                                    curve.Add((t, totalAct));
+                                }
+                            }
+                            else
+                            {
+                                var initialBq = source.InitialActivityValue * (source.InitialActivityUnit?.ConversionToBq ?? 1);
+                                curve = _decayService.GenerateUnifiedDecayCurve(
+                                    initialBq, source.Radioisotope!.HalfLife, source.Radioisotope.HalfLifeUnit,
+                                    source.CalibrationDate, startDate, endDate, 50);
+                            }
+
+                            var points = curve.Select(c => new DateTimePoint(c.Time, c.Activity > 0 ? Math.Log10(c.Activity) : 0)).ToList();
+                            var strokeColor = SKColor.Parse(DecayStrokeColors[i % DecayStrokeColors.Length]);
+                            var fillColor = SKColor.Parse(DecayFillColors[i % DecayFillColors.Length]);
+
+                            seriesList.Add(new LineSeries<DateTimePoint>
+                            {
+                                Values = points,
+                                Name = source.SourceCode,
+                                Stroke = new SolidColorPaint(strokeColor) { StrokeThickness = 3 },
+                                Fill = new SolidColorPaint(fillColor),
+                                GeometrySize = 0,
+                                LineSmoothness = 0.65
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"[DecayCurve] Error for source {sourcesToRender[i].SourceCode}: {ex.Message}");
+                        }
+                    }
+
+                    DecayXAxes = new Axis[]
+                    {
+                        new DateTimeAxis(TimeSpan.FromDays(1), date => date.ToString("yyyy/MM/dd"))
+                        {
+                            TextSize = 11,
+                            LabelsPaint = axisPaint,
+                            SeparatorsPaint = axisLinePaint
+                        }
+                    };
+
+                    DecayYAxes = new Axis[]
+                    {
+                        new Axis
+                        {
+                            TextSize = 11,
+                            Labeler = logLabeler,
+                            LabelsPaint = axisPaint,
+                            SeparatorsPaint = axisLinePaint,
+                            Position = LiveChartsCore.Measure.AxisPosition.Start,
+                            MinStep = 1
+                        }
+                    };
+
+                    var decayLegend = new ObservableCollection<LegendItem>();
+                    for (int i = 0; i < seriesList.Count; i++)
+                    {
+                        decayLegend.Add(new LegendItem
+                        {
+                            Label = seriesList[i].Name ?? "",
+                            Color = DecayStrokeColors[i % DecayStrokeColors.Length]
                         });
                     }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"[DecayCurve] Error for source {sourcesToRender[i].SourceCode}: {ex.Message}\n{ex.StackTrace}");
-                    }
+                    DecayLegendItems = decayLegend;
                 }
             }
         }
@@ -720,48 +846,8 @@ public partial class DashboardViewModel : ObservableObject
 
         // Always set the chart properties — even if data generation failed
         ActivityDecaySeries = seriesList.ToArray();
-
-        // تحديث مفتاح الرسم المخصص لمنحنى التحلل
-        var decayLegend = new ObservableCollection<LegendItem>();
-        foreach (var s in seriesList)
-        {
-            var ls = s as LineSeries<double>;
-            if (ls != null)
-            {
-                decayLegend.Add(new LegendItem 
-                { 
-                    Label = ls.Name ?? "", 
-                    Color = (ls.Stroke as SolidColorPaint)?.Color.ToString() ?? "#1F5A66"
-                });
-            }
-        }
-        DecayLegendItems = decayLegend;
-        
-        DecayXAxes = new Axis[] 
-        { 
-            new Axis 
-            { 
-                TextSize = 11,
-                Labels = dateLabels.Count > 0 ? dateLabels.ToArray() : null,
-                LabelsPaint = axisPaint,
-                TicksPaint = null,
-                MinStep = 1,
-                SeparatorsPaint = axisLinePaint
-            } 
-        };
-        DecayYAxes = new Axis[] 
-        { 
-            new Axis 
-            { 
-                TextSize = 11,
-                Labeler = logLabeler,
-                LabelsPaint = axisPaint,
-                SeparatorsPaint = axisLinePaint,
-                Position = LiveChartsCore.Measure.AxisPosition.Start,
-                MinStep = 1
-            } 
-        };
     }
+
 
     // ───────────── أدوات التنسيق ─────────────
     private static string FormatActivityValue(double value, string unitSymbol)

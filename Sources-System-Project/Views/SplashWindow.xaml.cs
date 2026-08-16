@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
+using Sources.Helpers;
 
 namespace Sources.Views
 {
@@ -14,6 +15,10 @@ namespace Sources.Views
         public SplashWindow()
         {
             InitializeComponent();
+
+            // تطبيق اتجاه الواجهة وفق اللغة المحفوظة
+            this.FlowDirection = SettingsHelper.Language == "en" ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
+
             _timer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(20)
@@ -29,15 +34,15 @@ namespace Sources.Views
 
             if (_progress == 30)
             {
-                TxtStatus.Text = "جاري الاتصال بقاعدة البيانات...";
+                TxtStatus.Text = TranslationHelper.GetString("SplashStatusConnecting");
             }
             else if (_progress == 60)
             {
-                TxtStatus.Text = "جاري تحميل الهوية والأصول...";
+                TxtStatus.Text = TranslationHelper.GetString("SplashStatusLoadingAssets");
             }
             else if (_progress == 90)
             {
-                TxtStatus.Text = "اكتمل التجهيز!";
+                TxtStatus.Text = TranslationHelper.GetString("SplashStatusReady");
             }
             else if (_progress >= 100)
             {

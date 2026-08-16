@@ -384,22 +384,27 @@ public partial class ActivityCalculatorViewModel : ObservableObject
             {
                 new LineSeries<DateTimePoint>
                 {
-                    Name = TranslationHelper.GetString("CalcChartLegendCurve"),
+                    Name = "Decay Curve",
                     Values = curvePoints,
                     Stroke = new SolidColorPaint(SKColor.Parse("#1976D2")) { StrokeThickness = 3 },
                     GeometrySize = 0,
                     Fill = new SolidColorPaint(SKColor.Parse("#1A1976D2")),
-                    LineSmoothness = 0.65
+                    LineSmoothness = 0.65,
+                    XToolTipLabelFormatter = point => point.Model?.DateTime.ToString("yyyy/MM/dd") ?? "",
+                    YToolTipLabelFormatter = point => $"{FormatScientific(point.Model?.Value ?? 0)} {outUnit}"
                 },
                 new ScatterSeries<DateTimePoint>
                 {
-                    Name = TranslationHelper.GetString("CalcChartLegendCurrent"),
+                    Name = "Calculated Point",
                     Values = calcPoint,
                     Stroke = new SolidColorPaint(SKColors.White) { StrokeThickness = 2 },
                     Fill = new SolidColorPaint(SKColor.Parse("#D32F2F")),
-                    GeometrySize = 14
+                    GeometrySize = 14,
+                    XToolTipLabelFormatter = point => point.Model?.DateTime.ToString("yyyy/MM/dd") ?? "",
+                    YToolTipLabelFormatter = point => $"{FormatScientific(point.Model?.Value ?? 0)} {outUnit}"
                 }
             };
+
 
             DecaySeries = seriesList.ToArray();
 

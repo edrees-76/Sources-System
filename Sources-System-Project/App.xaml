@@ -40,9 +40,6 @@
             </ResourceDictionary.MergedDictionaries>
 
             <!-- View Templates -->
-            <DataTemplate DataType="{x:Type vm:LoginViewModel}">
-                <views:LoginView/>
-            </DataTemplate>
             <DataTemplate DataType="{x:Type vm:DashboardViewModel}">
                 <views:DashboardView/>
             </DataTemplate>

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Sources.Models;
 
 namespace Sources.Services;
@@ -189,10 +191,144 @@ public class DecayCalculationService : IDecayCalculationService
         return curve;
     }
 
+    /// <summary>
+    /// توليد منحنى التحلل المركب لمصدر (سواء كان أحادي أو متعدد النويدات)
+    /// </summary>
+    public List<(DateTime Time, double ActivityBq)> GetSourceCompositeDecayCurve(Source source, int points = 60)
+    {
+        var curve = new List<(DateTime, double)>();
+        if (source == null || points <= 0) return curve;
+
+        // حالة 1: المصدر متعدد النويدات ويحتوي على تفاصيل نويدات صالحة
+        if (source.HasDetailedIsotopes &&
+            source.SourceIsotopes != null &&
+            source.SourceIsotopes.Any(si => si.Radioisotope != null && (si.InitialActivityValue ?? 0) > 0))
+        {
+            var validIsotopes = source.SourceIsotopes
+                .Where(si => si.Radioisotope != null && (si.InitialActivityValue ?? 0) > 0)
+                .ToList();
+
+            if (validIsotopes.Count > 0)
+            {
+                // أقدم تاريخ معايرة بين كل النويدات
+                var startDate = validIsotopes.Min(si => si.CalibrationDate ?? (source.CalibrationDate != default ? source.CalibrationDate : DateTime.Today));
+                if (startDate == default) startDate = DateTime.Today;
+
+                // أطول فترة نصف عمر بين كل النويدات
+                double maxHalfLifeSec = 0;
+                foreach (var si in validIsotopes)
+                {
+                    var iso = si.Radioisotope!;
+                    double sec = ConvertToSeconds(iso.HalfLife, iso.HalfLifeUnit);
+                    if (sec > maxHalfLifeSec) maxHalfLifeSec = sec;
+                }
+                if (maxHalfLifeSec <= 0) maxHalfLifeSec = 86400; // يوم كافتراضي
+
+                DateTime endDate;
+                try
+                {
+                    double secondsToAdd = maxHalfLifeSec * 5;
+                    double maxSecondsAllowed = (DateTime.MaxValue - startDate).TotalSeconds;
+                    if (secondsToAdd > maxSecondsAllowed) secondsToAdd = maxSecondsAllowed - 86400;
+                    endDate = startDate.AddSeconds(secondsToAdd);
+                }
+                catch
+                {
+                    endDate = DateTime.MaxValue.AddDays(-1);
+                }
+
+                double totalSeconds = (endDate - startDate).TotalSeconds;
+                if (totalSeconds <= 0) totalSeconds = 1;
+                double interval = totalSeconds / points;
+
+                for (int i = 0; i <= points; i++)
+                {
+                    var pointTime = startDate.AddSeconds(i * interval);
+                    double totalActivityBq = 0;
+
+                    foreach (var si in validIsotopes)
+                    {
+                        var iso = si.Radioisotope!;
+                        var calibDate = si.CalibrationDate ?? (source.CalibrationDate != default ? source.CalibrationDate : startDate);
+                        double unitConv = si.ActivityUnit?.ConversionToBq ?? source.InitialActivityUnit?.ConversionToBq ?? 1;
+                        double initBq = (si.InitialActivityValue ?? 0) * unitConv;
+                        double halfLifeSec = ConvertToSeconds(iso.HalfLife, iso.HalfLifeUnit);
+
+                        if (halfLifeSec <= 0 || initBq <= 0)
+                        {
+                            totalActivityBq += initBq;
+                            continue;
+                        }
+
+                        double elapsed = (pointTime - calibDate).TotalSeconds;
+                        if (elapsed <= 0)
+                        {
+                            totalActivityBq += initBq;
+                        }
+                        else
+                        {
+                            double decayFactor = Math.Pow(0.5, elapsed / halfLifeSec);
+                            totalActivityBq += initBq * decayFactor;
+                        }
+                    }
+
+                    curve.Add((pointTime, totalActivityBq));
+                }
+
+                return curve;
+            }
+        }
+
+        // حالة 2: المصدر أحادي النويدة (أو الرجوع للنظير الأساسي)
+        if (source.Radioisotope != null)
+        {
+            double unitConv = source.InitialActivityUnit?.ConversionToBq ?? 1;
+            double initBq = source.InitialActivityValue * unitConv;
+            var iso = source.Radioisotope;
+            double halfLifeSec = ConvertToSeconds(iso.HalfLife, iso.HalfLifeUnit);
+            if (halfLifeSec <= 0) halfLifeSec = 86400;
+
+            var startDate = source.CalibrationDate != default ? source.CalibrationDate : DateTime.Today;
+            DateTime endDate;
+            try
+            {
+                double secondsToAdd = halfLifeSec * 5;
+                double maxSecondsAllowed = (DateTime.MaxValue - startDate).TotalSeconds;
+                if (secondsToAdd > maxSecondsAllowed) secondsToAdd = maxSecondsAllowed - 86400;
+                endDate = startDate.AddSeconds(secondsToAdd);
+            }
+            catch
+            {
+                endDate = DateTime.MaxValue.AddDays(-1);
+            }
+
+            double totalSeconds = (endDate - startDate).TotalSeconds;
+            if (totalSeconds <= 0) totalSeconds = 1;
+            double interval = totalSeconds / points;
+
+            for (int i = 0; i <= points; i++)
+            {
+                var pointTime = startDate.AddSeconds(i * interval);
+                double elapsed = (pointTime - startDate).TotalSeconds;
+                double activity = initBq;
+                if (elapsed > 0 && halfLifeSec > 0)
+                {
+                    activity = initBq * Math.Pow(0.5, elapsed / halfLifeSec);
+                }
+                curve.Add((pointTime, activity));
+            }
+
+            return curve;
+        }
+
+        return curve;
+    }
+
     public double ConvertTimeToSeconds(double value, string unit)
     {
         return ConvertToSeconds(value, unit);
     }
+
 
     private double ConvertToSeconds(double value, string unit)
     {

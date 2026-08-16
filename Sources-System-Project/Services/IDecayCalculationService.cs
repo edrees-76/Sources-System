@@ -18,4 +18,5 @@ public interface IDecayCalculationService
     double CalculateTimeToActivity(double initialActivityBq, double targetActivityBq, double halfLife, string halfLifeUnit);
     List<(DateTime Time, double Activity)> GenerateDecayCurve(double initialActivityBq, double halfLife, string halfLifeUnit, DateTime calibrationDate, int dataPoints = 50);
     List<(DateTime Time, double Activity)> GenerateUnifiedDecayCurve(double initialActivityBq, double halfLife, string halfLifeUnit, DateTime calibrationDate, DateTime startDate, DateTime endDate, int dataPoints = 50);
+    List<(DateTime Time, double ActivityBq)> GetSourceCompositeDecayCurve(Source source, int points = 60);
 }
