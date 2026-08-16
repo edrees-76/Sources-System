@@ -36,6 +36,7 @@ public class BorrowService : IBorrowService
     {
         using var db = _dbFactory.CreateDbContext();
         return db.BorrowRequests
+            .Include(b => b.Source)
             .Include(b => b.BorrowerUser)
             .Include(b => b.ApproverUser)
             .Include(b => b.ReturnedByUser)
@@ -105,6 +106,10 @@ public class BorrowService : IBorrowService
             _auditService.Log("Create", "BorrowRequests", request.Id, $"استعارة فورية للمصدر {source.SourceCode} بواسطة {request.BorrowerName}");
             
             return (true, "تم تسجيل الاستعارة بنجاح. المصدر الآن في عهدة المستعير.");
+        }
+        catch (DbUpdateException)
+        {
+            return (false, "يوجد استعارة نشطة لهذا المصدر بالفعل.");
         }
         catch (Exception ex)
         {
@@ -180,8 +185,7 @@ public class BorrowService : IBorrowService
         }
         catch (Exception ex)
         {
-            // Logging failure gracefully, this might be triggered by a background service potentially
-            Console.WriteLine($"Error checking overdue: {ex.Message}");
+            _auditService.Log("Error", "BorrowRequests", Guid.Empty, $"خطأ أثناء فحص وتحديث الطلبات المتأخرة: {ex.Message}");
         }
     }
 }

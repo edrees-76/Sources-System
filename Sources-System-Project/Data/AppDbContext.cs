@@ -171,6 +171,7 @@ public class AppDbContext : DbContext
 
         try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_BorrowRequests_Status ON BorrowRequests(Status);"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_BorrowRequests_SourceId ON BorrowRequests(SourceId);"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "CREATE UNIQUE INDEX IF NOT EXISTS IX_BorrowRequests_SourceId_Active ON BorrowRequests(SourceId) WHERE Status IN ('Delivered', 'Overdue');"; cmd.ExecuteNonQuery(); } catch { }
 
         // إضافة عمود BorrowerName إذا لم يكن موجوداً
         try { cmd.CommandText = "ALTER TABLE BorrowRequests ADD COLUMN BorrowerName TEXT NOT NULL DEFAULT '';"; cmd.ExecuteNonQuery(); } catch { }
@@ -426,22 +427,30 @@ public class AppDbContext : DbContext
             entity.HasOne(b => b.Source)
                 .WithMany(s => s.BorrowRequests)
                 .HasForeignKey(b => b.SourceId)
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(b => b.BorrowerUser)
                 .WithMany(u => u.BorrowRequestsAsBorrower)
                 .HasForeignKey(b => b.BorrowerUserId)
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasOne(b => b.ApproverUser)
                 .WithMany(u => u.BorrowRequestsAsApprover)
                 .HasForeignKey(b => b.ApproverUserId)
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
 
             entity.HasOne(b => b.ReturnedByUser)
                 .WithMany()
                 .HasForeignKey(b => b.ReturnedByUserId)
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(b => b.SourceId)
+                .HasFilter("Status IN ('Delivered', 'Overdue')")
+                .IsUnique();
         });
 
         // ─── User relationships ───
