@@ -41,7 +41,10 @@ public class AuditService : IAuditService
             });
             db.SaveChanges();
         }
-        catch { /* فشل التسجيل لا يوقف العملية */ }
+        catch (Exception ex)
+        {
+            LoggerService.LogError("خطأ أثناء تسجيل التدقيق", ex);
+        }
     }
 
     public List<AuditLog> GetAuditLogs(int page = 1, int pageSize = 50, string? actionFilter = null, Guid? userFilter = null, DateTime? fromDate = null, DateTime? toDate = null)
@@ -61,7 +64,10 @@ public class AuditService : IAuditService
             query = query.Where(a => a.ActionDate >= fromDate.Value);
 
         if (toDate.HasValue)
-            query = query.Where(a => a.ActionDate <= toDate.Value);
+        {
+            var endOfDay = toDate.Value.Date.AddDays(1);
+            query = query.Where(a => a.ActionDate < endOfDay);
+        }
 
         return query
             .OrderByDescending(a => a.ActionDate)
@@ -85,7 +91,10 @@ public class AuditService : IAuditService
             query = query.Where(a => a.ActionDate >= fromDate.Value);
 
         if (toDate.HasValue)
-            query = query.Where(a => a.ActionDate <= toDate.Value);
+        {
+            var endOfDay = toDate.Value.Date.AddDays(1);
+            query = query.Where(a => a.ActionDate < endOfDay);
+        }
 
         return query.Count();
     }

@@ -104,7 +104,7 @@ public partial class App : Application
         services.AddTransient<MainWindow>();
 
         // Services
-        services.AddSingleton<IUserService, UserService>();
+        services.AddSingleton<IUserService>(sp => new UserService(sp.GetRequiredService<Microsoft.EntityFrameworkCore.IDbContextFactory<Sources.Data.AppDbContext>>()));
         services.AddSingleton<ISystemSettingsService, SystemSettingsService>();
         services.AddSingleton<IAuditService, AuditService>();
         services.AddSingleton<IDecayCalculationService, DecayCalculationService>();

@@ -10,6 +10,7 @@ namespace Sources.Services;
 public class UserService : IUserService
 {
     private readonly IDbContextFactory<AppDbContext> _dbFactory;
+    private readonly IAuditService? _auditService;
     private User? _currentUser;
 
     /// <summary>أقصى عدد محاولات فاشلة قبل قفل الحساب</summary>
@@ -20,9 +21,10 @@ public class UserService : IUserService
     public User? CurrentUser => _currentUser;
     public bool IsLoggedIn => _currentUser != null;
 
-    public UserService(IDbContextFactory<AppDbContext> dbFactory)
+    public UserService(IDbContextFactory<AppDbContext> dbFactory, IAuditService? auditService = null)
     {
         _dbFactory = dbFactory;
+        _auditService = auditService;
     }
 
     public (bool Success, string Message) Login(string username, string password)
@@ -198,19 +200,8 @@ public class UserService : IUserService
     /// <summary>استرجاع سجل التدقيق مع فلاتر اختيارية</summary>
     public List<AuditLog> GetAuditLogs(Guid? userId = null, DateTime? from = null, DateTime? to = null)
     {
-        using var db = _dbFactory.CreateDbContext();
-        var query = db.AuditLogs
-            .Include(a => a.User)
-            .AsQueryable();
-
-        if (userId.HasValue)
-            query = query.Where(a => a.UserId == userId.Value);
-        if (from.HasValue)
-            query = query.Where(a => a.ActionDate >= from.Value);
-        if (to.HasValue)
-            query = query.Where(a => a.ActionDate <= to.Value.Date.AddDays(1));
-
-        return query.OrderByDescending(a => a.ActionDate).Take(200).ToList();
+        var auditService = _auditService ?? new AuditService(_dbFactory, this);
+        return auditService.GetAuditLogs(page: 1, pageSize: 200, userFilter: userId, fromDate: from, toDate: to);
     }
 
     public List<Role> GetAllRoles()
