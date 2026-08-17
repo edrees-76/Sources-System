@@ -553,6 +553,8 @@
     <system:String x:Key="MsgErrMixIsotopeItemReq">الرجاء اختيار النظير لكل صف في قائمة نظائر الخليط.</system:String>
     <system:String x:Key="MsgErrMixActivityReq">الرجاء تعبئة قيمة 'النشاط' الإشعاعي لكل نظير في الخليط والتأكد من أنها موجبة.</system:String>
     <system:String x:Key="MsgErrMixUnitReq">الرجاء اختيار 'الوحدة' لكل نظير في الخليط.</system:String>
+    <system:String x:Key="MsgErrCalibrationDateFuture">لا يمكن أن يكون تاريخ المعايرة في المستقبل.</system:String>
+    <system:String x:Key="MsgErrCannotDisableMultiIsotope">لا يمكن التحويل لمصدر ذو نظير واحد بينما توجد أكثر من نظير محفوظ لهذا المصدر. الرجاء حذف النظائر الزائدة أولاً من قائمة الخليط.</system:String>
 
     <!-- Details Labels -->
     <system:String x:Key="LabelSourceCode">كود المصدر:</system:String>

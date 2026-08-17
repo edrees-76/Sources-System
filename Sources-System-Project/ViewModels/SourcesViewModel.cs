@@ -290,6 +290,11 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                 ShowMessage(TranslationHelper.GetString("MsgErrCalibrationDateReq"));
                 return;
             }
+            if (EditCalibrationDate.Date > DateTime.Today)
+            {
+                ShowMessage(TranslationHelper.GetString("MsgErrCalibrationDateFuture"));
+                return;
+            }
             if (EditCurrentUnitId == null)
             {
                 ShowMessage(TranslationHelper.GetString("MsgErrUnitReq"));
@@ -304,6 +309,17 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
             {
                 ShowMessage(TranslationHelper.GetString("MsgErrLocationReq"));
                 return;
+            }
+
+            // التحقق من عدم تعطيل النظائر المتعددة لمصدر يحتوي على أكثر من نظير محفوظ
+            if (!IsNew && _editingId.HasValue && !IsMultiIsotope)
+            {
+                var originalSource = _sourceService.GetSourceById(_editingId.Value) ?? SelectedSource;
+                if (originalSource?.SourceIsotopes != null && originalSource.SourceIsotopes.Count > 1)
+                {
+                    ShowMessage(TranslationHelper.GetString("MsgErrCannotDisableMultiIsotope"));
+                    return;
+                }
             }
 
             // 2. التحقق بناءً على نوع المصدر (مفرد أم خليط)

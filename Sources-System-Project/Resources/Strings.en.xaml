@@ -556,6 +556,8 @@
     <system:String x:Key="MsgErrMixIsotopeItemReq">Please select the isotope for each row in the mixture list.</system:String>
     <system:String x:Key="MsgErrMixActivityReq">Please enter a positive activity value for each isotope in the mixture.</system:String>
     <system:String x:Key="MsgErrMixUnitReq">Please select the unit for each isotope in the mixture.</system:String>
+    <system:String x:Key="MsgErrCalibrationDateFuture">Calibration date cannot be in the future.</system:String>
+    <system:String x:Key="MsgErrCannotDisableMultiIsotope">Cannot convert to a single-isotope source while multiple isotopes are saved for this source. Please remove extra isotopes from the mixture list first.</system:String>
 
     <!-- Details Labels -->
     <system:String x:Key="LabelSourceCode">Source Code:</system:String>
