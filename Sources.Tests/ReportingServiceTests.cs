@@ -238,24 +238,24 @@ public class ReportingServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GenerateCalibrationReportPdfAsync_WithData_CreatesValidPdfFile()
+    public async Task GenerateLowActivityAlertReportPdfAsync_WithData_CreatesValidPdfFile()
     {
         var filePath = GetTempFilePath("pdf");
         var sources = CreateSampleSources();
 
-        await _sut.GenerateCalibrationReportPdfAsync(sources, filePath);
+        await _sut.GenerateLowActivityAlertReportPdfAsync(sources, filePath);
 
         Assert.True(File.Exists(filePath));
         Assert.True(new FileInfo(filePath).Length > 0);
     }
 
     [Fact]
-    public async Task GenerateCalibrationReportExcelAsync_WithData_CreatesValidExcelFile()
+    public async Task GenerateLowActivityAlertReportExcelAsync_WithData_CreatesValidExcelFile()
     {
         var filePath = GetTempFilePath("xlsx");
         var sources = CreateSampleSources();
 
-        await _sut.GenerateCalibrationReportExcelAsync(sources, filePath);
+        await _sut.GenerateLowActivityAlertReportExcelAsync(sources, filePath);
 
         Assert.True(File.Exists(filePath));
         Assert.True(new FileInfo(filePath).Length > 0);
@@ -418,11 +418,11 @@ public class ReportingServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GenerateCalibrationReportExcelAsync_WithNullSources_CreatesHeaderOnlyWorkbookWithoutException()
+    public async Task GenerateLowActivityAlertReportExcelAsync_WithNullSources_CreatesHeaderOnlyWorkbookWithoutException()
     {
         var filePath = GetTempFilePath("xlsx");
 
-        await _sut.GenerateCalibrationReportExcelAsync(null!, filePath);
+        await _sut.GenerateLowActivityAlertReportExcelAsync(null!, filePath);
 
         Assert.True(File.Exists(filePath));
         using var wb = new XLWorkbook(filePath);
@@ -489,7 +489,7 @@ public class ReportingServiceTests : IDisposable
 
         await _sut.GenerateInventoryReportPdfAsync(null!, pathInv, "تقرير");
         await _sut.GenerateBorrowHistoryPdfAsync(null!, pathBor);
-        await _sut.GenerateCalibrationReportPdfAsync(null!, pathCal);
+        await _sut.GenerateLowActivityAlertReportPdfAsync(null!, pathCal);
         await _sut.GenerateGeneralReportPdfAsync(null!, null!, null!, null!, pathGen);
         await _sut.GenerateUsersReportPdfAsync(null!, pathUsr);
         await _sut.GenerateAuditLogsPdfAsync(null!, pathAud);
@@ -518,7 +518,7 @@ public class ReportingServiceTests : IDisposable
 
         await _sut.GenerateInventoryReportPdfAsync(Enumerable.Empty<Source>(), pathInv, "فارغ");
         await _sut.GenerateBorrowHistoryPdfAsync(Enumerable.Empty<BorrowRequest>(), pathBor);
-        await _sut.GenerateCalibrationReportPdfAsync(Enumerable.Empty<Source>(), pathCal);
+        await _sut.GenerateLowActivityAlertReportPdfAsync(Enumerable.Empty<Source>(), pathCal);
         await _sut.GenerateGeneralReportPdfAsync(Enumerable.Empty<Source>(), Enumerable.Empty<BorrowRequest>(), Enumerable.Empty<Source>(), Enumerable.Empty<Source>(), pathGen);
         await _sut.GenerateUsersReportPdfAsync(Enumerable.Empty<User>(), pathUsr);
         await _sut.GenerateAuditLogsPdfAsync(Enumerable.Empty<AuditLog>(), pathAud);

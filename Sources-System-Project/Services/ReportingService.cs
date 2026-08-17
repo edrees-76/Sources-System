@@ -307,7 +307,7 @@ namespace Sources.Services
              });
         }
 
-        public async Task GenerateCalibrationReportExcelAsync(IEnumerable<Source> sources, string filePath)
+        public async Task GenerateLowActivityAlertReportExcelAsync(IEnumerable<Source> sources, string filePath)
         {
             await Task.Run(() =>
             {
@@ -315,7 +315,7 @@ namespace Sources.Services
                 var worksheet = workbook.Worksheets.Add("تنبيهات انخفاض النشاط");
                 worksheet.RightToLeft = true;
 
-                string[] headers = { "رقم المصدر", "النظير", "تاريخ آخر معايرة", "الحالة", "النشاط الحالي", "المسؤول" };
+                string[] headers = { "رقم المصدر", "النظير", "الخطورة", "تاريخ آخر معايرة", "الحالة", "النشاط الحالي", "المسؤول" };
                 for (int i = 0; i < headers.Length; i++)
                 {
                     worksheet.Cell(1, i + 1).Value = headers[i];
@@ -328,11 +328,12 @@ namespace Sources.Services
                 foreach (var source in sources ?? Enumerable.Empty<Source>())
                 {
                     worksheet.Cell(row, 1).Value = source.SourceCode;
-                    worksheet.Cell(row, 2).Value = source.DisplayIsotopes;
-                    worksheet.Cell(row, 3).Value = source.CalibrationDate.ToString("yyyy/MM/dd");
-                    worksheet.Cell(row, 4).Value = source.ArabicStatus;
-                    worksheet.Cell(row, 5).Value = source.CurrentActivityWithUnit;
-                    worksheet.Cell(row, 6).Value = source.AddedBy ?? "-";
+                    worksheet.Cell(row, 2).Value = source.AlertWorstIsotope ?? source.DisplayIsotopes;
+                    worksheet.Cell(row, 3).Value = source.AlertSeverityDisplay;
+                    worksheet.Cell(row, 4).Value = source.CalibrationDate.ToString("yyyy/MM/dd");
+                    worksheet.Cell(row, 5).Value = source.ArabicStatus;
+                    worksheet.Cell(row, 6).Value = source.CurrentActivityWithUnit;
+                    worksheet.Cell(row, 7).Value = source.AddedBy ?? "-";
                     row++;
                 }
 
@@ -341,7 +342,7 @@ namespace Sources.Services
             });
         }
 
-        public async Task GenerateCalibrationReportPdfAsync(IEnumerable<Source> sources, string filePath)
+        public async Task GenerateLowActivityAlertReportPdfAsync(IEnumerable<Source> sources, string filePath)
         {
             await Task.Run(() =>
             {
@@ -370,9 +371,11 @@ namespace Sources.Services
                         {
                             table.ColumnsDefinition(columns =>
                             {
-                                columns.RelativeColumn(3);
+                                columns.RelativeColumn(2.5f);
                                 columns.RelativeColumn(2);
-                                columns.RelativeColumn(3);
+                                columns.RelativeColumn(1.8f);
+                                columns.RelativeColumn(2.2f);
+                                columns.RelativeColumn(2.2f);
                                 columns.RelativeColumn(2);
                                 columns.RelativeColumn(2);
                             });
@@ -381,7 +384,9 @@ namespace Sources.Services
                             {
                                 header.Cell().Element(BlockStyle).Text("المصدر");
                                 header.Cell().Element(BlockStyle).Text("النظير");
+                                header.Cell().Element(BlockStyle).Text("الخطورة");
                                 header.Cell().Element(BlockStyle).Text("تاريخ المعايرة");
+                                header.Cell().Element(BlockStyle).Text("النشاط الحالي");
                                 header.Cell().Element(BlockStyle).Text("الحالة");
                                 header.Cell().Element(BlockStyle).Text("المسؤول");
 
@@ -390,15 +395,17 @@ namespace Sources.Services
 
                             if (!list.Any())
                             {
-                                table.Cell().ColumnSpan(5).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
+                                table.Cell().ColumnSpan(7).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
                             }
                             else
                             {
                                 foreach (var s in list)
                                 {
                                     table.Cell().Element(CellStyle).Text(s.SourceCode);
-                                    table.Cell().Element(CellStyle).Text(s.DisplayIsotopes);
+                                    table.Cell().Element(CellStyle).Text(s.AlertWorstIsotope ?? s.DisplayIsotopes);
+                                    table.Cell().Element(CellStyle).Text(s.AlertSeverityDisplay);
                                     table.Cell().Element(CellStyle).Text(s.CalibrationDate.ToString("yyyy/MM/dd"));
+                                    table.Cell().Element(CellStyle).Text(s.CurrentActivityWithUnit);
                                     table.Cell().Element(CellStyle).Text(s.ArabicStatus);
                                     table.Cell().Element(CellStyle).Text(s.AddedBy ?? "-");
 
@@ -412,7 +419,8 @@ namespace Sources.Services
                 }).GeneratePdf(filePath);
             });
         }
-        public async Task GenerateGeneralReportExcelAsync(IEnumerable<Source> inventory, IEnumerable<BorrowRequest> borrowing, IEnumerable<Source> lowActivity, IEnumerable<Source> calibration, string filePath)
+
+        public async Task GenerateGeneralReportExcelAsync(IEnumerable<Source> inventory, IEnumerable<BorrowRequest> borrowing, IEnumerable<Source> lowActivity, IEnumerable<Source> lowActivityAlerts, string filePath)
         {
             await Task.Run(() =>
             {
@@ -489,39 +497,40 @@ namespace Sources.Services
                 wsLowAct.Columns().AdjustToContents();
 
                 // 4. Low Activity Alerts Sheet
-                var wsCalib = workbook.Worksheets.Add("تنبيهات انخفاض النشاط");
-                wsCalib.RightToLeft = true;
-                string[] calibHeaders = { "رقم المصدر", "النظير", "تاريخ آخر معايرة", "الحالة", "النشاط الحالي", "المسؤول" };
-                for (int i = 0; i < calibHeaders.Length; i++)
+                var wsAlerts = workbook.Worksheets.Add("تنبيهات انخفاض النشاط");
+                wsAlerts.RightToLeft = true;
+                string[] alertHeaders = { "رقم المصدر", "النظير", "الخطورة", "تاريخ آخر معايرة", "الحالة", "النشاط الحالي", "المسؤول" };
+                for (int i = 0; i < alertHeaders.Length; i++)
                 {
-                    wsCalib.Cell(1, i + 1).Value = calibHeaders[i];
-                    wsCalib.Cell(1, i + 1).Style.Font.Bold = true;
-                    wsCalib.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.OrangeRed;
-                    wsCalib.Cell(1, i + 1).Style.Font.FontColor = XLColor.White;
+                    wsAlerts.Cell(1, i + 1).Value = alertHeaders[i];
+                    wsAlerts.Cell(1, i + 1).Style.Font.Bold = true;
+                    wsAlerts.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.OrangeRed;
+                    wsAlerts.Cell(1, i + 1).Style.Font.FontColor = XLColor.White;
                 }
                 row = 2;
-                foreach (var s in calibration ?? Enumerable.Empty<Source>())
+                foreach (var s in lowActivityAlerts ?? Enumerable.Empty<Source>())
                 {
-                    wsCalib.Cell(row, 1).Value = s.SourceCode;
-                    wsCalib.Cell(row, 2).Value = s.DisplayIsotopes;
-                    wsCalib.Cell(row, 3).Value = s.CalibrationDate.ToString("yyyy/MM/dd");
-                    wsCalib.Cell(row, 4).Value = s.ArabicStatus;
-                    wsCalib.Cell(row, 5).Value = s.CurrentActivityWithUnit;
-                    wsCalib.Cell(row, 6).Value = s.AddedBy ?? "-";
+                    wsAlerts.Cell(row, 1).Value = s.SourceCode;
+                    wsAlerts.Cell(row, 2).Value = s.AlertWorstIsotope ?? s.DisplayIsotopes;
+                    wsAlerts.Cell(row, 3).Value = s.AlertSeverityDisplay;
+                    wsAlerts.Cell(row, 4).Value = s.CalibrationDate.ToString("yyyy/MM/dd");
+                    wsAlerts.Cell(row, 5).Value = s.ArabicStatus;
+                    wsAlerts.Cell(row, 6).Value = s.CurrentActivityWithUnit;
+                    wsAlerts.Cell(row, 7).Value = s.AddedBy ?? "-";
                     row++;
                 }
-                wsCalib.Columns().AdjustToContents();
+                wsAlerts.Columns().AdjustToContents();
 
                 workbook.SaveAs(filePath);
             });
         }
 
-        public async Task GenerateGeneralReportPdfAsync(IEnumerable<Source> inventory, IEnumerable<BorrowRequest> borrowing, IEnumerable<Source> lowActivity, IEnumerable<Source> calibration, string filePath)
+        public async Task GenerateGeneralReportPdfAsync(IEnumerable<Source> inventory, IEnumerable<BorrowRequest> borrowing, IEnumerable<Source> lowActivity, IEnumerable<Source> lowActivityAlerts, string filePath)
         {
             await Task.Run(() =>
             {
                 var borrowList = borrowing?.ToList() ?? new List<BorrowRequest>();
-                var calibList = calibration?.ToList() ?? new List<Source>();
+                var alertList = lowActivityAlerts?.ToList() ?? new List<Source>();
                 string noDataText = GetNoDataText();
 
                 Document.Create(container =>
@@ -596,36 +605,39 @@ namespace Sources.Services
                             column.Item().PaddingTop(20).PaddingBottom(10).Text("3. تقرير المصادر منخفضة النشاط الإشعاعي").FontSize(16).SemiBold().FontColor(Colors.Blue.Medium);
                             column.Item().Element(c => ComposeContentInventory(c, lowActivity)); // Reuses inventory table format with empty check
 
-                            // 4. Calibration / Low Activity Alert Section
+                            // 4. Low Activity Alert Section
                             column.Item().PaddingTop(20).PaddingBottom(10).Text("4. تنبيهات انخفاض النشاط").FontSize(16).SemiBold().FontColor(Colors.Red.Medium);
                             column.Item().Table(table =>
                             {
                                 table.ColumnsDefinition(columns =>
                                 {
-                                    columns.RelativeColumn(3);
+                                    columns.RelativeColumn(2.5f);
                                     columns.RelativeColumn(2);
-                                    columns.RelativeColumn(3);
-                                    columns.RelativeColumn(2);
+                                    columns.RelativeColumn(1.8f);
+                                    columns.RelativeColumn(2.2f);
+                                    columns.RelativeColumn(2.5f);
                                 });
                                 table.Header(header =>
                                 {
                                     header.Cell().Element(HeaderStyle).Text("المصدر");
                                     header.Cell().Element(HeaderStyle).Text("النظير");
+                                    header.Cell().Element(HeaderStyle).Text("الخطورة");
                                     header.Cell().Element(HeaderStyle).Text("تاريخ المعايرة");
                                     header.Cell().Element(HeaderStyle).Text("النشاط الحالي");
                                     static IContainer HeaderStyle(IContainer c) => c.Background(Colors.Red.Lighten4).Padding(5).BorderBottom(1).BorderColor(Colors.Red.Medium);
                                 });
 
-                                if (!calibList.Any())
+                                if (!alertList.Any())
                                 {
-                                    table.Cell().ColumnSpan(4).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
+                                    table.Cell().ColumnSpan(5).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
                                 }
                                 else
                                 {
-                                    foreach (var s in calibList)
+                                    foreach (var s in alertList)
                                     {
                                         table.Cell().Element(CellStyle).Text(s.SourceCode);
-                                        table.Cell().Element(CellStyle).Text(s.DisplayIsotopes);
+                                        table.Cell().Element(CellStyle).Text(s.AlertWorstIsotope ?? s.DisplayIsotopes);
+                                        table.Cell().Element(CellStyle).Text(s.AlertSeverityDisplay);
                                         table.Cell().Element(CellStyle).Text(s.CalibrationDate.ToString("yyyy/MM/dd"));
                                         table.Cell().Element(CellStyle).Text(s.CurrentActivityWithUnit);
                                         static IContainer CellStyle(IContainer c) => c.BorderBottom(1).BorderColor(Colors.Grey.Lighten3).PaddingVertical(4);

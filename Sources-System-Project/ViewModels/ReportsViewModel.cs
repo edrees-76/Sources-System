@@ -22,7 +22,7 @@ public partial class ReportsViewModel : ObservableObject
     [ObservableProperty] private ObservableCollection<Source> _activityData = new();
     [ObservableProperty] private ObservableCollection<Source> _lowActivityData = new();
     [ObservableProperty] private double _lowActivityThreshold = 10;
-    [ObservableProperty] private ObservableCollection<Source> _calibrationData = new();
+    [ObservableProperty] private ObservableCollection<Source> _lowActivityAlertData = new();
 
     public ReportsViewModel(
         ISourceService sourceService, 
@@ -61,25 +61,36 @@ public partial class ReportsViewModel : ObservableObject
             case "LowActivityReport":
                 LowActivityData = new ObservableCollection<Source>(_sourceService.GetLowActivitySources(LowActivityThreshold));
                 break;
-            case "CalibrationReport":
-                // تصفية المصادر التي تجاوزت 5 أضعاف نصف العمر (T½)
-                CalibrationData = new ObservableCollection<Source>(
-                    allSources.Where(s => (s.Status == "InUse" || s.Status == "Storage") &&
-                                         CalculateMaxHalfLivesElapsed(s) >= 5.0)
-                              .OrderByDescending(s => CalculateMaxHalfLivesElapsed(s)));
+            case "LowActivityAlertReport":
+                // تصفية وتصنيف المصادر التي تجاوزت عتبات نصف العمر (T½)
+                LowActivityAlertData = new ObservableCollection<Source>(GetLowActivityAlertSources(allSources));
                 break;
             case "GeneralReport":
                 InventoryData = new ObservableCollection<Source>(allSources);
                 BorrowingData = new ObservableCollection<BorrowRequest>(_borrowService.GetAll());
                 ActivityData = new ObservableCollection<Source>(allSources.Where(s => s.Status == "InUse" || s.Status == "Storage"));
                 LowActivityData = new ObservableCollection<Source>(_sourceService.GetLowActivitySources(LowActivityThreshold));
-                
-                CalibrationData = new ObservableCollection<Source>(
-                    allSources.Where(s => (s.Status == "InUse" || s.Status == "Storage") &&
-                                         CalculateMaxHalfLivesElapsed(s) >= 5.0)
-                              .OrderByDescending(s => CalculateMaxHalfLivesElapsed(s)));
+                LowActivityAlertData = new ObservableCollection<Source>(GetLowActivityAlertSources(allSources));
                 break;
         }
+    }
+
+    private static List<Source> GetLowActivityAlertSources(List<Source> allSources)
+    {
+        return allSources
+            .Where(s => s.Status == "InUse" || s.Status == "Storage")
+            .Select(s =>
+            {
+                var (maxHalfLives, worstIsotope) = CalculateMaxHalfLivesElapsed(s);
+                s.AlertHalfLivesElapsed = maxHalfLives;
+                s.AlertWorstIsotope = !string.IsNullOrEmpty(worstIsotope) ? worstIsotope : s.DisplayIsotopes;
+                s.AlertSeverity = maxHalfLives >= 6.0 ? "Critical" : (maxHalfLives >= 5.0 ? "Warning" : null);
+                return s;
+            })
+            .Where(s => (s.AlertHalfLivesElapsed ?? -1) >= 5.0)
+            .OrderByDescending(s => s.AlertSeverity == "Critical" ? 2 : 1)
+            .ThenByDescending(s => s.AlertHalfLivesElapsed ?? 0)
+            .ToList();
     }
 
     [RelayCommand]
@@ -97,13 +108,13 @@ public partial class ReportsViewModel : ObservableObject
         {
             try
             {
-                if (SelectedReport == "CalibrationReport")
+                if (SelectedReport == "LowActivityAlertReport")
                 {
-                    await _reportingService.GenerateCalibrationReportPdfAsync(CalibrationData, sfd.FileName);
+                    await _reportingService.GenerateLowActivityAlertReportPdfAsync(LowActivityAlertData, sfd.FileName);
                 }
                 else if (SelectedReport == "GeneralReport")
                 {
-                    await _reportingService.GenerateGeneralReportPdfAsync(InventoryData, BorrowingData, LowActivityData, CalibrationData, sfd.FileName);
+                    await _reportingService.GenerateGeneralReportPdfAsync(InventoryData, BorrowingData, LowActivityData, LowActivityAlertData, sfd.FileName);
                 }
                 else if (SelectedReport == "InventoryReport" || SelectedReport == "ActivityReport" || SelectedReport == "LowActivityReport")
                 {
@@ -144,13 +155,13 @@ public partial class ReportsViewModel : ObservableObject
         {
             try
             {
-                if (SelectedReport == "CalibrationReport")
+                if (SelectedReport == "LowActivityAlertReport")
                 {
-                    await _reportingService.GenerateCalibrationReportExcelAsync(CalibrationData, sfd.FileName);
+                    await _reportingService.GenerateLowActivityAlertReportExcelAsync(LowActivityAlertData, sfd.FileName);
                 }
                 else if (SelectedReport == "GeneralReport")
                 {
-                    await _reportingService.GenerateGeneralReportExcelAsync(InventoryData, BorrowingData, LowActivityData, CalibrationData, sfd.FileName);
+                    await _reportingService.GenerateGeneralReportExcelAsync(InventoryData, BorrowingData, LowActivityData, LowActivityAlertData, sfd.FileName);
                 }
                 else if (SelectedReport == "InventoryReport" || SelectedReport == "ActivityReport" || SelectedReport == "LowActivityReport")
                 {
@@ -183,10 +194,11 @@ public partial class ReportsViewModel : ObservableObject
         }
     }
 
-    // ───────────── دالة مساعدة: احتساب أعلى عدد فترات نصف عمر منقضية ─────────────
-    private static double CalculateMaxHalfLivesElapsed(Source source)
+    // ───────────── دالة مساعدة: احتساب أعلى عدد فترات نصف عمر منقضية ورمز النظير الأسوأ ─────────────
+    public static (double MaxHalfLives, string WorstIsotopeSymbol) CalculateMaxHalfLivesElapsed(Source source)
     {
         double max = -1;
+        string worstIsotope = string.Empty;
 
         if (source.HasDetailedIsotopes &&
             source.SourceIsotopes != null &&
@@ -203,7 +215,11 @@ public partial class ReportsViewModel : ObservableObject
 
                 double elapsed = Math.Max(0, (DateTime.Now - calibDate).TotalSeconds);
                 double hl = elapsed / halfLifeSec;
-                if (hl > max) max = hl;
+                if (hl > max)
+                {
+                    max = hl;
+                    worstIsotope = isotope.Symbol;
+                }
             }
         }
         else if (source.Radioisotope != null && source.CalibrationDate != default)
@@ -214,20 +230,22 @@ public partial class ReportsViewModel : ObservableObject
             {
                 double elapsed = Math.Max(0, (DateTime.Now - source.CalibrationDate).TotalSeconds);
                 max = elapsed / halfLifeSec;
+                worstIsotope = source.Radioisotope.Symbol;
             }
         }
 
-        return max;
+        return (max, worstIsotope);
     }
 
-    private static double ConvertHalfLifeToSeconds(double value, string? unit) =>
+    public static double ConvertHalfLifeToSeconds(double value, string? unit) =>
         unit?.ToLower() switch
         {
-            "seconds" => value,
-            "minutes" => value * 60,
-            "hours"   => value * 3600,
-            "days"    => value * 86400,
-            "years"   => value * 365.25 * 86400,
-            _         => value * 365.25 * 86400
+            "seconds" or "second" or "s" => value,
+            "minutes" or "minute" or "min" or "m" => value * 60,
+            "hours" or "hour" or "h" => value * 3600,
+            "days" or "day" or "d" => value * 86400,
+            "months" or "month" or "mo" => value * 30 * 86400,
+            "years" or "year" or "yr" or "y" => value * 365.25 * 86400,
+            _ => value * 365.25 * 86400
         };
 }

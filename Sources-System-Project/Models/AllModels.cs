@@ -305,6 +305,23 @@ public class Source
         _ => Status
     };
 
+    [NotMapped]
+    public string? AlertSeverity { get; set; } // "Critical" or "Warning"
+
+    [NotMapped]
+    public string? AlertWorstIsotope { get; set; }
+
+    [NotMapped]
+    public double? AlertHalfLivesElapsed { get; set; }
+
+    [NotMapped]
+    public string AlertSeverityDisplay => AlertSeverity switch
+    {
+        "Critical" => "حرج",
+        "Warning" => "تحذير",
+        _ => AlertSeverity ?? "-"
+    };
+
     private string FormatActivity(double value, string? unitSymbol)
     {
         // عرض القيمة فقط بدون الرمز لتجنب التكرار في الجدول

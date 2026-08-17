@@ -125,9 +125,9 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="CalibrationReportTabBtn" TargetType="Button" BasedOn="{StaticResource ReportTabButtonBase}">
+        <Style x:Key="LowActivityAlertReportTabBtn" TargetType="Button" BasedOn="{StaticResource ReportTabButtonBase}">
             <Style.Triggers>
-                <DataTrigger Binding="{Binding SelectedReport}" Value="CalibrationReport">
+                <DataTrigger Binding="{Binding SelectedReport}" Value="LowActivityAlertReport">
                     <Setter Property="Background" Value="{DynamicResource DataGridRowSelected}"/>
                     <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                     <Setter Property="BorderThickness" Value="1.5"/>
@@ -163,8 +163,8 @@
                             Command="{Binding SelectReportCommand}" CommandParameter="ActivityReport"/>
                     <Button Content="{DynamicResource BtnLowActivityReport}" Style="{StaticResource LowActivityReportTabBtn}"
                             Command="{Binding SelectReportCommand}" CommandParameter="LowActivityReport"/>
-                    <Button Content="{DynamicResource BtnCalibrationReport}" Style="{StaticResource CalibrationReportTabBtn}"
-                            Command="{Binding SelectReportCommand}" CommandParameter="CalibrationReport"/>
+                    <Button Content="{DynamicResource BtnCalibrationReport}" Style="{StaticResource LowActivityAlertReportTabBtn}"
+                            Command="{Binding SelectReportCommand}" CommandParameter="LowActivityAlertReport"/>
                 </WrapPanel>
             </StackPanel>
             
@@ -259,17 +259,27 @@
                         <!-- 4. تنبيهات انخفاض النشاط -->
                         <TextBlock Text="{DynamicResource GeneralReportSectionAlerts}" FontSize="18" FontWeight="SemiBold" Foreground="Red" Margin="0,0,0,8"/>
                         <Grid Margin="0,0,0,16">
-                            <DataGrid ItemsSource="{Binding CalibrationData}" Style="{StaticResource ModernDataGrid}" MaxHeight="350" MinHeight="100">
+                            <DataGrid ItemsSource="{Binding LowActivityAlertData}" Style="{StaticResource ModernDataGrid}" MaxHeight="350" MinHeight="100">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100"/>
-                                    <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="90"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding AlertWorstIsotope}" Width="90"/>
+                                    <DataGridTemplateColumn Header="{DynamicResource ColSeverityBadge}" Width="110">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{Binding AlertSeverity, Converter={StaticResource SeverityToColor}}"
+                                                        CornerRadius="4" Padding="8,3" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding AlertSeverityDisplay}" Foreground="White" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
                                     <DataGridTextColumn Header="{DynamicResource ColCalibration}" Binding="{Binding CalibrationDate, StringFormat=d}" Width="120"/>
                                     <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="110"/>
                                     <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130"/>
                                 </DataGrid.Columns>
                             </DataGrid>
-                            <Border Visibility="{Binding CalibrationData.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}"
+                            <Border Visibility="{Binding LowActivityAlertData.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}"
                                     Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,36,0,0" IsHitTestVisible="False">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                     <materialDesign:PackIcon Kind="InformationOutline" Width="18" Height="18" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
@@ -365,18 +375,28 @@
                 </Grid>
 
                 <!-- تقرير تنبيهات انخفاض النشاط -->
-                <Grid Visibility="{Binding SelectedReport, Converter={StaticResource EqualityToVis}, ConverterParameter=CalibrationReport}">
-                    <DataGrid ItemsSource="{Binding CalibrationData}" Style="{StaticResource ModernDataGrid}" MinHeight="100">
+                <Grid Visibility="{Binding SelectedReport, Converter={StaticResource EqualityToVis}, ConverterParameter=LowActivityAlertReport}">
+                    <DataGrid ItemsSource="{Binding LowActivityAlertData}" Style="{StaticResource ModernDataGrid}" MinHeight="100">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100"/>
-                            <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="90"/>
+                            <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding AlertWorstIsotope}" Width="90"/>
+                            <DataGridTemplateColumn Header="{DynamicResource ColSeverityBadge}" Width="110">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{Binding AlertSeverity, Converter={StaticResource SeverityToColor}}"
+                                                CornerRadius="4" Padding="8,3" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding AlertSeverityDisplay}" Foreground="White" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTextColumn Header="{DynamicResource ColCalibration}" Binding="{Binding CalibrationDate, StringFormat=d}" Width="120"/>
                             <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="110"/>
                             <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130"/>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <Border Visibility="{Binding CalibrationData.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}"
+                    <Border Visibility="{Binding LowActivityAlertData.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}"
                             Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,36,0,0" IsHitTestVisible="False">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="InformationOutline" Width="18" Height="18" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>

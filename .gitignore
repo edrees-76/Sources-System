@@ -26,3 +26,8 @@
 *.zip
 *.7z
 *.rar
+
+# Test Results
+[Tt]est[Rr]esults/
+*.trx
+
