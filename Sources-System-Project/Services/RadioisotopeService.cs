@@ -35,6 +35,10 @@ public class RadioisotopeService : IRadioisotopeService
 
     public (bool Success, string Message) Create(Radioisotope item)
     {
+        if (item == null) return (false, "بيانات النظير غير صالحة");
+        if (item.HalfLife <= 0) return (false, "نصف العمر يجب أن يكون أكبر من صفر");
+        if (item.Energy < 0) return (false, "قيمة الطاقة غير صالحة");
+
         using var db = _dbFactory.CreateDbContext();
         if (db.Radioisotopes.Any(r => r.Symbol == item.Symbol))
             return (false, "رمز النظير موجود بالفعل");
@@ -52,9 +56,16 @@ public class RadioisotopeService : IRadioisotopeService
 
     public (bool Success, string Message) Update(Radioisotope item)
     {
+        if (item == null) return (false, "بيانات النظير غير صالحة");
+        if (item.HalfLife <= 0) return (false, "نصف العمر يجب أن يكون أكبر من صفر");
+        if (item.Energy < 0) return (false, "قيمة الطاقة غير صالحة");
+
         using var db = _dbFactory.CreateDbContext();
         var existing = db.Radioisotopes.Find(item.Id);
         if (existing == null) return (false, "النظير غير موجود");
+        if (db.Radioisotopes.Any(r => r.Symbol == item.Symbol && r.Id != item.Id))
+            return (false, "رمز النظير موجود بالفعل");
+
         existing.Name = item.Name;
         existing.ArabicName = string.IsNullOrEmpty(item.ArabicName) ? IsotopeHelper.GetArabicNameFromSymbol(item.Symbol) : item.ArabicName;
         existing.Symbol = item.Symbol;
@@ -63,7 +74,10 @@ public class RadioisotopeService : IRadioisotopeService
         existing.HalfLifeUnit = item.HalfLifeUnit;
         existing.Energy = item.Energy;
         existing.Yield = item.Yield;
+        existing.Category = item.Category;
+        existing.ExemptionLimit = item.ExemptionLimit;
         existing.Notes = item.Notes;
+        existing.EnglishNotes = item.EnglishNotes;
         db.SaveChanges();
         _auditService.Log("Update", "Radioisotopes", item.Id, $"تعديل نظير: {item.Name}");
         return (true, "تم تحديث النظير");
@@ -74,7 +88,8 @@ public class RadioisotopeService : IRadioisotopeService
         using var db = _dbFactory.CreateDbContext();
         var item = db.Radioisotopes.Include(r => r.Sources).FirstOrDefault(r => r.Id == id);
         if (item == null) return (false, "النظير غير موجود");
-        if (item.Sources.Any()) return (false, "لا يمكن حذف نظير مرتبط بمصادر");
+        if (item.Sources.Any() || db.SourceIsotopes.Any(si => si.RadioisotopeId == id))
+            return (false, "لا يمكن حذف نظير مرتبط بمصادر");
         item.IsDeleted = true;
         db.SaveChanges();
         _auditService.Log("Delete", "Radioisotopes", id, $"حذف نظير: {item.Name}");
