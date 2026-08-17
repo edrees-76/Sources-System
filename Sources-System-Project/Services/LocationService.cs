@@ -34,7 +34,15 @@ public class LocationService : ILocationService
 
     public (bool Success, string Message) Create(Location item)
     {
+        if (item == null) return (false, "بيانات الموقع غير صالحة");
+        if (string.IsNullOrWhiteSpace(item.LocationName)) return (false, "اسم الموقع مطلوب");
+
         using var db = _dbFactory.CreateDbContext();
+        var trimmedName = item.LocationName.Trim();
+        if (db.Locations.Any(l => l.LocationName == trimmedName))
+            return (false, "اسم الموقع موجود بالفعل");
+
+        item.LocationName = trimmedName;
         item.AddedBy = _userService.CurrentUser?.FullName;
         db.Locations.Add(item);
         db.SaveChanges();
@@ -44,16 +52,24 @@ public class LocationService : ILocationService
 
     public (bool Success, string Message) Update(Location item)
     {
+        if (item == null) return (false, "بيانات الموقع غير صالحة");
+        if (string.IsNullOrWhiteSpace(item.LocationName)) return (false, "اسم الموقع مطلوب");
+
         using var db = _dbFactory.CreateDbContext();
         var existing = db.Locations.Find(item.Id);
         if (existing == null) return (false, "الموقع غير موجود");
-        existing.LocationName = item.LocationName;
+
+        var trimmedName = item.LocationName.Trim();
+        if (db.Locations.Any(l => l.Id != item.Id && l.LocationName == trimmedName))
+            return (false, "اسم الموقع موجود بالفعل");
+
+        existing.LocationName = trimmedName;
         existing.LocationType = item.LocationType;
         existing.Building = item.Building;
         existing.Room = item.Room;
         existing.ResponsiblePerson = item.ResponsiblePerson;
         db.SaveChanges();
-        _auditService.Log("Update", "Locations", item.Id, $"تعديل موقع: {item.LocationName}");
+        _auditService.Log("Update", "Locations", item.Id, $"تعديل موقع: {existing.LocationName}");
         return (true, "تم تحديث الموقع");
     }
 
