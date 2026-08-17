@@ -171,6 +171,9 @@
     <system:String x:Key="DescLowActivityThreshold">النسبة المئوية من النشاط الابتدائي التي يُعتبر المصدر عندها منخفض النشاط في التقارير</system:String>
     <system:String x:Key="LabelNotificationCheckInterval">دورية فحص التنبيهات (بالدقائق)</system:String>
     <system:String x:Key="DescNotificationCheckInterval">الفاصل الزمني بالدقائق لإعادة فحص التنبيهات تلقائياً في الخلفية</system:String>
+    <system:String x:Key="LabelDueSoonThreshold">مهلة التنبيه بالاستعارات المستحقة (بالأيام)</system:String>
+    <system:String x:Key="DescDueSoonThreshold">عدد الأيام قبل تاريخ الإرجاع المتوقع لتصنيف الاستعارة كـ 'مستحقة قريباً'</system:String>
+    <system:String x:Key="MsgErrDueSoonThresholdRange">يجب أن تكون مهلة الاستحقاق القريب بين 1 و 365 يوماً</system:String>
     <system:String x:Key="ReportHeaderSettingsTitle">بيانات المنشأة وترويسة التقارير</system:String>
     <system:String x:Key="LabelFacilityName">اسم المؤسسة / المختبر</system:String>
     <system:String x:Key="LabelFacilityAddress">عنوان المنشأة</system:String>
@@ -889,6 +892,9 @@
     <system:String x:Key="ReviewSummaryTitle">ملخص بيانات الاستعارة:</system:String>
     <system:String x:Key="MsgErrStep1Incomplete">الرجاء اختيار المصدر وتحديد اسم المستعير والغرض للمتابعة.</system:String>
     <system:String x:Key="MsgErrExpectedReturnPast">تاريخ الإرجاع المتوقع لا يمكن أن يكون في الماضي.</system:String>
+    <system:String x:Key="MsgErrExpectedReturnTooFar">تاريخ الإرجاع المتوقع بعيد جداً (الحد الأقصى هو سنتان من اليوم).</system:String>
+    <system:String x:Key="MsgErrActualReturnFuture">لا يمكن أن يكون تاريخ الإرجاع الفعلي في المستقبل.</system:String>
+    <system:String x:Key="MsgErrRecipientRequired">الرجاء تحديد من قام باستلام/إرجاع المصدر.</system:String>
     <system:String x:Key="ColActualReturn">الإرجاع الفعلي</system:String>
 
     <!-- حالة فارغة - شاشة المصادر -->

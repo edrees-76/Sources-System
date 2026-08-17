@@ -730,4 +730,146 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
     }
 
     #endregion
+
+    #region DueSoon and Date Semantics Tests
+
+    [Fact]
+    public void GetDueSoonCount_UnifiedDateSemantics_RequestDueToday_CountedAsDueSoon_And_NotOverdue()
+    {
+        // Arrange
+        using var db = _fixture.CreateContext();
+        var source = TestDataBuilder.CreateSource(_testIsotope, _testUnit, _testLocation, "SRC-DUE-TODAY", 100.0, DateTime.Now.AddMonths(-1), "InUse");
+        db.Sources.Add(source);
+
+        var reqDueToday = new BorrowRequest
+        {
+            Id = Guid.NewGuid(),
+            SourceId = source.Id,
+            BorrowerName = "مستعير اليوم",
+            Purpose = "فحص استحقاق اليوم",
+            Status = "Delivered",
+            RequestDate = DateTime.Today.AddDays(-5),
+            ExpectedReturnDate = DateTime.Today // Due today
+        };
+        db.BorrowRequests.Add(reqDueToday);
+        db.SaveChanges();
+
+        // Act 1: Check and update overdue
+        _sut.CheckAndUpdateOverdue();
+
+        // Assert 1: Request due today is NOT marked overdue
+        using (var verifyDb = _fixture.CreateContext())
+        {
+            var r = verifyDb.BorrowRequests.Find(reqDueToday.Id);
+            Assert.NotNull(r);
+            Assert.Equal("Delivered", r.Status);
+        }
+
+        // Act 2: Calculate DueSoonCount
+        var dueSoonCount = _sut.GetDueSoonCount();
+
+        // Assert 2: Request due today MUST be counted in DueSoon
+        Assert.Equal(1, dueSoonCount);
+    }
+
+    [Fact]
+    public void GetDueSoonCount_CustomThresholdFromSettingsService_FiltersAccurately()
+    {
+        // Arrange
+        using var db = _fixture.CreateContext();
+        var src1 = TestDataBuilder.CreateSource(_testIsotope, _testUnit, _testLocation, "SRC-DUE-3D", 100.0, DateTime.Now.AddMonths(-1), "InUse");
+        var src2 = TestDataBuilder.CreateSource(_testIsotope, _testUnit, _testLocation, "SRC-DUE-10D", 100.0, DateTime.Now.AddMonths(-1), "InUse");
+        db.Sources.AddRange(src1, src2);
+
+        var reqIn3Days = new BorrowRequest
+        {
+            Id = Guid.NewGuid(),
+            SourceId = src1.Id,
+            BorrowerName = "مستعير 1",
+            Purpose = "استعارة 3 أيام",
+            Status = "Delivered",
+            RequestDate = DateTime.Today,
+            ExpectedReturnDate = DateTime.Today.AddDays(3)
+        };
+        var reqIn10Days = new BorrowRequest
+        {
+            Id = Guid.NewGuid(),
+            SourceId = src2.Id,
+            BorrowerName = "مستعير 2",
+            Purpose = "استعارة 10 أيام",
+            Status = "Delivered",
+            RequestDate = DateTime.Today,
+            ExpectedReturnDate = DateTime.Today.AddDays(10)
+        };
+        db.BorrowRequests.AddRange(reqIn3Days, reqIn10Days);
+        db.SaveChanges();
+
+        // Create a fake settings service configured with threshold = 5 days
+        var settingsService = new SystemSettingsService(_fixture.ContextFactory);
+        settingsService.SaveSetting("DueSoonDaysThreshold", "5");
+
+        var serviceWithSettings = new BorrowService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService, settingsService);
+
+        // Act: Threshold = 5 -> only reqIn3Days is within 5 days
+        var count5Days = serviceWithSettings.GetDueSoonCount();
+
+        // Update threshold to 14 days
+        settingsService.SaveSetting("DueSoonDaysThreshold", "14");
+        var count14Days = serviceWithSettings.GetDueSoonCount();
+
+        // Assert
+        Assert.Equal(1, count5Days);
+        Assert.Equal(2, count14Days);
+    }
+
+    [Fact]
+    public void GetDueSoonRequests_ReturnsOnlyDeliveredWithinWindow_OrderedByDate()
+    {
+        // Arrange
+        using var db = _fixture.CreateContext();
+        var src1 = TestDataBuilder.CreateSource(_testIsotope, _testUnit, _testLocation, "SRC-DUE-ORD1", 100.0, DateTime.Now.AddMonths(-1), "InUse");
+        var src2 = TestDataBuilder.CreateSource(_testIsotope, _testUnit, _testLocation, "SRC-DUE-ORD2", 100.0, DateTime.Now.AddMonths(-1), "InUse");
+        var src3 = TestDataBuilder.CreateSource(_testIsotope, _testUnit, _testLocation, "SRC-DUE-ORD3", 100.0, DateTime.Now.AddMonths(-1), "Storage");
+        db.Sources.AddRange(src1, src2, src3);
+
+        var req1 = new BorrowRequest
+        {
+            Id = Guid.NewGuid(),
+            SourceId = src1.Id,
+            BorrowerName = "المستعير الأول",
+            Purpose = "غرض 1",
+            Status = "Delivered",
+            ExpectedReturnDate = DateTime.Today.AddDays(4)
+        };
+        var req2 = new BorrowRequest
+        {
+            Id = Guid.NewGuid(),
+            SourceId = src2.Id,
+            BorrowerName = "المستعير الثاني",
+            Purpose = "غرض 2",
+            Status = "Delivered",
+            ExpectedReturnDate = DateTime.Today.AddDays(1)
+        };
+        var reqReturned = new BorrowRequest
+        {
+            Id = Guid.NewGuid(),
+            SourceId = src3.Id,
+            BorrowerName = "مستعير تم إرجاعه",
+            Purpose = "غرض 3",
+            Status = "Returned",
+            ExpectedReturnDate = DateTime.Today.AddDays(2)
+        };
+        db.BorrowRequests.AddRange(req1, req2, reqReturned);
+        db.SaveChanges();
+
+        // Act
+        var result = _sut.GetDueSoonRequests();
+
+        // Assert: reqReturned excluded, req2 (day 1) comes before req1 (day 4)
+        Assert.Equal(2, result.Count);
+        Assert.Equal(req2.Id, result[0].Id);
+        Assert.Equal(req1.Id, result[1].Id);
+    }
+
+    #endregion
 }

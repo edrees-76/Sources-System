@@ -32,6 +32,7 @@ public partial class SettingsViewModel : ObservableObject
     // ─── تبويب إعدادات النظام ───
     [ObservableProperty] private double _lowActivityThresholdPercent = 10.0;
     [ObservableProperty] private int _notificationCheckIntervalMinutes = 60;
+    [ObservableProperty] private int _dueSoonDaysThreshold = 7;
     [ObservableProperty] private string _facilityName = string.Empty;
     [ObservableProperty] private string _facilityAddress = string.Empty;
     [ObservableProperty] private string _technicalDirector = string.Empty;
@@ -60,6 +61,7 @@ public partial class SettingsViewModel : ObservableObject
         // تحميل إعدادات النظام العامة
         LowActivityThresholdPercent = _settingsService.GetSetting("LowActivityThresholdPercent", 10.0);
         NotificationCheckIntervalMinutes = _settingsService.GetSetting("NotificationCheckIntervalMinutes", 60);
+        DueSoonDaysThreshold = _settingsService.GetSetting("DueSoonDaysThreshold", 7);
         FacilityName = _settingsService.GetSetting("FacilityName", string.Empty);
         FacilityAddress = _settingsService.GetSetting("FacilityAddress", string.Empty);
         TechnicalDirector = _settingsService.GetSetting("TechnicalDirector", string.Empty);
@@ -307,8 +309,15 @@ public partial class SettingsViewModel : ObservableObject
             return;
         }
 
+        if (DueSoonDaysThreshold < 1 || DueSoonDaysThreshold > 365)
+        {
+            DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrDueSoonThresholdRange"), TranslationHelper.GetString("TabSystemSettings"));
+            return;
+        }
+
         _settingsService.SaveSetting("LowActivityThresholdPercent", LowActivityThresholdPercent.ToString());
         _settingsService.SaveSetting("NotificationCheckIntervalMinutes", NotificationCheckIntervalMinutes.ToString());
+        _settingsService.SaveSetting("DueSoonDaysThreshold", DueSoonDaysThreshold.ToString());
         _settingsService.SaveSetting("FacilityName", FacilityName ?? string.Empty);
         _settingsService.SaveSetting("FacilityAddress", FacilityAddress ?? string.Empty);
         _settingsService.SaveSetting("TechnicalDirector", TechnicalDirector ?? string.Empty);

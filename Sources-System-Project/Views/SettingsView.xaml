@@ -410,10 +410,18 @@
                             </StackPanel>
 
                             <!-- دورية فحص التنبيهات -->
-                            <StackPanel Margin="0,0,0,8">
+                            <StackPanel Margin="0,0,0,16">
                                 <TextBlock Text="{DynamicResource LabelNotificationCheckInterval}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4"/>
                                 <TextBlock Text="{DynamicResource DescNotificationCheckInterval}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,8"/>
                                 <TextBox Text="{Binding NotificationCheckIntervalMinutes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource FormTextBox}" Width="200" HorizontalAlignment="Left" FlowDirection="LeftToRight"/>
+                            </StackPanel>
+
+                            <!-- مهلة التنبيه بالاستعارات المستحقة -->
+                            <StackPanel Margin="0,0,0,8">
+                                <TextBlock Text="{DynamicResource LabelDueSoonThreshold}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4"/>
+                                <TextBlock Text="{DynamicResource DescDueSoonThreshold}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,8"/>
+                                <TextBox Text="{Binding DueSoonDaysThreshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          Style="{StaticResource FormTextBox}" Width="200" HorizontalAlignment="Left" FlowDirection="LeftToRight"/>
                             </StackPanel>
                         </StackPanel>

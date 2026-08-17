@@ -7,6 +7,7 @@ namespace Sources.Helpers
     {
         public static void ShowInfo(string message, string? title = null, string? imagePath = null)
         {
+            if (Application.Current?.Dispatcher == null) return;
             Application.Current.Dispatcher.Invoke(() =>
             {
                 var finalTitle = title ?? TranslationHelper.GetString("AlertTitle");
@@ -21,6 +22,7 @@ namespace Sources.Helpers
 
         public static void ShowWarning(string message, string? title = null)
         {
+            if (Application.Current?.Dispatcher == null) return;
             Application.Current.Dispatcher.Invoke(() =>
             {
                 var finalTitle = title ?? TranslationHelper.GetString("AlertWarning");
@@ -35,6 +37,7 @@ namespace Sources.Helpers
 
         public static void ShowError(string message, string? title = null)
         {
+            if (Application.Current?.Dispatcher == null) return;
             Application.Current.Dispatcher.Invoke(() =>
             {
                 var finalTitle = title ?? TranslationHelper.GetString("AlertError");
@@ -49,6 +52,7 @@ namespace Sources.Helpers
 
         public static bool ShowConfirmation(string message, string? title = null)
         {
+            if (Application.Current?.Dispatcher == null) return true;
             bool result = false;
             Application.Current.Dispatcher.Invoke(() =>
             {

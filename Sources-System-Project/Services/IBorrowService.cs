@@ -19,4 +19,7 @@ public interface IBorrowService
     (bool Success, string Message) MarkReturned(Guid requestId, Guid returnedByUserId, DateTime actualReturnDate, string? notes = null);
     
     void CheckAndUpdateOverdue();
+    int GetDueSoonDaysThreshold();
+    int GetDueSoonCount(IEnumerable<BorrowRequest>? requests = null);
+    List<BorrowRequest> GetDueSoonRequests();
 }

@@ -98,13 +98,18 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
         "الكل", "تم التسليم", "تم الإرجاع", "متأخر"
     };
 
-    public BorrowViewModel(IBorrowService borrowService, ISourceService sourceService, IUserService userService, IReportingService reportingService)
+    public BorrowViewModel(
+        IBorrowService borrowService, 
+        ISourceService sourceService, 
+        IUserService userService, 
+        IReportingService reportingService,
+        IDbContextFactory<AppDbContext>? dbFactory = null)
     {
         _borrowService = borrowService;
         _sourceService = sourceService;
         _userService = userService;
         _reportingService = reportingService;
-        _dbFactory = App.ServiceProvider.GetService(typeof(IDbContextFactory<AppDbContext>)) as IDbContextFactory<AppDbContext>;
+        _dbFactory = dbFactory ?? (App.ServiceProvider?.GetService(typeof(IDbContextFactory<AppDbContext>)) as IDbContextFactory<AppDbContext>);
 
         _ = LoadDataAsync();
     }
@@ -117,12 +122,21 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
             _borrowService.CheckAndUpdateOverdue();
             var all = _borrowService.GetAll();
 
-            App.Current.Dispatcher.Invoke(() =>
+            void updateUi()
             {
                 Requests.Clear();
                 foreach (var r in all) Requests.Add(r);
                 UpdateStatistics(all);
-            });
+            }
+
+            if (App.Current?.Dispatcher != null)
+            {
+                App.Current.Dispatcher.Invoke(updateUi);
+            }
+            else
+            {
+                updateUi();
+            }
         });
     }
 
@@ -131,10 +145,7 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
         ActiveCount = all.Count(r => r.Status == "Delivered" || r.Status == "Overdue");
         BorrowedCount = all.Count(r => r.Status == "Delivered");
         OverdueCount = all.Count(r => r.Status == "Overdue");
-
-        var soonDate = DateTime.Now.AddDays(7);
-        DueSoonCount = all.Count(r => r.Status == "Delivered"
-                                    && r.ExpectedReturnDate <= soonDate && r.ExpectedReturnDate >= DateTime.Now);
+        DueSoonCount = _borrowService.GetDueSoonCount(all);
     }
 
     // ─── أوامر التنقل بين المشهدين والخطوات ───
@@ -290,6 +301,12 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
             return;
         }
 
+        if (NewExpectedReturnDate.Date > DateTime.Today.AddYears(2))
+        {
+            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrExpectedReturnTooFar"));
+            return;
+        }
+
         string confirmMsg = $"سيتم تسليم المصدر ({SelectedSourceForNew.SourceCode}) إلى ({NewBorrowerName}).\nهل أنت متأكد من المتابعة؟";
         if (!DialogHelper.ShowConfirmation(confirmMsg, TranslationHelper.GetString("AddNewBorrowRequestTitle")))
             return;
@@ -325,13 +342,19 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
         if (SelectedRequest == null) return;
         if (SelectedReturnedBy == null)
         {
-            DialogHelper.ShowError("الرجاء تحديد من قام باستلام/إرجاع المصدر.");
+            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrRecipientRequired"));
             return;
         }
 
         if (NewActualReturnDate.Date < SelectedRequest.RequestDate.Date)
         {
             DialogHelper.ShowError(TranslationHelper.GetString("MsgErrActualReturnBeforeRequest"));
+            return;
+        }
+
+        if (NewActualReturnDate.Date > DateTime.Today)
+        {
+            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrActualReturnFuture"));
             return;
         }
 

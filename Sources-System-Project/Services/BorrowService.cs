@@ -12,12 +12,18 @@ public class BorrowService : IBorrowService
     private readonly IDbContextFactory<AppDbContext> _dbFactory;
     private readonly IAuditService _auditService;
     private readonly IUserService _userService;
+    private readonly ISystemSettingsService? _settingsService;
 
-    public BorrowService(IDbContextFactory<AppDbContext> dbFactory, IAuditService auditService, IUserService userService)
+    public BorrowService(
+        IDbContextFactory<AppDbContext> dbFactory, 
+        IAuditService auditService, 
+        IUserService userService,
+        ISystemSettingsService? settingsService = null)
     {
         _dbFactory = dbFactory;
         _auditService = auditService;
         _userService = userService;
+        _settingsService = settingsService;
     }
 
     public List<BorrowRequest> GetAll()
@@ -187,5 +193,53 @@ public class BorrowService : IBorrowService
         {
             _auditService.Log("Error", "BorrowRequests", Guid.Empty, $"خطأ أثناء فحص وتحديث الطلبات المتأخرة: {ex.Message}");
         }
+    }
+
+    public int GetDueSoonDaysThreshold()
+    {
+        if (_settingsService != null)
+        {
+            return _settingsService.GetSetting("DueSoonDaysThreshold", 7);
+        }
+        return 7;
+    }
+
+    public int GetDueSoonCount(IEnumerable<BorrowRequest>? requests = null)
+    {
+        var thresholdDays = GetDueSoonDaysThreshold();
+        var today = DateTime.Today;
+        var maxDate = today.AddDays(thresholdDays);
+
+        if (requests != null)
+        {
+            return requests.Count(r => r.Status == "Delivered" 
+                && r.ExpectedReturnDate.Date >= today 
+                && r.ExpectedReturnDate.Date <= maxDate);
+        }
+
+        using var db = _dbFactory.CreateDbContext();
+        return db.BorrowRequests
+            .AsEnumerable()
+            .Count(r => r.Status == "Delivered" 
+                && r.ExpectedReturnDate.Date >= today 
+                && r.ExpectedReturnDate.Date <= maxDate);
+    }
+
+    public List<BorrowRequest> GetDueSoonRequests()
+    {
+        var thresholdDays = GetDueSoonDaysThreshold();
+        var today = DateTime.Today;
+        var maxDate = today.AddDays(thresholdDays);
+
+        using var db = _dbFactory.CreateDbContext();
+        return db.BorrowRequests
+            .Include(b => b.Source)
+            .Include(b => b.BorrowerUser)
+            .AsEnumerable()
+            .Where(r => r.Status == "Delivered" 
+                && r.ExpectedReturnDate.Date >= today 
+                && r.ExpectedReturnDate.Date <= maxDate)
+            .OrderBy(r => r.ExpectedReturnDate)
+            .ToList();
     }
 }

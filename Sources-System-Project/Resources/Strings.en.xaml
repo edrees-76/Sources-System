@@ -174,6 +174,9 @@
     <system:String x:Key="DescLowActivityThreshold">Percentage of initial activity below which a source is considered low activity in reports</system:String>
     <system:String x:Key="LabelNotificationCheckInterval">Alert Check Interval (Minutes)</system:String>
     <system:String x:Key="DescNotificationCheckInterval">Interval in minutes to automatically re-check alerts in the background</system:String>
+    <system:String x:Key="LabelDueSoonThreshold">Due Soon Borrowing Threshold (Days)</system:String>
+    <system:String x:Key="DescDueSoonThreshold">Number of days before expected return date to classify a borrow request as 'Due Soon'</system:String>
+    <system:String x:Key="MsgErrDueSoonThresholdRange">Due soon threshold must be between 1 and 365 days</system:String>
     <system:String x:Key="ReportHeaderSettingsTitle">Facility Info &amp; Report Header</system:String>
     <system:String x:Key="LabelFacilityName">Facility / Lab Name</system:String>
     <system:String x:Key="LabelFacilityAddress">Facility Address</system:String>
@@ -890,6 +893,9 @@
     <system:String x:Key="ReviewSummaryTitle">Borrowing Request Summary:</system:String>
     <system:String x:Key="MsgErrStep1Incomplete">Please select a source, borrower name, and purpose before proceeding.</system:String>
     <system:String x:Key="MsgErrExpectedReturnPast">Expected return date cannot be in the past.</system:String>
+    <system:String x:Key="MsgErrExpectedReturnTooFar">Expected return date is too far in the future (maximum 2 years from today).</system:String>
+    <system:String x:Key="MsgErrActualReturnFuture">Actual return date cannot be in the future.</system:String>
+    <system:String x:Key="MsgErrRecipientRequired">Please select the recipient/person returning the source.</system:String>
     <system:String x:Key="ColActualReturn">Actual Return</system:String>
 
     <!-- Empty State - Sources Screen -->

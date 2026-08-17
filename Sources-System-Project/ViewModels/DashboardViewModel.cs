@@ -884,16 +884,12 @@ public partial class DashboardViewModel : ObservableObject
     {
         try
         {
+            _borrowService.CheckAndUpdateOverdue();
             var allRequests = _borrowService.GetAll();
-            var now = DateTime.Now;
-            var dueSoonThreshold = now.AddDays(7);
 
             int overdue = allRequests.Count(r => r.Status == "Overdue");
             int active  = allRequests.Count(r => r.Status == "Delivered" || r.Status == "Overdue");
-            int dueSoon = allRequests.Count(r =>
-                r.Status == "Delivered" &&
-                r.ExpectedReturnDate >= now &&
-                r.ExpectedReturnDate <= dueSoonThreshold);
+            int dueSoon = _borrowService.GetDueSoonCount(allRequests);
 
             BorrowSummary = new DashboardBorrowSummary
             {
