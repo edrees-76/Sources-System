@@ -491,6 +491,7 @@ public class User
         // المدير لديه كل الصلاحيات
         if (IsAdmin) return true;
         if (string.IsNullOrEmpty(Permissions)) return false;
+        if (string.Equals(Permissions.Trim(), "All", StringComparison.OrdinalIgnoreCase)) return true;
         return Permissions.Split(',', StringSplitOptions.RemoveEmptyEntries)
                          .Any(p => p.Trim().Equals(section, StringComparison.OrdinalIgnoreCase));
     }

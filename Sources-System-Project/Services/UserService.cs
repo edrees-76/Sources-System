@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Sources.Data;
 using Sources.Models;
@@ -121,6 +122,27 @@ public class UserService : IUserService
         user.PasswordHash = PasswordHelper.HashPassword(password);
         db.Users.Add(user);
         db.SaveChanges();
+
+        var newValuesObj = new
+        {
+            user.FullName,
+            user.Username,
+            user.Email,
+            user.RoleId,
+            user.IsActive,
+            user.IsEditor,
+            user.Permissions
+        };
+
+        _auditService?.LogWithChanges(
+            action: "Create",
+            tableName: "Users",
+            recordId: user.Id,
+            details: $"إنشاء مستخدم جديد: {user.FullName} ({user.Username})",
+            oldValues: null,
+            newValues: JsonSerializer.Serialize(newValuesObj)
+        );
+
         return (true, "تم إنشاء المستخدم بنجاح");
     }
 
@@ -131,6 +153,16 @@ public class UserService : IUserService
         if (existing == null)
             return (false, "المستخدم غير موجود");
 
+        var oldValuesObj = new
+        {
+            existing.FullName,
+            existing.Email,
+            existing.RoleId,
+            existing.IsActive,
+            existing.IsEditor,
+            existing.Permissions
+        };
+
         existing.FullName = user.FullName;
         existing.Email = user.Email;
         existing.RoleId = user.RoleId;
@@ -138,6 +170,26 @@ public class UserService : IUserService
         existing.Permissions = user.Permissions;
         existing.IsEditor = user.IsEditor;
         db.SaveChanges();
+
+        var newValuesObj = new
+        {
+            existing.FullName,
+            existing.Email,
+            existing.RoleId,
+            existing.IsActive,
+            existing.IsEditor,
+            existing.Permissions
+        };
+
+        _auditService?.LogWithChanges(
+            action: "Update",
+            tableName: "Users",
+            recordId: user.Id,
+            details: $"تعديل بيانات المستخدم: {existing.FullName} ({existing.Username})",
+            oldValues: JsonSerializer.Serialize(oldValuesObj),
+            newValues: JsonSerializer.Serialize(newValuesObj)
+        );
+
         return (true, "تم تحديث بيانات المستخدم");
     }
 

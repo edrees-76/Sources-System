@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using Sources.Data;
 using Sources.Helpers;
 using Sources.Models;
@@ -742,6 +743,31 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
         Assert.Equal("updated@test.local", updated.Email);
         Assert.False(updated.IsEditor);
         Assert.Equal("Reports,Locations", updated.Permissions);
+    }
+
+    [Fact]
+    public void UpdateUser_WhenAuditServiceProvided_LogsChangesWithPermissions()
+    {
+        // Arrange
+        var mockAuditService = new Moq.Mock<IAuditService>();
+        var userServiceWithAudit = new UserService(_fixture.ContextFactory, mockAuditService.Object);
+        var user = CreateTestUser(username: "audit_user_update", password: "Password123", permissions: "Sources");
+
+        // Act
+        user.FullName = "الاسم بعد التعديل";
+        user.Permissions = "Sources,Reports";
+        var (success, _) = userServiceWithAudit.UpdateUser(user);
+
+        // Assert
+        Assert.True(success);
+        mockAuditService.Verify(a => a.LogWithChanges(
+            "Update",
+            "Users",
+            user.Id,
+            It.Is<string>(d => d.Contains("تعديل بيانات المستخدم")),
+            It.Is<string>(oldVal => oldVal.Contains("\"Permissions\":\"Sources\"")),
+            It.Is<string>(newVal => newVal.Contains("\"Permissions\":\"Sources,Reports\""))
+        ), Moq.Times.Once);
     }
 
     [Fact]

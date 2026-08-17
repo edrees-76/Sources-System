@@ -101,6 +101,20 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
     // ─── رؤية قسم الصلاحيات ───
     [ObservableProperty] private bool _isPermissionsSectionVisible;
 
+    private static readonly HashSet<string> KnownPermissionKeys = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Radioisotopes",
+        "Sources",
+        "Locations",
+        "Borrowing",
+        "Reports",
+        "Users",
+        "Settings",
+        "ActivityCalculator"
+    };
+
+    private readonly List<string> _customOrUnrecognizedPermissions = new();
+
     public UsersViewModel(IUserService userService, IReportingService reportingService)
     {
         _userService = userService;
@@ -277,7 +291,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
                 }
             }
 
-            var allKeys = oldDict.Keys.Union(newDict.Keys).ToList();
+        var allKeys = oldDict.Keys.Union(newDict.Keys).ToList();
 
             if (allKeys.Any())
             {
@@ -286,13 +300,20 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
                     oldDict.TryGetValue(key, out var oldVal);
                     newDict.TryGetValue(key, out var newVal);
 
-                    diffList.Add(new AuditDiffItem
+                    if (key.Equals("Permissions", StringComparison.OrdinalIgnoreCase))
                     {
-                        FieldName = TranslateFieldName(key),
-                        OldValue = string.IsNullOrEmpty(oldVal) ? "(فارغ / لم يحدد)" : oldVal,
-                        NewValue = string.IsNullOrEmpty(newVal) ? "(فارغ / لم يحدد)" : newVal,
-                        HasChanged = oldVal != newVal
-                    });
+                        diffList.Add(CreatePermissionsDiffItem(oldVal, newVal));
+                    }
+                    else
+                    {
+                        diffList.Add(new AuditDiffItem
+                        {
+                            FieldName = TranslateFieldName(key),
+                            OldValue = string.IsNullOrEmpty(oldVal) ? "(فارغ / لم يحدد)" : oldVal,
+                            NewValue = string.IsNullOrEmpty(newVal) ? "(فارغ / لم يحدد)" : newVal,
+                            HasChanged = oldVal != newVal
+                        });
+                    }
                 }
             }
             else
@@ -329,6 +350,77 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
         AuditDiffItems.Clear();
     }
 
+    private static AuditDiffItem CreatePermissionsDiffItem(string? oldVal, string? newVal)
+    {
+        var oldSet = ParsePermissionList(oldVal);
+        var newSet = ParsePermissionList(newVal);
+
+        string oldDisplay = FormatPermissionSetDisplay(oldSet, oldVal);
+        string newDisplay = FormatPermissionSetDisplay(newSet, newVal);
+
+        var added = newSet.Except(oldSet, StringComparer.OrdinalIgnoreCase).ToList();
+        var removed = oldSet.Except(newSet, StringComparer.OrdinalIgnoreCase).ToList();
+
+        bool hasChanged = !oldSet.SetEquals(newSet) || !string.Equals(oldVal?.Trim(), newVal?.Trim(), StringComparison.OrdinalIgnoreCase);
+
+        string finalNewValue = newDisplay;
+        if (hasChanged && (added.Count > 0 || removed.Count > 0))
+        {
+            var deltaList = new List<string>();
+            foreach (var a in added) deltaList.Add($"+ {TranslatePermissionName(a)}");
+            foreach (var r in removed) deltaList.Add($"- {TranslatePermissionName(r)}");
+            finalNewValue = $"{newDisplay} [{string.Join(" ، ", deltaList)}]";
+        }
+
+        return new AuditDiffItem
+        {
+            FieldName = TranslateFieldName("Permissions"),
+            OldValue = oldDisplay,
+            NewValue = finalNewValue,
+            HasChanged = hasChanged
+        };
+    }
+
+    private static HashSet<string> ParsePermissionList(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (string.Equals(raw.Trim(), "All", StringComparison.OrdinalIgnoreCase))
+        {
+            return new HashSet<string>(KnownPermissionKeys, StringComparer.OrdinalIgnoreCase);
+        }
+        return raw.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                  .Select(p => p.Trim())
+                  .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static string FormatPermissionSetDisplay(HashSet<string> set, string? raw)
+    {
+        if (set.Count == 0) return "(لا توجد صلاحيات)";
+        if (string.Equals(raw?.Trim(), "All", StringComparison.OrdinalIgnoreCase) || set.SetEquals(KnownPermissionKeys))
+        {
+            return "كافة الصلاحيات (All)";
+        }
+        var translatedNames = set.Select(TranslatePermissionName);
+        return string.Join("، ", translatedNames);
+    }
+
+    private static string TranslatePermissionName(string perm)
+    {
+        return perm switch
+        {
+            "Radioisotopes" => "النظائر المشعة",
+            "Sources" => "المصادر المشعة",
+            "Locations" => "المواقع",
+            "Borrowing" => "الاستعارة",
+            "Reports" => "التقارير",
+            "Users" => "إدارة المستخدمين",
+            "Settings" => "الإعدادات",
+            "ActivityCalculator" or "Calculator" => "حاسبة النشاط",
+            "All" => "كافة الصلاحيات",
+            _ => perm
+        };
+    }
+
     private static string TranslateFieldName(string key)
     {
         return key switch
@@ -345,6 +437,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
             "RoleId" => "معرّف الدور",
             "IsActive" => "الحساب نشط",
             "IsEditor" => "صلاحية التعديل",
+            "Permissions" => "صلاحيات الوصول للأقسام",
             "Purpose" => "الغرض",
             "ExpectedReturnDate" => "تاريخ الإرجاع المتوقع",
             _ => key
@@ -585,6 +678,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
     {
         EditFullName = EditUsername = EditPassword = EditEmail = string.Empty;
         EditRoleId = null; EditIsActive = true; EditIsEditor = true;
+        _customOrUnrecognizedPermissions.Clear();
         PermRadioisotopes = PermSources = PermLocations = PermBorrowing = PermReports = PermCalculator = true;
         PermUsers = PermSettings = false;
         UpdatePermissionsVisibility();
@@ -604,18 +698,36 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
         if (PermUsers) perms.Add("Users");
         if (PermSettings) perms.Add("Settings");
         if (PermCalculator) perms.Add("ActivityCalculator");
+
+        if (_customOrUnrecognizedPermissions.Count > 0)
+        {
+            perms.AddRange(_customOrUnrecognizedPermissions);
+        }
+
         return string.Join(",", perms);
     }
 
     private void UnpackPermissions(string? perms)
     {
-        if (string.IsNullOrEmpty(perms) || perms == "All")
+        _customOrUnrecognizedPermissions.Clear();
+
+        if (string.IsNullOrWhiteSpace(perms))
         {
-            PermRadioisotopes = PermSources = PermLocations = PermBorrowing = PermReports = PermCalculator = true;
-            PermUsers = PermSettings = perms == "All";
+            PermRadioisotopes = PermSources = PermLocations = PermBorrowing = PermReports = PermCalculator = false;
+            PermUsers = PermSettings = false;
             return;
         }
-        var set = perms.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        if (string.Equals(perms.Trim(), "All", StringComparison.OrdinalIgnoreCase))
+        {
+            PermRadioisotopes = PermSources = PermLocations = PermBorrowing = PermReports = PermCalculator = true;
+            PermUsers = PermSettings = true;
+            return;
+        }
+
+        var tokens = perms.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToList();
+        var set = tokens.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
         PermRadioisotopes = set.Contains("Radioisotopes");
         PermSources = set.Contains("Sources");
         PermLocations = set.Contains("Locations");
@@ -624,6 +736,17 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
         PermUsers = set.Contains("Users");
         PermSettings = set.Contains("Settings");
         PermCalculator = set.Contains("ActivityCalculator");
+
+        foreach (var token in tokens)
+        {
+            if (!string.IsNullOrEmpty(token) && !KnownPermissionKeys.Contains(token))
+            {
+                if (!_customOrUnrecognizedPermissions.Contains(token, StringComparer.OrdinalIgnoreCase))
+                {
+                    _customOrUnrecognizedPermissions.Add(token);
+                }
+            }
+        }
     }
 
     partial void OnEditRoleIdChanged(Guid? value) => UpdatePermissionsVisibility();
