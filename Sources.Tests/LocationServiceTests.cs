@@ -580,4 +580,150 @@ public class LocationServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
     }
 
     #endregion
+
+    #region GetSourcesLinkedToLocation Tests
+
+    [Fact]
+    public void GetSourcesLinkedToLocation_LocationWithNoSources_ReturnsEmptyList()
+    {
+        // Arrange
+        var loc = TestDataBuilder.CreateLocation(name: "موقع بدون مصادر");
+        using (var db = _fixture.CreateContext())
+        {
+            db.Locations.Add(loc);
+            db.SaveChanges();
+        }
+
+        // Act
+        var result = _sut.GetSourcesLinkedToLocation(loc.Id);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public void GetSourcesLinkedToLocation_CurrentlyLinkedSources_ReturnsThem()
+    {
+        // Arrange
+        var loc = TestDataBuilder.CreateLocation(name: "موقع حالي");
+        var iso = TestDataBuilder.CreateRadioisotope("Cs-137", "Cesium-137", 30.08, "years", 661.7);
+        var unit = TestDataBuilder.CreateActivityUnit("Bq", "Bq", 1.0);
+        var src1 = TestDataBuilder.CreateSource(iso, unit, loc, sourceCode: "SRC-LOC-01");
+        var src2 = TestDataBuilder.CreateSource(iso, unit, loc, sourceCode: "SRC-LOC-02");
+
+        using (var db = _fixture.CreateContext())
+        {
+            db.Locations.Add(loc);
+            db.Radioisotopes.Add(iso);
+            db.ActivityUnits.Add(unit);
+            db.Sources.AddRange(src1, src2);
+            db.SaveChanges();
+        }
+
+        // Act
+        var result = _sut.GetSourcesLinkedToLocation(loc.Id);
+
+        // Assert
+        Assert.Equal(2, result.Count);
+        Assert.Contains(result, s => s.SourceCode == "SRC-LOC-01");
+        Assert.Contains(result, s => s.SourceCode == "SRC-LOC-02");
+    }
+
+    [Fact]
+    public void GetSourcesLinkedToLocation_HistoricallyLinkedSources_ReturnsThemEvenIfCurrentLocationDifferent()
+    {
+        // Arrange
+        var oldLoc = TestDataBuilder.CreateLocation(name: "الموقع القديم");
+        var currentLoc = TestDataBuilder.CreateLocation(name: "الموقع الجديد الحالي");
+        var iso = TestDataBuilder.CreateRadioisotope("Co-60", "Cobalt-60", 5.27, "years", 1332.5);
+        var unit = TestDataBuilder.CreateActivityUnit("Ci", "Ci", 3.7e10);
+
+        // المصدر موقعه الحالي هو الموقع الجديد
+        var src = TestDataBuilder.CreateSource(iso, unit, currentLoc, sourceCode: "SRC-TRANSFERRED-01");
+
+        // سجل تاريخي يوضح أنه كان سابقاً في الموقع القديم
+        var history = new SourceLocationHistory
+        {
+            Id = Guid.NewGuid(),
+            SourceId = src.Id,
+            LocationId = oldLoc.Id,
+            PreviousLocationId = null,
+            MovedAt = DateTime.Now.AddDays(-30)
+        };
+
+        using (var db = _fixture.CreateContext())
+        {
+            db.Locations.AddRange(oldLoc, currentLoc);
+            db.Radioisotopes.Add(iso);
+            db.ActivityUnits.Add(unit);
+            db.Sources.Add(src);
+            db.SourceLocationHistories.Add(history);
+            db.SaveChanges();
+        }
+
+        // Act - استعلام عن الموقع القديم
+        var resultOldLoc = _sut.GetSourcesLinkedToLocation(oldLoc.Id);
+
+        // Assert - يجب أن يظهر المصدر ضمن قائمة الموقع القديم بسبب السجل التاريخي
+        Assert.Single(resultOldLoc);
+        Assert.Equal("SRC-TRANSFERRED-01", resultOldLoc[0].SourceCode);
+    }
+
+    [Fact]
+    public void GetSourcesLinkedToLocation_SourceBothCurrentAndHistorical_ReturnsSourceWithoutDuplicates()
+    {
+        // Arrange
+        var loc = TestDataBuilder.CreateLocation(name: "موقع مزدوج الحالة");
+        var otherLoc = TestDataBuilder.CreateLocation(name: "موقع مؤقت");
+        var iso = TestDataBuilder.CreateRadioisotope("Am-241", "Americium-241", 432.2, "years", 59.54);
+        var unit = TestDataBuilder.CreateActivityUnit("MBq", "MBq", 1.0e6);
+
+        var src = TestDataBuilder.CreateSource(iso, unit, loc, sourceCode: "SRC-ROUNDTRIP-01");
+
+        // سجلات تاريخية للمصدر في نفس الموقع
+        var h1 = new SourceLocationHistory
+        {
+            Id = Guid.NewGuid(),
+            SourceId = src.Id,
+            LocationId = loc.Id,
+            PreviousLocationId = null,
+            MovedAt = DateTime.Now.AddDays(-60)
+        };
+        var h2 = new SourceLocationHistory
+        {
+            Id = Guid.NewGuid(),
+            SourceId = src.Id,
+            LocationId = otherLoc.Id,
+            PreviousLocationId = loc.Id,
+            MovedAt = DateTime.Now.AddDays(-30)
+        };
+        var h3 = new SourceLocationHistory
+        {
+            Id = Guid.NewGuid(),
+            SourceId = src.Id,
+            LocationId = loc.Id,
+            PreviousLocationId = otherLoc.Id,
+            MovedAt = DateTime.Now.AddDays(-5)
+        };
+
+        using (var db = _fixture.CreateContext())
+        {
+            db.Locations.AddRange(loc, otherLoc);
+            db.Radioisotopes.Add(iso);
+            db.ActivityUnits.Add(unit);
+            db.Sources.Add(src);
+            db.SourceLocationHistories.AddRange(h1, h2, h3);
+            db.SaveChanges();
+        }
+
+        // Act
+        var result = _sut.GetSourcesLinkedToLocation(loc.Id);
+
+        // Assert - يجب أن يظهر المصدر مرة واحدة فقط دون تكرار
+        Assert.Single(result);
+        Assert.Equal("SRC-ROUNDTRIP-01", result[0].SourceCode);
+    }
+
+    #endregion
 }

@@ -24,6 +24,7 @@ public class AppDbContext : DbContext
     public DbSet<SourceIsotope> SourceIsotopes { get; set; } = null!;
     public DbSet<AlertNotification> AlertNotifications { get; set; } = null!;
     public DbSet<AppSetting> AppSettings { get; set; } = null!;
+    public DbSet<SourceLocationHistory> SourceLocationHistories { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
@@ -194,6 +195,24 @@ public class AppDbContext : DbContext
         try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_Users_IsDeleted ON Users(IsDeleted);"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_Radioisotopes_IsDeleted ON Radioisotopes(IsDeleted);"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_Sources_SerialNumber ON Sources(SerialNumber);"; cmd.ExecuteNonQuery(); } catch { }
+
+        // ─── جدول تاريخ تنقلات المصادر بين المواقع ───
+        cmd.CommandText = @"
+            CREATE TABLE IF NOT EXISTS SourceLocationHistories (
+                Id TEXT PRIMARY KEY NOT NULL,
+                SourceId TEXT NOT NULL,
+                LocationId TEXT,
+                PreviousLocationId TEXT,
+                MovedAt TEXT NOT NULL,
+                FOREIGN KEY (SourceId) REFERENCES Sources(Id) ON DELETE CASCADE,
+                FOREIGN KEY (LocationId) REFERENCES Locations(Id) ON DELETE SET NULL,
+                FOREIGN KEY (PreviousLocationId) REFERENCES Locations(Id) ON DELETE SET NULL
+            );";
+        cmd.ExecuteNonQuery();
+
+        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_SourceLocationHistories_SourceId ON SourceLocationHistories(SourceId);"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_SourceLocationHistories_LocationId ON SourceLocationHistories(LocationId);"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_SourceLocationHistories_MovedAt ON SourceLocationHistories(MovedAt);"; cmd.ExecuteNonQuery(); } catch { }
 
         conn.Close();
     }
@@ -503,6 +522,31 @@ public class AppDbContext : DbContext
                 .HasForeignKey(si => si.ActivityUnitId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ─── SourceLocationHistory relationships ───
+        modelBuilder.Entity<SourceLocationHistory>(entity =>
+        {
+            entity.HasOne(h => h.Source)
+                .WithMany(s => s.LocationHistories)
+                .HasForeignKey(h => h.SourceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(h => h.Location)
+                .WithMany()
+                .HasForeignKey(h => h.LocationId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(h => h.PreviousLocation)
+                .WithMany()
+                .HasForeignKey(h => h.PreviousLocationId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(h => h.SourceId);
+            entity.HasIndex(h => h.LocationId);
+            entity.HasIndex(h => h.MovedAt);
         });
 
         // ─── Global Query Filters (Soft Delete) ───

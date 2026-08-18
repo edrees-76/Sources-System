@@ -602,6 +602,13 @@
     <system:String x:Key="LabelIsotopeSymbol">Isotope</system:String>
     <system:String x:Key="MsgErrImageLoad">Failed to load image: {0}</system:String>
 
+    <!-- Location Details Strings -->
+    <system:String x:Key="TitleLocationDetails">Location Details &amp; Linked Sources</system:String>
+    <system:String x:Key="MsgNoSourcesLinkedToLocation">No sources linked to this location</system:String>
+    <system:String x:Key="HeaderLinkedSources">Linked Sources (Current &amp; Historical)</system:String>
+    <system:String x:Key="LabelLocationInfo">Location Information</system:String>
+    <system:String x:Key="ToolTipLocationDetails">View location details and linked sources</system:String>
+
 
 
 

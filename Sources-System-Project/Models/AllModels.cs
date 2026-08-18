@@ -241,6 +241,7 @@ public class Source
     // Navigation
     public ICollection<BorrowRequest> BorrowRequests { get; set; } = new List<BorrowRequest>();
     public ICollection<SourceIsotope> SourceIsotopes { get; set; } = new List<SourceIsotope>();
+    public ICollection<SourceLocationHistory> LocationHistories { get; set; } = new List<SourceLocationHistory>();
 
     /// <summary>عرض النظائر كنص مختصر للجدول الرئيسي</summary>
     [NotMapped]
@@ -361,6 +362,27 @@ public class Location
 
     // Navigation
     public ICollection<Source> Sources { get; set; } = new List<Source>();
+}
+
+// ─── سجل تاريخ تنقلات المصادر بين المواقع ───
+public class SourceLocationHistory
+{
+    [Key]
+    public Guid Id { get; set; } = Guid.NewGuid();
+
+    public Guid SourceId { get; set; }
+    [ForeignKey(nameof(SourceId))]
+    public Source? Source { get; set; }
+
+    public Guid? LocationId { get; set; }
+    [ForeignKey(nameof(LocationId))]
+    public Location? Location { get; set; }
+
+    public Guid? PreviousLocationId { get; set; }
+    [ForeignKey(nameof(PreviousLocationId))]
+    public Location? PreviousLocation { get; set; }
+
+    public DateTime MovedAt { get; set; } = DateTime.Now;
 }
 
 // ─── استعارة المصادر ───

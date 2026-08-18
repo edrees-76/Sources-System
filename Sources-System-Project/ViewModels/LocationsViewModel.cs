@@ -26,6 +26,12 @@ public partial class LocationsViewModel : ObservableObject, IEditableViewModel
     [ObservableProperty] private string _editPerson = string.Empty;
     private Guid? _editingId;
 
+    // ─── تفاصيل الموقع والمصادر المرتبطة ───
+    [ObservableProperty] private ObservableCollection<Source> _linkedSourcesForDetails = new();
+    [ObservableProperty] private Location? _selectedLocationForDetails;
+    [ObservableProperty] private bool _isLocationDetailsOpen;
+    [ObservableProperty] private bool _hasLinkedSources;
+
     public LocationsViewModel(ILocationService service) { _service = service; LoadData(); }
 
     [RelayCommand] public void LoadData() => Locations = new ObservableCollection<Location>(_service.GetAll());
@@ -65,6 +71,28 @@ public partial class LocationsViewModel : ObservableObject, IEditableViewModel
         var r = _service.Delete(Selected.Id);
         ShowMsg(r.Message);
         if (r.Success) LoadData();
+    }
+
+    [RelayCommand]
+    private void ViewLocationDetails(Location? location)
+    {
+        var target = location ?? Selected;
+        if (target == null) return;
+
+        SelectedLocationForDetails = target;
+        var sources = _service.GetSourcesLinkedToLocation(target.Id);
+        LinkedSourcesForDetails = new ObservableCollection<Source>(sources);
+        HasLinkedSources = LinkedSourcesForDetails.Count > 0;
+        IsLocationDetailsOpen = true;
+    }
+
+    [RelayCommand]
+    private void CloseLocationDetails()
+    {
+        IsLocationDetailsOpen = false;
+        SelectedLocationForDetails = null;
+        LinkedSourcesForDetails.Clear();
+        HasLinkedSources = false;
     }
 
     [RelayCommand] private void CancelEdit() { IsEditing = false; ClearForm(); }

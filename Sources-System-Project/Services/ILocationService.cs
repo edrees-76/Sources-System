@@ -12,4 +12,5 @@ public interface ILocationService
     (bool Success, string Message) Update(Location item);
     (bool Success, string Message) Delete(Guid id);
     int GetCount();
+    List<Source> GetSourcesLinkedToLocation(Guid locationId);
 }

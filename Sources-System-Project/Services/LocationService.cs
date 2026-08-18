@@ -90,4 +90,35 @@ public class LocationService : ILocationService
         using var db = _dbFactory.CreateDbContext();
         return db.Locations.Count();
     }
+
+    public List<Source> GetSourcesLinkedToLocation(Guid locationId)
+    {
+        using var db = _dbFactory.CreateDbContext();
+
+        var currentSourceIds = db.Sources
+            .Where(s => s.LocationId == locationId)
+            .Select(s => s.Id)
+            .ToList();
+
+        var historicalSourceIds = db.SourceLocationHistories
+            .Where(h => h.LocationId == locationId)
+            .Select(h => h.SourceId)
+            .ToList();
+
+        var allSourceIds = currentSourceIds.Concat(historicalSourceIds).Distinct().ToList();
+
+        if (!allSourceIds.Any())
+            return new List<Source>();
+
+        return db.Sources
+            .Include(s => s.Radioisotope)
+            .Include(s => s.InitialActivityUnit)
+            .Include(s => s.CurrentActivityUnit)
+            .Include(s => s.Location)
+            .Include(s => s.SourceIsotopes).ThenInclude(si => si.Radioisotope)
+            .Include(s => s.SourceIsotopes).ThenInclude(si => si.ActivityUnit)
+            .Where(s => allSourceIds.Contains(s.Id))
+            .OrderBy(s => s.SourceCode)
+            .ToList();
+    }
 }

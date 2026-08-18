@@ -599,6 +599,13 @@
     <system:String x:Key="LabelIsotopeSymbol">نظير</system:String>
     <system:String x:Key="MsgErrImageLoad">فشل تحميل الصورة: {0}</system:String>
 
+    <!-- Location Details Strings -->
+    <system:String x:Key="TitleLocationDetails">تفاصيل الموقع والمصادر المرتبطة</system:String>
+    <system:String x:Key="MsgNoSourcesLinkedToLocation">لا توجد مصادر مرتبطة بهذا الموقع</system:String>
+    <system:String x:Key="HeaderLinkedSources">المصادر المرتبطة (الحالية والتاريخية)</system:String>
+    <system:String x:Key="LabelLocationInfo">معلومات الموقع</system:String>
+    <system:String x:Key="ToolTipLocationDetails">عرض تفاصيل الموقع والمصادر المرتبطة</system:String>
+
 
 
 

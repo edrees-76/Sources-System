@@ -625,4 +625,82 @@ public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
     }
 
     #endregion
+
+    #region 7. SourceLocationHistory Tracking Tests
+
+    [Fact]
+    public void CreateSource_WithLocation_RecordsInitialLocationHistory()
+    {
+        // Arrange
+        var source = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-HIST-001");
+
+        // Act
+        var result = _sourceService.CreateSource(source);
+
+        // Assert
+        Assert.True(result.Success);
+        using var db = _fixture.CreateContext();
+        var history = db.SourceLocationHistories.Where(h => h.SourceId == source.Id).ToList();
+        Assert.Single(history);
+        Assert.Equal(_testLocation.Id, history[0].LocationId);
+        Assert.Null(history[0].PreviousLocationId);
+    }
+
+    [Fact]
+    public void UpdateSource_LocationChanged_RecordsNewLocationHistoryWithPreviousLocation()
+    {
+        // Arrange
+        var source = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-HIST-002");
+        _sourceService.CreateSource(source);
+
+        var newLocation = TestDataBuilder.CreateLocation("المستودع المركزي 2", "Storage", "المبنى 2", "202");
+        using (var db = _fixture.CreateContext())
+        {
+            db.Locations.Add(newLocation);
+            db.SaveChanges();
+        }
+
+        // Act
+        source.LocationId = newLocation.Id;
+        var result = _sourceService.UpdateSource(source);
+
+        // Assert
+        Assert.True(result.Success);
+        using (var db = _fixture.CreateContext())
+        {
+            var histories = db.SourceLocationHistories
+                .Where(h => h.SourceId == source.Id)
+                .OrderBy(h => h.MovedAt)
+                .ToList();
+
+            Assert.Equal(2, histories.Count);
+            // السجل الأول: الإنشاء الأولي بالموقع القديم
+            Assert.Equal(_testLocation.Id, histories[0].LocationId);
+            Assert.Null(histories[0].PreviousLocationId);
+            // السجل الثاني: الانتقال للموقع الجديد
+            Assert.Equal(newLocation.Id, histories[1].LocationId);
+            Assert.Equal(_testLocation.Id, histories[1].PreviousLocationId);
+        }
+    }
+
+    [Fact]
+    public void UpdateSource_LocationNotChanged_DoesNotRecordNewLocationHistory()
+    {
+        // Arrange
+        var source = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-HIST-003");
+        _sourceService.CreateSource(source);
+
+        // Act
+        source.Notes = "تعديل فقط على الملاحظات دون تغيير الموقع";
+        var result = _sourceService.UpdateSource(source);
+
+        // Assert
+        Assert.True(result.Success);
+        using var db = _fixture.CreateContext();
+        var histories = db.SourceLocationHistories.Where(h => h.SourceId == source.Id).ToList();
+        // فقط السجل الأولي الناتج عن CreateSource
+        Assert.Single(histories);
+    }
+
+    #endregion
 }

@@ -75,6 +75,17 @@ public class SourceService : ISourceService
         source.AddedBy = _userService.CurrentUser?.FullName ?? "غير معروف";
 
         db.Sources.Add(source);
+        if (source.LocationId.HasValue)
+        {
+            db.SourceLocationHistories.Add(new SourceLocationHistory
+            {
+                Id = Guid.NewGuid(),
+                SourceId = source.Id,
+                LocationId = source.LocationId,
+                PreviousLocationId = null,
+                MovedAt = DateTime.Now
+            });
+        }
         db.SaveChanges();
         _auditService.Log("Create", "Sources", source.Id, $"إنشاء مصدر: {source.SourceCode}");
         return (true, "تم إضافة المصدر بنجاح");
@@ -88,6 +99,20 @@ public class SourceService : ISourceService
 
         if (db.Sources.Any(s => s.Id != source.Id && s.SourceCode == source.SourceCode))
             return (false, "كود المصدر موجود بالفعل");
+
+        var oldLocationId = existing.LocationId;
+        var newLocationId = source.LocationId;
+        if (oldLocationId != newLocationId)
+        {
+            db.SourceLocationHistories.Add(new SourceLocationHistory
+            {
+                Id = Guid.NewGuid(),
+                SourceId = existing.Id,
+                LocationId = newLocationId,
+                PreviousLocationId = oldLocationId,
+                MovedAt = DateTime.Now
+            });
+        }
 
         existing.SourceCode = source.SourceCode;
         existing.RadioisotopeId = source.RadioisotopeId;
