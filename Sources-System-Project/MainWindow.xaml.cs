@@ -101,7 +101,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var viewModel = DataContext as MainViewModel;
+        var viewModel = DataContext as MainViewModel ?? _viewModel;
         if (viewModel != null && viewModel.IsLoggedIn)
         {
             bool confirmed = DialogHelper.ShowConfirmation(
@@ -114,6 +114,10 @@ public partial class MainWindow : Window
                 e.Cancel = true;
                 return;
             }
+
+            // إلغاء الإغلاق الافتراضي المباشر واستدعاء ForceLogout لإغلاق MainWindow وفتح LoginWindow بسلاسة
+            e.Cancel = true;
+            viewModel.ForceLogout();
         }
     }
 
