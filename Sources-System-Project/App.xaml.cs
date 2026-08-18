@@ -117,6 +117,7 @@ public partial class App : Application
         services.AddTransient<ILocationService, LocationService>();
         services.AddTransient<IIsotopeImportService, IsotopeImportService>();
         services.AddTransient<IBorrowService, BorrowService>();
+        services.AddTransient<ISystemResetService, SystemResetService>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();

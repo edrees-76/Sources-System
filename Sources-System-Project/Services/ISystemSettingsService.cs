@@ -10,4 +10,6 @@ public interface ISystemSettingsService
     T GetSetting<T>(string key, T defaultValue = default!);
     void SaveSetting(string key, string value);
     void SaveSettings(Dictionary<string, string> settings);
+    void ResetToDefaults();
+    void ClearCache();
 }

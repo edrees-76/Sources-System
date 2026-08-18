@@ -154,24 +154,32 @@ public partial class MainViewModel : ObservableObject
     {
         if (DialogHelper.ShowConfirmation(TranslationHelper.GetString("MsgConfirmLogout"), TranslationHelper.GetString("TitleLogout")))
         {
-            StopInactivityTimer();
-            StopAlertCheckTimer();
-            _userService.Logout();
-            CurrentUserName = string.Empty;
-            CurrentUserRole = string.Empty;
-            IsLoggedIn = false;
+            ForceLogout();
+        }
+    }
 
-            var loginWindow = App.ServiceProvider.GetService(typeof(Views.LoginWindow)) as Views.LoginWindow;
-            loginWindow?.Show();
-            loginWindow?.Activate();
+    public void ForceLogout()
+    {
+        StopInactivityTimer();
+        StopAlertCheckTimer();
+        _userService.Logout();
+        CurrentUserName = string.Empty;
+        CurrentUserRole = string.Empty;
+        IsLoggedIn = false;
 
+        var loginWindow = App.ServiceProvider?.GetService(typeof(Views.LoginWindow)) as Views.LoginWindow;
+        loginWindow?.Show();
+        loginWindow?.Activate();
+
+        if (Application.Current != null)
+        {
             Application.Current.MainWindow = loginWindow;
+        }
 
-            var mainWin = Application.Current.Windows.OfType<MainWindow>().FirstOrDefault();
-            if (mainWin != null)
-            {
-                mainWin.Close();
-            }
+        var mainWin = Application.Current?.Windows.OfType<MainWindow>().FirstOrDefault();
+        if (mainWin != null)
+        {
+            mainWin.Close();
         }
     }
 

@@ -82,4 +82,14 @@ public class SystemSettingsService : ISystemSettingsService
         db.SaveChanges();
         _cache = null;
     }
+
+    public void ResetToDefaults()
+    {
+        SaveSettings(SystemSettingsDefaults.AllDefaults);
+    }
+
+    public void ClearCache()
+    {
+        _cache = null;
+    }
 }

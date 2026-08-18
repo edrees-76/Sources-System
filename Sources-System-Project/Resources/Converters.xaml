@@ -4,6 +4,7 @@
     
     <converters:BoolToVisibilityConverter x:Key="BoolToVis"/>
     <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVis"/>
+    <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
     <converters:StatusToColorConverter x:Key="StatusToColor"/>
     <converters:StatusToArabicConverter x:Key="StatusToArabic"/>
     <converters:TransactionTypeToArabicConverter x:Key="TransactionToArabic"/>

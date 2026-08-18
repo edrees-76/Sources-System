@@ -97,6 +97,25 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+
+        <!-- تبويب الوضع الافتراضي (Factory Reset) -->
+        <Style x:Key="FactoryResetTabBtn" TargetType="Button" BasedOn="{StaticResource SettingsTabButtonBase}">
+            <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SelectedTab}" Value="FactoryReset">
+                    <Setter Property="Background" Value="#1AC25B4A"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource DangerBrush}"/>
+                    <Setter Property="BorderThickness" Value="1.5"/>
+                    <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.15" Color="#C25B4A"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
 
     <Grid Margin="24">
@@ -155,6 +174,16 @@
                     <StackPanel Orientation="Horizontal">
                         <materialDesign:PackIcon Kind="TuneVerticalVariant" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
                         <TextBlock Text="{DynamicResource TabSystemSettings}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- تبويب الوضع الافتراضي (للمدير فقط) -->
+                <Button Style="{StaticResource FactoryResetTabBtn}"
+                        Command="{Binding SelectTabCommand}" CommandParameter="FactoryReset"
+                        Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="RestoreAlert" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource TabFactoryReset}" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
             </StackPanel>
@@ -469,6 +498,156 @@
                                         <StackPanel Orientation="Horizontal">
                                             <materialDesign:PackIcon Kind="ContentSave" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                             <TextBlock Text="{DynamicResource BtnSaveSystemSettings}" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </Button.ContentTemplate>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- ═══════ تبويب 4: الوضع الافتراضي (Factory Reset) ═══════ -->
+                <StackPanel>
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedTab}" Value="FactoryReset">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+
+                    <!-- بطاقة التحذير البصري الشديد -->
+                    <Border Background="#1AC25B4A" BorderBrush="#66C25B4A" BorderThickness="1.5"
+                            CornerRadius="10" Padding="20,18" Margin="0,0,0,20">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <materialDesign:PackIcon Grid.Column="0" Kind="AlertOctagonOutline" Width="36" Height="36"
+                                                     Foreground="{DynamicResource DangerBrush}" VerticalAlignment="Top" Margin="0,0,16,0"/>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="{DynamicResource TitleFactoryResetWarning}" FontSize="16" FontWeight="Bold"
+                                           Foreground="{DynamicResource DangerBrush}" Margin="0,0,0,6"/>
+                                <TextBlock Text="{DynamicResource MsgFactoryResetWarningDescription}" FontSize="13.5" LineHeight="22"
+                                           Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- المرحلة 1: كتابة جملة التأكيد -->
+                    <Border Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="24,20" Margin="0,0,0,16"
+                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.05"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,12">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="Numeric1Circle" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource LabelResetStep1}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <!-- شارة الاجتياز -->
+                                <Border Background="#1A3FAE7A" CornerRadius="12" Padding="8,3" HorizontalAlignment="Left"
+                                        Visibility="{Binding IsStage1Passed, Converter={StaticResource BoolToVis}}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="CheckCircleOutline" Foreground="{DynamicResource SuccessBrush}" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                        <TextBlock Text="تم التحقق" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource SuccessBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                            </DockPanel>
+
+                            <TextBlock FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,8">
+                                <Run Text="{DynamicResource LabelTypePhrasePrompt}"/>
+                                <Run Text=" «"/>
+                                <Run Text="{DynamicResource PhraseFactoryResetConfirmation}" FontWeight="Bold" Foreground="{DynamicResource DangerBrush}"/>
+                                <Run Text="»"/>
+                            </TextBlock>
+
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding ResetPhrase, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         IsEnabled="{Binding IsStage1Passed, Converter={StaticResource InverseBoolConverter}}"
+                                         Style="{StaticResource FormTextBox}" Margin="0,0,12,0"/>
+                                <Button Grid.Column="1" Content="{DynamicResource BtnVerifyPhrase}"
+                                        Style="{StaticResource PrimaryButton}"
+                                        Command="{Binding VerifyResetPhraseCommand}"
+                                        IsEnabled="{Binding IsStage1Passed, Converter={StaticResource InverseBoolConverter}}"
+                                        Padding="20,10" Height="60"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- المرحلة 2: التحقق من كلمة المرور (تظهر فقط بعد اجتياز المرحلة 1) -->
+                    <Border Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="24,20" Margin="0,0,0,16"
+                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
+                            Visibility="{Binding IsStage1Passed, Converter={StaticResource BoolToVis}}">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.05"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,12">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="Numeric2Circle" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource LabelResetStep2}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <!-- شارة الاجتياز -->
+                                <Border Background="#1A3FAE7A" CornerRadius="12" Padding="8,3" HorizontalAlignment="Left"
+                                        Visibility="{Binding IsStage2Passed, Converter={StaticResource BoolToVis}}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="CheckCircleOutline" Foreground="{DynamicResource SuccessBrush}" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                        <TextBlock Text="تم التحقق" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource SuccessBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                            </DockPanel>
+
+                            <TextBlock Text="{DynamicResource LabelEnterAdminPassword}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,8"/>
+
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding ResetPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         IsEnabled="{Binding IsStage2Passed, Converter={StaticResource InverseBoolConverter}}"
+                                         Style="{StaticResource FormTextBox}" Margin="0,0,12,0"/>
+                                <Button Grid.Column="1" Content="{DynamicResource BtnVerifyPassword}"
+                                        Style="{StaticResource PrimaryButton}"
+                                        Command="{Binding VerifyResetPasswordCommand}"
+                                        IsEnabled="{Binding IsStage2Passed, Converter={StaticResource InverseBoolConverter}}"
+                                        Padding="20,10" Height="60"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- المرحلة 3: التأكيد النهائي والتنفيذ (تظهر فقط بعد اجتياز المرحلتين 1 و 2) -->
+                    <Border Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="24,20" Margin="0,0,0,16"
+                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
+                            Visibility="{Binding IsStage2Passed, Converter={StaticResource BoolToVis}}">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.05"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                                <materialDesign:PackIcon Kind="Numeric3Circle" Width="22" Height="22" Foreground="{DynamicResource DangerBrush}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource LabelResetStep3}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <Button Content="{DynamicResource BtnExecuteFactoryReset}"
+                                    Style="{StaticResource DangerButton}"
+                                    Command="{Binding ExecuteFactoryResetCommand}"
+                                    HorizontalAlignment="Left" Padding="28,12" Height="48">
+                                <Button.ContentTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="DeleteForever" VerticalAlignment="Center" Margin="0,0,8,0" Width="20" Height="20"/>
+                                            <TextBlock Text="{DynamicResource BtnExecuteFactoryReset}" VerticalAlignment="Center" FontWeight="Bold" FontSize="14"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </Button.ContentTemplate>

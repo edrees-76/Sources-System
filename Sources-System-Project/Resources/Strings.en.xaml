@@ -184,6 +184,25 @@
     <system:String x:Key="BtnSaveSystemSettings">Save System Settings</system:String>
     <system:String x:Key="MsgSystemSettingsSaved">System settings saved successfully</system:String>
 
+    <!-- Factory Reset Tab -->
+    <system:String x:Key="TabFactoryReset">Factory Reset</system:String>
+    <system:String x:Key="TitleFactoryReset">System Factory Reset</system:String>
+    <system:String x:Key="TitleFactoryResetWarning">Critical Security Warning</system:String>
+    <system:String x:Key="MsgFactoryResetWarningDescription">This operation permanently and irreversibly erases all radiation sources, borrow requests, locations, and audit logs, and resets system settings to default. Only user accounts and isotope library will be preserved, and a mandatory backup will be taken automatically before reset.</system:String>
+    <system:String x:Key="LabelResetStep1">Step 1: Type Confirmation Phrase</system:String>
+    <system:String x:Key="LabelTypePhrasePrompt">Please type the following phrase exactly to enable verification:</system:String>
+    <system:String x:Key="PhraseFactoryResetConfirmation">إعادة ضبط المنظومة</system:String>
+    <system:String x:Key="BtnVerifyPhrase">Verify Phrase</system:String>
+    <system:String x:Key="LabelResetStep2">Step 2: Password Verification</system:String>
+    <system:String x:Key="LabelEnterAdminPassword">Enter your account password to confirm:</system:String>
+    <system:String x:Key="BtnVerifyPassword">Verify Password</system:String>
+    <system:String x:Key="LabelResetStep3">Step 3: Final Confirmation &amp; Execution</system:String>
+    <system:String x:Key="BtnExecuteFactoryReset">Execute System Factory Reset</system:String>
+    <system:String x:Key="MsgErrIncorrectPhrase">Confirmation phrase does not match, please type it exactly</system:String>
+    <system:String x:Key="MsgErrIncorrectAdminPassword">Incorrect password</system:String>
+    <system:String x:Key="MsgFactoryResetSuccess">System reset to factory defaults completed successfully and backup was created. Logging out now.</system:String>
+    <system:String x:Key="MsgFactoryResetFailed">Factory reset failed: {0}</system:String>
+
     <!-- Dashboard Page -->
     <system:String x:Key="StrategicDashboardTitle">National Strategic Dashboard</system:String>
     <system:String x:Key="StrategicDashboardSubtitle">Vision Implementation Review &amp; Radioactive Source Status</system:String>

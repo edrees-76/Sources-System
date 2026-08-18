@@ -181,6 +181,25 @@
     <system:String x:Key="BtnSaveSystemSettings">حفظ إعدادات النظام</system:String>
     <system:String x:Key="MsgSystemSettingsSaved">تم حفظ إعدادات النظام بنجاح</system:String>
 
+    <!-- Factory Reset Tab -->
+    <system:String x:Key="TabFactoryReset">الوضع الافتراضي</system:String>
+    <system:String x:Key="TitleFactoryReset">إعادة ضبط المنظومة</system:String>
+    <system:String x:Key="TitleFactoryResetWarning">تحذير أمني شديد الخطورة</system:String>
+    <system:String x:Key="MsgFactoryResetWarningDescription">هذه العملية تقوم بمسح كامل لا رجعة فيه لكافة المصادر المشعة، طلبات الاستعارة، المواقع، وسجلات التدقيق، مع إعادة إعدادات النظام للوضع الافتراضي. سيتم الإبقاء فقط على حسابات المستخدمين ومكتبة النظائر، وسيتم أخذ نسخة احتياطية إجبارية تلقائياً قبل التصفير.</system:String>
+    <system:String x:Key="LabelResetStep1">المرحلة 1: كتابة جملة التأكيد</system:String>
+    <system:String x:Key="LabelTypePhrasePrompt">يرجى كتابة الجملة التالية بالضبط لتفعيل مرحلة التحقق:</system:String>
+    <system:String x:Key="PhraseFactoryResetConfirmation">إعادة ضبط المنظومة</system:String>
+    <system:String x:Key="BtnVerifyPhrase">تحقق من الجملة</system:String>
+    <system:String x:Key="LabelResetStep2">المرحلة 2: التحقق من كلمة المرور</system:String>
+    <system:String x:Key="LabelEnterAdminPassword">أدخل كلمة مرور حسابك الحالي للتأكيد:</system:String>
+    <system:String x:Key="BtnVerifyPassword">تحقق من كلمة المرور</system:String>
+    <system:String x:Key="LabelResetStep3">المرحلة 3: التأكيد النهائي والتنفيذ</system:String>
+    <system:String x:Key="BtnExecuteFactoryReset">تنفيذ إعادة ضبط المنظومة للوضع الافتراضي</system:String>
+    <system:String x:Key="MsgErrIncorrectPhrase">جملة التأكيد غير متطابقة، يرجى كتابتها بدقة</system:String>
+    <system:String x:Key="MsgErrIncorrectAdminPassword">كلمة المرور غير صحيحة</system:String>
+    <system:String x:Key="MsgFactoryResetSuccess">تمت إعادة ضبط المنظومة للوضع الافتراضي بنجاح وأخذ نسخة احتياطية كاملة. سيتم الآن تسجيل الخروج.</system:String>
+    <system:String x:Key="MsgFactoryResetFailed">فشلت عملية إعادة ضبط المنظومة: {0}</system:String>
+
     <!-- Dashboard Page -->
     <system:String x:Key="StrategicDashboardTitle">اللوحة الاستراتيجية للتنمية الوطنية</system:String>
     <system:String x:Key="StrategicDashboardSubtitle">مراجعة تنفيذ الرؤية وحالة المصادر الإشعاعية</system:String>

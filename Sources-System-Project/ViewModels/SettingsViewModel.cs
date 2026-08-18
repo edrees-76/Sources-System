@@ -14,6 +14,8 @@ public partial class SettingsViewModel : ObservableObject
     private readonly IBackupService _backupService;
     private readonly ISystemSettingsService _settingsService;
     private readonly IAutoBackupService? _autoBackupService;
+    private readonly IUserService? _userService;
+    private readonly ISystemResetService? _resetService;
 
     // ─── التحكم في التبويبات ───
     [ObservableProperty] private string _selectedTab = "General";
@@ -37,14 +39,28 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string _facilityAddress = string.Empty;
     [ObservableProperty] private string _technicalDirector = string.Empty;
 
+    // ─── تبويب الوضع الافتراضي (Factory Reset) ───
+    public bool IsAdmin => _userService?.CurrentUser?.IsAdmin == true;
+    public string RequiredResetPhrase => "إعادة ضبط المنظومة";
+
+    [ObservableProperty] private string _resetPhrase = string.Empty;
+    [ObservableProperty] private bool _isStage1Passed;
+    [ObservableProperty] private string _resetPassword = string.Empty;
+    [ObservableProperty] private bool _isStage2Passed;
+    [ObservableProperty] private bool _isFinalConfirmed;
+
     public SettingsViewModel(
         IBackupService backupService, 
         ISystemSettingsService settingsService,
-        IAutoBackupService? autoBackupService = null)
+        IAutoBackupService? autoBackupService = null,
+        IUserService? userService = null,
+        ISystemResetService? resetService = null)
     {
         _backupService = backupService;
         _settingsService = settingsService;
         _autoBackupService = autoBackupService;
+        _userService = userService;
+        _resetService = resetService;
 
         Language = SettingsHelper.Language;
 
@@ -85,6 +101,10 @@ public partial class SettingsViewModel : ObservableObject
         if (!string.IsNullOrWhiteSpace(tabName))
         {
             SelectedTab = tabName;
+            if (tabName != "FactoryReset")
+            {
+                ResetFactoryResetStages();
+            }
         }
     }
 
@@ -323,7 +343,7 @@ public partial class SettingsViewModel : ObservableObject
         _settingsService.SaveSetting("TechnicalDirector", TechnicalDirector ?? string.Empty);
 
         // تحديث دورية فحص التنبيهات في MainViewModel إن كان نشطاً
-        if (App.ServiceProvider.GetService(typeof(MainViewModel)) is MainViewModel mainVm)
+        if (App.ServiceProvider?.GetService(typeof(MainViewModel)) is MainViewModel mainVm)
         {
             mainVm.UpdateAlertCheckInterval(NotificationCheckIntervalMinutes);
         }
@@ -331,5 +351,128 @@ public partial class SettingsViewModel : ObservableObject
         DialogHelper.ShowInfo(
             TranslationHelper.GetString("MsgSystemSettingsSaved"),
             TranslationHelper.GetString("TabSystemSettings"));
+    }
+
+    // ─── أوامر الوضع الافتراضي (Factory Reset) ───
+
+    public void ResetFactoryResetStages()
+    {
+        ResetPhrase = string.Empty;
+        IsStage1Passed = false;
+        ResetPassword = string.Empty;
+        IsStage2Passed = false;
+        IsFinalConfirmed = false;
+    }
+
+    [RelayCommand]
+    private void VerifyResetPhrase()
+    {
+        if (string.IsNullOrWhiteSpace(ResetPhrase) || ResetPhrase.Trim() != RequiredResetPhrase)
+        {
+            IsStage1Passed = false;
+            DialogHelper.ShowWarning(
+                TranslationHelper.GetString("MsgErrIncorrectPhrase"),
+                TranslationHelper.GetString("TitleFactoryReset"));
+            return;
+        }
+
+        IsStage1Passed = true;
+    }
+
+    [RelayCommand]
+    private void VerifyResetPassword()
+    {
+        if (!IsStage1Passed)
+        {
+            DialogHelper.ShowWarning(
+                TranslationHelper.GetString("MsgErrIncorrectPhrase"),
+                TranslationHelper.GetString("TitleFactoryReset"));
+            return;
+        }
+
+        var currentUser = _userService?.CurrentUser;
+        if (currentUser == null)
+        {
+            IsStage2Passed = false;
+            DialogHelper.ShowError("لا يوجد مستخدم مسجل حالياً", TranslationHelper.GetString("TitleFactoryReset"));
+            return;
+        }
+
+        if (string.IsNullOrEmpty(ResetPassword) || !PasswordHelper.VerifyPassword(ResetPassword, currentUser.PasswordHash))
+        {
+            IsStage2Passed = false;
+            DialogHelper.ShowWarning(
+                TranslationHelper.GetString("MsgErrIncorrectAdminPassword"),
+                TranslationHelper.GetString("TitleFactoryReset"));
+            return;
+        }
+
+        IsStage2Passed = true;
+    }
+
+    [RelayCommand]
+    private async Task ExecuteFactoryResetAsync()
+    {
+        if (!IsAdmin)
+        {
+            DialogHelper.ShowError("غير مصرح: هذه العملية مخصصة لمدير النظام فقط", TranslationHelper.GetString("TitleFactoryReset"));
+            return;
+        }
+
+        if (!IsStage1Passed || !IsStage2Passed)
+        {
+            DialogHelper.ShowWarning("يرجى إكمال المرحلتين السابقتين أولاً", TranslationHelper.GetString("TitleFactoryReset"));
+            return;
+        }
+
+        if (!DialogHelper.ShowConfirmation(
+            TranslationHelper.GetString("MsgFactoryResetWarningDescription"),
+            TranslationHelper.GetString("TitleFactoryResetWarning")))
+        {
+            return;
+        }
+
+        if (_resetService == null)
+        {
+            DialogHelper.ShowError("خدمة إعادة ضبط المنظومة غير متوفرة", TranslationHelper.GetString("TitleFactoryReset"));
+            return;
+        }
+
+        IsBusy = true;
+        BusyMessage = "جاري أخذ نسخة احتياطية إجبارية وتصفير المنظومة...";
+
+        try
+        {
+            var result = await _resetService.ResetSystemAsync(_userService?.CurrentUser?.Username ?? "Admin");
+
+            if (result.Success)
+            {
+                DialogHelper.ShowInfo(
+                    TranslationHelper.GetString("MsgFactoryResetSuccess"),
+                    TranslationHelper.GetString("TitleFactoryReset"));
+
+                // تسجيل الخروج القسري عبر MainViewModel
+                if (App.ServiceProvider?.GetService(typeof(MainViewModel)) is MainViewModel mainVm)
+                {
+                    mainVm.ForceLogout();
+                }
+            }
+            else
+            {
+                DialogHelper.ShowError(
+                    string.Format(TranslationHelper.GetString("MsgFactoryResetFailed"), result.Message),
+                    TranslationHelper.GetString("TitleFactoryReset"));
+            }
+        }
+        catch (Exception ex)
+        {
+            DialogHelper.ShowError(
+                string.Format(TranslationHelper.GetString("MsgFactoryResetFailed"), ex.Message),
+                TranslationHelper.GetString("TitleFactoryReset"));
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 }

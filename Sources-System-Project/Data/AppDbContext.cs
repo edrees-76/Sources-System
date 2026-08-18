@@ -402,10 +402,10 @@ public class AppDbContext : DbContext
         // ─── إعدادات افتراضية ───
         if (!AppSettings.Any())
         {
-            AppSettings.AddRange(
-                new AppSetting { Key = "LowActivityThresholdPercent", Value = "10", Description = "عتبة النشاط المنخفض كنسبة مئوية من النشاط الابتدائي" },
-                new AppSetting { Key = "NotificationCheckIntervalMinutes", Value = "60", Description = "الفترة الزمنية للتحقق من التنبيهات تلقائياً" }
-            );
+            foreach (var kvp in SystemSettingsDefaults.AllDefaults)
+            {
+                AppSettings.Add(new AppSetting { Key = kvp.Key, Value = kvp.Value });
+            }
             SaveChanges();
         }
     }
