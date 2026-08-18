@@ -30,27 +30,10 @@
                         <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
                         
                         <!-- اسم الموقع -->
-                        <DataGridTextColumn Header="{DynamicResource ColLocationName}" Binding="{Binding LocationName}" Width="180">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="Padding" Value="8,4"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="{DynamicResource ColLocationName}" Binding="{Binding LocationName}" Width="180" ElementStyle="{StaticResource BoldCenterAligned}"/>
 
                         <!-- النوع -->
-                        <DataGridTextColumn Header="{DynamicResource ColType}" Binding="{Binding LocationType, Converter={StaticResource LocationTypeToDisplay}}" Width="120">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="Padding" Value="8,4"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="{DynamicResource ColType}" Binding="{Binding LocationType, Converter={StaticResource LocationTypeToDisplay}}" Width="120" ElementStyle="{StaticResource SecondaryCenterAligned}"/>
 
                         <!-- عدد المصادر -->
                         <DataGridTemplateColumn Header="{DynamicResource ColSourceCount}" Width="105">
@@ -67,49 +50,16 @@
                         </DataGridTemplateColumn>
 
                         <!-- المبنى -->
-                        <DataGridTextColumn Header="{DynamicResource ColBuilding}" Binding="{Binding Building, TargetNullValue='—'}" Width="140">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="Padding" Value="8,4"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="{DynamicResource ColBuilding}" Binding="{Binding Building, TargetNullValue='—'}" Width="140" ElementStyle="{StaticResource CenterAligned}"/>
 
                         <!-- الغرفة -->
-                        <DataGridTextColumn Header="{DynamicResource ColRoom}" Binding="{Binding Room, TargetNullValue='—'}" Width="100">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="Padding" Value="8,4"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="{DynamicResource ColRoom}" Binding="{Binding Room, TargetNullValue='—'}" Width="100" ElementStyle="{StaticResource CenterAligned}"/>
 
                         <!-- المسؤول -->
-                        <DataGridTextColumn Header="{DynamicResource ColResponsible}" Binding="{Binding ResponsiblePerson, TargetNullValue='—'}" Width="150">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="Padding" Value="8,4"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="{DynamicResource ColResponsible}" Binding="{Binding ResponsiblePerson, TargetNullValue='—'}" Width="150" ElementStyle="{StaticResource CenterAligned}"/>
 
                         <!-- أضيف بواسطة -->
-                        <DataGridTextColumn Header="{DynamicResource ColAddedBy}" Binding="{Binding AddedBy, TargetNullValue='—'}" Width="120">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="Padding" Value="8,4"/>
-                                    <Setter Property="FontSize" Value="12"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="{DynamicResource ColAddedBy}" Binding="{Binding AddedBy, TargetNullValue='—'}" Width="120" ElementStyle="{StaticResource SubtleCenterAligned}"/>
 
                         <!-- عمود الإجراءات -->
                         <DataGridTemplateColumn Header="{DynamicResource ColActions}" Width="120">
@@ -283,13 +233,13 @@
                             <DataGrid ItemsSource="{Binding LinkedSourcesForDetails}" Style="{StaticResource ModernDataGrid}" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="350">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="45" ElementStyle="{StaticResource CenterAligned}"/>
-                                    <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding SourceCode}" Width="130" FontWeight="SemiBold"/>
-                                    <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="110"/>
-                                    <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="140"/>
-                                    <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="100"/>
-                                    <DataGridTextColumn Header="{DynamicResource ColCalibrationDate}" Binding="{Binding CalibrationDate, StringFormat='yyyy-MM-dd'}" Width="110"/>
-                                    <DataGridTextColumn Header="{DynamicResource ColSerialNumber}" Binding="{Binding SerialNumber, TargetNullValue='—'}" Width="110"/>
-                                    <DataGridTextColumn Header="{DynamicResource ColManufacturer}" Binding="{Binding Manufacturer, TargetNullValue='—'}" Width="*"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding SourceCode}" Width="130" ElementStyle="{StaticResource BoldCenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="110" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="140" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="100" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColCalibrationDate}" Binding="{Binding CalibrationDate, StringFormat='yyyy-MM-dd'}" Width="110" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColSerialNumber}" Binding="{Binding SerialNumber, TargetNullValue='—'}" Width="110" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColManufacturer}" Binding="{Binding Manufacturer, TargetNullValue='—'}" Width="*" ElementStyle="{StaticResource CenterAligned}"/>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Border>

@@ -354,7 +354,7 @@
                     </Grid.RowDefinitions>
                     
                     <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,12">
-                        <materialDesign:PackIcon Kind="TableLarge" Width="22" Height="22" Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center"/>
+                        <materialDesign:PackIcon Kind="TableLarge" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
                         <TextBlock Text="{DynamicResource TableSourceActivity}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
                     </StackPanel>
                     
@@ -387,7 +387,7 @@
                             </DataGridTemplateColumn>
 
                             <DataGridTextColumn Header="{DynamicResource ColSerialNumber}" Binding="{Binding SerialNumber}" Width="Auto" ElementStyle="{StaticResource CenterAligned}"/>
-                            <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding SourceCode}" Width="Auto" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding SourceCode}" Width="Auto" ElementStyle="{StaticResource BoldCenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColRadioisotopes}" Binding="{Binding DisplayIsotopes}" Width="1.2*" ElementStyle="{StaticResource WrappingCenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityDisplay}" Width="Auto" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColActivityUnit}" Binding="{Binding CurrentActivityUnit.UnitSymbol}" Width="Auto" ElementStyle="{StaticResource CenterAligned}"/>

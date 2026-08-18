@@ -198,7 +198,7 @@
                             <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding Source.SourceCode}" Width="110" ElementStyle="{StaticResource BoldCenterAligned}"/>
 
                             <!-- 3. المستعير -->
-                            <DataGridTextColumn Header="{DynamicResource ColBorrower}" Binding="{Binding BorrowerName}" Width="150"/>
+                            <DataGridTextColumn Header="{DynamicResource ColBorrower}" Binding="{Binding BorrowerName}" Width="150" ElementStyle="{StaticResource CenterAligned}"/>
 
                             <!-- 4. تاريخ الاستعارة -->
                             <DataGridTextColumn Header="{DynamicResource ColBorrowDate}" Binding="{Binding RequestDate, StringFormat='{}{0:yyyy/MM/dd}'}" Width="120" ElementStyle="{StaticResource CenterAligned}"/>
@@ -210,7 +210,7 @@
                             <DataGridTextColumn Header="{DynamicResource ColActualReturn}" Binding="{Binding ActualReturnDate, StringFormat='{}{0:yyyy/MM/dd}', TargetNullValue='—'}" Width="130" ElementStyle="{StaticResource CenterAligned}"/>
 
                             <!-- 7. الغرض -->
-                            <DataGridTextColumn Header="{DynamicResource ColPurpose}" Binding="{Binding Purpose}" Width="*"/>
+                            <DataGridTextColumn Header="{DynamicResource ColPurpose}" Binding="{Binding Purpose}" Width="*" ElementStyle="{StaticResource CenterAligned}"/>
 
                             <!-- 8. الحالة -->
                             <DataGridTemplateColumn Header="{DynamicResource ColStatusAction}" Width="115">

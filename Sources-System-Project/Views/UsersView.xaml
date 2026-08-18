@@ -337,10 +337,10 @@
                         <DataGrid ItemsSource="{Binding FilteredUsers}" SelectedItem="{Binding Selected}" Style="{StaticResource ModernDataGrid}">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                                <DataGridTextColumn Header="{DynamicResource ColFullName}" Binding="{Binding FullName}" Width="180"/>
-                                <DataGridTextColumn Header="{DynamicResource ColUsername}" Binding="{Binding Username}" Width="130"/>
-                                <DataGridTextColumn Header="{DynamicResource ColRole}" Binding="{Binding Role.DisplayName}" Width="130"/>
-                                <DataGridTextColumn Header="{DynamicResource ColEmail}" Binding="{Binding Email}" Width="180"/>
+                                <DataGridTextColumn Header="{DynamicResource ColFullName}" Binding="{Binding FullName}" Width="180" ElementStyle="{StaticResource BoldCenterAligned}"/>
+                                <DataGridTextColumn Header="{DynamicResource ColUsername}" Binding="{Binding Username}" Width="130" ElementStyle="{StaticResource CenterAligned}"/>
+                                <DataGridTextColumn Header="{DynamicResource ColRole}" Binding="{Binding Role.DisplayName}" Width="130" ElementStyle="{StaticResource CenterAligned}"/>
+                                <DataGridTextColumn Header="{DynamicResource ColEmail}" Binding="{Binding Email}" Width="180" ElementStyle="{StaticResource CenterAligned}"/>
                                 <DataGridTextColumn Header="{DynamicResource ColLastLogin}" Binding="{Binding LastLoginDate, StringFormat='yyyy/MM/dd HH:mm'}" Width="140" ElementStyle="{StaticResource CenterAligned}"/>
                                 
                                 <!-- عمود الحالة (خلفية شفافة مع نص واضح بدون بهتان) -->
@@ -636,10 +636,10 @@
                     <DataGrid ItemsSource="{Binding AuditLogs}" SelectedItem="{Binding SelectedAuditLog}" Style="{StaticResource ModernDataGrid}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                            <DataGridTextColumn Header="{DynamicResource ColUser}" Binding="{Binding User.FullName}" Width="150"/>
-                            <DataGridTextColumn Header="{DynamicResource ColOperation}" Binding="{Binding Action}" Width="110"/>
-                            <DataGridTextColumn Header="{DynamicResource ColAffectedTable}" Binding="{Binding TableName}" Width="110"/>
-                            <DataGridTextColumn Header="{DynamicResource ColDetails}" Binding="{Binding Details}" Width="*"/>
+                            <DataGridTextColumn Header="{DynamicResource ColUser}" Binding="{Binding User.FullName}" Width="150" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColOperation}" Binding="{Binding Action}" Width="110" ElementStyle="{StaticResource PrimaryCenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColAffectedTable}" Binding="{Binding TableName}" Width="110" ElementStyle="{StaticResource SecondaryCenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColDetails}" Binding="{Binding Details}" Width="*" ElementStyle="{StaticResource NotesCellStyle}"/>
                             <DataGridTextColumn Header="{DynamicResource ColDate}" Binding="{Binding ActionDate, StringFormat='yyyy/MM/dd HH:mm:ss'}" Width="160" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTemplateColumn Header="{DynamicResource BtnViewDiff}" Width="100">
                                 <DataGridTemplateColumn.CellTemplate>
@@ -710,7 +710,7 @@
                             <Border Grid.Row="2" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
                                 <DataGrid ItemsSource="{Binding AuditDiffItems}" Style="{StaticResource ModernDataGrid}" AutoGenerateColumns="False">
                                     <DataGrid.Columns>
-                                        <DataGridTextColumn Header="{DynamicResource AuditFieldName}" Binding="{Binding FieldName}" Width="160" FontWeight="SemiBold"/>
+                                        <DataGridTextColumn Header="{DynamicResource AuditFieldName}" Binding="{Binding FieldName}" Width="160" ElementStyle="{StaticResource BoldCenterAligned}"/>
                                         
                                         <!-- القيمة السابقة (تمييز تحذير خفيف) -->
                                         <DataGridTemplateColumn Header="{DynamicResource AuditOldValue}" Width="*">
