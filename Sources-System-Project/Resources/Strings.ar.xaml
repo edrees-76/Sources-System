@@ -605,6 +605,8 @@
     <system:String x:Key="HeaderLinkedSources">المصادر المرتبطة (الحالية والتاريخية)</system:String>
     <system:String x:Key="LabelLocationInfo">معلومات الموقع</system:String>
     <system:String x:Key="ToolTipLocationDetails">عرض تفاصيل الموقع والمصادر المرتبطة</system:String>
+    <system:String x:Key="ColSourceCount">عدد المصادر</system:String>
+    <system:String x:Key="BtnClose">إغلاق</system:String>
 
 
 

@@ -360,6 +360,10 @@ public class Location
     public bool IsDeleted { get; set; } = false;
     public string? AddedBy { get; set; }
 
+    /// <summary>عدد المصادر المرتبطة حالياً بهذا الموقع</summary>
+    [NotMapped]
+    public int SourceCount { get; set; }
+
     // Navigation
     public ICollection<Source> Sources { get; set; } = new List<Source>();
 }

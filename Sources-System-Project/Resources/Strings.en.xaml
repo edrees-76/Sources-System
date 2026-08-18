@@ -608,6 +608,8 @@
     <system:String x:Key="HeaderLinkedSources">Linked Sources (Current &amp; Historical)</system:String>
     <system:String x:Key="LabelLocationInfo">Location Information</system:String>
     <system:String x:Key="ToolTipLocationDetails">View location details and linked sources</system:String>
+    <system:String x:Key="ColSourceCount">Sources Count</system:String>
+    <system:String x:Key="BtnClose">Close</system:String>
 
 
 

@@ -725,5 +725,42 @@ public class LocationServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
         Assert.Equal("SRC-ROUNDTRIP-01", result[0].SourceCode);
     }
 
+    [Fact]
+    public void GetAll_PopulatesCurrentSourceCountForEachLocation()
+    {
+        // Arrange
+        var loc1 = TestDataBuilder.CreateLocation(name: "موقع به مصدرين");
+        var loc2 = TestDataBuilder.CreateLocation(name: "موقع به مصدر واحد");
+        var loc3 = TestDataBuilder.CreateLocation(name: "موقع بدون مصادر");
+
+        var iso = TestDataBuilder.CreateRadioisotope("Cs-137", "Cesium-137", 30.08, "years", 661.7);
+        var unit = TestDataBuilder.CreateActivityUnit("Bq", "Bq", 1.0);
+
+        var s1 = TestDataBuilder.CreateSource(iso, unit, loc1, "SRC-CNT-01");
+        var s2 = TestDataBuilder.CreateSource(iso, unit, loc1, "SRC-CNT-02");
+        var s3 = TestDataBuilder.CreateSource(iso, unit, loc2, "SRC-CNT-03");
+
+        using (var db = _fixture.CreateContext())
+        {
+            db.Locations.AddRange(loc1, loc2, loc3);
+            db.Radioisotopes.Add(iso);
+            db.ActivityUnits.Add(unit);
+            db.Sources.AddRange(s1, s2, s3);
+            db.SaveChanges();
+        }
+
+        // Act
+        var result = _sut.GetAll();
+
+        // Assert
+        var rLoc1 = result.First(l => l.Id == loc1.Id);
+        var rLoc2 = result.First(l => l.Id == loc2.Id);
+        var rLoc3 = result.First(l => l.Id == loc3.Id);
+
+        Assert.Equal(2, rLoc1.SourceCount);
+        Assert.Equal(1, rLoc2.SourceCount);
+        Assert.Equal(0, rLoc3.SourceCount);
+    }
+
     #endregion
 }

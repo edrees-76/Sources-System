@@ -23,13 +23,31 @@ public class LocationService : ILocationService
     public List<Location> GetAll()
     {
         using var db = _dbFactory.CreateDbContext();
-        return db.Locations.OrderBy(l => l.LocationName).ToList();
+        var locations = db.Locations.OrderBy(l => l.LocationName).ToList();
+
+        var counts = db.Sources
+            .Where(s => s.LocationId != null)
+            .GroupBy(s => s.LocationId!.Value)
+            .Select(g => new { LocationId = g.Key, Count = g.Count() })
+            .ToDictionary(x => x.LocationId, x => x.Count);
+
+        foreach (var loc in locations)
+        {
+            loc.SourceCount = counts.TryGetValue(loc.Id, out int c) ? c : 0;
+        }
+
+        return locations;
     }
 
     public Location? GetById(Guid id)
     {
         using var db = _dbFactory.CreateDbContext();
-        return db.Locations.Find(id);
+        var location = db.Locations.Find(id);
+        if (location != null)
+        {
+            location.SourceCount = db.Sources.Count(s => s.LocationId == id);
+        }
+        return location;
     }
 
     public (bool Success, string Message) Create(Location item)
