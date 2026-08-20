@@ -38,9 +38,10 @@
         <!-- Center Screensaver Content -->
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,40">
             
-            <!-- Transparent 3D Shield Emblem (Enlarged 240x240 without white background circle) -->
+            <!-- Transparent 3D Shield Emblem (Full Golden 3D Shield) -->
             <Image Source="pack://siteoforigin:,,,/Assets/sources_shield_only.png"
-                   Width="240" Height="240"
+                   Width="260" Height="220"
+                   Stretch="Uniform"
                    RenderOptions.BitmapScalingMode="HighQuality"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"
