@@ -1,10 +1,13 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.EntityFrameworkCore;
+using Sources.Data;
 using Sources.Helpers;
 using Sources.Services;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace Sources.ViewModels;
@@ -16,12 +19,50 @@ public partial class SettingsViewModel : ObservableObject
     private readonly IAutoBackupService? _autoBackupService;
     private readonly IUserService? _userService;
     private readonly ISystemResetService? _resetService;
+    private readonly IDbContextFactory<AppDbContext>? _dbFactory;
+    private readonly IDecayCalculationService? _decayService;
+    private readonly IAlertService? _alertService;
 
     // ─── التحكم في التبويبات ───
     [ObservableProperty] private string _selectedTab = "General";
 
     // ─── تبويب العام ───
     [ObservableProperty] private string _language;
+
+    // ─── تبويب المظهر ───
+    [ObservableProperty] private bool _isDarkMode;
+    [ObservableProperty] private string _selectedAccentColor = SettingsHelper.DefaultAccentColor;
+    public System.Collections.ObjectModel.ObservableCollection<AccentColorOption> AvailableAccentColors { get; } = new()
+    {
+        new AccentColorOption
+        {
+            NameKey = "AccentColorPetroleumBlue",
+            DescriptionKey = "AccentColorPetroleumBlueDesc",
+            HexColor = "#1F5A66",
+            IsDefault = true
+        },
+        new AccentColorOption
+        {
+            NameKey = "AccentColorRoyalNavy",
+            DescriptionKey = "AccentColorRoyalNavyDesc",
+            HexColor = "#1E3F66",
+            IsDefault = false
+        },
+        new AccentColorOption
+        {
+            NameKey = "AccentColorForestGreen",
+            DescriptionKey = "AccentColorForestGreenDesc",
+            HexColor = "#3D5A47",
+            IsDefault = false
+        },
+        new AccentColorOption
+        {
+            NameKey = "AccentColorSlate",
+            DescriptionKey = "AccentColorSlateDesc",
+            HexColor = "#433E52",
+            IsDefault = false
+        }
+    };
 
     // ─── تبويب النسخ الاحتياطي ───
     [ObservableProperty] private string _backupPath = string.Empty;
@@ -43,6 +84,14 @@ public partial class SettingsViewModel : ObservableObject
     public bool IsAdmin => _userService?.CurrentUser?.IsAdmin == true;
     public string RequiredResetPhrase => "إعادة ضبط المنظومة";
 
+#if DEBUG
+    public bool IsDebugMode => true;
+    public bool CanShowTestData => IsAdmin;
+#else
+    public bool IsDebugMode => false;
+    public bool CanShowTestData => false;
+#endif
+
     [ObservableProperty] private string _resetPhrase = string.Empty;
     [ObservableProperty] private bool _isStage1Passed;
     [ObservableProperty] private string _resetPassword = string.Empty;
@@ -54,15 +103,26 @@ public partial class SettingsViewModel : ObservableObject
         ISystemSettingsService settingsService,
         IAutoBackupService? autoBackupService = null,
         IUserService? userService = null,
-        ISystemResetService? resetService = null)
+        ISystemResetService? resetService = null,
+        IDbContextFactory<AppDbContext>? dbFactory = null,
+        IDecayCalculationService? decayService = null,
+        IAlertService? alertService = null)
     {
         _backupService = backupService;
         _settingsService = settingsService;
         _autoBackupService = autoBackupService;
         _userService = userService;
         _resetService = resetService;
+        _dbFactory = dbFactory;
+        _decayService = decayService;
+        _alertService = alertService;
 
         Language = SettingsHelper.Language;
+
+        // تحميل إعدادات المظهر الخاصة بالمستخدم
+        var currentUsername = _userService?.CurrentUser?.Username;
+        IsDarkMode = SettingsHelper.GetUserTheme(currentUsername);
+        SelectedAccentColor = SettingsHelper.GetUserAccentColor(currentUsername);
 
         // تحميل إعدادات النسخ الاحتياطي المحفوظة
         BackupPath = _settingsService.GetSetting("BackupPath", string.Empty);
@@ -475,4 +535,109 @@ public partial class SettingsViewModel : ObservableObject
             IsBusy = false;
         }
     }
+
+#if DEBUG
+    // ─── أوامر توليد البيانات التجريبية (Debug Only) ───
+    [RelayCommand]
+    private async Task GenerateTestDataAsync()
+    {
+        if (!IsAdmin)
+        {
+            DialogHelper.ShowError("غير مصرح: هذه العملية مخصصة لمدير النظام فقط", "توليد بيانات تجريبية");
+            return;
+        }
+
+        if (!DialogHelper.ShowConfirmation(
+            "هل تريد بالتأكيد توليد بيانات تجريبية واقعية؟\n\n" +
+            "• سيتم استكمال المواقع إلى 20 موقعاً واقعياً.\n" +
+            "• سيتم إضافة 300 مصدراً مشعاً (توزيع واقعي للنشاط والانحلال، مصادر متعددة النظائر، وحالات تحذير وحرجة).\n" +
+            "• سيتم إضافة 100 طلب استعارة (مرتجع، قيد الاستعارة، متأخر، معلّق).\n\n" +
+            "ملاحظة: العملية مؤطرة ضمن Transaction لضمان سلامة قاعدة البيانات.",
+            "تأكيد توليد البيانات التجريبية (DEBUG)"))
+        {
+            return;
+        }
+
+        if (_dbFactory == null || _decayService == null)
+        {
+            DialogHelper.ShowError("خدمات قاعدة البيانات أو الحساب غير متوفرة", "خطأ في التهيئة");
+            return;
+        }
+
+        IsBusy = true;
+        BusyMessage = "جاري توليد البيانات التجريبية وحساب النشاط الإشعاعي...";
+
+        try
+        {
+            var result = await TestDataGeneratorService.GenerateRealisticDataAsync(
+                _dbFactory,
+                _decayService,
+                _alertService,
+                _userService);
+
+            if (result.Success)
+            {
+                string summary = "تمت عملية توليد البيانات التجريبية بنجاح!\n\n" +
+                    $"• المواقع الإجمالية: {result.TotalLocations} موقعاً (تم إضافة {result.AddedLocations})\n" +
+                    $"• المصادر المشعة: {result.TotalSources} مصدراً (منها {result.MultiIsotopeSources} متعددة النظائر)\n" +
+                    $"• مصادر التنبيهات: {result.WarningAlertSources} تحذير + {result.CriticalAlertSources} حرج\n" +
+                    $"• طلبات الاستعارة: {result.TotalBorrowRequests} طلباً:\n" +
+                    $"   - {result.ReturnedBorrows} مسترجع (Returned)\n" +
+                    $"   - {result.DeliveredBorrows} جاري التسليم / نشط (Delivered)\n" +
+                    $"   - {result.OverdueBorrows} متأخر (Overdue)\n" +
+                    $"   - {result.PendingOrApprovedBorrows} معلّق / معتمد (Pending/Approved)";
+
+                DialogHelper.ShowInfo(summary, "ملخص توليد البيانات التجريبية");
+            }
+            else
+            {
+                DialogHelper.ShowError(result.Message, "فشل التوليد");
+            }
+        }
+        catch (Exception ex)
+        {
+            DialogHelper.ShowError($"حدث خطأ أثناء توليد البيانات: {ex.Message}", "خطأ");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+#endif
+
+    // ─── أوامر تبويب المظهر ───
+    [RelayCommand]
+    private void SetLightMode() => SetThemeMode(false);
+
+    [RelayCommand]
+    private void SetDarkMode() => SetThemeMode(true);
+
+    [RelayCommand]
+    private void SetThemeMode(bool isDark)
+    {
+        IsDarkMode = isDark;
+        var username = _userService?.CurrentUser?.Username;
+        SettingsHelper.SetUserTheme(username, isDark);
+        App.ApplyTheme(isDark);
+        App.ApplyAccentColor(SelectedAccentColor);
+    }
+
+    [RelayCommand]
+    private void SelectAccentColor(string hexColor)
+    {
+        if (string.IsNullOrWhiteSpace(hexColor)) return;
+        SelectedAccentColor = hexColor;
+        var username = _userService?.CurrentUser?.Username;
+        SettingsHelper.SetUserAccentColor(username, hexColor);
+        App.ApplyAccentColor(hexColor);
+    }
 }
+
+public class AccentColorOption : ObservableObject
+{
+    public string NameKey { get; set; } = string.Empty;
+    public string DescriptionKey { get; set; } = string.Empty;
+    public string HexColor { get; set; } = string.Empty;
+    public bool IsDefault { get; set; }
+}
+

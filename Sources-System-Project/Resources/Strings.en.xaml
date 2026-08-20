@@ -69,7 +69,26 @@
 
     <!-- Backup Settings -->
     <system:String x:Key="TabGeneral">General</system:String>
+    <system:String x:Key="TabAppearance">Appearance</system:String>
     <system:String x:Key="TabBackup">Backup</system:String>
+    <system:String x:Key="AppearanceSectionThemeMode">Theme Mode</system:String>
+    <system:String x:Key="AppearanceSectionThemeModeDesc">Choose the visual theme suitable for your work environment to ensure eye comfort</system:String>
+    <system:String x:Key="ThemeModeLightTitle">Light Mode</system:String>
+    <system:String x:Key="ThemeModeLightDesc">Bright and crisp interface for illuminated environments</system:String>
+    <system:String x:Key="ThemeModeDarkTitle">Dark Mode</system:String>
+    <system:String x:Key="ThemeModeDarkDesc">Comfortable night interface that reduces eye strain</system:String>
+    <system:String x:Key="AppearanceSectionAccentColor">Accent Color</system:String>
+    <system:String x:Key="AppearanceSectionAccentColorDesc">Select the primary accent color for buttons, tabs, and interactive elements</system:String>
+    <system:String x:Key="AccentColorDefaultBadge">Default</system:String>
+    <system:String x:Key="AccentColorPetroleumBlue">Petroleum Blue (Sources)</system:String>
+    <system:String x:Key="AccentColorPetroleumBlueDesc">The official Sources design tone with a calm, professional look</system:String>
+    <system:String x:Key="AccentColorRoyalNavy">Royal Navy Blue</system:String>
+    <system:String x:Key="AccentColorRoyalNavyDesc">Deep classic navy tone suited for administrative environments</system:String>
+    <system:String x:Key="AccentColorForestGreen">Muted Forest Green</system:String>
+    <system:String x:Key="AccentColorForestGreenDesc">Calm, low-saturation tone inspired by nature</system:String>
+    <system:String x:Key="AccentColorSlate">Slate Graphite</system:String>
+    <system:String x:Key="AccentColorSlateDesc">Balanced neutral steel slate with high elegance</system:String>
+    <system:String x:Key="MsgAccentColorChanged">Accent color updated successfully</system:String>
     <system:String x:Key="BackupTitle">Backup</system:String>
     <system:String x:Key="BackupLocationTitle">Backup Location</system:String>
     <system:String x:Key="BackupLocationDesc">Choose the folder where backups will be saved</system:String>
@@ -272,8 +291,40 @@
     <system:String x:Key="BtnQuickAddSource">➕ Add New Source</system:String>
     <system:String x:Key="BtnQuickBorrowSource">🔄 Request Borrowing</system:String>
     <system:String x:Key="ChartSourcesByIsotope">Sources by Radioisotope</system:String>
+    <system:String x:Key="ChartSourcesByIsotopeSubtitle">Number of registered sources per radioisotope</system:String>
     <system:String x:Key="ChartSourcesByLocation">Sources by Storage Location</system:String>
+    <system:String x:Key="ChartSourcesByLocationSubtitle">Number and percentage of sources per location</system:String>
     <system:String x:Key="LabelInsufficientData">Not enough data to display yet</system:String>
+
+    <!-- ── Dashboard Redesign: Histogram, Top-10, Filters, Side Panel, Category ── -->
+    <system:String x:Key="HistogramTitle">Sources by Activity Range</system:String>
+    <system:String x:Key="HistogramSubtitle">Number of sources in each logarithmic range (Bq)</system:String>
+    <system:String x:Key="BtnShowAllIsotopes">Show All Isotopes ←</system:String>
+    <system:String x:Key="BtnShowAllLocations">Show All Locations ←</system:String>
+    <system:String x:Key="LabelOthers">Others</system:String>
+    <system:String x:Key="DashboardSearchHint">Search by code or serial number...</system:String>
+    <system:String x:Key="FilterIsotope">Isotope</system:String>
+    <system:String x:Key="FilterLocation">Location</system:String>
+    <system:String x:Key="FilterStatus">Status</system:String>
+    <system:String x:Key="FilterAll">All</system:String>
+    <system:String x:Key="BtnResetFilters">Reset Filters</system:String>
+    <system:String x:Key="LabelPage">Page</system:String>
+    <system:String x:Key="LabelPerPage">rows/page</system:String>
+    <system:String x:Key="BtnPreviousPage">Previous</system:String>
+    <system:String x:Key="BtnNextPage">Next</system:String>
+    <system:String x:Key="SidePanelClose">Close</system:String>
+    <system:String x:Key="CategoryLegendTitle">Regulatory Category Legend</system:String>
+    <system:String x:Key="Category1Label">Cat. 1 — Very High Risk</system:String>
+    <system:String x:Key="Category2Label">Cat. 2 — High Risk</system:String>
+    <system:String x:Key="Category3Label">Cat. 3 — Medium Risk</system:String>
+    <system:String x:Key="Category4Label">Cat. 4 — Low Risk</system:String>
+    <system:String x:Key="Category5Label">Cat. 5 — Very Low Risk</system:String>
+    <system:String x:Key="DrilldownTitle">Sources in Range</system:String>
+    <system:String x:Key="AllIsotopesTitle">All Radioisotopes</system:String>
+    <system:String x:Key="AllLocationsTitle">All Storage Locations</system:String>
+    <system:String x:Key="ColCount">Count</system:String>
+    <system:String x:Key="ColPercent">Percentage</system:String>
+    <system:String x:Key="LabelShowingFiltered">Showing {0} of {1} sources</system:String>
 
     <!-- Radioisotopes Page -->
     <system:String x:Key="LabelSearchIsotope">🔍 Search here for isotope name or symbol</system:String>

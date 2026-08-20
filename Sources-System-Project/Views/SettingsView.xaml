@@ -62,6 +62,24 @@
             </Style.Triggers>
         </Style>
 
+        <!-- تبويب المظهر -->
+        <Style x:Key="AppearanceTabBtn" TargetType="Button" BasedOn="{StaticResource SettingsTabButtonBase}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SelectedTab}" Value="Appearance">
+                    <Setter Property="Background" Value="{DynamicResource DataGridRowSelected}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="BorderThickness" Value="1.5"/>
+                    <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.12" Color="{StaticResource PrimaryColor}"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
         <!-- تبويب النسخ الاحتياطي -->
         <Style x:Key="BackupTabBtn" TargetType="Button" BasedOn="{StaticResource SettingsTabButtonBase}">
             <Style.Triggers>
@@ -116,6 +134,25 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+
+        <!-- تبويب بيانات تجريبية (Debug Only) -->
+        <Style x:Key="TestDataTabBtn" TargetType="Button" BasedOn="{StaticResource SettingsTabButtonBase}">
+            <Setter Property="Foreground" Value="#D97706"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SelectedTab}" Value="TestData">
+                    <Setter Property="Background" Value="#1AF59E0B"/>
+                    <Setter Property="BorderBrush" Value="#D97706"/>
+                    <Setter Property="BorderThickness" Value="1.5"/>
+                    <Setter Property="Foreground" Value="#D97706"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.15" Color="#D97706"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
 
     <Grid Margin="24">
@@ -159,6 +196,15 @@
                     </StackPanel>
                 </Button>
 
+                <!-- تبويب المظهر -->
+                <Button Style="{StaticResource AppearanceTabBtn}"
+                        Command="{Binding SelectTabCommand}" CommandParameter="Appearance">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="PaletteOutline" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource TabAppearance}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
                 <!-- تبويب النسخ الاحتياطي -->
                 <Button Style="{StaticResource BackupTabBtn}"
                         Command="{Binding SelectTabCommand}" CommandParameter="Backup">
@@ -184,6 +230,16 @@
                     <StackPanel Orientation="Horizontal">
                         <materialDesign:PackIcon Kind="RestoreAlert" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
                         <TextBlock Text="{DynamicResource TabFactoryReset}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- تبويب بيانات تجريبية (للمدير فقط و DEBUG فقط) -->
+                <Button Style="{StaticResource TestDataTabBtn}"
+                        Command="{Binding SelectTabCommand}" CommandParameter="TestData"
+                        Visibility="{Binding CanShowTestData, Converter={StaticResource BoolToVis}}">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="DatabasePlus" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="بيانات تجريبية (Debug)" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
             </StackPanel>
@@ -276,7 +332,468 @@
                     </Border>
                 </StackPanel>
 
-                <!-- ═══════ تبويب 2: النسخ الاحتياطي ═══════ -->
+                <!-- ═══════ تبويب 2: المظهر (Appearance) ═══════ -->
+                <StackPanel>
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedTab}" Value="Appearance">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+
+                    <!-- كارت 1: وضع الواجهة (فاتح / داكن مع بطاقتي معاينة مصغرة) -->
+                    <Border Background="{DynamicResource CardBackground}" CornerRadius="12" 
+                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" 
+                            Padding="24,20" Margin="0,0,0,16">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.05"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                <materialDesign:PackIcon Kind="Brightness6" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="{DynamicResource AppearanceSectionThemeMode}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <TextBlock Text="{DynamicResource AppearanceSectionThemeModeDesc}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,18"/>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- بطاقة المعاينة للوضع الفاتح -->
+                                <Border Grid.Column="0" CornerRadius="10" Padding="16" Cursor="Hand" SnapsToDevicePixels="True">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+                                            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+                                            <Setter Property="BorderThickness" Value="1.5"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsDarkMode}" Value="False">
+                                                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                                    <Setter Property="BorderThickness" Value="2"/>
+                                                    <Setter Property="Background" Value="{DynamicResource DataGridRowSelected}"/>
+                                                    <Setter Property="Effect">
+                                                        <Setter.Value>
+                                                            <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.16" Color="{StaticResource PrimaryColor}"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <Border.InputBindings>
+                                        <MouseBinding MouseAction="LeftClick" Command="{Binding SetLightModeCommand}"/>
+                                    </Border.InputBindings>
+                                    <StackPanel>
+                                        <!-- مصغر نافذة الوضع الفاتح -->
+                                        <Border Height="110" CornerRadius="8" Background="#F7F5F1" BorderBrush="#E4DCD0" BorderThickness="1" Margin="0,0,0,12" ClipToBounds="True">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="42"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <!-- سايدبار مصغر -->
+                                                <Border Grid.Column="0" Background="#123840" Padding="6">
+                                                    <StackPanel VerticalAlignment="Top">
+                                                        <Border Width="16" Height="16" CornerRadius="4" Background="{DynamicResource PrimaryBrush}" Margin="0,0,0,8" HorizontalAlignment="Center"/>
+                                                        <Border Width="22" Height="4" CornerRadius="2" Background="#DCEEF0" Opacity="0.7" Margin="0,0,0,5" HorizontalAlignment="Center"/>
+                                                        <Border Width="22" Height="4" CornerRadius="2" Background="#DCEEF0" Opacity="0.4" Margin="0,0,0,5" HorizontalAlignment="Center"/>
+                                                        <Border Width="22" Height="4" CornerRadius="2" Background="#DCEEF0" Opacity="0.4" Margin="0,0,0,5" HorizontalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Border>
+                                                <!-- محتوى نافذة مصغر -->
+                                                <Grid Grid.Column="1" Margin="8,6,8,6">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="*"/>
+                                                    </Grid.RowDefinitions>
+                                                    <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,6">
+                                                        <Border Width="45" Height="6" CornerRadius="3" Background="{DynamicResource PrimaryBrush}"/>
+                                                    </StackPanel>
+                                                    <Grid Grid.Row="1">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="6"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <Border Grid.Column="0" Background="#FFFFFF" CornerRadius="4" BorderBrush="#E4DCD0" BorderThickness="1" Padding="4">
+                                                            <StackPanel>
+                                                                <Border Width="20" Height="4" CornerRadius="2" Background="{DynamicResource PrimaryBrush}" HorizontalAlignment="Left" Margin="0,0,0,4"/>
+                                                                <Border Width="30" Height="3" CornerRadius="1.5" Background="#A39C90" HorizontalAlignment="Left"/>
+                                                            </StackPanel>
+                                                        </Border>
+                                                        <Border Grid.Column="2" Background="#FFFFFF" CornerRadius="4" BorderBrush="#E4DCD0" BorderThickness="1" Padding="4">
+                                                            <StackPanel>
+                                                                <Border Width="16" Height="4" CornerRadius="2" Background="#3FAE7A" HorizontalAlignment="Left" Margin="0,0,0,4"/>
+                                                                <Border Width="26" Height="3" CornerRadius="1.5" Background="#A39C90" HorizontalAlignment="Left"/>
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </Grid>
+                                                </Grid>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- عنوان وحالة الوضع الفاتح -->
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <materialDesign:PackIcon Kind="WeatherSunny" Width="18" Height="18" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                    <TextBlock Text="{DynamicResource ThemeModeLightTitle}" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource TextPrimary}"/>
+                                                </StackPanel>
+                                                <TextBlock Text="{DynamicResource ThemeModeLightDesc}" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                            <materialDesign:PackIcon Grid.Column="1" Kind="CheckCircle" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center">
+                                                <materialDesign:PackIcon.Style>
+                                                    <Style TargetType="materialDesign:PackIcon">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsDarkMode}" Value="False">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </materialDesign:PackIcon.Style>
+                                            </materialDesign:PackIcon>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- بطاقة المعاينة للوضع الداكن -->
+                                <Border Grid.Column="2" CornerRadius="10" Padding="16" Cursor="Hand" SnapsToDevicePixels="True">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+                                            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+                                            <Setter Property="BorderThickness" Value="1.5"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsDarkMode}" Value="True">
+                                                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                                    <Setter Property="BorderThickness" Value="2"/>
+                                                    <Setter Property="Background" Value="{DynamicResource DataGridRowSelected}"/>
+                                                    <Setter Property="Effect">
+                                                        <Setter.Value>
+                                                            <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.16" Color="{StaticResource PrimaryColor}"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <Border.InputBindings>
+                                        <MouseBinding MouseAction="LeftClick" Command="{Binding SetDarkModeCommand}"/>
+                                    </Border.InputBindings>
+                                    <StackPanel>
+                                        <!-- مصغر نافذة الوضع الداكن -->
+                                        <Border Height="110" CornerRadius="8" Background="#17181B" BorderBrush="#34322D" BorderThickness="1" Margin="0,0,0,12" ClipToBounds="True">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="42"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <!-- سايدبار مصغر -->
+                                                <Border Grid.Column="0" Background="#123840" Padding="6">
+                                                    <StackPanel VerticalAlignment="Top">
+                                                        <Border Width="16" Height="16" CornerRadius="4" Background="{DynamicResource PrimaryBrush}" Margin="0,0,0,8" HorizontalAlignment="Center"/>
+                                                        <Border Width="22" Height="4" CornerRadius="2" Background="#DCEEF0" Opacity="0.7" Margin="0,0,0,5" HorizontalAlignment="Center"/>
+                                                        <Border Width="22" Height="4" CornerRadius="2" Background="#DCEEF0" Opacity="0.4" Margin="0,0,0,5" HorizontalAlignment="Center"/>
+                                                        <Border Width="22" Height="4" CornerRadius="2" Background="#DCEEF0" Opacity="0.4" Margin="0,0,0,5" HorizontalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Border>
+                                                <!-- محتوى نافذة مصغر -->
+                                                <Grid Grid.Column="1" Margin="8,6,8,6">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="*"/>
+                                                    </Grid.RowDefinitions>
+                                                    <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,6">
+                                                        <Border Width="45" Height="6" CornerRadius="3" Background="{DynamicResource PrimaryBrush}"/>
+                                                    </StackPanel>
+                                                    <Grid Grid.Row="1">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="6"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <Border Grid.Column="0" Background="#202226" CornerRadius="4" BorderBrush="#34322D" BorderThickness="1" Padding="4">
+                                                            <StackPanel>
+                                                                <Border Width="20" Height="4" CornerRadius="2" Background="{DynamicResource PrimaryBrush}" HorizontalAlignment="Left" Margin="0,0,0,4"/>
+                                                                <Border Width="30" Height="3" CornerRadius="1.5" Background="#6E655A" HorizontalAlignment="Left"/>
+                                                            </StackPanel>
+                                                        </Border>
+                                                        <Border Grid.Column="2" Background="#202226" CornerRadius="4" BorderBrush="#34322D" BorderThickness="1" Padding="4">
+                                                            <StackPanel>
+                                                                <Border Width="16" Height="4" CornerRadius="2" Background="#3FAE7A" HorizontalAlignment="Left" Margin="0,0,0,4"/>
+                                                                <Border Width="26" Height="3" CornerRadius="1.5" Background="#6E655A" HorizontalAlignment="Left"/>
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </Grid>
+                                                </Grid>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- عنوان وحالة الوضع الداكن -->
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <materialDesign:PackIcon Kind="WeatherNight" Width="18" Height="18" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                    <TextBlock Text="{DynamicResource ThemeModeDarkTitle}" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource TextPrimary}"/>
+                                                </StackPanel>
+                                                <TextBlock Text="{DynamicResource ThemeModeDarkDesc}" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                            <materialDesign:PackIcon Grid.Column="1" Kind="CheckCircle" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center">
+                                                <materialDesign:PackIcon.Style>
+                                                    <Style TargetType="materialDesign:PackIcon">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsDarkMode}" Value="True">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </materialDesign:PackIcon.Style>
+                                            </materialDesign:PackIcon>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- كارت 2: لون التمييز (Accent Color) -->
+                    <Border Background="{DynamicResource CardBackground}" CornerRadius="12" 
+                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" 
+                            Padding="24,20" Margin="0,0,0,16">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.05"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                <materialDesign:PackIcon Kind="Palette" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="{DynamicResource AppearanceSectionAccentColor}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <TextBlock Text="{DynamicResource AppearanceSectionAccentColorDesc}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,18"/>
+
+                            <!-- شبكة خيارات الألوان الأربعة -->
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="12"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- 1. الأزرق البترولي (الافتراضي) -->
+                                <Border Grid.Row="0" Grid.Column="0" CornerRadius="10" Padding="14,12" Cursor="Hand" SnapsToDevicePixels="True">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+                                            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+                                            <Setter Property="BorderThickness" Value="1.5"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SelectedAccentColor}" Value="#1F5A66">
+                                                    <Setter Property="BorderBrush" Value="#1F5A66"/>
+                                                    <Setter Property="BorderThickness" Value="2"/>
+                                                    <Setter Property="Background" Value="{DynamicResource DataGridRowSelected}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <Border.InputBindings>
+                                        <MouseBinding MouseAction="LeftClick" Command="{Binding SelectAccentColorCommand}" CommandParameter="#1F5A66"/>
+                                    </Border.InputBindings>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="36" Height="36" CornerRadius="18" Background="#1F5A66" Margin="0,0,12,0" VerticalAlignment="Center" BorderBrush="#40FFFFFF" BorderThickness="1.5">
+                                            <materialDesign:PackIcon Kind="Check" Width="18" Height="18" Foreground="#FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <materialDesign:PackIcon.Style>
+                                                    <Style TargetType="materialDesign:PackIcon">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding SelectedAccentColor}" Value="#1F5A66">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </materialDesign:PackIcon.Style>
+                                            </materialDesign:PackIcon>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{DynamicResource AccentColorPetroleumBlue}" FontWeight="Bold" FontSize="13.5" Foreground="{DynamicResource TextPrimary}"/>
+                                                <Border Background="{DynamicResource DataGridRowSelected}" CornerRadius="4" Padding="6,2" Margin="6,0,0,0">
+                                                    <TextBlock Text="{DynamicResource AccentColorDefaultBadge}" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryBrush}"/>
+                                                </Border>
+                                            </StackPanel>
+                                            <TextBlock Text="{DynamicResource AccentColorPetroleumBlueDesc}" FontSize="11" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                            <TextBlock Text="#1F5A66" FontSize="10.5" FontFamily="Consolas" Foreground="{DynamicResource TextSecondary}" Opacity="0.8" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <!-- 2. الأزرق الملكي الداكن -->
+                                <Border Grid.Row="0" Grid.Column="2" CornerRadius="10" Padding="14,12" Cursor="Hand" SnapsToDevicePixels="True">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+                                            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+                                            <Setter Property="BorderThickness" Value="1.5"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SelectedAccentColor}" Value="#1E3F66">
+                                                    <Setter Property="BorderBrush" Value="#1E3F66"/>
+                                                    <Setter Property="BorderThickness" Value="2"/>
+                                                    <Setter Property="Background" Value="{DynamicResource DataGridRowSelected}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <Border.InputBindings>
+                                        <MouseBinding MouseAction="LeftClick" Command="{Binding SelectAccentColorCommand}" CommandParameter="#1E3F66"/>
+                                    </Border.InputBindings>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="36" Height="36" CornerRadius="18" Background="#1E3F66" Margin="0,0,12,0" VerticalAlignment="Center" BorderBrush="#40FFFFFF" BorderThickness="1.5">
+                                            <materialDesign:PackIcon Kind="Check" Width="18" Height="18" Foreground="#FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <materialDesign:PackIcon.Style>
+                                                    <Style TargetType="materialDesign:PackIcon">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding SelectedAccentColor}" Value="#1E3F66">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </materialDesign:PackIcon.Style>
+                                            </materialDesign:PackIcon>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{DynamicResource AccentColorRoyalNavy}" FontWeight="Bold" FontSize="13.5" Foreground="{DynamicResource TextPrimary}"/>
+                                            <TextBlock Text="{DynamicResource AccentColorRoyalNavyDesc}" FontSize="11" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                            <TextBlock Text="#1E3F66" FontSize="10.5" FontFamily="Consolas" Foreground="{DynamicResource TextSecondary}" Opacity="0.8" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <!-- 3. الأخضر الغابي المطفي -->
+                                <Border Grid.Row="2" Grid.Column="0" CornerRadius="10" Padding="14,12" Cursor="Hand" SnapsToDevicePixels="True">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+                                            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+                                            <Setter Property="BorderThickness" Value="1.5"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SelectedAccentColor}" Value="#3D5A47">
+                                                    <Setter Property="BorderBrush" Value="#3D5A47"/>
+                                                    <Setter Property="BorderThickness" Value="2"/>
+                                                    <Setter Property="Background" Value="{DynamicResource DataGridRowSelected}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <Border.InputBindings>
+                                        <MouseBinding MouseAction="LeftClick" Command="{Binding SelectAccentColorCommand}" CommandParameter="#3D5A47"/>
+                                    </Border.InputBindings>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="36" Height="36" CornerRadius="18" Background="#3D5A47" Margin="0,0,12,0" VerticalAlignment="Center" BorderBrush="#40FFFFFF" BorderThickness="1.5">
+                                            <materialDesign:PackIcon Kind="Check" Width="18" Height="18" Foreground="#FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <materialDesign:PackIcon.Style>
+                                                    <Style TargetType="materialDesign:PackIcon">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding SelectedAccentColor}" Value="#3D5A47">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </materialDesign:PackIcon.Style>
+                                            </materialDesign:PackIcon>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{DynamicResource AccentColorForestGreen}" FontWeight="Bold" FontSize="13.5" Foreground="{DynamicResource TextPrimary}"/>
+                                            <TextBlock Text="{DynamicResource AccentColorForestGreenDesc}" FontSize="11" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                            <TextBlock Text="#3D5A47" FontSize="10.5" FontFamily="Consolas" Foreground="{DynamicResource TextSecondary}" Opacity="0.8" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <!-- 4. الرمادي الأردوازي -->
+                                <Border Grid.Row="2" Grid.Column="2" CornerRadius="10" Padding="14,12" Cursor="Hand" SnapsToDevicePixels="True">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+                                            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+                                            <Setter Property="BorderThickness" Value="1.5"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SelectedAccentColor}" Value="#433E52">
+                                                    <Setter Property="BorderBrush" Value="#433E52"/>
+                                                    <Setter Property="BorderThickness" Value="2"/>
+                                                    <Setter Property="Background" Value="{DynamicResource DataGridRowSelected}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <Border.InputBindings>
+                                        <MouseBinding MouseAction="LeftClick" Command="{Binding SelectAccentColorCommand}" CommandParameter="#433E52"/>
+                                    </Border.InputBindings>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="36" Height="36" CornerRadius="18" Background="#433E52" Margin="0,0,12,0" VerticalAlignment="Center" BorderBrush="#40FFFFFF" BorderThickness="1.5">
+                                            <materialDesign:PackIcon Kind="Check" Width="18" Height="18" Foreground="#FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <materialDesign:PackIcon.Style>
+                                                    <Style TargetType="materialDesign:PackIcon">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding SelectedAccentColor}" Value="#433E52">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </materialDesign:PackIcon.Style>
+                                            </materialDesign:PackIcon>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{DynamicResource AccentColorSlate}" FontWeight="Bold" FontSize="13.5" Foreground="{DynamicResource TextPrimary}"/>
+                                            <TextBlock Text="{DynamicResource AccentColorSlateDesc}" FontSize="11" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                            <TextBlock Text="#433E52" FontSize="10.5" FontFamily="Consolas" Foreground="{DynamicResource TextSecondary}" Opacity="0.8" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- ═══════ تبويب 3: النسخ الاحتياطي ═══════ -->
                 <StackPanel>
                     <StackPanel.Style>
                         <Style TargetType="StackPanel">
@@ -648,6 +1165,60 @@
                                         <StackPanel Orientation="Horizontal">
                                             <materialDesign:PackIcon Kind="DeleteForever" VerticalAlignment="Center" Margin="0,0,8,0" Width="20" Height="20"/>
                                             <TextBlock Text="{DynamicResource BtnExecuteFactoryReset}" VerticalAlignment="Center" FontWeight="Bold" FontSize="14"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </Button.ContentTemplate>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- ═══════ تبويب 5: بيانات تجريبية (Debug Only) ═══════ -->
+                <StackPanel>
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedTab}" Value="TestData">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+
+                    <Border Background="{DynamicResource CardBackground}" CornerRadius="12" 
+                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" 
+                            Padding="24,20" Margin="0,0,0,16">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.05"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                <materialDesign:PackIcon Kind="DatabasePlus" Width="24" Height="24" Foreground="#D97706" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="توليد بيانات تجريبية واقعية (Debug Mode)" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <Border Background="#12F59E0B" BorderBrush="#33F59E0B" BorderThickness="1" CornerRadius="8" Padding="16,14" Margin="0,0,0,20">
+                                <StackPanel>
+                                    <TextBlock Text="تتيح هذه الأداة إنشاء حزمة متكاملة من البيانات التجريبية لاختبار شاشات وتقارير وتنبيهات المنظومة:" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
+                                    <TextBlock Text="• 20 موقعاً فعالاً تشمل مختبرات ومخازن ومستشفيات وعيادات بمسؤولين مختلفين." FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="8,0,0,4"/>
+                                    <TextBlock Text="• 300 مصدراً مشعاً بتوزيعات واقعية للنشاط الإشعاعي (أحادية ومتعددة النظائر)." FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="8,0,0,4"/>
+                                    <TextBlock Text="• 50 مصدراً مخصصاً لاختبار التنبيهات الذكية (25 تحذير + 25 حرج) بحسابات انحلال دقيقة." FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="8,0,0,4"/>
+                                    <TextBlock Text="• 100 طلب استعارة (70 مرتجع + 15 جاري التسليم + 10 متأخر Overdue + 5 قيد الاعتماد)." FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="8,0,0,8"/>
+                                    <TextBlock Text="⚠️ ملاحظة: هذه الميزة مخصصة لأغراض التطوير والاختبار (DEBUG) وتعمل داخل Transaction لضمان سلامة قاعدة البيانات." FontSize="12" Foreground="#D97706" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Button Content="توليد البيانات التجريبية الآن"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Command="{Binding GenerateTestDataCommand}"
+                                    Background="#D97706" BorderBrush="#D97706"
+                                    HorizontalAlignment="Left" Padding="28,12" Height="46">
+                                <Button.ContentTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="DatabaseArrowUp" VerticalAlignment="Center" Margin="0,0,8,0" Width="20" Height="20"/>
+                                            <TextBlock Text="توليد البيانات التجريبية الآن" VerticalAlignment="Center" FontWeight="Bold" FontSize="14"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </Button.ContentTemplate>

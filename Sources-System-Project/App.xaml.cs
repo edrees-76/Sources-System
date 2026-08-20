@@ -73,6 +73,7 @@ public partial class App : Application
 
             // تطبيق الإعدادات المحفوظة
             ApplyTheme(SettingsHelper.IsDarkMode);
+            ApplyAccentColor(SettingsHelper.AccentColor);
             ApplyLanguage(SettingsHelper.Language);
 
             // بدء خدمة النسخ الاحتياطي التلقائي في الخلفية
@@ -183,25 +184,119 @@ public partial class App : Application
         if (app == null) return;
 
         // تحديث MaterialDesign BaseTheme
-        var paletteHelper = new PaletteHelper();
-        var theme = paletteHelper.GetTheme();
-        theme.SetBaseTheme(isDark ? BaseTheme.Dark : BaseTheme.Light);
-        paletteHelper.SetTheme(theme);
+        try
+        {
+            var paletteHelper = new PaletteHelper();
+            var theme = paletteHelper.GetTheme();
+            theme.SetBaseTheme(isDark ? BaseTheme.Dark : BaseTheme.Light);
+            paletteHelper.SetTheme(theme);
+        }
+        catch { }
 
         // تبديل قاموس الثيم المخصص
-        var dicts = app.Resources.MergedDictionaries;
-        var targetDictName = isDark ? "DarkTheme.xaml" : "LightTheme.xaml";
-        var oldDictName = isDark ? "LightTheme.xaml" : "DarkTheme.xaml";
-        var newDict = new ResourceDictionary { Source = new Uri($"/Resources/{targetDictName}", UriKind.RelativeOrAbsolute) };
-
-        for (int i = 0; i < dicts.Count; i++)
+        try
         {
-            var src = dicts[i].Source?.OriginalString;
-            if (src != null && src.Contains(oldDictName))
+            var dicts = app.Resources.MergedDictionaries;
+            var targetDictName = isDark ? "DarkTheme.xaml" : "LightTheme.xaml";
+            var oldDictName = isDark ? "LightTheme.xaml" : "DarkTheme.xaml";
+            var uri = new Uri($"pack://application:,,,/Sources;component/Resources/{targetDictName}", UriKind.RelativeOrAbsolute);
+            var newDict = new ResourceDictionary { Source = uri };
+
+            for (int i = 0; i < dicts.Count; i++)
             {
-                dicts[i] = newDict;
-                return;
+                var src = dicts[i].Source?.OriginalString;
+                if (src != null && src.Contains(oldDictName))
+                {
+                    dicts[i] = newDict;
+                    break;
+                }
             }
+        }
+        catch { }
+
+        // الحفاظ على لون التمييز المطبق حالياً
+        if (app.Resources.Contains("PrimaryColor") && app.Resources["PrimaryColor"] is System.Windows.Media.Color activeColor)
+        {
+            try
+            {
+                var paletteHelper = new PaletteHelper();
+                var themeAfter = paletteHelper.GetTheme();
+                themeAfter.SetPrimaryColor(activeColor);
+                themeAfter.SetSecondaryColor(activeColor);
+                paletteHelper.SetTheme(themeAfter);
+            }
+            catch { }
+        }
+    }
+
+    public static void ApplyAccentColor(string hexColor)
+    {
+        var app = Current;
+        if (app == null) return;
+
+        if (string.IsNullOrWhiteSpace(hexColor))
+            hexColor = SettingsHelper.DefaultAccentColor;
+
+        try
+        {
+            var primaryColor = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(hexColor);
+            
+            // حساب تدرجات الألوان المتناسقة (فاتح وداكن)
+            var primaryLight = System.Windows.Media.Color.FromArgb(255, 
+                (byte)Math.Min(255, primaryColor.R + 30), 
+                (byte)Math.Min(255, primaryColor.G + 34), 
+                (byte)Math.Min(255, primaryColor.B + 35));
+                
+            var primaryDark = System.Windows.Media.Color.FromArgb(255, 
+                (byte)Math.Max(0, primaryColor.R - 13), 
+                (byte)Math.Max(0, primaryColor.G - 34), 
+                (byte)Math.Max(0, primaryColor.B - 38));
+
+            // 1. تحديث MaterialDesign Themes
+            try
+            {
+                var paletteHelper = new PaletteHelper();
+                var theme = paletteHelper.GetTheme();
+                theme.SetPrimaryColor(primaryColor);
+                theme.SetSecondaryColor(primaryColor);
+                paletteHelper.SetTheme(theme);
+            }
+            catch { }
+
+            // 2. تحديث الموارد المركزية DynamicResource في Application.Current.Resources
+            app.Resources["PrimaryColor"] = primaryColor;
+            app.Resources["PrimaryLightColor"] = primaryLight;
+            app.Resources["PrimaryDarkColor"] = primaryDark;
+            app.Resources["SecondaryColor"] = primaryColor;
+            app.Resources["GoldColor"] = primaryColor;
+            app.Resources["GoldLightColor"] = primaryLight;
+            app.Resources["GoldDarkColor"] = primaryDark;
+            app.Resources["AccentColor"] = primaryColor;
+
+            app.Resources["PrimaryBrush"] = new System.Windows.Media.SolidColorBrush(primaryColor);
+            app.Resources["PrimaryLightBrush"] = new System.Windows.Media.SolidColorBrush(primaryLight);
+            app.Resources["PrimaryDarkBrush"] = new System.Windows.Media.SolidColorBrush(primaryDark);
+            app.Resources["SecondaryBrush"] = new System.Windows.Media.SolidColorBrush(primaryColor);
+            app.Resources["GoldBrush"] = new System.Windows.Media.SolidColorBrush(primaryColor);
+            app.Resources["GoldLightBrush"] = new System.Windows.Media.SolidColorBrush(primaryLight);
+            app.Resources["GoldDarkBrush"] = new System.Windows.Media.SolidColorBrush(primaryDark);
+            app.Resources["AccentBrush"] = new System.Windows.Media.SolidColorBrush(primaryColor);
+
+            var primaryGradient = new System.Windows.Media.LinearGradientBrush
+            {
+                StartPoint = new System.Windows.Point(0, 0),
+                EndPoint = new System.Windows.Point(1, 1),
+                GradientStops = new System.Windows.Media.GradientStopCollection
+                {
+                    new System.Windows.Media.GradientStop(primaryColor, 0),
+                    new System.Windows.Media.GradientStop(primaryLight, 1)
+                }
+            };
+            app.Resources["PrimaryGradient"] = primaryGradient;
+        }
+        catch (Exception ex)
+        {
+            LoggerService.LogError("Error applying accent color", ex);
         }
     }
 

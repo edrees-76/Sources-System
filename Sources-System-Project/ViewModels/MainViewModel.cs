@@ -52,6 +52,14 @@ public partial class MainViewModel : ObservableObject
         IsLoggedIn = true;
         CurrentUserName = _userService.CurrentUser?.FullName ?? "";
         CurrentUserRole = _userService.CurrentUser?.Role?.RoleName ?? "";
+
+        // تطبيق تفضيلات المظهر الخاصة بالمستخدم
+        var username = _userService.CurrentUser?.Username;
+        IsDarkMode = SettingsHelper.GetUserTheme(username);
+        var accentColor = SettingsHelper.GetUserAccentColor(username);
+        App.ApplyTheme(IsDarkMode);
+        App.ApplyAccentColor(accentColor);
+
         RefreshNotifications();
         StartAlertCheckTimer();
         RefreshSidebarPermissions();
@@ -211,11 +219,11 @@ public partial class MainViewModel : ObservableObject
         _alertTimer?.Stop();
     }
 
-    // ─── Inactivity Timer (شاشة التوقف بعد 15 دقيقة) ───
+    // ─── Inactivity Timer (شاشة التوقف بعد 15 دقيقة خمول) ───
     private System.Windows.Threading.DispatcherTimer? _inactivityTimer;
     private DateTime _lastActivityTime;
     private readonly int _autoLockMinutes = 15; // 15 دقيقة خمول
-
+    
     public event EventHandler? LockRequested;
 
     public void StartInactivityTimer()
@@ -225,7 +233,7 @@ public partial class MainViewModel : ObservableObject
         {
             _inactivityTimer = new System.Windows.Threading.DispatcherTimer
             {
-                Interval = TimeSpan.FromSeconds(5) // فحص كل 5 ثوانٍ
+                Interval = TimeSpan.FromSeconds(5) // فحص دوري كل 5 ثوانٍ
             };
             _inactivityTimer.Tick += InactivityTimer_Tick;
         }

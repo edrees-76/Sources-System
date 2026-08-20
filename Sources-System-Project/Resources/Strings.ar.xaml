@@ -69,7 +69,26 @@
 
     <!-- Backup Settings -->
     <system:String x:Key="TabGeneral">العام</system:String>
+    <system:String x:Key="TabAppearance">المظهر</system:String>
     <system:String x:Key="TabBackup">النسخ الاحتياطي</system:String>
+    <system:String x:Key="AppearanceSectionThemeMode">وضع الواجهة</system:String>
+    <system:String x:Key="AppearanceSectionThemeModeDesc">اختر السمة البصرية المناسبة لبيئة العمل لتوفير الراحة للعين</system:String>
+    <system:String x:Key="ThemeModeLightTitle">الوضع الفاتح</system:String>
+    <system:String x:Key="ThemeModeLightDesc">واجهة ناصعة واضحة للبيئات المضاءة</system:String>
+    <system:String x:Key="ThemeModeDarkTitle">الوضع الداكن</system:String>
+    <system:String x:Key="ThemeModeDarkDesc">واجهة ليلية مريحة تقلل إجهاد العين</system:String>
+    <system:String x:Key="AppearanceSectionAccentColor">لون التمييز (Accent Color)</system:String>
+    <system:String x:Key="AppearanceSectionAccentColorDesc">اختر اللون الرئيسي المميز للأزرار والتبويبات والعناصر التفاعلية للنظام</system:String>
+    <system:String x:Key="AccentColorDefaultBadge">الافتراضي</system:String>
+    <system:String x:Key="AccentColorPetroleumBlue">أزرق بترولي (Sources)</system:String>
+    <system:String x:Key="AccentColorPetroleumBlueDesc">اللون المعتمد لمنظومة مصادر بتدرج هادئ ومهني</system:String>
+    <system:String x:Key="AccentColorRoyalNavy">أزرق ملكي داكن</system:String>
+    <system:String x:Key="AccentColorRoyalNavyDesc">تدرج كحلي كلاسيكي عميق متناسق مع بيئات الإدارة</system:String>
+    <system:String x:Key="AccentColorForestGreen">أخضر غابي مطفي</system:String>
+    <system:String x:Key="AccentColorForestGreenDesc">تدرج هادئ منخفض التشبع مستوحى من الطبيعة</system:String>
+    <system:String x:Key="AccentColorSlate">رمادي أردوازي</system:String>
+    <system:String x:Key="AccentColorSlateDesc">طابع حديدي حيادي متزن عالي الأناقة</system:String>
+    <system:String x:Key="MsgAccentColorChanged">تم تغيير لون التمييز بنجاح</system:String>
     <system:String x:Key="BackupTitle">النسخ الاحتياطي</system:String>
     <system:String x:Key="BackupLocationTitle">مكان حفظ النسخ الاحتياطي</system:String>
     <system:String x:Key="BackupLocationDesc">اختر المجلد الذي تريد حفظ النسخ الاحتياطية فيه</system:String>
@@ -268,9 +287,41 @@
     <system:String x:Key="CardQuickActionsSubtitle">اختصارات العمليات والمهام الشائعة</system:String>
     <system:String x:Key="BtnQuickAddSource">➕ إضافة مصدر جديد</system:String>
     <system:String x:Key="BtnQuickBorrowSource">🔄 طلب استعارة مصدر</system:String>
-    <system:String x:Key="ChartSourcesByIsotope">توزيع المصادر حسب النظير المشع</system:String>
+    <system:String x:Key="ChartSourcesByIsotope">توزيع المصادر المشعة حسب النظير</system:String>
+    <system:String x:Key="ChartSourcesByIsotopeSubtitle">عدد المصادر المسجلة لكل نظير مشع</system:String>
     <system:String x:Key="ChartSourcesByLocation">توزيع المصادر حسب موقع التخزين</system:String>
+    <system:String x:Key="ChartSourcesByLocationSubtitle">عدد ونسبة المصادر في كل موقع تخزين</system:String>
     <system:String x:Key="LabelInsufficientData">لا توجد بيانات كافية للعرض بعد</system:String>
+
+    <!-- ── Dashboard Redesign: Histogram, Top-10, Filters, Side Panel, Category ── -->
+    <system:String x:Key="HistogramTitle">توزيع المصادر حسب نطاقات النشاط الإشعاعي</system:String>
+    <system:String x:Key="HistogramSubtitle">عدد المصادر في كل نطاق لوغاريتمي (Bq)</system:String>
+    <system:String x:Key="BtnShowAllIsotopes">عرض جميع النظائر ←</system:String>
+    <system:String x:Key="BtnShowAllLocations">عرض جميع المواقع ←</system:String>
+    <system:String x:Key="LabelOthers">أخرى</system:String>
+    <system:String x:Key="DashboardSearchHint">بحث بالكود أو الرقم المسلسل...</system:String>
+    <system:String x:Key="FilterIsotope">النظير</system:String>
+    <system:String x:Key="FilterLocation">الموقع</system:String>
+    <system:String x:Key="FilterStatus">الحالة</system:String>
+    <system:String x:Key="FilterAll">الكل</system:String>
+    <system:String x:Key="BtnResetFilters">إعادة تعيين الفلاتر</system:String>
+    <system:String x:Key="LabelPage">الصفحة</system:String>
+    <system:String x:Key="LabelPerPage">صف/صفحة</system:String>
+    <system:String x:Key="BtnPreviousPage">السابق</system:String>
+    <system:String x:Key="BtnNextPage">التالي</system:String>
+    <system:String x:Key="SidePanelClose">إغلاق</system:String>
+    <system:String x:Key="CategoryLegendTitle">دليل الفئات الرقابية</system:String>
+    <system:String x:Key="Category1Label">فئة 1 — خطر عالي جداً</system:String>
+    <system:String x:Key="Category2Label">فئة 2 — خطر عالي</system:String>
+    <system:String x:Key="Category3Label">فئة 3 — خطر متوسط</system:String>
+    <system:String x:Key="Category4Label">فئة 4 — خطر منخفض</system:String>
+    <system:String x:Key="Category5Label">فئة 5 — خطر طفيف</system:String>
+    <system:String x:Key="DrilldownTitle">المصادر في النطاق</system:String>
+    <system:String x:Key="AllIsotopesTitle">جميع النظائر المشعة</system:String>
+    <system:String x:Key="AllLocationsTitle">جميع مواقع التخزين</system:String>
+    <system:String x:Key="ColCount">العدد</system:String>
+    <system:String x:Key="ColPercent">النسبة</system:String>
+    <system:String x:Key="LabelShowingFiltered">عرض {0} من {1} مصدر</system:String>
 
     <!-- Radioisotopes Page -->
     <system:String x:Key="LabelSearchIsotope">🔍 ابحث هنا عن اسم النظير أو رمزه</system:String>

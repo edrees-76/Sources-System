@@ -22,10 +22,71 @@ public static class SettingsHelper
         }
     }
 
+    public static string DefaultAccentColor => "#1F5A66";
+
     public static bool IsDarkMode
     {
         get => Read("Theme") == "Dark";
         set => Write("Theme", value ? "Dark" : "Light");
+    }
+
+    public static string AccentColor
+    {
+        get => Read("AccentColor") ?? DefaultAccentColor;
+        set => Write("AccentColor", string.IsNullOrWhiteSpace(value) ? DefaultAccentColor : value);
+    }
+
+    public static bool GetUserTheme(string? username)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+            return IsDarkMode;
+
+        var userKey = $"User_{username.Trim().ToLower()}_Theme";
+        var val = Read(userKey);
+        if (val != null)
+            return val == "Dark";
+
+        return IsDarkMode;
+    }
+
+    public static void SetUserTheme(string? username, bool isDark)
+    {
+        if (!string.IsNullOrWhiteSpace(username))
+        {
+            var userKey = $"User_{username.Trim().ToLower()}_Theme";
+            Write(userKey, isDark ? "Dark" : "Light");
+        }
+        else
+        {
+            IsDarkMode = isDark;
+        }
+    }
+
+    public static string GetUserAccentColor(string? username)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+            return AccentColor;
+
+        var userKey = $"User_{username.Trim().ToLower()}_AccentColor";
+        var val = Read(userKey);
+        if (!string.IsNullOrWhiteSpace(val))
+            return val;
+
+        return AccentColor;
+    }
+
+    public static void SetUserAccentColor(string? username, string hexColor)
+    {
+        var color = string.IsNullOrWhiteSpace(hexColor) ? DefaultAccentColor : hexColor.Trim();
+        if (!string.IsNullOrWhiteSpace(username))
+        {
+            var userKey = $"User_{username.Trim().ToLower()}_AccentColor";
+            Write(userKey, color);
+        }
+        else
+        {
+            AccentColor = color;
+        }
     }
 
     public static string Language
@@ -44,6 +105,14 @@ public static class SettingsHelper
     {
         get => Read("SavedUsername") ?? string.Empty;
         set => Write("SavedUsername", value);
+    }
+
+    public static void ClearAllUserSettingsForTesting()
+    {
+        if (File.Exists(SettingsFile))
+        {
+            try { File.Delete(SettingsFile); } catch { }
+        }
     }
 
     private static string? Read(string key)

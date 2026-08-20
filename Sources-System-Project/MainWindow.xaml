@@ -8,104 +8,6 @@
         Background="{DynamicResource WindowBackground}">
 
     <Window.Resources>
-        <!-- ══════════════════════════════════════════════════════
-             Style: BottomNavItem — زر تنقل في الشريط السفلي
-             يدعم تأثير Dock (Magnification) عبر ScaleTransform + TranslateTransform
-             ══════════════════════════════════════════════════════ -->
-        <Style x:Key="BottomNavItem" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{DynamicResource SidebarForeground}"/>
-            <Setter Property="FontSize" Value="11"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Padding" Value="2,2"/>
-            <Setter Property="MinWidth" Value="40"/>
-            <Setter Property="TextBlock.TextAlignment" Value="Center"/>
-            <Setter Property="TextBlock.TextWrapping" Value="Wrap"/>
-            <Setter Property="TextBlock.LineHeight" Value="13"/>
-            <Setter Property="RenderTransformOrigin" Value="0.5,1"/>
-            <Setter Property="RenderTransform">
-                <Setter.Value>
-                    <TransformGroup>
-                        <ScaleTransform ScaleX="1" ScaleY="1"/>
-                        <TranslateTransform Y="0"/>
-                    </TransformGroup>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="bg" Background="{TemplateBinding Background}"
-                                CornerRadius="10"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bg" Property="Background" Value="{DynamicResource SidebarHover}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <!-- ─── تأثير الارتفاع والتكبير عند المرور (Dock Magnification) ─── -->
-            <Style.Triggers>
-                <EventTrigger RoutedEvent="Button.MouseEnter">
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <DoubleAnimation
-                                Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
-                                To="1.18" Duration="0:0:0.16">
-                                <DoubleAnimation.EasingFunction>
-                                    <QuadraticEase EasingMode="EaseOut"/>
-                                </DoubleAnimation.EasingFunction>
-                            </DoubleAnimation>
-                            <DoubleAnimation
-                                Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
-                                To="1.18" Duration="0:0:0.16">
-                                <DoubleAnimation.EasingFunction>
-                                    <QuadraticEase EasingMode="EaseOut"/>
-                                </DoubleAnimation.EasingFunction>
-                            </DoubleAnimation>
-                            <DoubleAnimation
-                                Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)"
-                                To="-9" Duration="0:0:0.16">
-                                <DoubleAnimation.EasingFunction>
-                                    <QuadraticEase EasingMode="EaseOut"/>
-                                </DoubleAnimation.EasingFunction>
-                            </DoubleAnimation>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </EventTrigger>
-                <EventTrigger RoutedEvent="Button.MouseLeave">
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <DoubleAnimation
-                                Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
-                                To="1.0" Duration="0:0:0.18">
-                                <DoubleAnimation.EasingFunction>
-                                    <QuadraticEase EasingMode="EaseOut"/>
-                                </DoubleAnimation.EasingFunction>
-                            </DoubleAnimation>
-                            <DoubleAnimation
-                                Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
-                                To="1.0" Duration="0:0:0.18">
-                                <DoubleAnimation.EasingFunction>
-                                    <QuadraticEase EasingMode="EaseOut"/>
-                                </DoubleAnimation.EasingFunction>
-                            </DoubleAnimation>
-                            <DoubleAnimation
-                                Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)"
-                                To="0" Duration="0:0:0.18">
-                                <DoubleAnimation.EasingFunction>
-                                    <QuadraticEase EasingMode="EaseOut"/>
-                                </DoubleAnimation.EasingFunction>
-                            </DoubleAnimation>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </EventTrigger>
-            </Style.Triggers>
-        </Style>
     </Window.Resources>
 
     <Grid>
@@ -334,20 +236,6 @@
                                 </StackPanel>
                             </Button>
 
-                            <!-- تبديل الوضع الداكن/الفاتح -->
-                            <Button Style="{StaticResource BottomNavItem}"
-                                    Command="{Binding ToggleThemeCommand}"
-                                    ToolTip="{DynamicResource MenuToggleTheme}">
-                                <StackPanel HorizontalAlignment="Center">
-                                    <materialDesign:PackIcon Kind="Brightness6" Width="22" Height="22"
-                                                             HorizontalAlignment="Center"/>
-                                    <TextBlock Text="{DynamicResource MenuToggleTheme}"
-                                               HorizontalAlignment="Center" TextAlignment="Center"
-                                               TextWrapping="Wrap" LineHeight="13" FontSize="11"
-                                               Margin="0,2,0,0"
-                                               Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
-                                </StackPanel>
-                            </Button>
 
                             <!-- حول المنظومة -->
                             <Button Style="{StaticResource BottomNavItem}"
