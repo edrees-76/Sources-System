@@ -13,6 +13,27 @@ using Sources.Services;
 
 namespace Sources.ViewModels;
 
+/// <summary>
+/// صف عرض مخصص لجدول استعارة المصادر يضمن ثبات الرقم التسلسلي # أثناء التمرير والفلترة
+/// </summary>
+public class BorrowRequestRow
+{
+    public int RowNumber { get; set; }
+    public BorrowRequest Request { get; set; } = null!;
+    public Guid Id => Request.Id;
+    public Source? Source => Request.Source;
+    public string BorrowerName => Request.BorrowerName;
+    public string DisplayBorrowerName => Request.DisplayBorrowerName;
+    public DateTime RequestDate => Request.RequestDate;
+    public DateTime ExpectedReturnDate => Request.ExpectedReturnDate;
+    public DateTime? ActualReturnDate => Request.ActualReturnDate;
+    public string Purpose => Request.Purpose;
+    public string Status => Request.Status;
+    public string ArabicStatus => Request.ArabicStatus;
+    public string? Notes => Request.Notes;
+    public string? AddedBy => Request.AddedBy;
+}
+
 public sealed partial class BorrowViewModel : ObservableObject, IEditableViewModel
 {
     private readonly IBorrowService _borrowService;
@@ -23,7 +44,7 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
 
     // ─── مجموعات البيانات ───
     [ObservableProperty]
-    private ObservableCollection<BorrowRequest> _requests = new();
+    private ObservableCollection<BorrowRequestRow> _requests = new();
 
     [ObservableProperty]
     private ObservableCollection<Source> _availableSources = new();
@@ -124,8 +145,16 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
 
             void updateUi()
             {
-                Requests.Clear();
-                foreach (var r in all) Requests.Add(r);
+                var list = new ObservableCollection<BorrowRequestRow>();
+                for (int i = 0; i < all.Count; i++)
+                {
+                    list.Add(new BorrowRequestRow
+                    {
+                        RowNumber = i + 1,
+                        Request = all[i]
+                    });
+                }
+                Requests = list;
                 UpdateStatistics(all);
             }
 
@@ -164,8 +193,14 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
     private void OpenCreateDialog() => AddNew();
 
     [RelayCommand]
-    private void Edit(BorrowRequest? request)
+    private void Edit(object? param = null)
     {
+        BorrowRequest? request = param switch
+        {
+            BorrowRequestRow r => r.Request,
+            BorrowRequest br => br,
+            _ => SelectedRequest
+        };
         if (request == null) return;
         SelectedRequest = request;
         IsNew = false;
@@ -387,7 +422,7 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
         {
             try
             {
-                var viewableRequests = Requests.ToList();
+                var viewableRequests = Requests.Select(r => r.Request).ToList();
                 await _reportingService.GenerateBorrowHistoryPdfAsync(viewableRequests, saveFileDialog.FileName);
                 FileHelper.OpenFile(saveFileDialog.FileName);
                 DialogHelper.ShowInfo("تم تصدير التقرير كملف PDF بنجاح.");
@@ -413,7 +448,7 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
         {
             try
             {
-                var viewableRequests = Requests.ToList();
+                var viewableRequests = Requests.Select(r => r.Request).ToList();
                 await _reportingService.GenerateBorrowHistoryExcelAsync(viewableRequests, saveFileDialog.FileName);
                 FileHelper.OpenFile(saveFileDialog.FileName);
                 DialogHelper.ShowInfo("تم تصدير البيانات إلى ملف Excel بنجاح.");
@@ -453,10 +488,15 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
                 filtered = filtered.Where(r => r.Status == enStatus);
         }
 
+        var list = filtered.ToList();
         Requests.Clear();
-        foreach (var item in filtered.ToList())
+        for (int i = 0; i < list.Count; i++)
         {
-            Requests.Add(item);
+            Requests.Add(new BorrowRequestRow
+            {
+                RowNumber = i + 1,
+                Request = list[i]
+            });
         }
     }
 }

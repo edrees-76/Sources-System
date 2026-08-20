@@ -4,10 +4,72 @@ using Sources.Models;
 using Sources.Services;
 using Sources.Helpers;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Sources.ViewModels;
+
+/// <summary>
+/// صفوف العرض المخصصة لجداول مركز التقارير لضمان ثبات الترقيم التسلسلي # لكل تقرير
+/// </summary>
+public class ReportInventoryRow
+{
+    public int RowNumber { get; set; }
+    public Source Source { get; set; } = null!;
+    public string SourceCode => Source.SourceCode;
+    public string DisplayIsotopes => Source.DisplayIsotopes;
+    public string InitialActivityWithUnit => Source.InitialActivityWithUnit;
+    public string CurrentActivityWithUnit => Source.CurrentActivityWithUnit;
+    public Location? Location => Source.Location;
+    public string Status => Source.Status;
+}
+
+public class ReportBorrowingRow
+{
+    public int RowNumber { get; set; }
+    public BorrowRequest Request { get; set; } = null!;
+    public Source? Source => Request.Source;
+    public string DisplayBorrowerName => Request.DisplayBorrowerName;
+    public DateTime RequestDate => Request.RequestDate;
+    public DateTime ExpectedReturnDate => Request.ExpectedReturnDate;
+    public string ArabicStatus => Request.ArabicStatus;
+}
+
+public class ReportActivityRow
+{
+    public int RowNumber { get; set; }
+    public Source Source { get; set; } = null!;
+    public string SourceCode => Source.SourceCode;
+    public string DisplayIsotopes => Source.DisplayIsotopes;
+    public string InitialActivityWithUnit => Source.InitialActivityWithUnit;
+    public string CurrentActivityWithUnit => Source.CurrentActivityWithUnit;
+    public DateTime CalibrationDate => Source.CalibrationDate;
+}
+
+public class ReportLowActivityRow
+{
+    public int RowNumber { get; set; }
+    public Source Source { get; set; } = null!;
+    public string SourceCode => Source.SourceCode;
+    public string DisplayIsotopes => Source.DisplayIsotopes;
+    public string CurrentActivityWithUnit => Source.CurrentActivityWithUnit;
+    public Location? Location => Source.Location;
+}
+
+public class ReportLowActivityAlertRow
+{
+    public int RowNumber { get; set; }
+    public Source Source { get; set; } = null!;
+    public string SourceCode => Source.SourceCode;
+    public string? AlertWorstIsotope => Source.AlertWorstIsotope;
+    public string? AlertSeverity => Source.AlertSeverity;
+    public string AlertSeverityDisplay => Source.AlertSeverityDisplay;
+    public DateTime CalibrationDate => Source.CalibrationDate;
+    public string ArabicStatus => Source.ArabicStatus;
+    public string CurrentActivityWithUnit => Source.CurrentActivityWithUnit;
+}
 
 public partial class ReportsViewModel : ObservableObject
 {
@@ -17,12 +79,12 @@ public partial class ReportsViewModel : ObservableObject
     private readonly ISystemSettingsService _settingsService;
 
     [ObservableProperty] private string _selectedReport = "InventoryReport";
-    [ObservableProperty] private ObservableCollection<Source> _inventoryData = new();
-    [ObservableProperty] private ObservableCollection<BorrowRequest> _borrowingData = new();
-    [ObservableProperty] private ObservableCollection<Source> _activityData = new();
-    [ObservableProperty] private ObservableCollection<Source> _lowActivityData = new();
+    [ObservableProperty] private ObservableCollection<ReportInventoryRow> _inventoryData = new();
+    [ObservableProperty] private ObservableCollection<ReportBorrowingRow> _borrowingData = new();
+    [ObservableProperty] private ObservableCollection<ReportActivityRow> _activityData = new();
+    [ObservableProperty] private ObservableCollection<ReportLowActivityRow> _lowActivityData = new();
     [ObservableProperty] private double _lowActivityThreshold = 10;
-    [ObservableProperty] private ObservableCollection<Source> _lowActivityAlertData = new();
+    [ObservableProperty] private ObservableCollection<ReportLowActivityAlertRow> _lowActivityAlertData = new();
 
     public ReportsViewModel(
         ISourceService sourceService, 
@@ -45,32 +107,46 @@ public partial class ReportsViewModel : ObservableObject
     public void LoadReport()
     {
         _sourceService.UpdateAllCurrentActivities();
-        var allSources = _sourceService.GetAllSources();
+        var allSources = _sourceService.GetAllSources() ?? new List<Source>();
         
         switch (SelectedReport)
         {
             case "InventoryReport":
-                InventoryData = new ObservableCollection<Source>(allSources);
+                InventoryData = new ObservableCollection<ReportInventoryRow>(
+                    allSources.Select((s, index) => new ReportInventoryRow { RowNumber = index + 1, Source = s }));
                 break;
             case "BorrowingReport":
-                BorrowingData = new ObservableCollection<BorrowRequest>(_borrowService.GetAll());
+                var borrows = _borrowService.GetAll() ?? new List<BorrowRequest>();
+                BorrowingData = new ObservableCollection<ReportBorrowingRow>(
+                    borrows.Select((b, index) => new ReportBorrowingRow { RowNumber = index + 1, Request = b }));
                 break;
             case "ActivityReport":
-                ActivityData = new ObservableCollection<Source>(allSources.Where(s => s.Status == "InUse" || s.Status == "Storage"));
+                var activeSources = allSources.Where(s => s.Status == "InUse" || s.Status == "Storage").ToList();
+                ActivityData = new ObservableCollection<ReportActivityRow>(
+                    activeSources.Select((s, index) => new ReportActivityRow { RowNumber = index + 1, Source = s }));
                 break;
             case "LowActivityReport":
-                LowActivityData = new ObservableCollection<Source>(_sourceService.GetLowActivitySources(LowActivityThreshold));
+                var lowSources = _sourceService.GetLowActivitySources(LowActivityThreshold) ?? new List<Source>();
+                LowActivityData = new ObservableCollection<ReportLowActivityRow>(
+                    lowSources.Select((s, index) => new ReportLowActivityRow { RowNumber = index + 1, Source = s }));
                 break;
             case "LowActivityAlertReport":
                 // تصفية وتصنيف المصادر التي تجاوزت عتبات نصف العمر (T½)
-                LowActivityAlertData = new ObservableCollection<Source>(GetLowActivityAlertSources(allSources));
+                var alertSources = GetLowActivityAlertSources(allSources);
+                LowActivityAlertData = new ObservableCollection<ReportLowActivityAlertRow>(
+                    alertSources.Select((s, index) => new ReportLowActivityAlertRow { RowNumber = index + 1, Source = s }));
                 break;
             case "GeneralReport":
-                InventoryData = new ObservableCollection<Source>(allSources);
-                BorrowingData = new ObservableCollection<BorrowRequest>(_borrowService.GetAll());
-                ActivityData = new ObservableCollection<Source>(allSources.Where(s => s.Status == "InUse" || s.Status == "Storage"));
-                LowActivityData = new ObservableCollection<Source>(_sourceService.GetLowActivitySources(LowActivityThreshold));
-                LowActivityAlertData = new ObservableCollection<Source>(GetLowActivityAlertSources(allSources));
+                InventoryData = new ObservableCollection<ReportInventoryRow>(
+                    allSources.Select((s, index) => new ReportInventoryRow { RowNumber = index + 1, Source = s }));
+                BorrowingData = new ObservableCollection<ReportBorrowingRow>(
+                    (_borrowService.GetAll() ?? new List<BorrowRequest>()).Select((b, index) => new ReportBorrowingRow { RowNumber = index + 1, Request = b }));
+                ActivityData = new ObservableCollection<ReportActivityRow>(
+                    allSources.Where(s => s.Status == "InUse" || s.Status == "Storage").Select((s, index) => new ReportActivityRow { RowNumber = index + 1, Source = s }));
+                LowActivityData = new ObservableCollection<ReportLowActivityRow>(
+                    (_sourceService.GetLowActivitySources(LowActivityThreshold) ?? new List<Source>()).Select((s, index) => new ReportLowActivityRow { RowNumber = index + 1, Source = s }));
+                LowActivityAlertData = new ObservableCollection<ReportLowActivityAlertRow>(
+                    GetLowActivityAlertSources(allSources).Select((s, index) => new ReportLowActivityAlertRow { RowNumber = index + 1, Source = s }));
                 break;
         }
     }
@@ -110,18 +186,23 @@ public partial class ReportsViewModel : ObservableObject
             {
                 if (SelectedReport == "LowActivityAlertReport")
                 {
-                    await _reportingService.GenerateLowActivityAlertReportPdfAsync(LowActivityAlertData, sfd.FileName);
+                    await _reportingService.GenerateLowActivityAlertReportPdfAsync(LowActivityAlertData.Select(r => r.Source), sfd.FileName);
                 }
                 else if (SelectedReport == "GeneralReport")
                 {
-                    await _reportingService.GenerateGeneralReportPdfAsync(InventoryData, BorrowingData, LowActivityData, LowActivityAlertData, sfd.FileName);
+                    await _reportingService.GenerateGeneralReportPdfAsync(
+                        InventoryData.Select(r => r.Source),
+                        BorrowingData.Select(r => r.Request),
+                        LowActivityData.Select(r => r.Source),
+                        LowActivityAlertData.Select(r => r.Source),
+                        sfd.FileName);
                 }
                 else if (SelectedReport == "InventoryReport" || SelectedReport == "ActivityReport" || SelectedReport == "LowActivityReport")
                 {
-                    var data = SelectedReport switch {
-                        "InventoryReport" => InventoryData,
-                        "ActivityReport" => ActivityData,
-                        _ => LowActivityData
+                    IEnumerable<Source> data = SelectedReport switch {
+                        "InventoryReport" => InventoryData.Select(r => r.Source),
+                        "ActivityReport" => ActivityData.Select(r => r.Source),
+                        _ => LowActivityData.Select(r => r.Source)
                     };
 
                     string title = SelectedReport switch {
@@ -135,7 +216,7 @@ public partial class ReportsViewModel : ObservableObject
                 }
                 else if (SelectedReport == "BorrowingReport")
                 {
-                    await _reportingService.GenerateBorrowHistoryPdfAsync(BorrowingData, sfd.FileName);
+                    await _reportingService.GenerateBorrowHistoryPdfAsync(BorrowingData.Select(r => r.Request), sfd.FileName);
                 }
 
                 FileHelper.OpenFile(sfd.FileName);
@@ -157,18 +238,23 @@ public partial class ReportsViewModel : ObservableObject
             {
                 if (SelectedReport == "LowActivityAlertReport")
                 {
-                    await _reportingService.GenerateLowActivityAlertReportExcelAsync(LowActivityAlertData, sfd.FileName);
+                    await _reportingService.GenerateLowActivityAlertReportExcelAsync(LowActivityAlertData.Select(r => r.Source), sfd.FileName);
                 }
                 else if (SelectedReport == "GeneralReport")
                 {
-                    await _reportingService.GenerateGeneralReportExcelAsync(InventoryData, BorrowingData, LowActivityData, LowActivityAlertData, sfd.FileName);
+                    await _reportingService.GenerateGeneralReportExcelAsync(
+                        InventoryData.Select(r => r.Source),
+                        BorrowingData.Select(r => r.Request),
+                        LowActivityData.Select(r => r.Source),
+                        LowActivityAlertData.Select(r => r.Source),
+                        sfd.FileName);
                 }
                 else if (SelectedReport == "InventoryReport" || SelectedReport == "ActivityReport" || SelectedReport == "LowActivityReport")
                 {
-                    var data = SelectedReport switch {
-                        "InventoryReport" => InventoryData,
-                        "ActivityReport" => ActivityData,
-                        _ => LowActivityData
+                    IEnumerable<Source> data = SelectedReport switch {
+                        "InventoryReport" => InventoryData.Select(r => r.Source),
+                        "ActivityReport" => ActivityData.Select(r => r.Source),
+                        _ => LowActivityData.Select(r => r.Source)
                     };
 
                     string title = SelectedReport switch {
@@ -182,7 +268,7 @@ public partial class ReportsViewModel : ObservableObject
                 }
                 else if (SelectedReport == "BorrowingReport")
                 {
-                    await _reportingService.GenerateBorrowHistoryExcelAsync(BorrowingData, sfd.FileName);
+                    await _reportingService.GenerateBorrowHistoryExcelAsync(BorrowingData.Select(r => r.Request), sfd.FileName);
                 }
 
                 FileHelper.OpenFile(sfd.FileName);

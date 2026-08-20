@@ -264,9 +264,28 @@ public class IndexConverter : IValueConverter
     {
         if (value is DataGridRow row)
         {
-            return (row.GetIndex() + 1).ToString();
+            var dataGrid = ItemsControl.ItemsControlFromItemContainer(row) as DataGrid;
+            if (dataGrid == null)
+            {
+                DependencyObject? parent = VisualTreeHelper.GetParent(row);
+                while (parent != null && parent is not DataGrid)
+                {
+                    parent = VisualTreeHelper.GetParent(parent);
+                }
+                dataGrid = parent as DataGrid;
+            }
+
+            if (dataGrid != null && row.Item != null && row.Item != CollectionView.NewItemPlaceholder)
+            {
+                int index = dataGrid.Items.IndexOf(row.Item);
+                if (index >= 0)
+                    return (index + 1).ToString();
+            }
+
+            int fallback = row.GetIndex();
+            return fallback >= 0 ? (fallback + 1).ToString() : "1";
         }
-        return "0";
+        return "1";
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

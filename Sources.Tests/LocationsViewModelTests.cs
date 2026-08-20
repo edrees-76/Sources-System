@@ -80,4 +80,55 @@ public class LocationsViewModelTests
         Assert.Empty(_vm.LinkedSourcesForDetails);
         Assert.False(_vm.HasLinkedSources);
     }
+
+    [Fact]
+    public void LoadData_AssignsSequentialRowNumbersStartingFromOne()
+    {
+        // Arrange
+        var locations = new List<Location>
+        {
+            new Location { Id = Guid.NewGuid(), LocationName = "موقع 1" },
+            new Location { Id = Guid.NewGuid(), LocationName = "موقع 2" },
+            new Location { Id = Guid.NewGuid(), LocationName = "موقع 3" }
+        };
+        _mockService.Setup(s => s.GetAll()).Returns(locations);
+
+        // Act
+        var vm = new LocationsViewModel(_mockService.Object);
+
+        // Assert
+        Assert.Equal(3, vm.Locations.Count);
+        Assert.Equal(1, vm.Locations[0].RowNumber);
+        Assert.Equal(2, vm.Locations[1].RowNumber);
+        Assert.Equal(3, vm.Locations[2].RowNumber);
+        Assert.Equal("موقع 1", vm.Locations[0].LocationName);
+        Assert.Equal("موقع 2", vm.Locations[1].LocationName);
+        Assert.Equal("موقع 3", vm.Locations[2].LocationName);
+    }
+
+    [Fact]
+    public void ViewLocationDetails_AssignsSequentialRowNumbersToLinkedSources()
+    {
+        // Arrange
+        var location = new Location { Id = Guid.NewGuid(), LocationName = "مختبر 1" };
+        var sources = new List<Source>
+        {
+            new Source { Id = Guid.NewGuid(), SourceCode = "SRC-01" },
+            new Source { Id = Guid.NewGuid(), SourceCode = "SRC-02" },
+            new Source { Id = Guid.NewGuid(), SourceCode = "SRC-03" }
+        };
+        _mockService.Setup(s => s.GetSourcesLinkedToLocation(location.Id)).Returns(sources);
+
+        // Act
+        _vm.ViewLocationDetailsCommand.Execute(location);
+
+        // Assert
+        Assert.Equal(3, _vm.LinkedSourcesForDetails.Count);
+        Assert.Equal(1, _vm.LinkedSourcesForDetails[0].RowNumber);
+        Assert.Equal(2, _vm.LinkedSourcesForDetails[1].RowNumber);
+        Assert.Equal(3, _vm.LinkedSourcesForDetails[2].RowNumber);
+        Assert.Equal("SRC-01", _vm.LinkedSourcesForDetails[0].SourceCode);
+        Assert.Equal("SRC-02", _vm.LinkedSourcesForDetails[1].SourceCode);
+        Assert.Equal("SRC-03", _vm.LinkedSourcesForDetails[2].SourceCode);
+    }
 }

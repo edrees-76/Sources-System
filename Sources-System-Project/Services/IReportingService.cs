@@ -14,6 +14,8 @@ namespace Sources.Services
         Task GenerateLowActivityAlertReportExcelAsync(IEnumerable<Source> sources, string filePath);
         Task GenerateGeneralReportPdfAsync(IEnumerable<Source> inventory, IEnumerable<BorrowRequest> borrowing, IEnumerable<Source> lowActivity, IEnumerable<Source> lowActivityAlerts, string filePath);
         Task GenerateGeneralReportExcelAsync(IEnumerable<Source> inventory, IEnumerable<BorrowRequest> borrowing, IEnumerable<Source> lowActivity, IEnumerable<Source> lowActivityAlerts, string filePath);
+        Task GenerateLocationsReportPdfAsync(IEnumerable<Location> locations, string filePath);
+        Task GenerateLocationsReportExcelAsync(IEnumerable<Location> locations, string filePath);
         Task GenerateUsersReportPdfAsync(IEnumerable<User> users, string filePath);
         Task GenerateUsersReportExcelAsync(IEnumerable<User> users, string filePath);
         Task GenerateAuditLogsPdfAsync(IEnumerable<AuditLog> logs, string filePath);

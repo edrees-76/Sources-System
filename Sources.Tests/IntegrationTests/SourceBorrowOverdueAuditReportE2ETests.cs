@@ -206,21 +206,23 @@ public class SourceBorrowOverdueAuditReportE2ETests : IClassFixture<SqliteInMemo
             Assert.NotNull(worksheet);
 
             // فحص صف العناوين (الصف الأول)
-            Assert.Equal("رقم المصدر", worksheet.Cell(1, 1).GetString());
-            Assert.Equal("المستعير", worksheet.Cell(1, 2).GetString());
-            Assert.Equal("الغرض", worksheet.Cell(1, 3).GetString());
-            Assert.Equal("تاريخ الإرجاع", worksheet.Cell(1, 4).GetString());
-            Assert.Equal("الحالة", worksheet.Cell(1, 5).GetString());
-            Assert.Equal("المسؤول", worksheet.Cell(1, 6).GetString());
-            Assert.Equal("تاريخ الطلب", worksheet.Cell(1, 7).GetString());
+            Assert.Equal("#", worksheet.Cell(1, 1).GetString());
+            Assert.Equal("رقم المصدر", worksheet.Cell(1, 2).GetString());
+            Assert.Equal("المستعير", worksheet.Cell(1, 3).GetString());
+            Assert.Equal("الغرض", worksheet.Cell(1, 4).GetString());
+            Assert.Equal("تاريخ الإرجاع", worksheet.Cell(1, 5).GetString());
+            Assert.Equal("الحالة", worksheet.Cell(1, 6).GetString());
+            Assert.Equal("المسؤول", worksheet.Cell(1, 7).GetString());
+            Assert.Equal("تاريخ الطلب", worksheet.Cell(1, 8).GetString());
 
             // فحص صف البيانات (الصف الثاني - يعكس الاستعارة المتأخرة)
-            Assert.Equal("SRC-E2E-100", worksheet.Cell(2, 1).GetString());
-            Assert.Equal("د. طارق الأحمدي", worksheet.Cell(2, 2).GetString());
-            Assert.Equal("إجراء تجارب المعايرة الدورية", worksheet.Cell(2, 3).GetString());
-            Assert.Equal(borrowRequest.ExpectedReturnDate.ToString("yyyy/MM/dd"), worksheet.Cell(2, 4).GetString());
-            Assert.Equal("متأخر", worksheet.Cell(2, 5).GetString()); // التحقق من ترجمة حالة Overdue إلى متأخر
-            Assert.Equal(_testUser.FullName, worksheet.Cell(2, 6).GetString());
+            Assert.Equal(1, worksheet.Cell(2, 1).GetValue<int>());
+            Assert.Equal("SRC-E2E-100", worksheet.Cell(2, 2).GetString());
+            Assert.Equal("د. طارق الأحمدي", worksheet.Cell(2, 3).GetString());
+            Assert.Equal("إجراء تجارب المعايرة الدورية", worksheet.Cell(2, 4).GetString());
+            Assert.Equal(borrowRequest.ExpectedReturnDate.ToString("yyyy/MM/dd"), worksheet.Cell(2, 5).GetString());
+            Assert.Equal("متأخر", worksheet.Cell(2, 6).GetString()); // التحقق من ترجمة حالة Overdue إلى متأخر
+            Assert.Equal(_testUser.FullName, worksheet.Cell(2, 7).GetString());
         }
         finally
         {

@@ -13,6 +13,7 @@ public class SqliteInMemoryFixture : IDisposable
 
     public SqliteInMemoryFixture()
     {
+        Sources.Helpers.DialogHelper.IsTestMode = true;
         // استخدام اتصال In-Memory مفتوح طوال فترة عمل الـ Fixture
         _connection = new SqliteConnection("Filename=:memory:");
         _connection.Open();
@@ -38,14 +39,35 @@ public class SqliteInMemoryFixture : IDisposable
 
     public AppDbContext CreateContext() => new AppDbContext(Options);
 
+    private static readonly object _dbLock = new();
+
     /// <summary>
     /// إعادة تهيئة قاعدة البيانات بالكامل للحصول على حالة نظيفة لكل اختبار
     /// </summary>
     public void ResetDatabase()
     {
-        using var context = CreateContext();
-        context.Database.EnsureDeleted();
-        context.Database.EnsureCreated();
+        lock (_dbLock)
+        {
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = @"
+                PRAGMA foreign_keys = OFF;
+                DELETE FROM BorrowRequests;
+                DELETE FROM SourceLocationHistories;
+                DELETE FROM SourceIsotopes;
+                DELETE FROM GammaLines;
+                DELETE FROM Sources;
+                DELETE FROM ActivityUnits;
+                DELETE FROM Locations;
+                DELETE FROM Radioisotopes;
+                DELETE FROM AuditLogs;
+                DELETE FROM AlertNotifications;
+                DELETE FROM AppSettings;
+                DELETE FROM Users;
+                DELETE FROM Roles;
+                PRAGMA foreign_keys = ON;
+            ";
+            cmd.ExecuteNonQuery();
+        }
     }
 
     public void Dispose()

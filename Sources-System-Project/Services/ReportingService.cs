@@ -32,6 +32,147 @@ namespace Sources.Services
             return "لا توجد بيانات حالياً";
         }
 
+        public async Task GenerateLocationsReportExcelAsync(IEnumerable<Location> locations, string filePath)
+        {
+            await Task.Run(() =>
+            {
+                using var workbook = new XLWorkbook();
+                var worksheet = workbook.Worksheets.Add("المواقع والمخازن");
+                worksheet.RightToLeft = true;
+
+                string[] headers = { "#", "اسم الموقع", "النوع", "المبنى", "الغرفة", "المسؤول", "عدد المصادر", "أُضيف بواسطة" };
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    worksheet.Cell(1, i + 1).Value = headers[i];
+                    worksheet.Cell(1, i + 1).Style.Font.Bold = true;
+                    worksheet.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+                }
+
+                int row = 2;
+                int index = 1;
+                foreach (var loc in locations ?? Enumerable.Empty<Location>())
+                {
+                    worksheet.Cell(row, 1).Value = index++;
+                    worksheet.Cell(row, 2).Value = loc.LocationName;
+                    worksheet.Cell(row, 3).Value = loc.LocationType switch
+                    {
+                        "Lab" => "مختبر",
+                        "Storage" => "مستودع / مخزن",
+                        "Hospital" => "مستشفى",
+                        "Clinic" => "عيادة",
+                        _ => loc.LocationType ?? "-"
+                    };
+                    worksheet.Cell(row, 4).Value = loc.Building ?? "-";
+                    worksheet.Cell(row, 5).Value = loc.Room ?? "-";
+                    worksheet.Cell(row, 6).Value = loc.ResponsiblePerson ?? "-";
+                    worksheet.Cell(row, 7).Value = loc.SourceCount;
+                    worksheet.Cell(row, 8).Value = loc.AddedBy ?? "-";
+                    row++;
+                }
+
+                worksheet.Columns().AdjustToContents();
+                workbook.SaveAs(filePath);
+            });
+        }
+
+        public async Task GenerateLocationsReportPdfAsync(IEnumerable<Location> locations, string filePath)
+        {
+            await Task.Run(() =>
+            {
+                var list = locations?.ToList() ?? new List<Location>();
+                string noDataText = GetNoDataText();
+
+                Document.Create(container =>
+                {
+                    container.Page(page =>
+                    {
+                        page.Size(PageSizes.A4);
+                        page.Margin(2, Unit.Centimetre);
+                        page.PageColor(Colors.White);
+                        page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
+                        page.ContentFromRightToLeft();
+
+                        page.Header().Row(row =>
+                        {
+                            row.RelativeItem().Column(column =>
+                            {
+                                column.Item().Text("منظومة مصادر — تقرير المواقع والمخازن").FontSize(20).SemiBold().FontColor(Colors.Blue.Darken2);
+                                column.Item().Text($"تاريخ التقرير: {DateTime.Now:yyyy/MM/dd}").FontSize(12).FontColor(Colors.Grey.Darken1);
+                                column.Item().PaddingVertical(10).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
+                            });
+                        });
+
+                        page.Content().PaddingVertical(0.5f, Unit.Centimetre).Column(column =>
+                        {
+                            column.Item().Table(table =>
+                            {
+                                table.ColumnsDefinition(columns =>
+                                {
+                                    columns.RelativeColumn(1); // #
+                                    columns.RelativeColumn(3); // اسم الموقع
+                                    columns.RelativeColumn(2); // النوع
+                                    columns.RelativeColumn(2); // المبنى
+                                    columns.RelativeColumn(2); // الغرفة
+                                    columns.RelativeColumn(2.5f); // المسؤول
+                                    columns.RelativeColumn(1.8f); // عدد المصادر
+                                    columns.RelativeColumn(2); // أُضيف بواسطة
+                                });
+
+                                table.Header(header =>
+                                {
+                                    header.Cell().Element(HeaderStyle).Text("#");
+                                    header.Cell().Element(HeaderStyle).Text("اسم الموقع");
+                                    header.Cell().Element(HeaderStyle).Text("النوع");
+                                    header.Cell().Element(HeaderStyle).Text("المبنى");
+                                    header.Cell().Element(HeaderStyle).Text("الغرفة");
+                                    header.Cell().Element(HeaderStyle).Text("المسؤول");
+                                    header.Cell().Element(HeaderStyle).Text("عدد المصادر");
+                                    header.Cell().Element(HeaderStyle).Text("أُضيف بواسطة");
+
+                                    static IContainer HeaderStyle(IContainer c) => c.Background(Colors.Blue.Medium).PaddingVertical(6).AlignCenter().DefaultTextStyle(x => x.SemiBold().FontColor(Colors.White));
+                                });
+
+                                if (!list.Any())
+                                {
+                                    table.Cell().ColumnSpan(8).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
+                                }
+                                else
+                                {
+                                    int i = 1;
+                                    foreach (var loc in list)
+                                    {
+                                        var bg = (i - 1) % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
+                                        string typeDisplay = loc.LocationType switch
+                                        {
+                                            "Lab" => "مختبر",
+                                            "Storage" => "مستودع / مخزن",
+                                            "Hospital" => "مستشفى",
+                                            "Clinic" => "عيادة",
+                                            _ => loc.LocationType ?? "-"
+                                        };
+
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(i.ToString());
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(loc.LocationName);
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(typeDisplay);
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(loc.Building ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(loc.Room ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(loc.ResponsiblePerson ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(loc.SourceCount.ToString());
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(loc.AddedBy ?? "-");
+                                        i++;
+                                    }
+                                }
+
+                                static IContainer CellStyle(IContainer c, string bg) => c.Background(bg).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(5).AlignCenter();
+                            });
+                        });
+
+                        page.Footer().Element(ComposeFooter);
+                    });
+                }).GeneratePdf(filePath);
+            });
+        }
+
         public async Task GenerateInventoryReportExcelAsync(IEnumerable<Source> sources, string filePath, string reportTitle)
         {
             await Task.Run(() =>
@@ -42,7 +183,7 @@ namespace Sources.Services
                 worksheet.RightToLeft = true;
 
                 // Headers
-                string[] headers = { "رقم المصدر", "النظير", "النشاط الحالي", "الموقع", "الحالة", "أُضيف بواسطة" };
+                string[] headers = { "#", "رقم المصدر", "النظير", "النشاط الحالي", "الموقع", "الحالة", "أُضيف بواسطة" };
                 for (int i = 0; i < headers.Length; i++)
                 {
                     worksheet.Cell(1, i + 1).Value = headers[i];
@@ -51,14 +192,16 @@ namespace Sources.Services
                 }
 
                 int row = 2;
+                int index = 1;
                 foreach (var source in sources ?? Enumerable.Empty<Source>())
                 {
-                    worksheet.Cell(row, 1).Value = source.SourceCode;
-                    worksheet.Cell(row, 2).Value = source.DisplayIsotopes;
-                    worksheet.Cell(row, 3).Value = source.CurrentActivityWithUnit;
-                    worksheet.Cell(row, 4).Value = source.Location?.LocationName ?? "غير محدد";
-                    worksheet.Cell(row, 5).Value = source.ArabicStatus;
-                    worksheet.Cell(row, 6).Value = source.AddedBy ?? "غير معروف";
+                    worksheet.Cell(row, 1).Value = index++;
+                    worksheet.Cell(row, 2).Value = source.SourceCode;
+                    worksheet.Cell(row, 3).Value = source.DisplayIsotopes;
+                    worksheet.Cell(row, 4).Value = source.CurrentActivityWithUnit;
+                    worksheet.Cell(row, 5).Value = source.Location?.LocationName ?? "غير محدد";
+                    worksheet.Cell(row, 6).Value = source.ArabicStatus;
+                    worksheet.Cell(row, 7).Value = source.AddedBy ?? "غير معروف";
                     row++;
                 }
 
@@ -118,8 +261,9 @@ namespace Sources.Services
                 {
                     table.ColumnsDefinition(columns =>
                     {
-                        columns.RelativeColumn(2); // رقم المصدر
-                        columns.RelativeColumn(3); // النظير
+                        columns.RelativeColumn(1); // #
+                        columns.RelativeColumn(2.5f); // رقم المصدر
+                        columns.RelativeColumn(2.5f); // النظير
                         columns.RelativeColumn(3); // النشاط الحالي
                         columns.RelativeColumn(3); // الموقع
                         columns.RelativeColumn(2); // الحالة
@@ -128,6 +272,7 @@ namespace Sources.Services
 
                     table.Header(header =>
                     {
+                        header.Cell().Element(HeaderStyle).Text("#");
                         header.Cell().Element(HeaderStyle).Text("رقم المصدر");
                         header.Cell().Element(HeaderStyle).Text("النظير");
                         header.Cell().Element(HeaderStyle).Text("النشاط الحالي");
@@ -143,15 +288,16 @@ namespace Sources.Services
 
                     if (!list.Any())
                     {
-                        table.Cell().ColumnSpan(6).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
+                        table.Cell().ColumnSpan(7).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
                     }
                     else
                     {
-                        int i = 0;
+                        int i = 1;
                         foreach (var source in list)
                         {
-                            var backgroundColor = i % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
+                            var backgroundColor = (i - 1) % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
                             
+                            table.Cell().Element(CellStyle).Text(i.ToString());
                             table.Cell().Element(CellStyle).Text(source.SourceCode);
                             table.Cell().Element(CellStyle).Text(source.DisplayIsotopes);
                             table.Cell().Element(CellStyle).Text(source.CurrentActivityWithUnit);
@@ -189,7 +335,7 @@ namespace Sources.Services
                 var worksheet = workbook.Worksheets.Add("سجل الاستعارات");
                 worksheet.RightToLeft = true;
 
-                string[] headers = { "رقم المصدر", "المستعير", "الغرض", "تاريخ الإرجاع", "الحالة", "المسؤول", "تاريخ الطلب" };
+                string[] headers = { "#", "رقم المصدر", "المستعير", "الغرض", "تاريخ الإرجاع", "الحالة", "المسؤول", "تاريخ الطلب" };
                 for (int i = 0; i < headers.Length; i++)
                 {
                     worksheet.Cell(1, i + 1).Value = headers[i];
@@ -198,15 +344,17 @@ namespace Sources.Services
                 }
 
                 int row = 2;
+                int index = 1;
                 foreach (var req in requests ?? Enumerable.Empty<BorrowRequest>())
                 {
-                    worksheet.Cell(row, 1).Value = req.Source?.SourceCode ?? "-";
-                    worksheet.Cell(row, 2).Value = req.DisplayBorrowerName;
-                    worksheet.Cell(row, 3).Value = req.Purpose ?? "-";
-                    worksheet.Cell(row, 4).Value = req.ExpectedReturnDate.ToString("yyyy/MM/dd");
-                    worksheet.Cell(row, 5).Value = req.ArabicStatus;
-                    worksheet.Cell(row, 6).Value = req.AddedBy ?? "-";
-                    worksheet.Cell(row, 7).Value = req.RequestDate.ToString("yyyy/MM/dd HH:mm");
+                    worksheet.Cell(row, 1).Value = index++;
+                    worksheet.Cell(row, 2).Value = req.Source?.SourceCode ?? "-";
+                    worksheet.Cell(row, 3).Value = req.DisplayBorrowerName;
+                    worksheet.Cell(row, 4).Value = req.Purpose ?? "-";
+                    worksheet.Cell(row, 5).Value = req.ExpectedReturnDate.ToString("yyyy/MM/dd");
+                    worksheet.Cell(row, 6).Value = req.ArabicStatus;
+                    worksheet.Cell(row, 7).Value = req.AddedBy ?? "-";
+                    worksheet.Cell(row, 8).Value = req.RequestDate.ToString("yyyy/MM/dd HH:mm");
                     row++;
                 }
 
@@ -247,6 +395,7 @@ namespace Sources.Services
                              {
                                  table.ColumnsDefinition(columns =>
                                  {
+                                     columns.RelativeColumn(1); // #
                                      columns.RelativeColumn(2); // المصدر
                                      columns.RelativeColumn(3); // المستعير
                                      columns.RelativeColumn(3); // الغرض
@@ -258,6 +407,7 @@ namespace Sources.Services
 
                                  table.Header(header =>
                                  {
+                                     header.Cell().Element(HeaderStyle).Text("#");
                                      header.Cell().Element(HeaderStyle).Text("رقم المصدر");
                                      header.Cell().Element(HeaderStyle).Text("المستعير");
                                      header.Cell().Element(HeaderStyle).Text("الغرض");
@@ -274,15 +424,16 @@ namespace Sources.Services
 
                                  if (!list.Any())
                                  {
-                                     table.Cell().ColumnSpan(7).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
+                                     table.Cell().ColumnSpan(8).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
                                  }
                                  else
                                  {
-                                     int i = 0;
+                                     int i = 1;
                                      foreach (var req in list)
                                      {
-                                         var backgroundColor = i % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
+                                         var backgroundColor = (i - 1) % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
                                          
+                                         table.Cell().Element(CellStyle).Text(i.ToString());
                                          table.Cell().Element(CellStyle).Text(req.Source?.SourceCode ?? "-");
                                          table.Cell().Element(CellStyle).Text(req.DisplayBorrowerName);
                                          table.Cell().Element(CellStyle).Text(req.Purpose ?? "-");
@@ -315,7 +466,7 @@ namespace Sources.Services
                 var worksheet = workbook.Worksheets.Add("تنبيهات انخفاض النشاط");
                 worksheet.RightToLeft = true;
 
-                string[] headers = { "رقم المصدر", "النظير", "الخطورة", "تاريخ آخر معايرة", "الحالة", "النشاط الحالي", "المسؤول" };
+                string[] headers = { "#", "رقم المصدر", "النظير", "الخطورة", "تاريخ آخر معايرة", "الحالة", "النشاط الحالي", "المسؤول" };
                 for (int i = 0; i < headers.Length; i++)
                 {
                     worksheet.Cell(1, i + 1).Value = headers[i];
@@ -325,15 +476,17 @@ namespace Sources.Services
                 }
 
                 int row = 2;
+                int index = 1;
                 foreach (var source in sources ?? Enumerable.Empty<Source>())
                 {
-                    worksheet.Cell(row, 1).Value = source.SourceCode;
-                    worksheet.Cell(row, 2).Value = source.AlertWorstIsotope ?? source.DisplayIsotopes;
-                    worksheet.Cell(row, 3).Value = source.AlertSeverityDisplay;
-                    worksheet.Cell(row, 4).Value = source.CalibrationDate.ToString("yyyy/MM/dd");
-                    worksheet.Cell(row, 5).Value = source.ArabicStatus;
-                    worksheet.Cell(row, 6).Value = source.CurrentActivityWithUnit;
-                    worksheet.Cell(row, 7).Value = source.AddedBy ?? "-";
+                    worksheet.Cell(row, 1).Value = index++;
+                    worksheet.Cell(row, 2).Value = source.SourceCode;
+                    worksheet.Cell(row, 3).Value = source.AlertWorstIsotope ?? source.DisplayIsotopes;
+                    worksheet.Cell(row, 4).Value = source.AlertSeverityDisplay;
+                    worksheet.Cell(row, 5).Value = source.CalibrationDate.ToString("yyyy/MM/dd");
+                    worksheet.Cell(row, 6).Value = source.ArabicStatus;
+                    worksheet.Cell(row, 7).Value = source.CurrentActivityWithUnit;
+                    worksheet.Cell(row, 8).Value = source.AddedBy ?? "-";
                     row++;
                 }
 
@@ -371,6 +524,7 @@ namespace Sources.Services
                         {
                             table.ColumnsDefinition(columns =>
                             {
+                                columns.RelativeColumn(1); // #
                                 columns.RelativeColumn(2.5f);
                                 columns.RelativeColumn(2);
                                 columns.RelativeColumn(1.8f);
@@ -382,6 +536,7 @@ namespace Sources.Services
 
                             table.Header(header =>
                             {
+                                header.Cell().Element(BlockStyle).Text("#");
                                 header.Cell().Element(BlockStyle).Text("المصدر");
                                 header.Cell().Element(BlockStyle).Text("النظير");
                                 header.Cell().Element(BlockStyle).Text("الخطورة");
@@ -395,12 +550,14 @@ namespace Sources.Services
 
                             if (!list.Any())
                             {
-                                table.Cell().ColumnSpan(7).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
+                                table.Cell().ColumnSpan(8).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
                             }
                             else
                             {
+                                int i = 1;
                                 foreach (var s in list)
                                 {
+                                    table.Cell().Element(CellStyle).Text(i.ToString());
                                     table.Cell().Element(CellStyle).Text(s.SourceCode);
                                     table.Cell().Element(CellStyle).Text(s.AlertWorstIsotope ?? s.DisplayIsotopes);
                                     table.Cell().Element(CellStyle).Text(s.AlertSeverityDisplay);
@@ -410,6 +567,7 @@ namespace Sources.Services
                                     table.Cell().Element(CellStyle).Text(s.AddedBy ?? "-");
 
                                     static IContainer CellStyle(IContainer container) => container.BorderBottom(1).BorderColor(Colors.Grey.Lighten3).PaddingVertical(4);
+                                    i++;
                                 }
                             }
                         });
@@ -429,7 +587,7 @@ namespace Sources.Services
                 // 1. Inventory Sheet
                 var wsInventory = workbook.Worksheets.Add("جرد المصادر");
                 wsInventory.RightToLeft = true;
-                string[] invHeaders = { "رقم المصدر", "النظير", "النشاط الحالي", "الموقع", "الحالة", "أُضيف بواسطة" };
+                string[] invHeaders = { "#", "رقم المصدر", "النظير", "النشاط الحالي", "الموقع", "الحالة", "أُضيف بواسطة" };
                 for (int i = 0; i < invHeaders.Length; i++)
                 {
                     wsInventory.Cell(1, i + 1).Value = invHeaders[i];
@@ -437,14 +595,16 @@ namespace Sources.Services
                     wsInventory.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
                 }
                 int row = 2;
+                int invIndex = 1;
                 foreach (var s in inventory ?? Enumerable.Empty<Source>())
                 {
-                    wsInventory.Cell(row, 1).Value = s.SourceCode;
-                    wsInventory.Cell(row, 2).Value = s.DisplayIsotopes;
-                    wsInventory.Cell(row, 3).Value = s.CurrentActivityWithUnit;
-                    wsInventory.Cell(row, 4).Value = s.Location?.LocationName ?? "غير محدد";
-                    wsInventory.Cell(row, 5).Value = s.ArabicStatus;
-                    wsInventory.Cell(row, 6).Value = s.AddedBy ?? "غير معروف";
+                    wsInventory.Cell(row, 1).Value = invIndex++;
+                    wsInventory.Cell(row, 2).Value = s.SourceCode;
+                    wsInventory.Cell(row, 3).Value = s.DisplayIsotopes;
+                    wsInventory.Cell(row, 4).Value = s.CurrentActivityWithUnit;
+                    wsInventory.Cell(row, 5).Value = s.Location?.LocationName ?? "غير محدد";
+                    wsInventory.Cell(row, 6).Value = s.ArabicStatus;
+                    wsInventory.Cell(row, 7).Value = s.AddedBy ?? "غير معروف";
                     row++;
                 }
                 wsInventory.Columns().AdjustToContents();
@@ -452,7 +612,7 @@ namespace Sources.Services
                 // 2. Borrowing Sheet
                 var wsBorrowing = workbook.Worksheets.Add("سجل الاستعارات");
                 wsBorrowing.RightToLeft = true;
-                string[] borHeaders = { "رقم المصدر", "المستعير", "الغرض", "تاريخ الإرجاع", "الحالة", "المسؤول", "تاريخ الطلب" };
+                string[] borHeaders = { "#", "رقم المصدر", "المستعير", "الغرض", "تاريخ الإرجاع", "الحالة", "المسؤول", "تاريخ الطلب" };
                 for (int i = 0; i < borHeaders.Length; i++)
                 {
                     wsBorrowing.Cell(1, i + 1).Value = borHeaders[i];
@@ -460,15 +620,17 @@ namespace Sources.Services
                     wsBorrowing.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
                 }
                 row = 2;
+                int borIndex = 1;
                 foreach (var req in borrowing ?? Enumerable.Empty<BorrowRequest>())
                 {
-                    wsBorrowing.Cell(row, 1).Value = req.Source?.SourceCode ?? "-";
-                    wsBorrowing.Cell(row, 2).Value = req.DisplayBorrowerName;
-                    wsBorrowing.Cell(row, 3).Value = req.Purpose ?? "-";
-                    wsBorrowing.Cell(row, 4).Value = req.ExpectedReturnDate.ToString("yyyy/MM/dd");
-                    wsBorrowing.Cell(row, 5).Value = req.ArabicStatus;
-                    wsBorrowing.Cell(row, 6).Value = req.AddedBy ?? "-";
-                    wsBorrowing.Cell(row, 7).Value = req.RequestDate.ToString("yyyy/MM/dd HH:mm");
+                    wsBorrowing.Cell(row, 1).Value = borIndex++;
+                    wsBorrowing.Cell(row, 2).Value = req.Source?.SourceCode ?? "-";
+                    wsBorrowing.Cell(row, 3).Value = req.DisplayBorrowerName;
+                    wsBorrowing.Cell(row, 4).Value = req.Purpose ?? "-";
+                    wsBorrowing.Cell(row, 5).Value = req.ExpectedReturnDate.ToString("yyyy/MM/dd");
+                    wsBorrowing.Cell(row, 6).Value = req.ArabicStatus;
+                    wsBorrowing.Cell(row, 7).Value = req.AddedBy ?? "-";
+                    wsBorrowing.Cell(row, 8).Value = req.RequestDate.ToString("yyyy/MM/dd HH:mm");
                     row++;
                 }
                 wsBorrowing.Columns().AdjustToContents();
@@ -476,7 +638,7 @@ namespace Sources.Services
                 // 3. Low Activity Sheet
                 var wsLowAct = workbook.Worksheets.Add("المصادر منخفضة النشاط");
                 wsLowAct.RightToLeft = true;
-                string[] lowActHeaders = { "رقم المصدر", "النظير", "النشاط الحالي", "الموقع", "الحالة", "أُضيف بواسطة" };
+                string[] lowActHeaders = { "#", "رقم المصدر", "النظير", "النشاط الحالي", "الموقع", "الحالة", "أُضيف بواسطة" };
                 for (int i = 0; i < lowActHeaders.Length; i++)
                 {
                     wsLowAct.Cell(1, i + 1).Value = lowActHeaders[i];
@@ -484,14 +646,16 @@ namespace Sources.Services
                     wsLowAct.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.YellowGreen;
                 }
                 row = 2;
+                int lowIndex = 1;
                 foreach (var s in lowActivity ?? Enumerable.Empty<Source>())
                 {
-                    wsLowAct.Cell(row, 1).Value = s.SourceCode;
-                    wsLowAct.Cell(row, 2).Value = s.DisplayIsotopes;
-                    wsLowAct.Cell(row, 3).Value = s.CurrentActivityWithUnit;
-                    wsLowAct.Cell(row, 4).Value = s.Location?.LocationName ?? "غير محدد";
-                    wsLowAct.Cell(row, 5).Value = s.ArabicStatus;
-                    wsLowAct.Cell(row, 6).Value = s.AddedBy ?? "غير معروف";
+                    wsLowAct.Cell(row, 1).Value = lowIndex++;
+                    wsLowAct.Cell(row, 2).Value = s.SourceCode;
+                    wsLowAct.Cell(row, 3).Value = s.DisplayIsotopes;
+                    wsLowAct.Cell(row, 4).Value = s.CurrentActivityWithUnit;
+                    wsLowAct.Cell(row, 5).Value = s.Location?.LocationName ?? "غير محدد";
+                    wsLowAct.Cell(row, 6).Value = s.ArabicStatus;
+                    wsLowAct.Cell(row, 7).Value = s.AddedBy ?? "غير معروف";
                     row++;
                 }
                 wsLowAct.Columns().AdjustToContents();
@@ -499,7 +663,7 @@ namespace Sources.Services
                 // 4. Low Activity Alerts Sheet
                 var wsAlerts = workbook.Worksheets.Add("تنبيهات انخفاض النشاط");
                 wsAlerts.RightToLeft = true;
-                string[] alertHeaders = { "رقم المصدر", "النظير", "الخطورة", "تاريخ آخر معايرة", "الحالة", "النشاط الحالي", "المسؤول" };
+                string[] alertHeaders = { "#", "رقم المصدر", "النظير", "الخطورة", "تاريخ آخر معايرة", "الحالة", "النشاط الحالي", "المسؤول" };
                 for (int i = 0; i < alertHeaders.Length; i++)
                 {
                     wsAlerts.Cell(1, i + 1).Value = alertHeaders[i];
@@ -508,15 +672,17 @@ namespace Sources.Services
                     wsAlerts.Cell(1, i + 1).Style.Font.FontColor = XLColor.White;
                 }
                 row = 2;
+                int alertIndex = 1;
                 foreach (var s in lowActivityAlerts ?? Enumerable.Empty<Source>())
                 {
-                    wsAlerts.Cell(row, 1).Value = s.SourceCode;
-                    wsAlerts.Cell(row, 2).Value = s.AlertWorstIsotope ?? s.DisplayIsotopes;
-                    wsAlerts.Cell(row, 3).Value = s.AlertSeverityDisplay;
-                    wsAlerts.Cell(row, 4).Value = s.CalibrationDate.ToString("yyyy/MM/dd");
-                    wsAlerts.Cell(row, 5).Value = s.ArabicStatus;
-                    wsAlerts.Cell(row, 6).Value = s.CurrentActivityWithUnit;
-                    wsAlerts.Cell(row, 7).Value = s.AddedBy ?? "-";
+                    wsAlerts.Cell(row, 1).Value = alertIndex++;
+                    wsAlerts.Cell(row, 2).Value = s.SourceCode;
+                    wsAlerts.Cell(row, 3).Value = s.AlertWorstIsotope ?? s.DisplayIsotopes;
+                    wsAlerts.Cell(row, 4).Value = s.AlertSeverityDisplay;
+                    wsAlerts.Cell(row, 5).Value = s.CalibrationDate.ToString("yyyy/MM/dd");
+                    wsAlerts.Cell(row, 6).Value = s.ArabicStatus;
+                    wsAlerts.Cell(row, 7).Value = s.CurrentActivityWithUnit;
+                    wsAlerts.Cell(row, 8).Value = s.AddedBy ?? "-";
                     row++;
                 }
                 wsAlerts.Columns().AdjustToContents();
@@ -564,6 +730,7 @@ namespace Sources.Services
                             {
                                 table.ColumnsDefinition(columns =>
                                 {
+                                    columns.RelativeColumn(1); // #
                                     columns.RelativeColumn(2); // المصدر
                                     columns.RelativeColumn(3); // المستعير
                                     columns.RelativeColumn(3); // الغرض
@@ -572,6 +739,7 @@ namespace Sources.Services
                                 });
                                 table.Header(header =>
                                 {
+                                    header.Cell().Element(HeaderStyle).Text("#");
                                     header.Cell().Element(HeaderStyle).Text("رقم المصدر");
                                     header.Cell().Element(HeaderStyle).Text("المستعير");
                                     header.Cell().Element(HeaderStyle).Text("الغرض");
@@ -582,14 +750,15 @@ namespace Sources.Services
 
                                 if (!borrowList.Any())
                                 {
-                                    table.Cell().ColumnSpan(5).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
+                                    table.Cell().ColumnSpan(6).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
                                 }
                                 else
                                 {
-                                    int i = 0;
+                                    int i = 1;
                                     foreach (var req in borrowList)
                                     {
-                                        var bg = i % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
+                                        var bg = (i - 1) % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(i.ToString());
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(req.Source?.SourceCode ?? "-");
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(req.DisplayBorrowerName);
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(req.Purpose ?? "-");
@@ -611,6 +780,7 @@ namespace Sources.Services
                             {
                                 table.ColumnsDefinition(columns =>
                                 {
+                                    columns.RelativeColumn(1); // #
                                     columns.RelativeColumn(2.5f);
                                     columns.RelativeColumn(2);
                                     columns.RelativeColumn(1.8f);
@@ -619,6 +789,7 @@ namespace Sources.Services
                                 });
                                 table.Header(header =>
                                 {
+                                    header.Cell().Element(HeaderStyle).Text("#");
                                     header.Cell().Element(HeaderStyle).Text("المصدر");
                                     header.Cell().Element(HeaderStyle).Text("النظير");
                                     header.Cell().Element(HeaderStyle).Text("الخطورة");
@@ -629,18 +800,21 @@ namespace Sources.Services
 
                                 if (!alertList.Any())
                                 {
-                                    table.Cell().ColumnSpan(5).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
+                                    table.Cell().ColumnSpan(6).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
                                 }
                                 else
                                 {
+                                    int i = 1;
                                     foreach (var s in alertList)
                                     {
-                                        table.Cell().Element(CellStyle).Text(s.SourceCode);
-                                        table.Cell().Element(CellStyle).Text(s.AlertWorstIsotope ?? s.DisplayIsotopes);
-                                        table.Cell().Element(CellStyle).Text(s.AlertSeverityDisplay);
-                                        table.Cell().Element(CellStyle).Text(s.CalibrationDate.ToString("yyyy/MM/dd"));
-                                        table.Cell().Element(CellStyle).Text(s.CurrentActivityWithUnit);
+                                        table.Cell().Element(c => CellStyle(c)).Text(i.ToString());
+                                        table.Cell().Element(c => CellStyle(c)).Text(s.SourceCode);
+                                        table.Cell().Element(c => CellStyle(c)).Text(s.AlertWorstIsotope ?? s.DisplayIsotopes);
+                                        table.Cell().Element(c => CellStyle(c)).Text(s.AlertSeverityDisplay);
+                                        table.Cell().Element(c => CellStyle(c)).Text(s.CalibrationDate.ToString("yyyy/MM/dd"));
+                                        table.Cell().Element(c => CellStyle(c)).Text(s.CurrentActivityWithUnit);
                                         static IContainer CellStyle(IContainer c) => c.BorderBottom(1).BorderColor(Colors.Grey.Lighten3).PaddingVertical(4);
+                                        i++;
                                     }
                                 }
                             });

@@ -17,7 +17,7 @@ using Xunit;
 
 namespace Sources.Tests;
 
-public class SourcesViewModelTests : IClassFixture<SqliteInMemoryFixture>, IDisposable
+public class SourcesViewModelTests : IDisposable
 {
     private readonly SqliteInMemoryFixture _fixture;
     private readonly Mock<ISourceService> _mockSourceService;
@@ -31,10 +31,9 @@ public class SourcesViewModelTests : IClassFixture<SqliteInMemoryFixture>, IDisp
     private readonly Guid _isotopeCs137Id = Guid.NewGuid();
     private readonly Guid _locationId = Guid.NewGuid();
 
-    public SourcesViewModelTests(SqliteInMemoryFixture fixture)
+    public SourcesViewModelTests()
     {
-        _fixture = fixture;
-        _fixture.ResetDatabase();
+        _fixture = new SqliteInMemoryFixture();
 
         // Seed basic reference data
         using (var db = _fixture.CreateContext())
@@ -101,7 +100,7 @@ public class SourcesViewModelTests : IClassFixture<SqliteInMemoryFixture>, IDisp
         // Arrange
         var vm = CreateViewModel();
         _mockSourceService
-            .Setup(s => s.CreateSource(It.IsAny<Source>(), It.IsAny<List<SourceIsotope>>()))
+            .Setup(s => s.CreateSource(It.IsAny<Source>(), null))
             .Returns((true, "تم إضافة المصدر بنجاح"));
 
         vm.AddNewCommand.Execute(null);
@@ -118,7 +117,7 @@ public class SourcesViewModelTests : IClassFixture<SqliteInMemoryFixture>, IDisp
         await vm.SaveCommand.ExecuteAsync(null);
 
         // Assert
-        _mockSourceService.Verify(s => s.CreateSource(It.IsAny<Source>(), It.IsAny<List<SourceIsotope>>()), Times.Once);
+        _mockSourceService.Verify(s => s.CreateSource(It.IsAny<Source>(), null), Times.Once);
         Assert.Equal("تم إضافة المصدر بنجاح", vm.Message);
         Assert.False(vm.IsEditing);
     }
@@ -129,7 +128,7 @@ public class SourcesViewModelTests : IClassFixture<SqliteInMemoryFixture>, IDisp
         // Arrange
         var vm = CreateViewModel();
         _mockSourceService
-            .Setup(s => s.CreateSource(It.IsAny<Source>(), It.IsAny<List<SourceIsotope>>()))
+            .Setup(s => s.CreateSource(It.IsAny<Source>(), null))
             .Returns((true, "تم إضافة المصدر بنجاح"));
 
         vm.AddNewCommand.Execute(null);
@@ -146,7 +145,7 @@ public class SourcesViewModelTests : IClassFixture<SqliteInMemoryFixture>, IDisp
         await vm.SaveCommand.ExecuteAsync(null);
 
         // Assert
-        _mockSourceService.Verify(s => s.CreateSource(It.IsAny<Source>(), It.IsAny<List<SourceIsotope>>()), Times.Once);
+        _mockSourceService.Verify(s => s.CreateSource(It.IsAny<Source>(), null), Times.Once);
         Assert.Equal("تم إضافة المصدر بنجاح", vm.Message);
         Assert.False(vm.IsEditing);
     }

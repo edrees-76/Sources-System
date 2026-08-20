@@ -198,10 +198,13 @@ public class ReportingServiceTests : IDisposable
         Assert.Single(wb.Worksheets);
         var ws = wb.Worksheet("جرد المصادر");
         Assert.True(ws.RightToLeft);
-        Assert.Equal("رقم المصدر", ws.Cell(1, 1).GetString());
-        Assert.Equal("النظير", ws.Cell(1, 2).GetString());
-        Assert.Equal("SRC-001", ws.Cell(2, 1).GetString());
-        Assert.Equal("SRC-002", ws.Cell(3, 1).GetString());
+        Assert.Equal("#", ws.Cell(1, 1).GetString());
+        Assert.Equal("رقم المصدر", ws.Cell(1, 2).GetString());
+        Assert.Equal("النظير", ws.Cell(1, 3).GetString());
+        Assert.Equal(1, ws.Cell(2, 1).GetValue<int>());
+        Assert.Equal("SRC-001", ws.Cell(2, 2).GetString());
+        Assert.Equal(2, ws.Cell(3, 1).GetValue<int>());
+        Assert.Equal("SRC-002", ws.Cell(3, 2).GetString());
     }
 
     [Fact]
@@ -231,10 +234,12 @@ public class ReportingServiceTests : IDisposable
         Assert.Single(wb.Worksheets);
         var ws = wb.Worksheet("سجل الاستعارات");
         Assert.True(ws.RightToLeft);
-        Assert.Equal("رقم المصدر", ws.Cell(1, 1).GetString());
-        Assert.Equal("المستعير", ws.Cell(1, 2).GetString());
-        Assert.Equal("SRC-001", ws.Cell(2, 1).GetString());
-        Assert.Equal("د. خالد السعيد", ws.Cell(2, 2).GetString());
+        Assert.Equal("#", ws.Cell(1, 1).GetString());
+        Assert.Equal("رقم المصدر", ws.Cell(1, 2).GetString());
+        Assert.Equal("المستعير", ws.Cell(1, 3).GetString());
+        Assert.Equal(1, ws.Cell(2, 1).GetValue<int>());
+        Assert.Equal("SRC-001", ws.Cell(2, 2).GetString());
+        Assert.Equal("د. خالد السعيد", ws.Cell(2, 3).GetString());
     }
 
     [Fact]
@@ -264,8 +269,52 @@ public class ReportingServiceTests : IDisposable
         Assert.Single(wb.Worksheets);
         var ws = wb.Worksheet("تنبيهات انخفاض النشاط");
         Assert.True(ws.RightToLeft);
-        Assert.Equal("رقم المصدر", ws.Cell(1, 1).GetString());
-        Assert.Equal("SRC-001", ws.Cell(2, 1).GetString());
+        Assert.Equal("#", ws.Cell(1, 1).GetString());
+        Assert.Equal("رقم المصدر", ws.Cell(1, 2).GetString());
+        Assert.Equal(1, ws.Cell(2, 1).GetValue<int>());
+        Assert.Equal("SRC-001", ws.Cell(2, 2).GetString());
+    }
+
+    [Fact]
+    public async Task GenerateLocationsReportPdfAsync_WithData_CreatesValidPdfFile()
+    {
+        var filePath = GetTempFilePath("pdf");
+        var locations = new List<Location>
+        {
+            new Location { LocationName = "موقع 1", LocationType = "مختبر", Building = "مبنى أ", Room = "101", ResponsiblePerson = "أحمد" }
+        };
+
+        await _sut.GenerateLocationsReportPdfAsync(locations, filePath);
+
+        Assert.True(File.Exists(filePath));
+        Assert.True(new FileInfo(filePath).Length > 0);
+    }
+
+    [Fact]
+    public async Task GenerateLocationsReportExcelAsync_WithData_CreatesValidExcelFile()
+    {
+        var filePath = GetTempFilePath("xlsx");
+        var locations = new List<Location>
+        {
+            new Location { LocationName = "مختبر الأبحاث", LocationType = "مختبر", Building = "مبنى أ", Room = "101", ResponsiblePerson = "أحمد" },
+            new Location { LocationName = "المستودع الرئيسي", LocationType = "مستودع", Building = "مبنى ب", Room = "002", ResponsiblePerson = "سارة" }
+        };
+
+        await _sut.GenerateLocationsReportExcelAsync(locations, filePath);
+
+        Assert.True(File.Exists(filePath));
+        Assert.True(new FileInfo(filePath).Length > 0);
+
+        using var wb = new XLWorkbook(filePath);
+        Assert.Single(wb.Worksheets);
+        var ws = wb.Worksheet("المواقع والمخازن");
+        Assert.True(ws.RightToLeft);
+        Assert.Equal("#", ws.Cell(1, 1).GetString());
+        Assert.Equal("اسم الموقع", ws.Cell(1, 2).GetString());
+        Assert.Equal(1, ws.Cell(2, 1).GetValue<int>());
+        Assert.Equal("مختبر الأبحاث", ws.Cell(2, 2).GetString());
+        Assert.Equal(2, ws.Cell(3, 1).GetValue<int>());
+        Assert.Equal("المستودع الرئيسي", ws.Cell(3, 2).GetString());
     }
 
     [Fact]
@@ -299,22 +348,30 @@ public class ReportingServiceTests : IDisposable
         var ws1 = wb.Worksheet("جرد المصادر");
         Assert.NotNull(ws1);
         Assert.True(ws1.RightToLeft);
-        Assert.Equal("SRC-001", ws1.Cell(2, 1).GetString());
+        Assert.Equal("#", ws1.Cell(1, 1).GetString());
+        Assert.Equal(1, ws1.Cell(2, 1).GetValue<int>());
+        Assert.Equal("SRC-001", ws1.Cell(2, 2).GetString());
 
         var ws2 = wb.Worksheet("سجل الاستعارات");
         Assert.NotNull(ws2);
         Assert.True(ws2.RightToLeft);
-        Assert.Equal("SRC-001", ws2.Cell(2, 1).GetString());
+        Assert.Equal("#", ws2.Cell(1, 1).GetString());
+        Assert.Equal(1, ws2.Cell(2, 1).GetValue<int>());
+        Assert.Equal("SRC-001", ws2.Cell(2, 2).GetString());
 
         var ws3 = wb.Worksheet("المصادر منخفضة النشاط");
         Assert.NotNull(ws3);
         Assert.True(ws3.RightToLeft);
-        Assert.Equal("SRC-001", ws3.Cell(2, 1).GetString());
+        Assert.Equal("#", ws3.Cell(1, 1).GetString());
+        Assert.Equal(1, ws3.Cell(2, 1).GetValue<int>());
+        Assert.Equal("SRC-001", ws3.Cell(2, 2).GetString());
 
         var ws4 = wb.Worksheet("تنبيهات انخفاض النشاط");
         Assert.NotNull(ws4);
         Assert.True(ws4.RightToLeft);
-        Assert.Equal("SRC-001", ws4.Cell(2, 1).GetString());
+        Assert.Equal("#", ws4.Cell(1, 1).GetString());
+        Assert.Equal(1, ws4.Cell(2, 1).GetValue<int>());
+        Assert.Equal("SRC-001", ws4.Cell(2, 2).GetString());
     }
 
     [Fact]
@@ -399,7 +456,8 @@ public class ReportingServiceTests : IDisposable
         Assert.True(File.Exists(filePath));
         using var wb = new XLWorkbook(filePath);
         var ws = wb.Worksheet("جرد فارغ");
-        Assert.Equal("رقم المصدر", ws.Cell(1, 1).GetString());
+        Assert.Equal("#", ws.Cell(1, 1).GetString());
+        Assert.Equal("رقم المصدر", ws.Cell(1, 2).GetString());
         Assert.True(ws.Cell(2, 1).IsEmpty());
     }
 
@@ -413,7 +471,8 @@ public class ReportingServiceTests : IDisposable
         Assert.True(File.Exists(filePath));
         using var wb = new XLWorkbook(filePath);
         var ws = wb.Worksheet("سجل الاستعارات");
-        Assert.Equal("رقم المصدر", ws.Cell(1, 1).GetString());
+        Assert.Equal("#", ws.Cell(1, 1).GetString());
+        Assert.Equal("رقم المصدر", ws.Cell(1, 2).GetString());
         Assert.True(ws.Cell(2, 1).IsEmpty());
     }
 
@@ -427,7 +486,23 @@ public class ReportingServiceTests : IDisposable
         Assert.True(File.Exists(filePath));
         using var wb = new XLWorkbook(filePath);
         var ws = wb.Worksheet("تنبيهات انخفاض النشاط");
-        Assert.Equal("رقم المصدر", ws.Cell(1, 1).GetString());
+        Assert.Equal("#", ws.Cell(1, 1).GetString());
+        Assert.Equal("رقم المصدر", ws.Cell(1, 2).GetString());
+        Assert.True(ws.Cell(2, 1).IsEmpty());
+    }
+
+    [Fact]
+    public async Task GenerateLocationsReportExcelAsync_WithNullLocations_CreatesHeaderOnlyWorkbookWithoutException()
+    {
+        var filePath = GetTempFilePath("xlsx");
+
+        await _sut.GenerateLocationsReportExcelAsync(null!, filePath);
+
+        Assert.True(File.Exists(filePath));
+        using var wb = new XLWorkbook(filePath);
+        var ws = wb.Worksheet("المواقع والمخازن");
+        Assert.Equal("#", ws.Cell(1, 1).GetString());
+        Assert.Equal("اسم الموقع", ws.Cell(1, 2).GetString());
         Assert.True(ws.Cell(2, 1).IsEmpty());
     }
 
@@ -444,7 +519,7 @@ public class ReportingServiceTests : IDisposable
 
         foreach (var ws in wb.Worksheets)
         {
-            Assert.False(ws.Cell(1, 1).IsEmpty());
+            Assert.Equal("#", ws.Cell(1, 1).GetString());
             Assert.True(ws.Cell(2, 1).IsEmpty());
         }
     }
@@ -589,8 +664,9 @@ public class ReportingServiceTests : IDisposable
         using (var wb = new XLWorkbook(excelPath))
         {
             var ws = wb.Worksheet("جرد");
-            Assert.Equal("غير محدد", ws.Cell(2, 4).GetString()); // Location fallback
-            Assert.Equal("غير معروف", ws.Cell(2, 6).GetString()); // AddedBy fallback
+            Assert.Equal(1, ws.Cell(2, 1).GetValue<int>());
+            Assert.Equal("غير محدد", ws.Cell(2, 5).GetString()); // Location fallback
+            Assert.Equal("غير معروف", ws.Cell(2, 7).GetString()); // AddedBy fallback
         }
 
         var excelBorrowPath = GetTempFilePath("xlsx");
@@ -598,10 +674,11 @@ public class ReportingServiceTests : IDisposable
         using (var wb = new XLWorkbook(excelBorrowPath))
         {
             var ws = wb.Worksheet("سجل الاستعارات");
-            Assert.Equal("-", ws.Cell(2, 1).GetString()); // Source fallback
-            Assert.Equal("-", ws.Cell(2, 2).GetString()); // Borrower fallback
-            Assert.Equal("-", ws.Cell(2, 3).GetString()); // Purpose fallback
-            Assert.Equal("-", ws.Cell(2, 6).GetString()); // AddedBy fallback
+            Assert.Equal(1, ws.Cell(2, 1).GetValue<int>());
+            Assert.Equal("-", ws.Cell(2, 2).GetString()); // Source fallback
+            Assert.Equal("-", ws.Cell(2, 3).GetString()); // Borrower fallback
+            Assert.Equal("-", ws.Cell(2, 4).GetString()); // Purpose fallback
+            Assert.Equal("-", ws.Cell(2, 7).GetString()); // AddedBy fallback
         }
 
         var excelUserPath = GetTempFilePath("xlsx");

@@ -195,7 +195,7 @@
                         <Grid Margin="0,0,0,24">
                             <DataGrid ItemsSource="{Binding InventoryData}" Style="{StaticResource ModernDataGrid}" MaxHeight="350" MinHeight="100">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100" ElementStyle="{StaticResource BoldCenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="90" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColInitialActivity}" Binding="{Binding InitialActivityWithUnit}" Width="130" ElementStyle="{StaticResource CenterAligned}"/>
@@ -218,7 +218,7 @@
                         <Grid Margin="0,0,0,24">
                             <DataGrid ItemsSource="{Binding BorrowingData}" Style="{StaticResource ModernDataGrid}" MaxHeight="350" MinHeight="100">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding Source.SourceCode}" Width="100" ElementStyle="{StaticResource BoldCenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColBorrowerName}" Binding="{Binding DisplayBorrowerName}" Width="150" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColRequestDate}" Binding="{Binding RequestDate, StringFormat=d}" Width="120" ElementStyle="{StaticResource CenterAligned}"/>
@@ -240,7 +240,7 @@
                         <Grid Margin="0,0,0,24">
                             <DataGrid ItemsSource="{Binding LowActivityData}" Style="{StaticResource ModernDataGrid}" MaxHeight="350" MinHeight="100">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100" ElementStyle="{StaticResource BoldCenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="90" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130" ElementStyle="{StaticResource CenterAligned}"/>
@@ -261,7 +261,7 @@
                         <Grid Margin="0,0,0,16">
                             <DataGrid ItemsSource="{Binding LowActivityAlertData}" Style="{StaticResource ModernDataGrid}" MaxHeight="350" MinHeight="100">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100" ElementStyle="{StaticResource BoldCenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding AlertWorstIsotope}" Width="90" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTemplateColumn Header="{DynamicResource ColSeverityBadge}" Width="110">
@@ -294,7 +294,7 @@
                 <Grid Visibility="{Binding SelectedReport, Converter={StaticResource EqualityToVis}, ConverterParameter=InventoryReport}">
                     <DataGrid ItemsSource="{Binding InventoryData}" Style="{StaticResource ModernDataGrid}" MinHeight="100">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100" ElementStyle="{StaticResource BoldCenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="90" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColInitialActivity}" Binding="{Binding InitialActivityWithUnit}" Width="130" ElementStyle="{StaticResource CenterAligned}"/>
@@ -316,7 +316,7 @@
                 <Grid Visibility="{Binding SelectedReport, Converter={StaticResource EqualityToVis}, ConverterParameter=BorrowingReport}">
                     <DataGrid ItemsSource="{Binding BorrowingData}" Style="{StaticResource ModernDataGrid}" MinHeight="100">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding Source.SourceCode}" Width="100" ElementStyle="{StaticResource BoldCenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColBorrowerName}" Binding="{Binding DisplayBorrowerName}" Width="150" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColRequestDate}" Binding="{Binding RequestDate, StringFormat=d}" Width="120" ElementStyle="{StaticResource CenterAligned}"/>
@@ -337,7 +337,7 @@
                 <Grid Visibility="{Binding SelectedReport, Converter={StaticResource EqualityToVis}, ConverterParameter=ActivityReport}">
                     <DataGrid ItemsSource="{Binding ActivityData}" Style="{StaticResource ModernDataGrid}" MinHeight="100">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100" ElementStyle="{StaticResource BoldCenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="90" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColInitialActivity}" Binding="{Binding InitialActivityWithUnit}" Width="130" ElementStyle="{StaticResource CenterAligned}"/>
@@ -358,7 +358,7 @@
                 <Grid Visibility="{Binding SelectedReport, Converter={StaticResource EqualityToVis}, ConverterParameter=LowActivityReport}">
                     <DataGrid ItemsSource="{Binding LowActivityData}" Style="{StaticResource ModernDataGrid}" MinHeight="100">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100" ElementStyle="{StaticResource BoldCenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="90" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="130" ElementStyle="{StaticResource CenterAligned}"/>
@@ -378,7 +378,7 @@
                 <Grid Visibility="{Binding SelectedReport, Converter={StaticResource EqualityToVis}, ConverterParameter=LowActivityAlertReport}">
                     <DataGrid ItemsSource="{Binding LowActivityAlertData}" Style="{StaticResource ModernDataGrid}" MinHeight="100">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="100" ElementStyle="{StaticResource BoldCenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding AlertWorstIsotope}" Width="90" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTemplateColumn Header="{DynamicResource ColSeverityBadge}" Width="110">

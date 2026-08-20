@@ -96,17 +96,13 @@ public class AutoBackupService : IAutoBackupService, IDisposable
                 {
                     LoggerService.LogInfo($"نجح النسخ الاحتياطي التلقائي بنجاح: {result.BackupPath}");
                     
-                    // Dispatch notification event to UI thread safely
-                    if (Application.Current != null)
-                    {
-                        Application.Current.Dispatcher.InvokeAsync(() =>
-                        {
-                            BackupCompleted?.Invoke(this, EventArgs.Empty);
-                        });
-                    }
-                    else
+                    try
                     {
                         BackupCompleted?.Invoke(this, EventArgs.Empty);
+                    }
+                    catch (Exception ex)
+                    {
+                        LoggerService.LogError("خطأ أثناء إشعار اكتمال النسخ التلقائي", ex);
                     }
                 }
                 else

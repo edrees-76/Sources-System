@@ -5,15 +5,54 @@ using Sources.Services;
 using Sources.Interfaces;
 using Sources.Helpers;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Sources.ViewModels;
+
+/// <summary>
+/// صف عرض مخصص لجدول المواقع يضمن ثبات الرقم التسلسلي # أثناء التمرير وإعادة تدوير الصفوف
+/// </summary>
+public class LocationRow
+{
+    public int RowNumber { get; set; }
+    public Location Location { get; set; } = null!;
+    public Guid Id => Location.Id;
+    public string LocationName => Location.LocationName;
+    public string? LocationType => Location.LocationType;
+    public string? Building => Location.Building;
+    public string? Room => Location.Room;
+    public string? ResponsiblePerson => Location.ResponsiblePerson;
+    public string? AddedBy => Location.AddedBy;
+    public int SourceCount => Location.SourceCount;
+}
+
+/// <summary>
+/// صف عرض مخصص لقائمة المصادر المرتبطة بموقع معين في نافذة التفاصيل
+/// </summary>
+public class LocationSourceRow
+{
+    public int RowNumber { get; set; }
+    public Source Source { get; set; } = null!;
+    public Guid Id => Source.Id;
+    public string SourceCode => Source.SourceCode;
+    public string DisplayIsotopes => Source.DisplayIsotopes;
+    public string CurrentActivityWithUnit => Source.CurrentActivityWithUnit;
+    public string ArabicStatus => Source.ArabicStatus;
+    public DateTime CalibrationDate => Source.CalibrationDate;
+    public string? SerialNumber => Source.SerialNumber;
+    public string? Manufacturer => Source.Manufacturer;
+}
 
 public partial class LocationsViewModel : ObservableObject, IEditableViewModel
 {
     private readonly ILocationService _service;
-    [ObservableProperty] private ObservableCollection<Location> _locations = new();
-    [ObservableProperty] private Location? _selected;
+    private readonly IReportingService? _reportingService;
+
+    [ObservableProperty] private ObservableCollection<LocationRow> _locations = new();
+    [ObservableProperty] private LocationRow? _selected;
     [ObservableProperty] private bool _isEditing;
     [ObservableProperty] private bool _isNew;
     [ObservableProperty] private string _message = string.Empty;
@@ -27,25 +66,56 @@ public partial class LocationsViewModel : ObservableObject, IEditableViewModel
     private Guid? _editingId;
 
     // ─── تفاصيل الموقع والمصادر المرتبطة ───
-    [ObservableProperty] private ObservableCollection<Source> _linkedSourcesForDetails = new();
+    [ObservableProperty] private ObservableCollection<LocationSourceRow> _linkedSourcesForDetails = new();
     [ObservableProperty] private Location? _selectedLocationForDetails;
     [ObservableProperty] private bool _isLocationDetailsOpen;
     [ObservableProperty] private bool _hasLinkedSources;
 
-    public LocationsViewModel(ILocationService service) { _service = service; LoadData(); }
-
-    [RelayCommand] public void LoadData() => Locations = new ObservableCollection<Location>(_service.GetAll());
-
-    [RelayCommand] private void AddNew() { IsNew = true; _editingId = null; ClearForm(); IsEditing = true; }
+    public LocationsViewModel(ILocationService service, IReportingService? reportingService = null)
+    {
+        _service = service;
+        _reportingService = reportingService ?? (App.ServiceProvider?.GetService(typeof(IReportingService)) as IReportingService);
+        LoadData();
+    }
 
     [RelayCommand]
-    private void Edit()
+    public void LoadData()
     {
-        if (Selected == null) return;
-        IsNew = false; _editingId = Selected.Id;
-        EditName = Selected.LocationName; EditType = Selected.LocationType ?? "";
-        EditBuilding = Selected.Building ?? ""; EditRoom = Selected.Room ?? "";
-        EditPerson = Selected.ResponsiblePerson ?? "";
+        var raw = _service.GetAll();
+        Locations = new ObservableCollection<LocationRow>(
+            raw.Select((loc, index) => new LocationRow
+            {
+                RowNumber = index + 1,
+                Location = loc
+            }));
+    }
+
+    [RelayCommand]
+    private void AddNew()
+    {
+        IsNew = true;
+        _editingId = null;
+        ClearForm();
+        IsEditing = true;
+    }
+
+    [RelayCommand]
+    private void Edit(object? param = null)
+    {
+        Location? target = param switch
+        {
+            LocationRow lr => lr.Location,
+            Location l => l,
+            _ => Selected?.Location
+        };
+        if (target == null) return;
+        IsNew = false;
+        _editingId = target.Id;
+        EditName = target.LocationName;
+        EditType = target.LocationType ?? "";
+        EditBuilding = target.Building ?? "";
+        EditRoom = target.Room ?? "";
+        EditPerson = target.ResponsiblePerson ?? "";
         IsEditing = true;
     }
 
@@ -56,8 +126,11 @@ public partial class LocationsViewModel : ObservableObject, IEditableViewModel
         var item = new Location
         {
             Id = IsNew ? Guid.NewGuid() : _editingId!.Value,
-            LocationName = EditName, LocationType = EditType, Building = EditBuilding,
-            Room = EditRoom, ResponsiblePerson = EditPerson
+            LocationName = EditName,
+            LocationType = EditType,
+            Building = EditBuilding,
+            Room = EditRoom,
+            ResponsiblePerson = EditPerson
         };
         var r = IsNew ? _service.Create(item) : _service.Update(item);
         ShowMsg(r.Message);
@@ -65,23 +138,39 @@ public partial class LocationsViewModel : ObservableObject, IEditableViewModel
     }
 
     [RelayCommand]
-    private void Delete()
+    private void Delete(object? param = null)
     {
-        if (Selected == null) return;
-        var r = _service.Delete(Selected.Id);
+        Location? target = param switch
+        {
+            LocationRow lr => lr.Location,
+            Location l => l,
+            _ => Selected?.Location
+        };
+        if (target == null) return;
+        var r = _service.Delete(target.Id);
         ShowMsg(r.Message);
         if (r.Success) LoadData();
     }
 
     [RelayCommand]
-    private void ViewLocationDetails(Location? location)
+    private void ViewLocationDetails(object? param = null)
     {
-        var target = location ?? Selected;
+        Location? target = param switch
+        {
+            LocationRow lr => lr.Location,
+            Location l => l,
+            _ => Selected?.Location
+        };
         if (target == null) return;
 
         SelectedLocationForDetails = target;
         var sources = _service.GetSourcesLinkedToLocation(target.Id);
-        LinkedSourcesForDetails = new ObservableCollection<Source>(sources);
+        LinkedSourcesForDetails = new ObservableCollection<LocationSourceRow>(
+            sources.Select((src, index) => new LocationSourceRow
+            {
+                RowNumber = index + 1,
+                Source = src
+            }));
         HasLinkedSources = LinkedSourcesForDetails.Count > 0;
         IsLocationDetailsOpen = true;
     }
@@ -93,6 +182,56 @@ public partial class LocationsViewModel : ObservableObject, IEditableViewModel
         SelectedLocationForDetails = null;
         LinkedSourcesForDetails.Clear();
         HasLinkedSources = false;
+    }
+
+    [RelayCommand]
+    private async Task ExportToPdfAsync()
+    {
+        if (_reportingService == null) return;
+        var sfd = new Microsoft.Win32.SaveFileDialog
+        {
+            Filter = "PDF Files (*.pdf)|*.pdf",
+            FileName = $"المواقع_والمخازن_{DateTime.Now:yyyyMMdd}.pdf"
+        };
+        if (sfd.ShowDialog() == true)
+        {
+            try
+            {
+                var list = Locations.Select(lr => lr.Location).ToList();
+                await _reportingService.GenerateLocationsReportPdfAsync(list, sfd.FileName);
+                FileHelper.OpenFile(sfd.FileName);
+                DialogHelper.ShowInfo(TranslationHelper.GetString("MsgExportSuccess") ?? "تم تصدير التقرير كملف PDF بنجاح.");
+            }
+            catch (Exception ex)
+            {
+                DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrExportPdf", ex.Message));
+            }
+        }
+    }
+
+    [RelayCommand]
+    private async Task ExportToExcelAsync()
+    {
+        if (_reportingService == null) return;
+        var sfd = new Microsoft.Win32.SaveFileDialog
+        {
+            Filter = "Excel Files (*.xlsx)|*.xlsx",
+            FileName = $"المواقع_والمخازن_{DateTime.Now:yyyyMMdd}.xlsx"
+        };
+        if (sfd.ShowDialog() == true)
+        {
+            try
+            {
+                var list = Locations.Select(lr => lr.Location).ToList();
+                await _reportingService.GenerateLocationsReportExcelAsync(list, sfd.FileName);
+                FileHelper.OpenFile(sfd.FileName);
+                DialogHelper.ShowInfo(TranslationHelper.GetString("MsgExportSuccess") ?? "تم تصدير البيانات إلى ملف Excel بنجاح.");
+            }
+            catch (Exception ex)
+            {
+                DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrExportExcel", ex.Message));
+            }
+        }
     }
 
     [RelayCommand] private void CancelEdit() { IsEditing = false; ClearForm(); }

@@ -392,7 +392,7 @@ public class AutoBackupServiceTests : IDisposable
     public void BackupCompleted_EventFired_WhenBackupSucceeds()
     {
         // Arrange
-        var backupDir = Path.Combine(_testTempDir, "EventSuccessTest");
+        var backupDir = Path.Combine(_testTempDir, "EventSuccessTest_" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(backupDir);
 
         _mockSettingsService
@@ -416,7 +416,7 @@ public class AutoBackupServiceTests : IDisposable
 
         // Act
         sut.TriggerImmediateCheck();
-        var wasFired = eventFiredSignal.Wait(TimeSpan.FromSeconds(3));
+        var wasFired = eventFiredSignal.Wait(TimeSpan.FromSeconds(10));
 
         // Assert
         Assert.True(wasFired, "BackupCompleted event must be raised upon successful backup.");

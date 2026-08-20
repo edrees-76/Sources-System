@@ -195,4 +195,90 @@ public class ReportsViewModelTests
     }
 
     #endregion
+
+    #region 4. RowNumber Sequence Tests across Reports
+
+    [Fact]
+    public void LoadReport_InventoryReport_AssignsSequentialRowNumbersStartingFromOne()
+    {
+        var sources = new List<Source>
+        {
+            new Source { Id = Guid.NewGuid(), SourceCode = "SRC-01" },
+            new Source { Id = Guid.NewGuid(), SourceCode = "SRC-02" },
+            new Source { Id = Guid.NewGuid(), SourceCode = "SRC-03" }
+        };
+        _mockSourceService.Setup(s => s.GetAllSources()).Returns(sources);
+
+        var vm = new ReportsViewModel(_mockSourceService.Object, _mockBorrowService.Object, _mockReportingService.Object, _mockSettingsService.Object);
+        vm.SelectReportCommand.Execute("InventoryReport");
+
+        Assert.Equal(3, vm.InventoryData.Count);
+        Assert.Equal(1, vm.InventoryData[0].RowNumber);
+        Assert.Equal(2, vm.InventoryData[1].RowNumber);
+        Assert.Equal(3, vm.InventoryData[2].RowNumber);
+    }
+
+    [Fact]
+    public void LoadReport_BorrowingReport_AssignsSequentialRowNumbersStartingFromOne()
+    {
+        var borrows = new List<BorrowRequest>
+        {
+            new BorrowRequest { Id = Guid.NewGuid(), BorrowerName = "User 1" },
+            new BorrowRequest { Id = Guid.NewGuid(), BorrowerName = "User 2" }
+        };
+        _mockBorrowService.Setup(b => b.GetAll()).Returns(borrows);
+
+        var vm = new ReportsViewModel(_mockSourceService.Object, _mockBorrowService.Object, _mockReportingService.Object, _mockSettingsService.Object);
+        vm.SelectReportCommand.Execute("BorrowingReport");
+
+        Assert.Equal(2, vm.BorrowingData.Count);
+        Assert.Equal(1, vm.BorrowingData[0].RowNumber);
+        Assert.Equal(2, vm.BorrowingData[1].RowNumber);
+    }
+
+    [Fact]
+    public void LoadReport_GeneralReport_AssignsSequentialRowNumbersStartingFromOneIndependentlyForEachSection()
+    {
+        var sources = new List<Source>
+        {
+            new Source { Id = Guid.NewGuid(), SourceCode = "SRC-G1", Status = "InUse" },
+            new Source { Id = Guid.NewGuid(), SourceCode = "SRC-G2", Status = "Storage" }
+        };
+        var borrows = new List<BorrowRequest>
+        {
+            new BorrowRequest { Id = Guid.NewGuid(), BorrowerName = "Borrower 1" },
+            new BorrowRequest { Id = Guid.NewGuid(), BorrowerName = "Borrower 2" },
+            new BorrowRequest { Id = Guid.NewGuid(), BorrowerName = "Borrower 3" }
+        };
+
+        _mockSourceService.Setup(s => s.GetAllSources()).Returns(sources);
+        _mockBorrowService.Setup(b => b.GetAll()).Returns(borrows);
+        _mockSourceService.Setup(s => s.GetLowActivitySources(It.IsAny<double>())).Returns(sources);
+
+        var vm = new ReportsViewModel(_mockSourceService.Object, _mockBorrowService.Object, _mockReportingService.Object, _mockSettingsService.Object);
+        vm.SelectReportCommand.Execute("GeneralReport");
+
+        // Inventory table: 2 items starting from 1
+        Assert.Equal(2, vm.InventoryData.Count);
+        Assert.Equal(1, vm.InventoryData[0].RowNumber);
+        Assert.Equal(2, vm.InventoryData[1].RowNumber);
+
+        // Borrowing table: 3 items starting from 1
+        Assert.Equal(3, vm.BorrowingData.Count);
+        Assert.Equal(1, vm.BorrowingData[0].RowNumber);
+        Assert.Equal(2, vm.BorrowingData[1].RowNumber);
+        Assert.Equal(3, vm.BorrowingData[2].RowNumber);
+
+        // Activity table: 2 items starting from 1
+        Assert.Equal(2, vm.ActivityData.Count);
+        Assert.Equal(1, vm.ActivityData[0].RowNumber);
+        Assert.Equal(2, vm.ActivityData[1].RowNumber);
+
+        // LowActivity table: 2 items starting from 1
+        Assert.Equal(2, vm.LowActivityData.Count);
+        Assert.Equal(1, vm.LowActivityData[0].RowNumber);
+        Assert.Equal(2, vm.LowActivityData[1].RowNumber);
+    }
+
+    #endregion
 }

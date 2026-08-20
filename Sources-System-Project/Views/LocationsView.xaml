@@ -7,8 +7,8 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <DockPanel Grid.Row="0" Margin="0,0,0,16">
-            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+        <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,16">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                 <materialDesign:PackIcon Kind="MapMarkerRadius" Width="36" Height="36" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
                 <StackPanel Margin="12,0,0,0">
                     <TextBlock Text="{DynamicResource LocationsManagementTitle}" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
@@ -16,18 +16,35 @@
                 </StackPanel>
             </StackPanel>
             
-            <Button DockPanel.Dock="Right" Content="{DynamicResource BtnAddLocation}" Style="{StaticResource PrimaryButton}" Command="{Binding AddNewCommand}"
-                    HorizontalAlignment="Right" VerticalAlignment="Center">
-                <Button.Effect>
-                    <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.18" Color="{StaticResource PrimaryColor}"/>
-                </Button.Effect>
-            </Button>
+            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Content="{DynamicResource BtnAddLocation}" Style="{StaticResource PrimaryButton}" Command="{Binding AddNewCommand}" Margin="0,0,8,0">
+                    <Button.Effect>
+                        <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.18" Color="{StaticResource PrimaryColor}"/>
+                    </Button.Effect>
+                </Button>
+                
+                <Button Command="{Binding ExportToPdfCommand}" Style="{StaticResource MaterialDesignOutlinedButton}" 
+                        Foreground="{DynamicResource DangerBrush}" BorderBrush="{DynamicResource DangerBrush}" Margin="0,0,8,0" Height="40">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="FilePdfBox" Margin="-4,0,4,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource BtnExportPdf}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Command="{Binding ExportToExcelCommand}" Style="{StaticResource MaterialDesignOutlinedButton}" 
+                        Foreground="{DynamicResource SuccessBrush}" BorderBrush="{DynamicResource SuccessBrush}" Height="40">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="FileExcelBox" Margin="-4,0,4,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource BtnExportExcel}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
         </DockPanel>
         <Grid Grid.Row="1">
             <Border Style="{StaticResource ContentCard}" Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVis}}">
                 <DataGrid ItemsSource="{Binding Locations}" SelectedItem="{Binding Selected}" Style="{StaticResource ModernDataGrid}">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
                         
                         <!-- اسم الموقع -->
                         <DataGridTextColumn Header="{DynamicResource ColLocationName}" Binding="{Binding LocationName}" Width="180" ElementStyle="{StaticResource BoldCenterAligned}"/>
@@ -232,7 +249,7 @@
                                 Visibility="{Binding HasLinkedSources, Converter={StaticResource BoolToVis}}">
                             <DataGrid ItemsSource="{Binding LinkedSourcesForDetails}" Style="{StaticResource ModernDataGrid}" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="350">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="45" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="45" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding SourceCode}" Width="130" ElementStyle="{StaticResource BoldCenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="110" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="140" ElementStyle="{StaticResource CenterAligned}"/>

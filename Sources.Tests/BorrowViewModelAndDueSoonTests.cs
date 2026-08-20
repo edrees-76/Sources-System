@@ -247,4 +247,45 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
     }
 
     #endregion
+
+    #region 4. اختبارات ترقيم صفوف الاستعارة (BorrowRequestRow)
+
+    [Fact]
+    public async Task BorrowViewModel_LoadData_And_PerformSearch_AssignsSequentialRowNumbersStartingFromOne()
+    {
+        // Arrange
+        var mockSourceService = new Mock<ISourceService>();
+        var mockUserService = new Mock<IUserService>();
+        var mockReportingService = new Mock<IReportingService>();
+        var mockBorrowService = new Mock<IBorrowService>();
+
+        var testRequests = new List<BorrowRequest>
+        {
+            new BorrowRequest { Id = Guid.NewGuid(), BorrowerName = "مستعير 1", Status = "Delivered" },
+            new BorrowRequest { Id = Guid.NewGuid(), BorrowerName = "مستعير 2", Status = "Returned" },
+            new BorrowRequest { Id = Guid.NewGuid(), BorrowerName = "مستعير 3", Status = "Overdue" }
+        };
+
+        mockBorrowService.Setup(b => b.GetAll()).Returns(testRequests);
+
+        var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object);
+        await vm.LoadDataAsync();
+
+        // Assert: Initial load
+        Assert.Equal(3, vm.Requests.Count);
+        Assert.Equal(1, vm.Requests[0].RowNumber);
+        Assert.Equal(2, vm.Requests[1].RowNumber);
+        Assert.Equal(3, vm.Requests[2].RowNumber);
+
+        // Act: Filter by status "تم الإرجاع"
+        vm.SelectedStatusFilter = "تم الإرجاع";
+        vm.PerformSearchCommand.Execute(null);
+
+        // Assert: Filtered sequence starts from 1
+        Assert.Single(vm.Requests);
+        Assert.Equal(1, vm.Requests[0].RowNumber);
+        Assert.Equal("مستعير 2", vm.Requests[0].BorrowerName);
+    }
+
+    #endregion
 }
