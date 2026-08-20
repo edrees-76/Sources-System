@@ -352,11 +352,11 @@
                             </Grid>
                         </StackPanel>
 
-                        <!-- شعار المصمم والمطور (كادر يتكيف مع الوضعين الداكن والفاتح بحجم أهدأ وأصغر) -->
+                        <!-- شعار المصمم والمطور (كادر يتكيف مع الوضعين الداكن والفاتح بجودة فائقة) -->
                         <Border Grid.Column="1" Width="85" Height="85" CornerRadius="12" Background="{DynamicResource WindowBackground}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Margin="20,0,0,0" VerticalAlignment="Center">
-                            <Image Source="pack://siteoforigin:,,,/Assets/designer_logo.png" 
+                            <Image Source="pack://siteoforigin:,,,/Assets/EFH_3D_logo.png" 
                                    Stretch="Uniform" 
-                                   Margin="8" 
+                                   Margin="6" 
                                    RenderOptions.BitmapScalingMode="HighQuality"/>
                         </Border>
                     </Grid>
