@@ -137,12 +137,13 @@ public class AlertService : IAlertService
     {
         return unit?.ToLower() switch
         {
-            "seconds" => value,
-            "minutes" => value * 60,
-            "hours" => value * 3600,
-            "days" => value * 86400,
-            "years" => value * 365.25 * 86400,
-            _ => value * 365.25 * 86400 // افتراضي: سنوات
+            "seconds" or "second" or "s" => value,
+            "minutes" or "minute" or "min" or "m" => value * 60,
+            "hours" or "hour" or "h" => value * 3600,
+            "days" or "day" or "d" => value * 86400,
+            "months" or "month" or "mo" => value * 30 * 86400,
+            "years" or "year" or "yr" or "y" => value * 365.25 * 86400,
+            _ => value * 365.25 * 86400
         };
     }
 

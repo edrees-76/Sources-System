@@ -9,7 +9,9 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using LiveChartsCore;
 using LiveChartsCore.Defaults;
+using LiveChartsCore.Kernel.Sketches;
 using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Drawing;
 using LiveChartsCore.SkiaSharpView.Painting;
 using SkiaSharp;
 using System.Windows;
@@ -24,6 +26,39 @@ public class LegendItem
 {
     public string Label { get; set; } = string.Empty;
     public string Color { get; set; } = "#FFFFFF";
+}
+
+/// <summary>
+/// صف عرض مخصص لجدول المصادر في لوحة التحكم يضمن ثبات الرقم التسلسلي بشكل غير قابل للتغير أثناء التمرير
+/// </summary>
+public class DashboardSourceRow
+{
+    public int RowNumber { get; set; }
+    public Source Source { get; set; } = null!;
+    public string SerialNumber => Source.SerialNumber ?? "—";
+    public string SourceCode => Source.SourceCode;
+    public string DisplayIsotopes => Source.DisplayIsotopes;
+    public string LocationName => Source.Location?.LocationName ?? "—";
+    public string CurrentActivityDisplay => Source.CurrentActivityDisplay;
+    public string ActivityUnitSymbol => Source.CurrentActivityUnit?.UnitSymbol ?? "—";
+
+    /// <summary>أسوأ (أخطر) فئة رقابية من بين نظائر المصدر — القيمة الأصغر هي الأخطر</summary>
+    public int WorstCategory
+    {
+        get
+        {
+            if (Source.HasDetailedIsotopes && Source.SourceIsotopes?.Any() == true)
+                return Source.SourceIsotopes
+                    .Where(si => si.Radioisotope != null)
+                    .Select(si => si.Radioisotope!.Category)
+                    .Where(c => c > 0)
+                    .DefaultIfEmpty(5)
+                    .Min();
+            return Source.Radioisotope?.Category > 0 ? Source.Radioisotope.Category : 5;
+        }
+    }
+
+    public string CategoryColor => DashboardViewModel.GetCategoryColor(WorstCategory);
 }
 
 /// <summary>
@@ -50,6 +85,37 @@ public class DashboardBorrowSummary
     public int DueSoonCount { get; set; }
     public int ActiveCount { get; set; }
     public bool HasAny => OverdueCount > 0 || DueSoonCount > 0 || ActiveCount > 0;
+}
+
+/// <summary>
+/// نموذج لمؤشر الفئة الرقابية
+/// </summary>
+public class CategoryBadgeInfo
+{
+    public int Category { get; set; }
+    public string Color { get; set; } = "#B0BEC5";
+    public string Label { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// صف في Side Panel لعرض الكل (نظائر أو مواقع)
+/// </summary>
+public class DistributionRow
+{
+    public string Label { get; set; } = string.Empty;
+    public int Count { get; set; }
+    public string Percent { get; set; } = "0%";
+}
+
+/// <summary>
+/// نطاق النشاط (Bin) في الـ Histogram
+/// </summary>
+public class ActivityBinInfo
+{
+    public string Label { get; set; } = string.Empty;
+    public int Count { get; set; }
+    public double LowerBound { get; set; }
+    public double UpperBound { get; set; }
 }
 
 public partial class DashboardViewModel : ObservableObject
@@ -88,19 +154,28 @@ public partial class DashboardViewModel : ObservableObject
     [ObservableProperty] private string _activityChangeIcon = "ArrowTopRight"; // ArrowTopRight or ArrowBottomRight
     [ObservableProperty] private ObservableCollection<TotalActivityItem> _totalActivityItems = new();
 
-    // ─── رسم الأعمدة: المصادر مقابل النشاط ───
-    [ObservableProperty] private ISeries[] _sourceActivityBarSeries = Array.Empty<ISeries>();
-    [ObservableProperty] private Axis[] _barXAxes = new Axis[] { new Axis() };
-    [ObservableProperty] private Axis[] _barYAxes = new Axis[] { new Axis() };
+    // ─── رسم Histogram: توزيع نطاقات النشاط (البند 1) ───
+    [ObservableProperty] private ISeries[] _activityHistogramSeries = Array.Empty<ISeries>();
+    [ObservableProperty] private Axis[] _histogramXAxes = new Axis[] { new Axis() };
+    [ObservableProperty] private Axis[] _histogramYAxes = new Axis[] { new Axis() };
+    private Dictionary<int, List<Source>> _histogramBinSources = new();
 
-    // ─── مخطط دائري: توزيع النظائر ───
+    // ─── مخطط شريطي أفقي: توزيع النظائر (Top-10 + Others) ───
     [ObservableProperty] private ISeries[] _sourcesByIsotopeSeries = Array.Empty<ISeries>();
+    [ObservableProperty] private Axis[] _isotopeXAxes = new Axis[] { new Axis() };
+    [ObservableProperty] private Axis[] _isotopeYAxes = new Axis[] { new Axis() };
     [ObservableProperty] private bool _hasEnoughIsotopeData;
 
-    // ─── مخطط دائري: توزيع المواقع ───
+    // ─── مخطط شريطي أفقي: توزيع المواقع (Top-10 + Others) ───
     [ObservableProperty] private ISeries[] _sourcesByLocationSeries = Array.Empty<ISeries>();
+    [ObservableProperty] private Axis[] _locationXAxes = new Axis[] { new Axis() };
+    [ObservableProperty] private Axis[] _locationYAxes = new Axis[] { new Axis() };
     [ObservableProperty] private bool _hasEnoughLocationData;
     [ObservableProperty] private ObservableCollection<LegendItem> _locationLegendItems = new();
+
+    // بيانات مخزنة لقوائم "عرض الكل"
+    private List<(string Label, int Count, double Percent)> _allIsotopeData = new();
+    private List<(string Label, int Count, double Percent)> _allLocationData = new();
 
     // ─── منحنى التحلل الزمني ───
     [ObservableProperty] private ISeries[] _activityDecaySeries = Array.Empty<ISeries>();
@@ -111,9 +186,34 @@ public partial class DashboardViewModel : ObservableObject
     [ObservableProperty] private ObservableCollection<Source> _availableSources = new();
     [ObservableProperty] private Source? _selectedDecaySource;
 
+    // ─── مصادر لوحة القيادة — الصفحة المعروضة حالياً ───
+    [ObservableProperty] private ObservableCollection<DashboardSourceRow> _dashboardSources = new();
 
-    // ─── مصادر لوحة القيادة (نفس كائنات Source كصفحة المصادر) ───
-    [ObservableProperty] private ObservableCollection<Source> _dashboardSources = new();
+    // ─── Side Panel (البند 4) ───
+    [ObservableProperty] private bool _isSidePanelOpen;
+    [ObservableProperty] private string _sidePanelTitle = string.Empty;
+    [ObservableProperty] private ObservableCollection<DashboardSourceRow> _sidePanelSources = new();
+    [ObservableProperty] private ObservableCollection<DistributionRow> _sidePanelDistribution = new();
+    [ObservableProperty] private bool _sidePanelShowSources; // true → DataGrid, false → Distribution table
+    
+    // ─── بحث + فلاتر + Pagination (البند 3) ───
+    [ObservableProperty] private string _searchText = string.Empty;
+    [ObservableProperty] private string _selectedIsotopeFilter = string.Empty;
+    [ObservableProperty] private string _selectedLocationFilter = string.Empty;
+    [ObservableProperty] private string _selectedStatusFilter = string.Empty;
+    [ObservableProperty] private ObservableCollection<string> _availableIsotopes = new();
+    [ObservableProperty] private ObservableCollection<string> _availableLocations = new();
+    [ObservableProperty] private ObservableCollection<string> _availableStatuses = new();
+    [ObservableProperty] private int _currentPage = 1;
+    [ObservableProperty] private int _pageSize = 50;
+    [ObservableProperty] private int _totalPages = 1;
+    [ObservableProperty] private int _totalFilteredCount;
+    [ObservableProperty] private string _pageInfo = "1 / 1";
+    private List<DashboardSourceRow> _allSourceRows = new();
+    private System.Timers.Timer? _searchDebounceTimer;
+
+    // ─── تلوين الفئة الرقابية (البند 6) ───
+    [ObservableProperty] private ObservableCollection<CategoryBadgeInfo> _categoryLegend = new();
 
     // ─── الجزء 1: بطاقة تنبيهات انخفاض النشاط ───
     [ObservableProperty] private int _lowActivityCriticalCount;
@@ -132,6 +232,28 @@ public partial class DashboardViewModel : ObservableObject
     public SolidColorPaint ChartTextPaint => GetAxisPaint();
     public SolidColorPaint ChartTooltipBackgroundPaint => GetTooltipBackgroundPaint();
 
+    // ─── تلميحات الرسوم البيانية الذكية (Auto-Flip & Clamping) ───
+    public IChartTooltip<SkiaSharpDrawingContext> IsotopeChartTooltip => new AutoFlipChartTooltip
+    {
+        FontPaint = ChartTextPaint,
+        BackgroundPaint = ChartTooltipBackgroundPaint,
+        TextSize = 12
+    };
+
+    public IChartTooltip<SkiaSharpDrawingContext> LocationChartTooltip => new AutoFlipChartTooltip
+    {
+        FontPaint = ChartTextPaint,
+        BackgroundPaint = ChartTooltipBackgroundPaint,
+        TextSize = 12
+    };
+
+    public IChartTooltip<SkiaSharpDrawingContext> DefaultChartTooltip => new AutoFlipChartTooltip
+    {
+        FontPaint = ChartTextPaint,
+        BackgroundPaint = ChartTooltipBackgroundPaint,
+        TextSize = 12
+    };
+
     // ─── مجموعات مفاتيح الرسم المخصصة ───
     [ObservableProperty] private ObservableCollection<LegendItem> _pieLegendItems = new();
     [ObservableProperty] private ObservableCollection<LegendItem> _decayLegendItems = new();
@@ -141,14 +263,41 @@ public partial class DashboardViewModel : ObservableObject
 
     // هامش الرسم الموحد لضمان انطباق الخطوط اليدوية (L-shape) مع محاور الرسم
     public LiveChartsCore.Measure.Margin ChartDrawMargin { get; } = new(50, 20, 20, 50);
+    [ObservableProperty] private LiveChartsCore.Measure.Margin _barDrawMargin = new(70, 20, 30, 50);
+    [ObservableProperty] private LiveChartsCore.Measure.Margin _isotopeDrawMargin = new(75, 20, 30, 40);
+    [ObservableProperty] private LiveChartsCore.Measure.Margin _locationDrawMargin = new(135, 20, 30, 40);
 
     // إطار الرسم - نجعله شفافاً تماماً لأننا سنرسم المحاور يدوياً بشكل L في الـ XAML
     [ObservableProperty] private DrawMarginFrame? _decayDrawMarginFrame = new DrawMarginFrame { Stroke = null };
     [ObservableProperty] private DrawMarginFrame? _barDrawMarginFrame = new DrawMarginFrame { Stroke = null };
+    [ObservableProperty] private DrawMarginFrame? _isotopeDrawMarginFrame = new DrawMarginFrame { Stroke = null };
+    [ObservableProperty] private DrawMarginFrame? _locationDrawMarginFrame = new DrawMarginFrame { Stroke = null };
 
     // ألوان متعددة لمنحنيات التحلل من لوحة الألوان المعتمدة (Colors.xaml)
     private static readonly string[] DecayStrokeColors = { "#1F5A66", "#C97A4A", "#3FAE7A", "#4F7FA3", "#8E44AD" };
     private static readonly string[] DecayFillColors = { "#1A1F5A66", "#1AC97A4A", "#1A3FAE7A", "#1A4F7FA3", "#1A8E44AD" };
+
+    // ─── ألوان الفئات الرقابية (البند 6) ───
+    public static string GetCategoryColor(int category) => category switch
+    {
+        1 => "#8B0000",  // أحمر غامق
+        2 => "#D84315",  // برتقالي محمر
+        3 => "#FB8C00",  // برتقالي فاتح
+        4 => "#FFD600",  // أصفر
+        5 => "#B0BEC5",  // رمادي فاتح
+        _ => "#B0BEC5"
+    };
+
+    // ─── نطاقات الـ Histogram الثابتة (البند 1) ───
+    public static readonly (double Lower, double Upper, string Label)[] HistogramBins = new[]
+    {
+        (0.0,    1e3,  "< 10³"),
+        (1e3,    1e6,  "10³ – 10⁶"),
+        (1e6,    1e9,  "10⁶ – 10⁹"),
+        (1e9,    1e12, "10⁹ – 10¹²"),
+        (1e12,   1e15, "10¹² – 10¹⁵"),
+        (1e15,   double.MaxValue, "> 10¹⁵")
+    };
 
     // دهان النصوص في الرسوم البيانية - أزرق للوضع الفاتح، أبيض للوضع الداكن
     private static SolidColorPaint GetAxisPaint()
@@ -210,6 +359,26 @@ public partial class DashboardViewModel : ObservableObject
             Fill = new SolidColorPaint(SKColors.Transparent),
             Stroke = null // إلغاء الإطار المربع
         };
+        IsotopeDrawMarginFrame = new DrawMarginFrame
+        {
+            Fill = new SolidColorPaint(SKColors.Transparent),
+            Stroke = null
+        };
+        LocationDrawMarginFrame = new DrawMarginFrame
+        {
+            Fill = new SolidColorPaint(SKColors.Transparent),
+            Stroke = null
+        };
+
+        // تعبئة Legend الفئات الرقابية (البند 6)
+        CategoryLegend = new ObservableCollection<CategoryBadgeInfo>(new[]
+        {
+            new CategoryBadgeInfo { Category = 1, Color = GetCategoryColor(1), Label = TranslationHelper.GetString("Category1Label") },
+            new CategoryBadgeInfo { Category = 2, Color = GetCategoryColor(2), Label = TranslationHelper.GetString("Category2Label") },
+            new CategoryBadgeInfo { Category = 3, Color = GetCategoryColor(3), Label = TranslationHelper.GetString("Category3Label") },
+            new CategoryBadgeInfo { Category = 4, Color = GetCategoryColor(4), Label = TranslationHelper.GetString("Category4Label") },
+            new CategoryBadgeInfo { Category = 5, Color = GetCategoryColor(5), Label = TranslationHelper.GetString("Category5Label") },
+        });
     }
 
     public DashboardViewModel(
@@ -228,13 +397,41 @@ public partial class DashboardViewModel : ObservableObject
         _settingsService = settingsService;
 
         InitDrawMarginFrames();
+        InitFilterOptions();
         _ = LoadDataAsync();
+    }
+
+    private void InitFilterOptions()
+    {
+        AvailableStatuses = new ObservableCollection<string>(new[]
+        {
+            "", "InUse", "Storage", "Waste", "Transfer"
+        });
     }
 
     partial void OnSelectedDecaySourceChanged(Source? value)
     {
         UpdateDecayCurves(null, value);
     }
+
+    // ─── Debounced search ───
+    partial void OnSearchTextChanged(string value)
+    {
+        _searchDebounceTimer?.Stop();
+        _searchDebounceTimer?.Dispose();
+        _searchDebounceTimer = new System.Timers.Timer(300);
+        _searchDebounceTimer.Elapsed += (_, _) =>
+        {
+            _searchDebounceTimer?.Stop();
+            RunOnUI(ApplyFiltersAndPagination);
+        };
+        _searchDebounceTimer.AutoReset = false;
+        _searchDebounceTimer.Start();
+    }
+
+    partial void OnSelectedIsotopeFilterChanged(string value) => RunOnUI(ApplyFiltersAndPagination);
+    partial void OnSelectedLocationFilterChanged(string value) => RunOnUI(ApplyFiltersAndPagination);
+    partial void OnSelectedStatusFilterChanged(string value) => RunOnUI(ApplyFiltersAndPagination);
 
     [RelayCommand]
     public async Task LoadDataAsync()
@@ -245,44 +442,140 @@ public partial class DashboardViewModel : ObservableObject
 
             var sources = _sourceService.GetAllSources();
 
-            // ═══ بطاقة 1: عدد المصادر المسجلة ═══
-            TotalSources = sources.Count;
+            // ═══ تعبئة الجدول الرئيسي والبطاقة الأولى فوراً على خيط الواجهة ═══
+            RunOnUI(() =>
+            {
+                TotalSources = sources.Count;
+                _allSourceRows = sources.Select((s, index) => new DashboardSourceRow
+                {
+                    RowNumber = index + 1,
+                    Source = s
+                }).ToList();
 
-            // ═══ بطاقة 2: إجمالي النشاط بجميع الوحدات ═══
-            UpdateTotalActivityItems(sources);
+                // تعبئة قوائم الفلاتر الديناميكية
+                var isotopes = sources
+                    .SelectMany(s => s.DisplayIsotopesList)
+                    .Where(x => !string.IsNullOrEmpty(x))
+                    .Distinct()
+                    .OrderBy(x => x)
+                    .ToList();
+                isotopes.Insert(0, ""); // "الكل"
+                AvailableIsotopes = new ObservableCollection<string>(isotopes);
 
-            // ═══ رسم الأعمدة: جميع المصادر مقابل النشاط ═══
-            UpdateBarChart(sources);
+                var locations = sources
+                    .Where(s => s.Location != null)
+                    .Select(s => s.Location!.LocationName)
+                    .Distinct()
+                    .OrderBy(x => x)
+                    .ToList();
+                locations.Insert(0, ""); // "الكل"
+                AvailableLocations = new ObservableCollection<string>(locations);
 
-            // ═══ مخطط دائري: توزيع النظائر (جميع النظائر الموجودة في المصادر) ═══
-            UpdatePieChart(sources);
+                CurrentPage = 1;
+                ApplyFiltersAndPagination();
 
-            // ═══ مخطط دائري: توزيع المواقع ═══
-            UpdateLocationChart(sources);
+                AvailableSources = new ObservableCollection<Source>(
+                    sources.Where(s =>
+                        (s.Radioisotope != null && s.InitialActivityUnit != null) ||
+                        (s.HasDetailedIsotopes && s.SourceIsotopes != null && s.SourceIsotopes.Any(si => si.Radioisotope != null))
+                    ).ToList());
+            });
 
-            // ═══ منحنى التحلل: أعلى 5 مصادر + اختيار ═══
-            AvailableSources = new ObservableCollection<Source>(
-                sources.Where(s =>
-                    (s.Radioisotope != null && s.InitialActivityUnit != null) ||
-                    (s.HasDetailedIsotopes && s.SourceIsotopes != null && s.SourceIsotopes.Any(si => si.Radioisotope != null))
-                ).ToList());
-            UpdateDecayCurves(sources, SelectedDecaySource);
+            // ═══ بطاقة 2: إجمالي النشاط بجميع الوحدات (try/catch منفصل) ═══
+            try
+            {
+                UpdateTotalActivityItems(sources);
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("DashboardViewModel: UpdateTotalActivityItems failed", ex);
+            }
 
-            // ═══ مصادر لوحة القيادة (كائنات Source مباشرة) ═══
-            DashboardSources = new ObservableCollection<Source>(sources);
+            // ═══ رسم Histogram: نطاقات النشاط (البند 1) ═══
+            try
+            {
+                UpdateActivityHistogram(sources);
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("DashboardViewModel: UpdateActivityHistogram failed", ex);
+            }
 
-            // ═══ الجزء 1: بطاقة تنبيهات انخفاض النشاط ═══
-            UpdateLowActivityAlertCard(sources);
+            // ═══ شريطي أفقي: توزيع النظائر Top-10 + Others (البند 2) ═══
+            try
+            {
+                UpdateIsotopeChart(sources);
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("DashboardViewModel: UpdateIsotopeChart failed", ex);
+            }
 
-            // ═══ الجزء 2: بطاقة ملخص الاستعارات ═══
-            UpdateBorrowSummaryCard();
+            // ═══ شريطي أفقي: توزيع المواقع Top-10 + Others (البند 2) ═══
+            try
+            {
+                UpdateLocationChart(sources);
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("DashboardViewModel: UpdateLocationChart failed", ex);
+            }
 
-            // ═══ الجزء 3: جدول مصادر منخفضة النشاط ═══
-            UpdateLowActivityTable(sources);
+            // ═══ منحنى التحلل: أعلى 5 مصادر + اختيار (try/catch منفصل) ═══
+            try
+            {
+                UpdateDecayCurves(sources, SelectedDecaySource);
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("DashboardViewModel: UpdateDecayCurves failed", ex);
+            }
+
+            // ═══ الجزء 1: بطاقة تنبيهات انخفاض النشاط (try/catch منفصل) ═══
+            try
+            {
+                UpdateLowActivityAlertCard(sources);
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("DashboardViewModel: UpdateLowActivityAlertCard failed", ex);
+            }
+
+            // ═══ الجزء 2: بطاقة ملخص الاستعارات (try/catch منفصل) ═══
+            try
+            {
+                UpdateBorrowSummaryCard();
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("DashboardViewModel: UpdateBorrowSummaryCard failed", ex);
+            }
+
+            // ═══ الجزء 3: جدول مصادر منخفضة النشاط (try/catch منفصل) ═══
+            try
+            {
+                UpdateLowActivityTable(sources);
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("DashboardViewModel: UpdateLowActivityTable failed", ex);
+            }
         }
         catch (Exception ex)
         {
             LoggerService.LogError(TranslationHelper.GetString("MsgErrDashboardLoad"), ex);
+        }
+    }
+
+    private static void RunOnUI(Action action)
+    {
+        if (System.Windows.Application.Current?.Dispatcher != null && !System.Windows.Application.Current.Dispatcher.CheckAccess())
+        {
+            System.Windows.Application.Current.Dispatcher.Invoke(action);
+        }
+        else
+        {
+            action();
         }
     }
 
@@ -315,7 +608,6 @@ public partial class DashboardViewModel : ObservableObject
                         _ => halfLife * 365.25
                     };
                     double lambda = Math.Log(2) / hlDays;
-                    // Reverse decay for 1 day: A_yesterday = A_today / e^-lambda*1 = A_today * e^lambda
                     double yesterdayBq = currentBq * Math.Exp(lambda);
                     previousDayBq += yesterdayBq;
                 }
@@ -326,39 +618,39 @@ public partial class DashboardViewModel : ObservableObject
             }
 
             // Set main display value
-            TotalActivityDisplay = $"{totalBq:N0} Bq";
-
-            // Calculate percentage change
-            if (previousDayBq > 0)
+            RunOnUI(() =>
             {
-                double change = ((totalBq - previousDayBq) / previousDayBq) * 100;
-                // Since total activity *always* decreases due to decay, change will naturally be negative.
-                // However visually, if they just added a source, it would go up.
-                // For demonstration, we'll format it:
-                if (change > 0)
+                TotalActivityDisplay = $"{totalBq:N0} Bq";
+
+                // Calculate percentage change
+                if (previousDayBq > 0)
                 {
-                    ActivityChangePercent = $"+{change:F2}%";
-                    ActivityChangeColor = "#4CAF50"; // Green
-                    ActivityChangeIcon = "ArrowTopRight";
+                    double change = ((totalBq - previousDayBq) / previousDayBq) * 100;
+                    if (change > 0)
+                    {
+                        ActivityChangePercent = $"+{change:F2}%";
+                        ActivityChangeColor = "#4CAF50";
+                        ActivityChangeIcon = "ArrowTopRight";
+                    }
+                    else
+                    {
+                        ActivityChangePercent = $"{Math.Abs(change):F2}%";
+                        ActivityChangeColor = "#F44336";
+                        ActivityChangeIcon = "ArrowBottomRight";
+                    }
                 }
                 else
                 {
-                    ActivityChangePercent = $"{Math.Abs(change):F2}%"; // Show absolute value with down arrow
-                    ActivityChangeColor = "#F44336"; // Red
-                    ActivityChangeIcon = "ArrowBottomRight";
+                    ActivityChangePercent = "0.00%";
+                    ActivityChangeColor = "{DynamicResource TextSecondary}";
+                    ActivityChangeIcon = "Minus";
                 }
-            }
-            else
-            {
-                ActivityChangePercent = "0.00%";
-                ActivityChangeColor = "{DynamicResource TextSecondary}";
-                ActivityChangeIcon = "Minus";
-            }
+            });
 
             using var db = App.CreateDbContext();
             var activityUnits = db.ActivityUnits.OrderBy(u => u.UnitName).ToList();
 
-            var items = new ObservableCollection<TotalActivityItem>();
+            var items = new List<TotalActivityItem>();
             foreach (var unit in activityUnits)
             {
                 double converted = totalBq / unit.ConversionToBq;
@@ -369,90 +661,230 @@ public partial class DashboardViewModel : ObservableObject
                     DisplayValue = FormatActivityValue(converted, unit.UnitSymbol)
                 });
             }
-            TotalActivityItems = items;
+
+            RunOnUI(() => TotalActivityItems = new ObservableCollection<TotalActivityItem>(items));
         }
-        catch { }
+        catch (Exception ex)
+        {
+            LoggerService.LogError("DashboardViewModel: Failed to update total activity items", ex);
+        }
     }
 
-    // ───────────── رسم الأعمدة (جميع المصادر) — محاور بالإنجليزية ─────────────
-    private void UpdateBarChart(List<Source> sources)
+    // ───────────── دوال تنسيق النشاط بالصيغة العلمية ─────────────
+    public static string FormatScientificBq(double bq)
     {
-        var activeSources = sources
-            .Where(s => s.CurrentActivityValue > 0)
-            .OrderByDescending(s =>
-            {
-                var unit = s.CurrentActivityUnit;
-                return unit != null ? s.CurrentActivityValue * unit.ConversionToBq : s.CurrentActivityValue;
-            })
-            .ToList();
+        if (bq <= 0) return "0 Bq";
+        if (bq < 1000) return $"{bq:N0} Bq";
+        int exponent = (int)Math.Floor(Math.Log10(bq));
+        double mantissa = bq / Math.Pow(10, exponent);
+        string expStr = ToSuperscript(exponent);
+        return $"{mantissa:F2}×10{expStr} Bq";
+    }
 
-        var axisPaint = GetAxisPaint();
-
-        if (!activeSources.Any())
+    private static string ToSuperscript(int number)
+    {
+        var str = number.ToString();
+        var sb = new System.Text.StringBuilder();
+        foreach (var c in str)
         {
-            BarXAxes = new Axis[] { new Axis { TextSize = 10, LabelsPaint = axisPaint } };
-            BarYAxes = new Axis[] { new Axis { TextSize = 11, LabelsPaint = axisPaint } };
-            return;
+            sb.Append(c switch
+            {
+                '0' => '⁰',
+                '1' => '¹',
+                '2' => '²',
+                '3' => '³',
+                '4' => '⁴',
+                '5' => '⁵',
+                '6' => '⁶',
+                '7' => '⁷',
+                '8' => '⁸',
+                '9' => '⁹',
+                '-' => '⁻',
+                _ => c
+            });
         }
+        return sb.ToString();
+    }
 
-        var labels = activeSources.Select(s => s.SourceCode).ToArray();
-        var values = activeSources.Select(s =>
+    // ═══════════════════════════════════════════════════════════════════════
+    // البند 1: Histogram — توزيع المصادر على نطاقات نشاط لوغاريتمية
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// دالة بحتة قابلة للاختبار: تصنيف قائمة نشاطات (Bq) على نطاقات Histogram
+    /// </summary>
+    public static int[] ComputeHistogramBins(IEnumerable<double> activityBqValues)
+    {
+        var counts = new int[HistogramBins.Length];
+        foreach (var bq in activityBqValues)
+        {
+            if (bq <= 0) continue;
+            for (int i = 0; i < HistogramBins.Length; i++)
+            {
+                if (bq >= HistogramBins[i].Lower && bq < HistogramBins[i].Upper)
+                {
+                    counts[i]++;
+                    break;
+                }
+            }
+        }
+        return counts;
+    }
+
+    private void UpdateActivityHistogram(List<Source> sources)
+    {
+        var activeSources = sources.Where(s => s.CurrentActivityValue > 0).ToList();
+
+        // حساب النشاط بالـ Bq لكل مصدر وتصنيفه
+        _histogramBinSources = new Dictionary<int, List<Source>>();
+        for (int i = 0; i < HistogramBins.Length; i++)
+            _histogramBinSources[i] = new List<Source>();
+
+        foreach (var s in activeSources)
         {
             var unit = s.CurrentActivityUnit;
             double bq = unit != null ? s.CurrentActivityValue * unit.ConversionToBq : s.CurrentActivityValue;
-            return bq > 0 ? Math.Log10(bq) : 0; // Manual log transform for Y-axis
-        }).ToArray();
-
-        SourceActivityBarSeries = new ISeries[]
-        {
-            new ColumnSeries<double>
+            for (int i = 0; i < HistogramBins.Length; i++)
             {
-                Values = values,
-                Name = "Activity (Bq)",
-                Fill = new SolidColorPaint(SKColor.Parse("#1F5A66")),
-                Stroke = null,
-                MaxBarWidth = 30,
-                Padding = 4
-            }
-        };
-
-        var axisLinePaint = new SolidColorPaint(new SKColor(180, 180, 180, 100)) { StrokeThickness = 1 };
-
-        BarXAxes = new Axis[]
-        {
-            new Axis
-            {
-                Labels = labels,
-                TextSize = 10,
-                LabelsRotation = activeSources.Count > 8 ? -45 : 0,
-                LabelsPaint = axisPaint,
-                SeparatorsPaint = axisLinePaint
-            }
-        };
-        BarYAxes = new Axis[]
-        {
-            new Axis
-            {
-                TextSize = 11,
-                Labeler = value =>
+                if (bq >= HistogramBins[i].Lower && bq < HistogramBins[i].Upper)
                 {
-                    double real = Math.Pow(10, value);
-                    if (real < 1) return "0";
-                    if (real < 1_000) return real.ToString("N0");
-                    if (real < 1_000_000) return (real / 1_000).ToString("N1") + "K";
-                    if (real < 1_000_000_000) return (real / 1_000_000).ToString("N1") + "M";
-                    return (real / 1_000_000_000).ToString("N1") + "G";
-                },
-                LabelsPaint = axisPaint,
-                SeparatorsPaint = axisLinePaint,
-                Position = LiveChartsCore.Measure.AxisPosition.Start,
-                MinStep = 1
+                    _histogramBinSources[i].Add(s);
+                    break;
+                }
+            }
+        }
+
+        var counts = _histogramBinSources.OrderBy(kv => kv.Key).Select(kv => kv.Value.Count).ToArray();
+        var labels = HistogramBins.Select(b => b.Label).ToArray();
+
+        var axisPaint = GetAxisPaint();
+        var axisLinePaint = new SolidColorPaint(new SKColor(180, 180, 180, 70)) { StrokeThickness = 1 };
+        var dataLabelsPaint = GetAxisPaint();
+        var primaryPaint = new SolidColorPaint(SKColor.Parse("#1F5A66"));
+        var accentPaint = new SolidColorPaint(SKColor.Parse("#4F7FA3"));
+
+        var columnSeries = new ColumnSeries<int>
+        {
+            Values = counts,
+            Name = string.Empty,
+            Fill = primaryPaint,
+            Stroke = null,
+            MaxBarWidth = 50,
+            Padding = 8,
+            DataLabelsPaint = dataLabelsPaint,
+            DataLabelsSize = 13,
+            DataLabelsPosition = LiveChartsCore.Measure.DataLabelsPosition.Top,
+            DataLabelsFormatter = point => point.Model > 0 ? point.Model.ToString() : "",
+            YToolTipLabelFormatter = point =>
+            {
+                int idx = point.Index;
+                if (idx >= 0 && idx < HistogramBins.Length)
+                {
+                    string range = HistogramBins[idx].Label;
+                    return ArabicReshaper.ReshapeAndReverse($"{range}: {point.Model} مصدر");
+                }
+                return point.Model.ToString();
             }
         };
+
+        columnSeries.PointMeasured += point =>
+        {
+            if (point.Visual != null)
+            {
+                // تلوين الأعمدة ذات الأعداد الأعلى بلون أغمق
+                point.Visual.Fill = point.Model > 0 ? primaryPaint : accentPaint;
+            }
+        };
+
+        // التقاط الضغط على العمود مباشرة من الـ Series كطبقة أمان إضافية مع معالج XAML
+        columnSeries.ChartPointPointerDown += (chart, point) =>
+        {
+            if (point == null) return;
+            int idx = point.Index;
+            RunOnUI(() => OpenHistogramDrillDown(idx));
+        };
+
+        int maxCount = counts.Any() ? counts.Max() : 10;
+
+        RunOnUI(() =>
+        {
+            BarDrawMargin = new LiveChartsCore.Measure.Margin(60, 30, 30, 50);
+            ActivityHistogramSeries = new ISeries[] { columnSeries };
+
+            HistogramXAxes = new Axis[]
+            {
+                new Axis
+                {
+                    Labels = labels,
+                    TextSize = 11,
+                    LabelsRotation = 0,
+                    LabelsPaint = axisPaint,
+                    SeparatorsPaint = null,
+                    MinStep = 1,
+                    ForceStepToMin = true
+                }
+            };
+
+            HistogramYAxes = new Axis[]
+            {
+                new Axis
+                {
+                    TextSize = 11,
+                    LabelsPaint = axisPaint,
+                    SeparatorsPaint = axisLinePaint,
+                    MinLimit = 0,
+                    MinStep = 1,
+                    Labeler = v => ((int)v).ToString()
+                }
+            };
+        });
     }
 
-    // ───────────── مخطط دائري (جميع النظائر الموجودة فعلياً في المصادر) ─────────────
-    private void UpdatePieChart(List<Source> sources)
+    /// <summary>
+    /// فتح Side Panel بتفاصيل المصادر في نطاق Histogram محدد (البند 1 + 4)
+    /// </summary>
+    [RelayCommand]
+    public void OpenHistogramDrillDown(int binIndex)
+    {
+        if (!_histogramBinSources.ContainsKey(binIndex)) return;
+        var sourcesInBin = _histogramBinSources[binIndex];
+
+        var rows = sourcesInBin.Select((s, i) => new DashboardSourceRow
+        {
+            RowNumber = i + 1,
+            Source = s
+        }).ToList();
+
+        SidePanelTitle = $"{TranslationHelper.GetString("DrilldownTitle")} ({HistogramBins[binIndex].Label} Bq)";
+        SidePanelSources = new ObservableCollection<DashboardSourceRow>(rows);
+        SidePanelShowSources = true;
+        IsSidePanelOpen = true;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // البند 2: Top-10 + Others — توزيع النظائر والمواقع
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// دالة بحتة قابلة للاختبار: تحويل قائمة (اسم, عدد) إلى Top-10 + Others
+    /// </summary>
+    public static List<(string Label, int Count)> ComputeTopNPlusOthers(
+        IEnumerable<(string Label, int Count)> items, int topN = 10, string othersLabel = "أخرى")
+    {
+        var sorted = items.OrderByDescending(x => x.Count).ToList();
+        var top = sorted.Take(topN).ToList();
+        var rest = sorted.Skip(topN).ToList();
+
+        if (rest.Any())
+        {
+            int othersCount = rest.Sum(x => x.Count);
+            top.Add((othersLabel, othersCount));
+        }
+
+        return top;
+    }
+
+    private void UpdateIsotopeChart(List<Source> sources)
     {
         // جمع جميع النظائر من المصادر (بما في ذلك المصادر متعددة النظائر)
         var isotopeNames = new List<string>();
@@ -460,11 +892,12 @@ public partial class DashboardViewModel : ObservableObject
         {
             if (!string.IsNullOrEmpty(s.DisplayIsotopes))
             {
-                // DisplayIsotopes قد يحتوي على عدة نظائر مفصولة بفاصلة أو +
                 var parts = s.DisplayIsotopes.Split(new[] { ',', '+', '/' }, StringSplitOptions.RemoveEmptyEntries);
                 foreach (var part in parts)
                 {
-                    isotopeNames.Add(part.Trim());
+                    var cleaned = part.Replace("\u202A", "").Replace("\u202C", "").Trim();
+                    if (!string.IsNullOrWhiteSpace(cleaned))
+                        isotopeNames.Add(cleaned);
                 }
             }
             else if (s.Radioisotope != null)
@@ -475,94 +908,384 @@ public partial class DashboardViewModel : ObservableObject
 
         var byIsotope = isotopeNames
             .GroupBy(name => name)
-            .Select(g => new { Label = g.Key, Count = g.Count() })
-            .OrderByDescending(x => x.Count)
+            .Select(g => (Label: g.Key, Count: g.Count()))
             .ToList();
 
-        // فحص كفاية البيانات: يجب أن يوجد نوعان على الأقل لإظهار رسم مفيد
-        HasEnoughIsotopeData = byIsotope.Count >= 2;
+        int totalIsotopesCount = byIsotope.Sum(x => x.Count);
+
+        // تخزين البيانات الكاملة لـ "عرض الكل"
+        _allIsotopeData = byIsotope
+            .OrderByDescending(x => x.Count)
+            .Select(x => (x.Label, x.Count, Percent: totalIsotopesCount > 0 ? x.Count * 100.0 / totalIsotopesCount : 0.0))
+            .ToList();
+
+        // Top-10 + Others
+        string othersLabel = TranslationHelper.GetString("LabelOthers");
+        var topPlusOthers = ComputeTopNPlusOthers(byIsotope, 10, othersLabel);
+
+        HasEnoughIsotopeData = topPlusOthers.Count >= 2;
 
         if (HasEnoughIsotopeData)
         {
-            var dataLabelsPaint = GetPieDataLabelsPaint();
-            SourcesByIsotopeSeries = byIsotope.Select((x, idx) => new PieSeries<int>
-            {
-                Values = new[] { x.Count },
-                Name = x.Label,
-                Fill = new SolidColorPaint(SKColor.Parse(ChartPalette[idx % ChartPalette.Length])),
-                InnerRadius = 40,
-                DataLabelsPaint = dataLabelsPaint,
-                DataLabelsSize = 13,
-                DataLabelsPosition = LiveChartsCore.Measure.PolarLabelsPosition.Middle
-            } as ISeries).ToArray();
+            // عكس الترتيب لكي يظهر العنصر الأعلى تكراراً في أعلى المحور الرأسي
+            var orderedForChart = topPlusOthers.AsEnumerable().Reverse().ToList();
 
-            // تحديث مفتاح الرسم المخصص
-            var legend = new ObservableCollection<LegendItem>();
-            for (int i = 0; i < SourcesByIsotopeSeries.Length; i++)
+            var rawLabels = orderedForChart.Select(x => x.Label).ToArray();
+            var shapedLabels = rawLabels.Select(l => ArabicReshaper.ReshapeAndReverse(l)).ToArray();
+            var values = orderedForChart.Select(x => x.Count).ToArray();
+
+            var axisPaint = GetAxisPaint();
+            var axisLinePaint = new SolidColorPaint(new SKColor(180, 180, 180, 70)) { StrokeThickness = 1 };
+            var topHighlightPaint = new SolidColorPaint(SKColor.Parse("#1F5A66")); // بترولي داكن لأعلى 3 نظائر
+            var normalPaint = new SolidColorPaint(SKColor.Parse("#4F7FA3"));       // أزرق هادئ موحد
+            var othersPaint = new SolidColorPaint(SKColor.Parse("#C97A4A"));       // تراكوتا لـ "أخرى"
+            var dataLabelsPaint = GetAxisPaint();
+
+            var rowSeries = new RowSeries<int>
             {
-                if (SourcesByIsotopeSeries[i] is PieSeries<int> s)
+                Values = values,
+                Name = string.Empty,
+                Fill = normalPaint,
+                Stroke = null,
+                MaxBarWidth = 18,
+                Padding = 2,
+                DataLabelsPaint = dataLabelsPaint,
+                DataLabelsSize = 11,
+                DataLabelsPosition = LiveChartsCore.Measure.DataLabelsPosition.End,
+                DataLabelsFormatter = point => $"{point.Model}",
+                XToolTipLabelFormatter = point =>
                 {
-                    legend.Add(new LegendItem 
-                    { 
-                        Label = s.Name ?? string.Empty, 
-                        Color = ChartPalette[i % ChartPalette.Length]
-                    });
+                    int idx = point.Index;
+                    string name = idx >= 0 && idx < rawLabels.Length ? rawLabels[idx] : "";
+                    int count = point.Model;
+                    double percent = totalIsotopesCount > 0 ? (count * 100.0 / totalIsotopesCount) : 0;
+                    return ArabicReshaper.ReshapeAndReverse($"{name}: {count} مصدر ({percent:F1}%)");
                 }
-            }
-            PieLegendItems = legend;
+            };
+
+            rowSeries.PointMeasured += point =>
+            {
+                if (point.Visual != null)
+                {
+                    // التحقق مما إذا كان العنصر هو "أخرى" (أول عنصر في المصفوفة المعكوسة = آخر في الأصلية)
+                    int originalIndex = values.Length - 1 - point.Index;
+                    bool isOthers = originalIndex == topPlusOthers.Count - 1 && topPlusOthers.Last().Label == othersLabel;
+                    bool isTop3 = point.Index >= values.Length - 3 && !isOthers;
+
+                    if (isOthers) point.Visual.Fill = othersPaint;
+                    else if (isTop3) point.Visual.Fill = topHighlightPaint;
+                    else point.Visual.Fill = normalPaint;
+                }
+            };
+
+            RunOnUI(() =>
+            {
+                IsotopeDrawMargin = new LiveChartsCore.Measure.Margin(95, 35, 30, 40);
+                SourcesByIsotopeSeries = new ISeries[] { rowSeries };
+
+                // البند 5: IsInverted = true لـ RTL
+                IsotopeXAxes = new Axis[]
+                {
+                    new Axis
+                    {
+                        TextSize = 10,
+                        LabelsPaint = axisPaint,
+                        SeparatorsPaint = axisLinePaint,
+                        MinStep = 1,
+                        IsInverted = true
+                    }
+                };
+
+                IsotopeYAxes = new Axis[]
+                {
+                    new Axis
+                    {
+                        Labels = shapedLabels,
+                        TextSize = 11,
+                        LabelsPaint = axisPaint,
+                        SeparatorsPaint = null,
+                        MinStep = 1,
+                        ForceStepToMin = true
+                    }
+                };
+            });
         }
         else
         {
-            SourcesByIsotopeSeries = Array.Empty<ISeries>();
-            PieLegendItems.Clear();
+            RunOnUI(() => SourcesByIsotopeSeries = Array.Empty<ISeries>());
         }
     }
 
-    // ───────────── مخطط دائري: توزيع المصادر حسب الموقع ─────────────
     private void UpdateLocationChart(List<Source> sources)
     {
-        var locations = sources
+        int totalValidSources = sources.Count(s => s.Location != null);
+        var locationGroups = sources
             .Where(s => s.Location != null)
             .GroupBy(s => s.Location!.LocationName)
-            .Select(g => new { Label = g.Key, Count = g.Count() })
-            .OrderByDescending(x => x.Count)
+            .Select(g => (Label: g.Key, Count: g.Count()))
             .ToList();
 
-        // فحص كفاية البيانات: يجب أن يوجد موقعان على الأقل لإظهار رسم مفيد
-        HasEnoughLocationData = locations.Count >= 2;
+        // تخزين البيانات الكاملة لـ "عرض الكل"
+        _allLocationData = locationGroups
+            .OrderByDescending(x => x.Count)
+            .Select(x => (x.Label, x.Count, Percent: totalValidSources > 0 ? x.Count * 100.0 / totalValidSources : 0.0))
+            .ToList();
+
+        // Top-10 + Others
+        string othersLabel = TranslationHelper.GetString("LabelOthers");
+        var topPlusOthers = ComputeTopNPlusOthers(locationGroups, 10, othersLabel);
+
+        HasEnoughLocationData = topPlusOthers.Count >= 2;
 
         if (HasEnoughLocationData)
         {
-            var dataLabelsPaint = GetPieDataLabelsPaint();
-            SourcesByLocationSeries = locations.Select((x, idx) => (ISeries)new PieSeries<int>
+            // عكس الترتيب لكي يظهر الموقع الأكبر في الأعلى
+            var orderedForChart = topPlusOthers.AsEnumerable().Reverse().ToList();
+
+            var rawLabels = orderedForChart.Select(x => x.Label).ToArray();
+            var axisLabels = rawLabels.Select(l =>
             {
-                Values = new[] { x.Count },
-                Name = x.Label,
-                Fill = new SolidColorPaint(SKColor.Parse(ChartPalette[idx % ChartPalette.Length])),
-                InnerRadius = 40,
-                DataLabelsPaint = dataLabelsPaint,
-                DataLabelsSize = 13,
-                DataLabelsPosition = LiveChartsCore.Measure.PolarLabelsPosition.Middle
+                // عرض اسم الموقع كاملاً بدون اقتطاع قسري عند 20 حرفاً
+                string display = l;
+                if (display.Length > 40)
+                {
+                    display = display.Substring(0, 38) + "...";
+                }
+                return ArabicReshaper.ReshapeAndReverse(display);
             }).ToArray();
 
-            var legend = new ObservableCollection<LegendItem>();
-            for (int i = 0; i < SourcesByLocationSeries.Length; i++)
+            var values = orderedForChart.Select(x => x.Count).ToArray();
+
+            // حساب الهامش الأيسر ديناميكياً لضمان عدم اقتطاع أسماء المواقع العربية الطويلة
+            int maxLen = rawLabels.Any() ? rawLabels.Max(l => l.Length) : 10;
+            int dynamicLeftMargin = Math.Min(300, Math.Max(180, (int)(maxLen * 7.5 + 40)));
+
+            var axisPaint = GetAxisPaint();
+            var axisLinePaint = new SolidColorPaint(new SKColor(180, 180, 180, 70)) { StrokeThickness = 1 };
+            var topHighlightPaint = new SolidColorPaint(SKColor.Parse("#1F5A66")); // بترولي داكن لأعلى 3 مواقع
+            var normalPaint = new SolidColorPaint(SKColor.Parse("#4F7FA3"));       // أزرق هادئ موحد
+            var othersPaint = new SolidColorPaint(SKColor.Parse("#C97A4A"));       // تراكوتا لـ "أخرى"
+            var dataLabelsPaint = GetAxisPaint();
+
+            var rowSeries = new RowSeries<int>
             {
-                if (SourcesByLocationSeries[i] is PieSeries<int> s)
+                Values = values,
+                Name = string.Empty,
+                Fill = normalPaint,
+                Stroke = null,
+                MaxBarWidth = 18,
+                Padding = 2,
+                DataLabelsPaint = dataLabelsPaint,
+                DataLabelsSize = 11,
+                DataLabelsPosition = LiveChartsCore.Measure.DataLabelsPosition.End,
+                DataLabelsFormatter = point =>
                 {
-                    legend.Add(new LegendItem 
-                    { 
-                        Label = s.Name ?? string.Empty, 
-                        Color = ChartPalette[i % ChartPalette.Length]
-                    });
+                    int count = point.Model;
+                    double percent = totalValidSources > 0 ? (count * 100.0 / totalValidSources) : 0;
+                    return $"{count} ({percent:F1}%)";
+                },
+                XToolTipLabelFormatter = point =>
+                {
+                    int count = point.Model;
+                    double percent = totalValidSources > 0 ? (count * 100.0 / totalValidSources) : 0;
+                    int idx = point.Index;
+                    string rawName = idx >= 0 && idx < rawLabels.Length ? rawLabels[idx] : "";
+                    return ArabicReshaper.ReshapeAndReverse($"{rawName}: {count} مصدر ({percent:F1}%)");
                 }
-            }
-            LocationLegendItems = legend;
+            };
+
+            rowSeries.PointMeasured += point =>
+            {
+                if (point.Visual != null)
+                {
+                    int originalIndex = values.Length - 1 - point.Index;
+                    bool isOthers = originalIndex == topPlusOthers.Count - 1 && topPlusOthers.Last().Label == othersLabel;
+                    bool isTop3 = point.Index >= values.Length - 3 && !isOthers;
+
+                    if (isOthers) point.Visual.Fill = othersPaint;
+                    else if (isTop3) point.Visual.Fill = topHighlightPaint;
+                    else point.Visual.Fill = normalPaint;
+                }
+            };
+
+            RunOnUI(() =>
+            {
+                LocationDrawMargin = new LiveChartsCore.Measure.Margin(dynamicLeftMargin, 35, 30, 40);
+                SourcesByLocationSeries = new ISeries[] { rowSeries };
+
+                // البند 5: IsInverted = true لـ RTL
+                LocationXAxes = new Axis[]
+                {
+                    new Axis
+                    {
+                        TextSize = 10,
+                        LabelsPaint = axisPaint,
+                        SeparatorsPaint = axisLinePaint,
+                        MinStep = 1,
+                        IsInverted = true
+                    }
+                };
+
+                LocationYAxes = new Axis[]
+                {
+                    new Axis
+                    {
+                        Labels = axisLabels,
+                        TextSize = 11,
+                        LabelsPaint = axisPaint,
+                        SeparatorsPaint = null,
+                        MinStep = 1,
+                        ForceStepToMin = true
+                    }
+                };
+            });
         }
         else
         {
-            SourcesByLocationSeries = Array.Empty<ISeries>();
-            LocationLegendItems.Clear();
+            RunOnUI(() => SourcesByLocationSeries = Array.Empty<ISeries>());
+        }
+    }
+
+    /// <summary>فتح Side Panel بجميع النظائر</summary>
+    [RelayCommand]
+    public void ShowAllIsotopes()
+    {
+        SidePanelTitle = TranslationHelper.GetString("AllIsotopesTitle");
+        SidePanelDistribution = new ObservableCollection<DistributionRow>(
+            _allIsotopeData.Select(x => new DistributionRow
+            {
+                Label = x.Label,
+                Count = x.Count,
+                Percent = $"{x.Percent:F1}%"
+            }));
+        SidePanelShowSources = false;
+        IsSidePanelOpen = true;
+    }
+
+    /// <summary>فتح Side Panel بجميع المواقع</summary>
+    [RelayCommand]
+    public void ShowAllLocations()
+    {
+        SidePanelTitle = TranslationHelper.GetString("AllLocationsTitle");
+        SidePanelDistribution = new ObservableCollection<DistributionRow>(
+            _allLocationData.Select(x => new DistributionRow
+            {
+                Label = x.Label,
+                Count = x.Count,
+                Percent = $"{x.Percent:F1}%"
+            }));
+        SidePanelShowSources = false;
+        IsSidePanelOpen = true;
+    }
+
+    /// <summary>إغلاق Side Panel</summary>
+    [RelayCommand]
+    public void CloseSidePanel()
+    {
+        IsSidePanelOpen = false;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // البند 3: بحث + فلاتر + Pagination
+    // ═══════════════════════════════════════════════════════════════════════
+
+    private void ApplyFiltersAndPagination()
+    {
+        var filtered = _allSourceRows.AsEnumerable();
+
+        // بحث نصي حر (SourceCode + SerialNumber)
+        if (!string.IsNullOrWhiteSpace(SearchText))
+        {
+            var term = SearchText.Trim().ToLower();
+            filtered = filtered.Where(r =>
+                r.SourceCode.ToLower().Contains(term) ||
+                (r.Source.SerialNumber?.ToLower().Contains(term) == true));
+        }
+
+        // فلتر النظير
+        if (!string.IsNullOrEmpty(SelectedIsotopeFilter))
+        {
+            filtered = filtered.Where(r =>
+                r.Source.DisplayIsotopesList.Any(iso =>
+                    iso.Equals(SelectedIsotopeFilter, StringComparison.OrdinalIgnoreCase)));
+        }
+
+        // فلتر الموقع
+        if (!string.IsNullOrEmpty(SelectedLocationFilter))
+        {
+            filtered = filtered.Where(r =>
+                r.Source.Location?.LocationName == SelectedLocationFilter);
+        }
+
+        // فلتر الحالة
+        if (!string.IsNullOrEmpty(SelectedStatusFilter))
+        {
+            filtered = filtered.Where(r =>
+                r.Source.Status == SelectedStatusFilter);
+        }
+
+        var filteredList = filtered.ToList();
+        TotalFilteredCount = filteredList.Count;
+        TotalPages = Math.Max(1, (int)Math.Ceiling((double)filteredList.Count / PageSize));
+
+        if (CurrentPage > TotalPages)
+            CurrentPage = TotalPages;
+        if (CurrentPage < 1)
+            CurrentPage = 1;
+
+        // تطبيق الترقيم المستمر عبر الصفحات
+        int skip = (CurrentPage - 1) * PageSize;
+        var pageItems = filteredList.Skip(skip).Take(PageSize).ToList();
+
+        // إعادة ترقيم الصفوف بشكل مستمر
+        for (int i = 0; i < pageItems.Count; i++)
+        {
+            pageItems[i].RowNumber = skip + i + 1;
+        }
+
+        DashboardSources = new ObservableCollection<DashboardSourceRow>(pageItems);
+        PageInfo = $"{CurrentPage} / {TotalPages}";
+    }
+
+    [RelayCommand]
+    public void NextPage()
+    {
+        if (CurrentPage < TotalPages)
+        {
+            CurrentPage++;
+            ApplyFiltersAndPagination();
+        }
+    }
+
+    [RelayCommand]
+    public void PreviousPage()
+    {
+        if (CurrentPage > 1)
+        {
+            CurrentPage--;
+            ApplyFiltersAndPagination();
+        }
+    }
+
+    [RelayCommand]
+    public void ResetFilters()
+    {
+        SearchText = string.Empty;
+        SelectedIsotopeFilter = string.Empty;
+        SelectedLocationFilter = string.Empty;
+        SelectedStatusFilter = string.Empty;
+        CurrentPage = 1;
+        ApplyFiltersAndPagination();
+    }
+
+    [RelayCommand]
+    public void ChangePageSize(string newSizeStr)
+    {
+        if (int.TryParse(newSizeStr, out int newSize) && newSize > 0)
+        {
+            PageSize = newSize;
+            CurrentPage = 1;
+            ApplyFiltersAndPagination();
         }
     }
 
@@ -981,12 +1704,13 @@ public partial class DashboardViewModel : ObservableObject
     private static double ConvertHalfLifeToSeconds(double value, string? unit) =>
         unit?.ToLower() switch
         {
-            "seconds" => value,
-            "minutes" => value * 60,
-            "hours"   => value * 3600,
-            "days"    => value * 86400,
-            "years"   => value * 365.25 * 86400,
-            _         => value * 365.25 * 86400
+            "seconds" or "second" or "s" => value,
+            "minutes" or "minute" or "min" or "m" => value * 60,
+            "hours" or "hour" or "h" => value * 3600,
+            "days" or "day" or "d" => value * 86400,
+            "months" or "month" or "mo" => value * 30 * 86400,
+            "years" or "year" or "yr" or "y" => value * 365.25 * 86400,
+            _ => value * 365.25 * 86400
         };
 
     // ───────────── أوامر التنقل من لوحة القيادة ─────────────
@@ -1038,5 +1762,49 @@ public partial class DashboardViewModel : ObservableObject
                 borrowVm.OpenCreateDialogCommand.Execute(null);
             }
         }
+    }
+
+    // ───────────── عرض تفاصيل المصدر (نافذة منبثقة) ─────────────
+    [RelayCommand]
+    private void ViewSourceDetails(object? parameter)
+    {
+        Source? source = parameter switch
+        {
+            DashboardSourceRow row => row.Source,
+            Source s => s,
+            _ => null
+        };
+        if (source == null) return;
+        string lre = "\u202A";
+        string pdf = "\u202C";
+
+        string details = $"{TranslationHelper.GetString("LabelSourceCode")} {lre}{source.SourceCode}{pdf}\n" +
+                         $"{TranslationHelper.GetString("LabelIsotope")} {lre}{source.DisplayIsotopes}{pdf}\n";
+
+        if (source.HasDetailedIsotopes && source.SourceIsotopes != null && source.SourceIsotopes.Any())
+        {
+            details += $"{TranslationHelper.GetString("LabelActivityDetails")}\n";
+            foreach (var si in source.SourceIsotopes)
+            {
+                string unitSymbol = si.ActivityUnit?.UnitSymbol
+                                 ?? source.InitialActivityUnit?.UnitSymbol
+                                 ?? "Bq";
+
+                details += $"  - {lre}{si.Radioisotope?.Symbol ?? TranslationHelper.GetString("LabelIsotopeSymbol")}: {si.CurrentActivityValue:N4} {unitSymbol}{pdf}\n";
+            }
+        }
+        else
+        {
+            details += $"{TranslationHelper.GetString("LabelCurrentActivity")} {lre}{source.CurrentActivityValue:N4} {source.CurrentActivityUnit?.UnitSymbol}{pdf}\n";
+        }
+
+        details += $"{TranslationHelper.GetString("LabelSerialNumber")} {lre}{source.SerialNumber ?? "N/A"}{pdf}\n" +
+                  $"{TranslationHelper.GetString("LabelLocation")} {lre}{source.Location?.LocationName ?? "N/A"}{pdf}\n" +
+                  $"{TranslationHelper.GetString("LabelCalibrationDate")} {lre}{source.CalibrationDate:yyyy-MM-dd}{pdf}\n" +
+                  $"{TranslationHelper.GetString("LabelStatus")} {source.ArabicStatus}\n" +
+                  $"{TranslationHelper.GetString("LabelManufacturer")} {lre}{source.Manufacturer ?? "N/A"}{pdf}\n" +
+                  $"{TranslationHelper.GetString("LabelNotes")} {source.Notes ?? "N/A"}";
+
+        DialogHelper.ShowInfo(details, TranslationHelper.GetString("TitleSourceDetails"), source.ImagePath);
     }
 }

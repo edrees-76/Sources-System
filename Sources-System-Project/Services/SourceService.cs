@@ -26,6 +26,7 @@ public class SourceService : ISourceService
     {
         using var db = _dbFactory.CreateDbContext();
         return db.Sources
+            .AsSplitQuery()
             .Include(s => s.Radioisotope)
             .Include(s => s.InitialActivityUnit)
             .Include(s => s.CurrentActivityUnit)
@@ -33,6 +34,8 @@ public class SourceService : ISourceService
             .Include(s => s.SourceIsotopes).ThenInclude(si => si.Radioisotope)
             .Include(s => s.SourceIsotopes).ThenInclude(si => si.ActivityUnit)
             .OrderByDescending(s => s.CreatedAt)
+            .ToList()
+            .DistinctBy(s => s.Id)
             .ToList();
     }
 
@@ -305,6 +308,7 @@ public class SourceService : ISourceService
     {
         using var db = _dbFactory.CreateDbContext();
         return db.Sources
+            .AsSplitQuery()
             .Include(s => s.Radioisotope)
             .Include(s => s.InitialActivityUnit)
             .Include(s => s.CurrentActivityUnit)
@@ -312,6 +316,7 @@ public class SourceService : ISourceService
             .Include(s => s.SourceIsotopes).ThenInclude(si => si.Radioisotope)
             .Where(s => s.Status == "InUse" || s.Status == "Storage")
             .ToList()
+            .DistinctBy(s => s.Id)
             .Where(s =>
             {
                 if (s.InitialActivityValue <= 0) return false;

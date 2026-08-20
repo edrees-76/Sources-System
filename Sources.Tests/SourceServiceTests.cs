@@ -702,5 +702,37 @@ public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         Assert.Single(histories);
     }
 
+    [Fact]
+    public void GetAllSources_WithMultiIsotopeSources_ReturnsExactCountOfUniqueSourcesWithoutDuplicates()
+    {
+        // Arrange
+        // 1. مصدر أحادي النظير (Single Isotope Source)
+        var singleSource = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-SINGLE-01");
+        var res1 = _sourceService.CreateSource(singleSource);
+        Assert.True(res1.Success);
+
+        // 2. مصدر متعدد النظائر بـ 3 نظائر فرعية (Multi-Isotope Source with 3 child isotopes)
+        var multiSource = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-MULTI-03");
+        var iso1 = TestDataBuilder.CreateSourceIsotope(multiSource, _isoCs137, _unitBq, initialActivity: 100.0);
+        var iso2 = TestDataBuilder.CreateSourceIsotope(multiSource, _isoCo60, _unitBq, initialActivity: 200.0);
+        var iso3 = TestDataBuilder.CreateSourceIsotope(multiSource, _isoAm241, _unitBq, initialActivity: 300.0);
+
+        var res2 = _sourceService.CreateSource(multiSource, new List<SourceIsotope> { iso1, iso2, iso3 });
+        Assert.True(res2.Success);
+
+        // Act
+        var sources = _sourceService.GetAllSources();
+
+        // Assert
+        // يجب أن تحتوي النتيجة على المصدرين فقط، وكل مصدر يظهر مرة واحدة بالضبط دون تكرار
+        Assert.Equal(2, sources.Count);
+        Assert.Equal(1, sources.Count(s => s.SourceCode == "SRC-SINGLE-01"));
+        Assert.Equal(1, sources.Count(s => s.SourceCode == "SRC-MULTI-03"));
+
+        var retrievedMulti = sources.First(s => s.SourceCode == "SRC-MULTI-03");
+        Assert.True(retrievedMulti.HasDetailedIsotopes);
+        Assert.Equal(3, retrievedMulti.SourceIsotopes.Count);
+    }
+
     #endregion
 }

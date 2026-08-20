@@ -8,759 +8,1010 @@
              xmlns:converters="clr-namespace:Sources.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="1500" d:DesignWidth="1200">
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
-        <Grid Margin="16,16,16,24">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>      <!-- Row 0: Top Cards &amp; Activity -->
-                <RowDefinition Height="16"/>        <!-- Spacer -->
-                <RowDefinition Height="Auto"/>      <!-- Row 2: Low Activity Alert + Borrow Summary + Quick Actions -->
-                <RowDefinition Height="16"/>        <!-- Spacer -->
-                <RowDefinition Height="Auto"/>      <!-- Row 4: Sources DataGrid -->
-                <RowDefinition Height="16"/>        <!-- Spacer -->
-                <RowDefinition Height="300"/>       <!-- Row 6: Charts Row 1 (Bar Activity + Decay Curve) -->
-                <RowDefinition Height="16"/>        <!-- Spacer -->
-                <RowDefinition Height="300"/>       <!-- Row 8: Charts Row 2 (Isotope Dist + Location Dist) -->
-                <RowDefinition Height="16"/>        <!-- Spacer -->
-                <RowDefinition Height="Auto"/>      <!-- Row 10: Low Activity Sources Table -->
-            </Grid.RowDefinitions>
+    <Grid>
+        <!-- الطبقة الرئيسية مع Side Panel overlay -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+            <Grid Margin="16,16,16,24">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>      <!-- Row 0: Top Cards & Activity -->
+                    <RowDefinition Height="16"/>        <!-- Spacer -->
+                    <RowDefinition Height="Auto"/>      <!-- Row 2: Low Activity Alert + Borrow Summary + Quick Actions -->
+                    <RowDefinition Height="16"/>        <!-- Spacer -->
+                    <RowDefinition Height="Auto"/>      <!-- Row 4: Sources DataGrid with Filters + Pagination -->
+                    <RowDefinition Height="16"/>        <!-- Spacer -->
+                    <RowDefinition Height="300"/>       <!-- Row 6: Charts Row 1 (Histogram + Decay Curve) -->
+                    <RowDefinition Height="16"/>        <!-- Spacer -->
+                    <RowDefinition Height="360"/>       <!-- Row 8: Charts Row 2 (Isotope Top-10 + Location Top-10) -->
+                    <RowDefinition Height="16"/>        <!-- Spacer -->
+                    <RowDefinition Height="Auto"/>      <!-- Row 10: Low Activity Sources Table -->
+                </Grid.RowDefinitions>
 
-            <!-- ============================================== -->
-            <!-- Row 0: Total Sources &amp; Total Activity          -->
-            <!-- ============================================== -->
-            <Grid Grid.Row="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" MinWidth="220"/>  <!-- Total Sources -->
-                    <ColumnDefinition Width="16"/>                   <!-- Spacer -->
-                    <ColumnDefinition Width="*"/>                    <!-- Total Activity Bar -->
-                </Grid.ColumnDefinitions>
+                <!-- ============================================== -->
+                <!-- Row 0: Total Sources & Total Activity          -->
+                <!-- ============================================== -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" MinWidth="220"/>  <!-- Total Sources -->
+                        <ColumnDefinition Width="16"/>                   <!-- Spacer -->
+                        <ColumnDefinition Width="*"/>                    <!-- Total Activity Bar -->
+                    </Grid.ColumnDefinitions>
 
-                <!-- Card 1: Total Sources Count -->
-                <Border Grid.Column="0" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="15" MinHeight="100">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
-                    </Border.Effect>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        <!-- Header -->
-                        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,4">
-                            <materialDesign:PackIcon Kind="DatabaseOutline" Width="20" Height="20" Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource TotalSources}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                        </StackPanel>
-                        <!-- Big Number -->
-                        <TextBlock Grid.Row="1" Text="{Binding TotalSources}" FontSize="36" FontWeight="Bold" 
-                                   Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Grid>
-                </Border>
-
-                <!-- Total Activity Bar (Sources-page style) -->
-                <Border Grid.Column="2" Background="{DynamicResource SidebarBackground}" CornerRadius="12" Padding="20,12" 
-                        BorderBrush="{DynamicResource GoldBrush}" BorderThickness="0,0,4,0">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="12" Opacity="0.1" ShadowDepth="3"/>
-                    </Border.Effect>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <!-- Label and Icon -->
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
-                            <materialDesign:PackIcon Kind="ChartBoxOutline" Width="24" Height="24" Foreground="White" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource LabelTotalActivityStats}" FontWeight="Bold" FontSize="14" Foreground="White" VerticalAlignment="Center" Margin="10,0,0,0"/>
-                        </StackPanel>
-
-                        <!-- Activity Values in Badges -->
-                        <ItemsControl Grid.Column="1" ItemsSource="{Binding TotalActivityItems}" VerticalAlignment="Center" HorizontalAlignment="Left">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Horizontal"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Background="{StaticResource GoldBrush}" CornerRadius="6" Padding="12,5" Margin="0,0,10,5">
-                                        <TextBlock Text="{Binding DisplayValue}" FontWeight="Bold" FontSize="13" Foreground="White" VerticalAlignment="Center" FlowDirection="LeftToRight"/>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </Grid>
-                </Border>
-            </Grid>
-
-            <!-- ============================================== -->
-            <!-- Row 2: Low Activity Alert + Borrow + Quick Actions -->
-            <!-- ============================================== -->
-            <Grid Grid.Row="2">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>   <!-- Low Activity Alert Card -->
-                    <ColumnDefinition Width="16"/>  <!-- Spacer -->
-                    <ColumnDefinition Width="*"/>   <!-- Borrow Summary Card -->
-                    <ColumnDefinition Width="16"/>  <!-- Spacer -->
-                    <ColumnDefinition Width="*"/>   <!-- Quick Actions Card -->
-                </Grid.ColumnDefinitions>
-
-                <!-- ═══ الجزء 1: بطاقة تنبيهات انخفاض النشاط ═══ -->
-                <Border Grid.Column="0" CornerRadius="12" Padding="18,14">
-                    <Border.Style>
-                        <Style TargetType="Border">
-                            <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
-                            <Setter Property="Effect">
-                                <Setter.Value>
-                                    <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
-                                </Setter.Value>
-                            </Setter>
-                            <!-- حدة حمراء جانبية عند وجود تنبيهات -->
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding HasLowActivityAlerts}" Value="True">
-                                    <Setter Property="BorderBrush" Value="#C25B4A"/>
-                                    <Setter Property="BorderThickness" Value="0,0,4,0"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Border.Style>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="12"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="10"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <!-- Header -->
-                        <StackPanel Grid.Row="0" Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="RadioactiveOff" Width="22" Height="22" VerticalAlignment="Center">
-                                <materialDesign:PackIcon.Style>
-                                    <Style TargetType="materialDesign:PackIcon">
-                                        <Setter Property="Foreground" Value="{DynamicResource GoldBrush}"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding HasLowActivityAlerts}" Value="True">
-                                                <Setter Property="Foreground" Value="#C25B4A"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </materialDesign:PackIcon.Style>
-                            </materialDesign:PackIcon>
-                            <StackPanel Margin="10,0,0,0">
-                                <TextBlock Text="{DynamicResource CardLowActivityTitle}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
-                                <TextBlock Text="{DynamicResource CardLowActivitySubtitle}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
-                            </StackPanel>
-                        </StackPanel>
-
-                        <!-- Alert Numbers — يظهر فقط عند وجود تنبيهات -->
-                        <Grid Grid.Row="2" Visibility="{Binding HasLowActivityAlerts, Converter={StaticResource BoolToVis}}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="16"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <!-- Critical -->
-                            <Border Grid.Column="0" Background="#1AC25B4A" CornerRadius="10" Padding="12,10">
-                                <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock Text="{Binding LowActivityCriticalCount}" FontSize="32" FontWeight="Bold"
-                                               Foreground="#C25B4A" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="{DynamicResource LabelCritical}" FontSize="11" FontWeight="SemiBold"
-                                               Foreground="#C25B4A" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
-                                </StackPanel>
-                            </Border>
-                            <!-- Warning -->
-                            <Border Grid.Column="2" Background="#1AE0A93E" CornerRadius="10" Padding="12,10">
-                                <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock Text="{Binding LowActivityWarningCount}" FontSize="32" FontWeight="Bold"
-                                               Foreground="#E0A93E" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="{DynamicResource LabelWarning}" FontSize="11" FontWeight="SemiBold"
-                                               Foreground="#E0A93E" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
-                                </StackPanel>
-                            </Border>
-                        </Grid>
-
-                        <!-- رسالة "ضمن الحدود الآمنة" — تظهر فقط عندما لا توجد تنبيهات -->
-                        <Border Grid.Row="2" Background="#1A3FAE7A" CornerRadius="10" Padding="12,14"
-                                Visibility="{Binding HasLowActivityAlerts, Converter={StaticResource InverseBoolToVis}}">
-                            <TextBlock Text="{DynamicResource LabelAllSafe}" FontSize="13" FontWeight="SemiBold"
-                                       Foreground="#3FAE7A" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
-                        </Border>
-
-                        <!-- رابط التقرير -->
-                        <TextBlock Grid.Row="4" Text="{DynamicResource BtnViewLowActivityReport}"
-                                   FontSize="11" Foreground="{DynamicResource GoldBrush}" 
-                                   HorizontalAlignment="Left" Cursor="Hand" TextDecorations="Underline">
-                            <TextBlock.InputBindings>
-                                <MouseBinding Gesture="LeftClick" Command="{Binding NavigateToLowActivityReportCommand}"/>
-                            </TextBlock.InputBindings>
-                        </TextBlock>
-                    </Grid>
-                </Border>
-
-                <!-- ═══ الجزء 2: بطاقة ملخص الاستعارات ═══ -->
-                <Border Grid.Column="2" CornerRadius="12" Padding="18,14">
-                    <Border.Style>
-                        <Style TargetType="Border">
-                            <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
-                            <Setter Property="Effect">
-                                <Setter.Value>
-                                    <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
-                                </Setter.Value>
-                            </Setter>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding BorrowSummary.HasAny}" Value="True">
-                                    <Setter Property="BorderBrush" Value="{DynamicResource GoldBrush}"/>
-                                    <Setter Property="BorderThickness" Value="0,0,4,0"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Border.Style>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="12"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="10"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <!-- Header -->
-                        <StackPanel Grid.Row="0" Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="SwapHorizontalCircleOutline" Width="22" Height="22"
-                                                     Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource CardBorrowSummaryTitle}" FontSize="14" FontWeight="Bold"
-                                       Foreground="{DynamicResource TextPrimary}" Margin="10,0,0,0" VerticalAlignment="Center"/>
-                        </StackPanel>
-
-                        <!-- Borrow Numbers — يظهر عند وجود استعارات نشطة -->
-                        <Grid Grid.Row="2" Visibility="{Binding BorrowSummary.HasAny, Converter={StaticResource BoolToVis}}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="8"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="8"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <!-- Overdue -->
-                            <Border Grid.Column="0" Background="#1AC25B4A" CornerRadius="10" Padding="8,10">
-                                <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock Text="{Binding BorrowSummary.OverdueCount}" FontSize="28" FontWeight="Bold"
-                                               Foreground="#C25B4A" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="{DynamicResource LabelOverdue}" FontSize="10" FontWeight="SemiBold"
-                                               Foreground="#C25B4A" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
-                                </StackPanel>
-                            </Border>
-                            <!-- Due Soon -->
-                            <Border Grid.Column="2" Background="#1AE0A93E" CornerRadius="10" Padding="8,10">
-                                <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock Text="{Binding BorrowSummary.DueSoonCount}" FontSize="28" FontWeight="Bold"
-                                               Foreground="#E0A93E" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="{DynamicResource LabelDueSoon}" FontSize="10" FontWeight="SemiBold"
-                                               Foreground="#E0A93E" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
-                                </StackPanel>
-                            </Border>
-                            <!-- Active (all borrowed) -->
-                            <Border Grid.Column="4" Background="#1A1F5A66" CornerRadius="10" Padding="8,10">
-                                <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock Text="{Binding BorrowSummary.ActiveCount}" FontSize="28" FontWeight="Bold"
-                                               Foreground="{DynamicResource GoldBrush}" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="{DynamicResource LabelActiveBorrows}" FontSize="10" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource GoldBrush}" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Border>
-                        </Grid>
-
-                        <!-- رسالة "لا استعارات" -->
-                        <Border Grid.Row="2" Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="12,14"
-                                Visibility="{Binding BorrowSummary.HasAny, Converter={StaticResource InverseBoolToVis}}">
-                            <TextBlock Text="{DynamicResource LabelNoBorrows}" FontSize="13"
-                                       Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"
-                                       TextWrapping="Wrap" TextAlignment="Center"/>
-                        </Border>
-
-                        <!-- رابط إدارة الاستعارات -->
-                        <TextBlock Grid.Row="4" Text="{DynamicResource BtnViewBorrowing}"
-                                   FontSize="11" Foreground="{DynamicResource GoldBrush}"
-                                   HorizontalAlignment="Left" Cursor="Hand" TextDecorations="Underline">
-                            <TextBlock.InputBindings>
-                                <MouseBinding Gesture="LeftClick" Command="{Binding NavigateToBorrowingCommand}"/>
-                            </TextBlock.InputBindings>
-                        </TextBlock>
-                    </Grid>
-                </Border>
-
-                <!-- ═══ الجزء 3: بطاقة الاختصارات السريعة ═══ -->
-                <Border Grid.Column="4" CornerRadius="12" Padding="18,14" Background="{DynamicResource CardBackground}">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
-                    </Border.Effect>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="12"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-
-                        <!-- Header -->
-                        <StackPanel Grid.Row="0" Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="LightningBoltCircle" Width="22" Height="22"
-                                                     Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center"/>
-                            <StackPanel Margin="10,0,0,0">
-                                <TextBlock Text="{DynamicResource CardQuickActionsTitle}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
-                                <TextBlock Text="{DynamicResource CardQuickActionsSubtitle}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
-                            </StackPanel>
-                        </StackPanel>
-
-                        <!-- Buttons Stack -->
-                        <Grid Grid.Row="2" VerticalAlignment="Center">
+                    <!-- Card 1: Total Sources Count -->
+                    <Border Grid.Column="0" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="15" MinHeight="100">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
+                        </Border.Effect>
+                        <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="8"/>
-                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-
-                            <!-- زر إضافة مصدر -->
-                            <Button Grid.Row="0" Command="{Binding QuickAddSourceCommand}"
-                                    Style="{StaticResource PrimaryButton}"
-                                    HorizontalAlignment="Stretch" Height="40" Padding="10,0">
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <materialDesign:PackIcon Kind="PlusCircleOutline" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                    <TextBlock Text="{DynamicResource BtnQuickAddSource}" FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-
-                            <!-- زر طلب استعارة -->
-                            <Button Grid.Row="2" Command="{Binding QuickBorrowSourceCommand}"
-                                    Style="{StaticResource SecondaryButton}"
-                                    HorizontalAlignment="Stretch" Height="40" Padding="10,0">
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <materialDesign:PackIcon Kind="SwapHorizontalCircleOutline" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                    <TextBlock Text="{DynamicResource BtnQuickBorrowSource}" FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
+                            <!-- Header -->
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,4">
+                                <materialDesign:PackIcon Kind="DatabaseOutline" Width="20" Height="20" Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource TotalSources}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <!-- Big Number -->
+                            <TextBlock Grid.Row="1" Text="{Binding TotalSources}" FontSize="36" FontWeight="Bold" 
+                                       Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Grid>
-                    </Grid>
-                </Border>
-            </Grid>
+                    </Border>
 
-            <!-- ============================================== -->
-            <!-- Row 4: Sources DataGrid (matching SourcesView) -->
-            <!-- ============================================== -->
-            <Border Grid.Row="4" Style="{DynamicResource ContentCard}" VerticalAlignment="Stretch">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,12">
-                        <materialDesign:PackIcon Kind="TableLarge" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
-                        <TextBlock Text="{DynamicResource TableSourceActivity}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                    </StackPanel>
-                    
-                    <!-- DataGrid: Same columns as SourcesView.xaml -->
-                    <DataGrid Grid.Row="1" ItemsSource="{Binding DashboardSources}" Style="{DynamicResource ModernDataGrid}"
-                              HeadersVisibility="Column" AutoGenerateColumns="False" IsReadOnly="True"
-                              MaxHeight="350"
-                              ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                              ColumnWidth="*" VerticalAlignment="Stretch"
-                              AlternationCount="1000">
-                        <DataGrid.Columns>
-                            <!-- عمود الترقيم التسلسلي # -->
-                            <DataGridTemplateColumn Header="#" Width="45">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock FontSize="12" FontWeight="SemiBold"
-                                                   FontFamily="Segoe UI"
-                                                   Foreground="{DynamicResource TextSecondary}"
-                                                   TextAlignment="Center"
-                                                   VerticalAlignment="Center"
-                                                   HorizontalAlignment="Center">
-                                            <TextBlock.Text>
-                                                <MultiBinding Converter="{StaticResource RowIndexConverter}">
-                                                    <Binding Path="(ItemsControl.AlternationIndex)" RelativeSource="{RelativeSource AncestorType=DataGridRow}"/>
-                                                </MultiBinding>
-                                            </TextBlock.Text>
-                                        </TextBlock>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-
-                            <DataGridTextColumn Header="{DynamicResource ColSerialNumber}" Binding="{Binding SerialNumber}" Width="Auto" ElementStyle="{StaticResource CenterAligned}"/>
-                            <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding SourceCode}" Width="Auto" ElementStyle="{StaticResource BoldCenterAligned}"/>
-                            <DataGridTextColumn Header="{DynamicResource ColRadioisotopes}" Binding="{Binding DisplayIsotopes}" Width="1.2*" ElementStyle="{StaticResource WrappingCenterAligned}"/>
-                            <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityDisplay}" Width="Auto" ElementStyle="{StaticResource CenterAligned}"/>
-                            <DataGridTextColumn Header="{DynamicResource ColActivityUnit}" Binding="{Binding CurrentActivityUnit.UnitSymbol}" Width="Auto" ElementStyle="{StaticResource CenterAligned}"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </Grid>
-            </Border>
-
-            <!-- ============================================== -->
-            <!-- Row 6: Charts Row 1 (Bar + Decay Curve)        -->
-            <!-- ============================================== -->
-            <Grid Grid.Row="6">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>    <!-- Bar Chart -->
-                    <ColumnDefinition Width="16"/>   <!-- Spacer -->
-                    <ColumnDefinition Width="*"/>    <!-- Decay Curve -->
-                </Grid.ColumnDefinitions>
-
-                <!-- Bar Chart -->
-                <Border Grid.Column="0" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="12">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
-                    </Border.Effect>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,8">
-                            <materialDesign:PackIcon Kind="ChartBar" Width="20" Height="20" Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource ChartSourceActivity}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                        </StackPanel>
-                        
-                        <Grid Grid.Row="1" FlowDirection="LeftToRight">
-                            <lvc:CartesianChart Series="{Binding SourceActivityBarSeries}"
-                                               XAxes="{Binding BarXAxes}" YAxes="{Binding BarYAxes}"
-                                               DrawMargin="{Binding ChartDrawMargin}"
-                                               DrawMarginFrame="{Binding BarDrawMarginFrame}"
-                                               LegendPosition="Hidden" TooltipTextPaint="{Binding ChartTextPaint}" TooltipBackgroundPaint="{Binding ChartTooltipBackgroundPaint}"/>
-                        </Grid>
-                    </Grid>
-                </Border>
-
-                <!-- Decay Curve -->
-                <Border Grid.Column="2" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="12">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
-                    </Border.Effect>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        
-                        <Grid Grid.Row="0" Margin="0,0,0,8">
+                    <!-- Total Activity Bar (Sources-page style) -->
+                    <Border Grid.Column="2" Background="{DynamicResource SidebarBackground}" CornerRadius="12" Padding="20,12" 
+                            BorderBrush="{DynamicResource GoldBrush}" BorderThickness="0,0,4,0">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="12" Opacity="0.1" ShadowDepth="3"/>
+                        </Border.Effect>
+                        <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-
-                            <!-- Title (Right side in RTL) -->
-                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                <materialDesign:PackIcon Kind="ChartLine" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
-                                <TextBlock Text="{DynamicResource ChartDecayCurve}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                            
+                            <!-- Label and Icon -->
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
+                                <materialDesign:PackIcon Kind="ChartBoxOutline" Width="24" Height="24" Foreground="White" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource LabelTotalActivityStats}" FontWeight="Bold" FontSize="14" Foreground="White" VerticalAlignment="Center" Margin="10,0,0,0"/>
                             </StackPanel>
 
-                            <!-- Custom Legend Items (Centered) -->
-                            <ItemsControl Grid.Column="1" ItemsSource="{Binding DecayLegendItems}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8,0">
+                            <!-- Activity Values in Badges -->
+                            <ItemsControl Grid.Column="1" ItemsSource="{Binding TotalActivityItems}" VerticalAlignment="Center" HorizontalAlignment="Left">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                                        <WrapPanel Orientation="Horizontal"/>
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <StackPanel Orientation="Horizontal" Margin="6,2">
-                                            <Ellipse Width="10" Height="10" Fill="{Binding Color, Converter={StaticResource HexToBrush}}" VerticalAlignment="Center"/>
-                                            <TextBlock Text="{Binding Label}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="5,0,0,0" VerticalAlignment="Center"/>
-                                        </StackPanel>
+                                        <Border Background="{StaticResource GoldBrush}" CornerRadius="6" Padding="12,5" Margin="0,0,10,5">
+                                            <TextBlock Text="{Binding DisplayValue}" FontWeight="Bold" FontSize="13" Foreground="White" VerticalAlignment="Center" FlowDirection="LeftToRight"/>
+                                        </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            
-                            <!-- Combobox with Clear Button to allow returning to Top 5 -->
-                            <ComboBox Grid.Column="2" ItemsSource="{Binding AvailableSources}" SelectedItem="{Binding SelectedDecaySource}"
-                                      DisplayMemberPath="SourceCode" Width="130" Style="{StaticResource FormComboBox}"
-                                      materialDesign:TextFieldAssist.HasClearButton="True"
-                                      materialDesign:HintAssist.Hint="{DynamicResource SelectSourceHint}" Padding="4" Height="28" FontSize="11"/>
                         </Grid>
+                    </Border>
+                </Grid>
 
-                        <Grid Grid.Row="1" FlowDirection="LeftToRight">
-                            <lvc:CartesianChart Series="{Binding ActivityDecaySeries}"
-                                               XAxes="{Binding DecayXAxes}" YAxes="{Binding DecayYAxes}"
-                                               DrawMargin="{Binding ChartDrawMargin}"
-                                               DrawMarginFrame="{Binding DecayDrawMarginFrame}"
-                                               LegendPosition="Hidden" TooltipTextPaint="{Binding ChartTextPaint}" TooltipBackgroundPaint="{Binding ChartTooltipBackgroundPaint}"/>
-                        </Grid>
-                    </Grid>
-                </Border>
+                <!-- ============================================== -->
+                <!-- Row 2: Low Activity Alert + Borrow + Quick Actions -->
+                <!-- ============================================== -->
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>   <!-- Low Activity Alert Card -->
+                        <ColumnDefinition Width="16"/>  <!-- Spacer -->
+                        <ColumnDefinition Width="*"/>   <!-- Borrow Summary Card -->
+                        <ColumnDefinition Width="16"/>  <!-- Spacer -->
+                        <ColumnDefinition Width="*"/>   <!-- Quick Actions Card -->
+                    </Grid.ColumnDefinitions>
 
-            </Grid>
-
-            <!-- ============================================== -->
-            <!-- Row 8: Charts Row 2 (Isotope Dist + Location)  -->
-            <!-- ============================================== -->
-            <Grid Grid.Row="8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>    <!-- Isotope Donut -->
-                    <ColumnDefinition Width="16"/>   <!-- Spacer -->
-                    <ColumnDefinition Width="*"/>    <!-- Location Donut -->
-                </Grid.ColumnDefinitions>
-
-                <!-- ── الجزء 1: رسم توزيع المصادر حسب النظير ── -->
-                <Border Grid.Column="0" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="14">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
-                    </Border.Effect>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-
-                        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,8">
-                            <materialDesign:PackIcon Kind="ChartPie" Width="20" Height="20" Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource ChartSourcesByIsotope}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                        </StackPanel>
-
-                        <!-- Chart (When enough data >= 2 isotopes) -->
-                        <Grid Grid.Row="1"
-                              Visibility="{Binding HasEnoughIsotopeData, Converter={StaticResource BoolToVis}}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <Grid Grid.Column="0" FlowDirection="LeftToRight">
-                                <lvc:PieChart Series="{Binding SourcesByIsotopeSeries}"
-                                              LegendPosition="Hidden"
-                                              TooltipPosition="Hidden"/>
-                            </Grid>
-
-                            <!-- مفتاح الرسم المخصص بتقنية WPF لعرض النصوص العربية والإنجليزية بشكل سليم ومثالي -->
-                            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                          VerticalAlignment="Center" Margin="8,0,0,0" MaxHeight="220">
-                                <ItemsControl ItemsSource="{Binding PieLegendItems}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <StackPanel Orientation="Horizontal" Margin="0,5">
-                                                <Ellipse Width="11" Height="11" Fill="{Binding Color, Converter={StaticResource HexToBrush}}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                                <TextBlock Text="{Binding Label}" FontSize="12" FontWeight="SemiBold"
-                                                           Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </ScrollViewer>
-                        </Grid>
-
-                        <!-- Insufficient Data Fallback Message -->
-                        <Border Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="20"
-                                Visibility="{Binding HasEnoughIsotopeData, Converter={StaticResource InverseBoolToVis}}">
-                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <materialDesign:PackIcon Kind="ChartPie" Width="36" Height="36" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Opacity="0.4"/>
-                                <TextBlock Text="{DynamicResource LabelInsufficientData}" FontSize="12" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,8,0,0" TextAlignment="Center"/>
-                            </StackPanel>
-                        </Border>
-                    </Grid>
-                </Border>
-
-                <!-- ── الجزء 2: رسم توزيع المصادر حسب الموقع ── -->
-                <Border Grid.Column="2" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="14">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
-                    </Border.Effect>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-
-                        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,8">
-                            <materialDesign:PackIcon Kind="MapMarkerMultipleOutline" Width="20" Height="20" Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource ChartSourcesByLocation}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                        </StackPanel>
-
-                        <!-- Chart (When enough data >= 2 locations) -->
-                        <Grid Grid.Row="1"
-                              Visibility="{Binding HasEnoughLocationData, Converter={StaticResource BoolToVis}}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <Grid Grid.Column="0" FlowDirection="LeftToRight">
-                                <lvc:PieChart Series="{Binding SourcesByLocationSeries}"
-                                              LegendPosition="Hidden"
-                                              TooltipPosition="Hidden"/>
-                            </Grid>
-
-                            <!-- مفتاح الرسم المخصص بتقنية WPF لعرض النصوص العربية والإنجليزية بشكل سليم ومثالي -->
-                            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                          VerticalAlignment="Center" Margin="8,0,0,0" MaxHeight="220">
-                                <ItemsControl ItemsSource="{Binding LocationLegendItems}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <StackPanel Orientation="Horizontal" Margin="0,5">
-                                                <Ellipse Width="11" Height="11" Fill="{Binding Color, Converter={StaticResource HexToBrush}}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                                <TextBlock Text="{Binding Label}" FontSize="12" FontWeight="SemiBold"
-                                                           Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </ScrollViewer>
-                        </Grid>
-
-                        <!-- Insufficient Data Fallback Message -->
-                        <Border Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="20"
-                                Visibility="{Binding HasEnoughLocationData, Converter={StaticResource InverseBoolToVis}}">
-                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <materialDesign:PackIcon Kind="MapMarkerMultipleOutline" Width="36" Height="36" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Opacity="0.4"/>
-                                <TextBlock Text="{DynamicResource LabelInsufficientData}" FontSize="12" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,8,0,0" TextAlignment="Center"/>
-                            </StackPanel>
-                        </Border>
-                    </Grid>
-                </Border>
-            </Grid>
-
-            <!-- ============================================== -->
-            <!-- Row 10: NEW — جدول مصادر منخفضة النشاط        -->
-            <!-- ============================================== -->
-            <Border Grid.Row="10" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="18,14" Margin="0,0,0,8">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
-                </Border.Effect>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>  <!-- Title row -->
-                        <RowDefinition Height="6"/>     <!-- Spacer -->
-                        <RowDefinition Height="Auto"/>  <!-- Column headers -->
-                        <RowDefinition Height="4"/>     <!-- Spacer -->
-                        <RowDefinition Height="Auto"/>  <!-- Data rows or empty state -->
-                        <RowDefinition Height="Auto"/>  <!-- View All footer -->
-                    </Grid.RowDefinitions>
-
-                    <!-- Header Row with "View All" link -->
-                    <Grid Grid.Row="0">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                            <materialDesign:PackIcon Kind="AlertOctagonOutline" Width="22" Height="22"
-                                                     Foreground="#C25B4A" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource LowActivityTableTitle}" FontSize="14" FontWeight="Bold"
-                                       Foreground="{DynamicResource TextPrimary}" Margin="10,0,0,0" VerticalAlignment="Center"/>
-                        </StackPanel>
-                        <!-- "عرض الكل" — يظهر فقط عند وجود أكثر من 5 مصادر -->
-                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center"
-                                   Text="{DynamicResource BtnViewAllLowActivity}"
-                                   FontSize="11" Foreground="{DynamicResource GoldBrush}" Cursor="Hand"
-                                   TextDecorations="Underline"
-                                   Visibility="{Binding HasMoreLowActivitySources, Converter={StaticResource BoolToVis}}">
-                            <TextBlock.InputBindings>
-                                <MouseBinding Gesture="LeftClick" Command="{Binding NavigateToLowActivityReportCommand}"/>
-                            </TextBlock.InputBindings>
-                        </TextBlock>
-                    </Grid>
-
-                    <!-- رأس الأعمدة — يظهر فقط عند وجود بيانات -->
-                    <Grid Grid.Row="2" Margin="12,0">
-                        <Grid.Style>
-                            <Style TargetType="Grid">
-                                <Setter Property="Visibility" Value="Visible"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding LowActivitySources.Count}" Value="0">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Grid.Style>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="120"/>
-                            <ColumnDefinition Width="100"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="{DynamicResource ColSourceCode}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}"/>
-                        <TextBlock Grid.Column="1" Text="{DynamicResource ColRadioisotopes}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}"/>
-                        <TextBlock Grid.Column="2" Text="{DynamicResource ColHalfLivesElapsed}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" TextAlignment="Center"/>
-                        <TextBlock Grid.Column="3" Text="{DynamicResource ColSeverityBadge}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" TextAlignment="Center"/>
-                    </Grid>
-
-                    <!-- الحالة الفارغة — يظهر عند عدم وجود مصادر -->
-                    <Border Grid.Row="4" CornerRadius="8" Padding="16,12">
+                    <!-- ═══ الجزء 1: بطاقة تنبيهات انخفاض النشاط ═══ -->
+                    <Border Grid.Column="0" CornerRadius="12" Padding="18,14">
                         <Border.Style>
                             <Style TargetType="Border">
-                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+                                <Setter Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <!-- حدة حمراء جانبية عند وجود تنبيهات -->
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding LowActivitySources.Count}" Value="0">
-                                        <Setter Property="Visibility" Value="Visible"/>
+                                    <DataTrigger Binding="{Binding HasLowActivityAlerts}" Value="True">
+                                        <Setter Property="BorderBrush" Value="#C25B4A"/>
+                                        <Setter Property="BorderThickness" Value="0,0,4,0"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </Border.Style>
-                        <TextBlock Text="{DynamicResource LabelNoLowActivity}" FontSize="13"
-                                   Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"
-                                   TextWrapping="Wrap" TextAlignment="Center"/>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="12"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="10"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Header -->
+                            <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="RadioactiveOff" Width="22" Height="22" VerticalAlignment="Center">
+                                    <materialDesign:PackIcon.Style>
+                                        <Style TargetType="materialDesign:PackIcon">
+                                            <Setter Property="Foreground" Value="{DynamicResource GoldBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasLowActivityAlerts}" Value="True">
+                                                    <Setter Property="Foreground" Value="#C25B4A"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </materialDesign:PackIcon.Style>
+                                </materialDesign:PackIcon>
+                                <StackPanel Margin="10,0,0,0">
+                                    <TextBlock Text="{DynamicResource CardLowActivityTitle}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                    <TextBlock Text="{DynamicResource CardLowActivitySubtitle}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Alert Numbers — يظهر فقط عند وجود تنبيهات -->
+                            <Grid Grid.Row="2" Visibility="{Binding HasLowActivityAlerts, Converter={StaticResource BoolToVis}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Critical -->
+                                <Border Grid.Column="0" Background="#1AC25B4A" CornerRadius="10" Padding="12,10">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding LowActivityCriticalCount}" FontSize="32" FontWeight="Bold"
+                                                   Foreground="#C25B4A" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource LabelCritical}" FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="#C25B4A" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <!-- Warning -->
+                                <Border Grid.Column="2" Background="#1AE0A93E" CornerRadius="10" Padding="12,10">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding LowActivityWarningCount}" FontSize="32" FontWeight="Bold"
+                                                   Foreground="#E0A93E" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource LabelWarning}" FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="#E0A93E" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+
+                            <!-- رسالة "ضمن الحدود الآمنة" — تظهر فقط عندما لا توجد تنبيهات -->
+                            <Border Grid.Row="2" Background="#1A3FAE7A" CornerRadius="10" Padding="12,14"
+                                    Visibility="{Binding HasLowActivityAlerts, Converter={StaticResource InverseBoolToVis}}">
+                                <TextBlock Text="{DynamicResource LabelAllSafe}" FontSize="13" FontWeight="SemiBold"
+                                           Foreground="#3FAE7A" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+                            </Border>
+
+                            <!-- رابط التقرير -->
+                            <TextBlock Grid.Row="4" Text="{DynamicResource BtnViewLowActivityReport}"
+                                       FontSize="11" Foreground="{DynamicResource GoldBrush}" 
+                                       HorizontalAlignment="Left" Cursor="Hand" TextDecorations="Underline">
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftClick" Command="{Binding NavigateToLowActivityReportCommand}"/>
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </Grid>
                     </Border>
 
-                    <!-- الجدول — يظهر عند وجود بيانات -->
-                    <ItemsControl Grid.Row="4" ItemsSource="{Binding LowActivitySources}">
-                        <ItemsControl.Style>
-                            <Style TargetType="ItemsControl">
-                                <Setter Property="Visibility" Value="Visible"/>
+                    <!-- ═══ الجزء 2: بطاقة ملخص الاستعارات ═══ -->
+                    <Border Grid.Column="2" CornerRadius="12" Padding="18,14">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+                                <Setter Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
+                                    </Setter.Value>
+                                </Setter>
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding LowActivitySources.Count}" Value="0">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    <DataTrigger Binding="{Binding BorrowSummary.HasAny}" Value="True">
+                                        <Setter Property="BorderBrush" Value="{DynamicResource GoldBrush}"/>
+                                        <Setter Property="BorderThickness" Value="0,0,4,0"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
-                        </ItemsControl.Style>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1" Padding="12,10">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="120"/>
-                                            <ColumnDefinition Width="100"/>
-                                        </Grid.ColumnDefinitions>
-
-                                        <TextBlock Grid.Column="0" Text="{Binding SourceCode}"
-                                                   FontSize="13" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource TextPrimary}"
-                                                   VerticalAlignment="Center"/>
-
-                                        <TextBlock Grid.Column="1" Text="{Binding IsotopeSymbol}"
-                                                   FontSize="13" Foreground="{DynamicResource TextSecondary}"
-                                                   VerticalAlignment="Center" FlowDirection="LeftToRight"/>
-
-                                        <TextBlock Grid.Column="2" Text="{Binding HalfLivesDisplay}"
-                                                   FontSize="13" FontWeight="SemiBold" FontFamily="Consolas, Courier New"
-                                                   Foreground="{Binding SeverityColor, Converter={StaticResource HexToBrush}}"
-                                                   VerticalAlignment="Center" FlowDirection="LeftToRight"
-                                                   HorizontalAlignment="Center"/>
-
-                                        <!-- Severity Badge -->
-                                        <Border Grid.Column="3" CornerRadius="6" Padding="10,4"
-                                                HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                Background="{Binding SeverityBadgeBackground, Converter={StaticResource HexToBrush}}">
-                                            <TextBlock Text="{Binding SeverityLabel}"
-                                                       FontSize="11" FontWeight="Bold"
-                                                       Foreground="{Binding SeverityColor, Converter={StaticResource HexToBrush}}"
-                                                       HorizontalAlignment="Center"/>
-                                        </Border>
-                                    </Grid>
+                        </Border.Style>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="12"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="10"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="SwapHorizontalCircleOutline" Width="22" Height="22"
+                                                         Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource CardBorrowSummaryTitle}" FontSize="14" FontWeight="Bold"
+                                           Foreground="{DynamicResource TextPrimary}" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Grid Grid.Row="2" Visibility="{Binding BorrowSummary.HasAny, Converter={StaticResource BoolToVis}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Background="#1AC25B4A" CornerRadius="10" Padding="8,10">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding BorrowSummary.OverdueCount}" FontSize="28" FontWeight="Bold"
+                                                   Foreground="#C25B4A" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource LabelOverdue}" FontSize="10" FontWeight="SemiBold"
+                                                   Foreground="#C25B4A" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+                                    </StackPanel>
                                 </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                                <Border Grid.Column="2" Background="#1AE0A93E" CornerRadius="10" Padding="8,10">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding BorrowSummary.DueSoonCount}" FontSize="28" FontWeight="Bold"
+                                                   Foreground="#E0A93E" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource LabelDueSoon}" FontSize="10" FontWeight="SemiBold"
+                                                   Foreground="#E0A93E" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Column="4" Background="#1A1F5A66" CornerRadius="10" Padding="8,10">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding BorrowSummary.ActiveCount}" FontSize="28" FontWeight="Bold"
+                                                   Foreground="{DynamicResource GoldBrush}" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource LabelActiveBorrows}" FontSize="10" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource GoldBrush}" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                            <Border Grid.Row="2" Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="12,14"
+                                    Visibility="{Binding BorrowSummary.HasAny, Converter={StaticResource InverseBoolToVis}}">
+                                <TextBlock Text="{DynamicResource LabelNoBorrows}" FontSize="13"
+                                           Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"
+                                           TextWrapping="Wrap" TextAlignment="Center"/>
+                            </Border>
+                            <TextBlock Grid.Row="4" Text="{DynamicResource BtnViewBorrowing}"
+                                       FontSize="11" Foreground="{DynamicResource GoldBrush}"
+                                       HorizontalAlignment="Left" Cursor="Hand" TextDecorations="Underline">
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftClick" Command="{Binding NavigateToBorrowingCommand}"/>
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </Grid>
+                    </Border>
 
-                    <!-- رابط "عرض الكل" في الأسفل -->
-                    <TextBlock Grid.Row="5" Margin="0,8,0,0"
-                               HorizontalAlignment="Center" Cursor="Hand"
-                               Visibility="{Binding HasMoreLowActivitySources, Converter={StaticResource BoolToVis}}">
-                        <Hyperlink Command="{Binding NavigateToLowActivityReportCommand}"
-                                   Foreground="{DynamicResource GoldBrush}">
-                            <Run Text="{DynamicResource BtnViewAllLowActivity}"/>
-                        </Hyperlink>
-                    </TextBlock>
+                    <!-- ═══ الجزء 3: بطاقة الاختصارات السريعة ═══ -->
+                    <Border Grid.Column="4" CornerRadius="12" Padding="18,14" Background="{DynamicResource CardBackground}">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
+                        </Border.Effect>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="12"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="LightningBoltCircle" Width="22" Height="22"
+                                                         Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center"/>
+                                <StackPanel Margin="10,0,0,0">
+                                    <TextBlock Text="{DynamicResource CardQuickActionsTitle}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                    <TextBlock Text="{DynamicResource CardQuickActionsSubtitle}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <Grid Grid.Row="2" VerticalAlignment="Center">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="8"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Button Grid.Row="0" Command="{Binding QuickAddSourceCommand}"
+                                        Style="{StaticResource PrimaryButton}"
+                                        HorizontalAlignment="Stretch" Height="40" Padding="10,0">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <materialDesign:PackIcon Kind="PlusCircleOutline" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBlock Text="{DynamicResource BtnQuickAddSource}" FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Grid.Row="2" Command="{Binding QuickBorrowSourceCommand}"
+                                        Style="{StaticResource SecondaryButton}"
+                                        HorizontalAlignment="Stretch" Height="40" Padding="10,0">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <materialDesign:PackIcon Kind="SwapHorizontalCircleOutline" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBlock Text="{DynamicResource BtnQuickBorrowSource}" FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </Border>
                 </Grid>
-            </Border>
 
-        </Grid>
-    </ScrollViewer>
+                <!-- ============================================== -->
+                <!-- Row 4: Sources DataGrid with Filters + Pagination (البند 3 + 6) -->
+                <!-- ============================================== -->
+                <Border Grid.Row="4" Style="{StaticResource ContentCard}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>  <!-- Title -->
+                            <RowDefinition Height="Auto"/>  <!-- Category Legend (البند 6) -->
+                            <RowDefinition Height="Auto"/>  <!-- Filter Bar -->
+                            <RowDefinition Height="Auto"/>  <!-- DataGrid -->
+                            <RowDefinition Height="Auto"/>  <!-- Pagination -->
+                        </Grid.RowDefinitions>
+                        
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,8">
+                            <materialDesign:PackIcon Kind="TableLarge" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource TableSourceActivity}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- ═══ Legend الفئات الرقابية (البند 6) ═══ -->
+                        <Border Grid.Row="1" Background="{DynamicResource CardBackground}" CornerRadius="6" Padding="8,4" Margin="0,0,0,8">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <TextBlock Text="{DynamicResource CategoryLegendTitle}" FontSize="11" FontWeight="SemiBold" 
+                                           Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                <ItemsControl ItemsSource="{Binding CategoryLegend}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                                <Ellipse Width="10" Height="10" Fill="{Binding Color, Converter={StaticResource HexToBrush}}" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Label}" FontSize="10" Foreground="{DynamicResource TextSecondary}" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- ═══ شريط الفلاتر (البند 3) ═══ -->
+                        <Border Grid.Row="2" Background="{DynamicResource CardBackground}" CornerRadius="8" Padding="10,6" Margin="0,0,0,8">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>      <!-- Search -->
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>   <!-- Isotope Filter -->
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>   <!-- Location Filter -->
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>   <!-- Status Filter -->
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>   <!-- Reset -->
+                                </Grid.ColumnDefinitions>
+
+                                <!-- مربع بحث نصي -->
+                                <TextBox Grid.Column="0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource FormTextBox}"
+                                         materialDesign:HintAssist.Hint="{DynamicResource DashboardSearchHint}"
+                                         materialDesign:TextFieldAssist.HasClearButton="True"
+                                         Height="32" FontSize="12" Padding="8,4"/>
+
+                                <!-- فلتر النظير -->
+                                <ComboBox Grid.Column="2" ItemsSource="{Binding AvailableIsotopes}" 
+                                          SelectedItem="{Binding SelectedIsotopeFilter}"
+                                          Style="{StaticResource FormComboBox}"
+                                          materialDesign:HintAssist.Hint="{DynamicResource FilterIsotope}"
+                                          Width="120" Height="32" FontSize="11" Padding="4"/>
+
+                                <!-- فلتر الموقع -->
+                                <ComboBox Grid.Column="4" ItemsSource="{Binding AvailableLocations}" 
+                                          SelectedItem="{Binding SelectedLocationFilter}"
+                                          Style="{StaticResource FormComboBox}"
+                                          materialDesign:HintAssist.Hint="{DynamicResource FilterLocation}"
+                                          Width="130" Height="32" FontSize="11" Padding="4"/>
+
+                                <!-- فلتر الحالة -->
+                                <ComboBox Grid.Column="6" ItemsSource="{Binding AvailableStatuses}" 
+                                          SelectedItem="{Binding SelectedStatusFilter}"
+                                          Style="{StaticResource FormComboBox}"
+                                          materialDesign:HintAssist.Hint="{DynamicResource FilterStatus}"
+                                          Width="110" Height="32" FontSize="11" Padding="4"/>
+
+                                <!-- زر إعادة تعيين -->
+                                <Button Grid.Column="8" Command="{Binding ResetFiltersCommand}"
+                                        Style="{StaticResource SecondaryButton}"
+                                        Height="32" Padding="12,0" FontSize="11">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="FilterRemoveOutline" Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                        <TextBlock Text="{DynamicResource BtnResetFilters}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </Border>
+                        
+                        <!-- ═══ DataGrid مع Category Badge (البند 6) ═══ -->
+                        <Border Grid.Row="3" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+                            <DataGrid ItemsSource="{Binding DashboardSources}"
+                                      Style="{StaticResource ModernDataGrid}"
+                                      AutoGenerateColumns="False"
+                                      IsReadOnly="True"
+                                      MaxHeight="350">
+                                <DataGrid.Columns>
+                                    <!-- عمود الترقيم التسلسلي # ثابت ومستقر مباشرة من النموذج -->
+                                    <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+
+                                    <DataGridTextColumn Header="{DynamicResource ColSerialNumber}" Binding="{Binding SerialNumber}" Width="110" ElementStyle="{StaticResource CenterAligned}"/>
+                                    
+                                    <!-- كود المصدر التفاعلي -->
+                                    <DataGridTemplateColumn Header="{DynamicResource ColSourceCode}" Width="120">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding SourceCode}"
+                                                           FontWeight="Bold"
+                                                           TextAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Center"
+                                                           Cursor="Hand"
+                                                           Foreground="{DynamicResource PrimaryBrush}"
+                                                           TextDecorations="Underline"
+                                                           ToolTip="{DynamicResource ToolTipViewDetails}">
+                                                    <TextBlock.InputBindings>
+                                                        <MouseBinding Gesture="LeftClick"
+                                                                      Command="{Binding DataContext.ViewSourceDetailsCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                                                      CommandParameter="{Binding Source}"/>
+                                                    </TextBlock.InputBindings>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- عمود النظائر مع شارة الفئة الرقابية (البند 6) -->
+                                    <DataGridTemplateColumn Header="{DynamicResource ColRadioisotopes}" Width="*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <!-- شارة الفئة الرقابية -->
+                                                    <Ellipse Width="10" Height="10" 
+                                                             Fill="{Binding CategoryColor, Converter={StaticResource HexToBrush}}"
+                                                             VerticalAlignment="Center" Margin="0,0,6,0"
+                                                             ToolTip="{Binding WorstCategory, StringFormat='Category {0}'}"/>
+                                                    <TextBlock Text="{Binding DisplayIsotopes}" 
+                                                               TextWrapping="Wrap" TextAlignment="Center"
+                                                               VerticalAlignment="Center"
+                                                               Foreground="{DynamicResource TextPrimary}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    
+                                    <!-- عمود الموقع مع التفاف النص والتلميح لمنع الاقتطاع -->
+                                    <DataGridTemplateColumn Header="{DynamicResource ColLocation}" Width="150">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding LocationName}"
+                                                           TextWrapping="Wrap"
+                                                           TextAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Center"
+                                                           Padding="4,2"
+                                                           ToolTip="{Binding LocationName}"
+                                                           Foreground="{DynamicResource TextPrimary}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityDisplay}" Width="120" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColActivityUnit}" Binding="{Binding ActivityUnitSymbol}" Width="90" ElementStyle="{StaticResource CenterAligned}"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
+
+                        <!-- ═══ شريط Pagination (البند 3) ═══ -->
+                        <Border Grid.Row="4" Margin="0,8,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>  <!-- Info -->
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>  <!-- Page Size -->
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>  <!-- Prev -->
+                                    <ColumnDefinition Width="Auto"/>  <!-- Page Info -->
+                                    <ColumnDefinition Width="Auto"/>  <!-- Next -->
+                                </Grid.ColumnDefinitions>
+
+                                <!-- عدد النتائج -->
+                                <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="11" Foreground="{DynamicResource TextSecondary}">
+                                    <Run Text="{Binding TotalFilteredCount, Mode=OneWay}"/>
+                                    <Run Text=" "/>
+                                    <Run Text="{DynamicResource SourcesCountSuffix}"/>
+                                </TextBlock>
+
+                                <!-- حجم الصفحة -->
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button Content="20" Command="{Binding ChangePageSizeCommand}" CommandParameter="20"
+                                            Style="{StaticResource SecondaryButton}" Height="26" MinWidth="32" FontSize="10" Padding="6,0" Margin="0,0,4,0"/>
+                                    <Button Content="50" Command="{Binding ChangePageSizeCommand}" CommandParameter="50"
+                                            Style="{StaticResource SecondaryButton}" Height="26" MinWidth="32" FontSize="10" Padding="6,0" Margin="0,0,4,0"/>
+                                    <Button Content="100" Command="{Binding ChangePageSizeCommand}" CommandParameter="100"
+                                            Style="{StaticResource SecondaryButton}" Height="26" MinWidth="32" FontSize="10" Padding="6,0" Margin="0,0,4,0"/>
+                                    <TextBlock Text="{DynamicResource LabelPerPage}" FontSize="10" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                </StackPanel>
+
+                                <!-- السابق -->
+                                <Button Grid.Column="4" Command="{Binding PreviousPageCommand}"
+                                        Style="{StaticResource SecondaryButton}" Height="28" Padding="10,0" Margin="0,0,6,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="ChevronRight" Width="14" Height="14" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource BtnPreviousPage}" FontSize="11" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+
+                                <!-- رقم الصفحة -->
+                                <TextBlock Grid.Column="5" Text="{Binding PageInfo}" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"
+                                           Margin="8,0,8,0" FlowDirection="LeftToRight"/>
+
+                                <!-- التالي -->
+                                <Button Grid.Column="6" Command="{Binding NextPageCommand}"
+                                        Style="{StaticResource SecondaryButton}" Height="28" Padding="10,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{DynamicResource BtnNextPage}" FontSize="11" VerticalAlignment="Center"/>
+                                        <materialDesign:PackIcon Kind="ChevronLeft" Width="14" Height="14" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- ============================================== -->
+                <!-- Row 6: Charts Row 1 (Histogram + Decay Curve) (البند 1) -->
+                <!-- ============================================== -->
+                <Grid Grid.Row="6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>    <!-- Histogram -->
+                        <ColumnDefinition Width="16"/>   <!-- Spacer -->
+                        <ColumnDefinition Width="*"/>    <!-- Decay Curve -->
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Histogram Chart (البند 1) -->
+                    <Border Grid.Column="0" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="12">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
+                        </Border.Effect>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Margin="0,0,0,8">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="ChartBar" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource HistogramTitle}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock Text="{DynamicResource HistogramSubtitle}" FontSize="11" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            
+                            <Grid Grid.Row="1" FlowDirection="LeftToRight">
+                                <lvc:CartesianChart x:Name="HistogramChart"
+                                                    Series="{Binding ActivityHistogramSeries}"
+                                                    XAxes="{Binding HistogramXAxes}" YAxes="{Binding HistogramYAxes}"
+                                                    DrawMargin="{Binding BarDrawMargin}"
+                                                    DrawMarginFrame="{Binding BarDrawMarginFrame}"
+                                                    LegendPosition="Hidden" 
+                                                    TooltipTextPaint="{Binding ChartTextPaint}" 
+                                                    TooltipBackgroundPaint="{Binding ChartTooltipBackgroundPaint}"
+                                                    DataPointerDown="HistogramChart_DataPointerDown"/>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <!-- Decay Curve -->
+                    <Border Grid.Column="2" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="12">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
+                        </Border.Effect>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            
+                            <Grid Grid.Row="0" Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="ChartLine" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource ChartDecayCurve}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <ItemsControl Grid.Column="1" ItemsSource="{Binding DecayLegendItems}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8,0">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" Margin="6,2">
+                                                <Ellipse Width="10" Height="10" Fill="{Binding Color, Converter={StaticResource HexToBrush}}" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Label}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <ComboBox Grid.Column="2" ItemsSource="{Binding AvailableSources}" SelectedItem="{Binding SelectedDecaySource}"
+                                          DisplayMemberPath="SourceCode" Width="130" Style="{StaticResource FormComboBox}"
+                                          materialDesign:TextFieldAssist.HasClearButton="True"
+                                          materialDesign:HintAssist.Hint="{DynamicResource SelectSourceHint}" Padding="4" Height="28" FontSize="11"/>
+                            </Grid>
+
+                            <Grid Grid.Row="1" FlowDirection="LeftToRight">
+                                <lvc:CartesianChart x:Name="DecayChart"
+                                                   Series="{Binding ActivityDecaySeries}"
+                                                   XAxes="{Binding DecayXAxes}" YAxes="{Binding DecayYAxes}"
+                                                   DrawMargin="{Binding ChartDrawMargin}"
+                                                   DrawMarginFrame="{Binding DecayDrawMarginFrame}"
+                                                   LegendPosition="Hidden" TooltipTextPaint="{Binding ChartTextPaint}" TooltipBackgroundPaint="{Binding ChartTooltipBackgroundPaint}"/>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                </Grid>
+
+                <!-- ============================================== -->
+                <!-- Row 8: Charts Row 2 (Isotope Top-10 + Location Top-10) (البند 2 + 5) -->
+                <!-- ============================================== -->
+                <Grid Grid.Row="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>    <!-- Isotope -->
+                        <ColumnDefinition Width="16"/>   <!-- Spacer -->
+                        <ColumnDefinition Width="*"/>    <!-- Location -->
+                    </Grid.ColumnDefinitions>
+
+                    <!-- ── الجزء 1: رسم توزيع المصادر حسب النظير (Top-10 + Others) ── -->
+                    <Border Grid.Column="0" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="14">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
+                        </Border.Effect>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0" Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <materialDesign:PackIcon Kind="ChartBarStacked" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource ChartSourcesByIsotope}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <TextBlock Text="{DynamicResource ChartSourcesByIsotopeSubtitle}" FontSize="11" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <!-- رابط "عرض جميع النظائر" -->
+                                <TextBlock Grid.Column="1" Text="{DynamicResource BtnShowAllIsotopes}"
+                                           FontSize="11" Foreground="{DynamicResource GoldBrush}" Cursor="Hand" TextDecorations="Underline"
+                                           VerticalAlignment="Center" Margin="8,0,0,0">
+                                    <TextBlock.InputBindings>
+                                        <MouseBinding Gesture="LeftClick" Command="{Binding ShowAllIsotopesCommand}"/>
+                                    </TextBlock.InputBindings>
+                                </TextBlock>
+                            </Grid>
+
+                            <!-- Chart (When enough data >= 2 isotopes) -->
+                            <Grid Grid.Row="1" FlowDirection="LeftToRight"
+                                  Visibility="{Binding HasEnoughIsotopeData, Converter={StaticResource BoolToVis}}">
+                                <lvc:CartesianChart x:Name="IsotopeChart"
+                                                   Series="{Binding SourcesByIsotopeSeries}"
+                                                   XAxes="{Binding IsotopeXAxes}"
+                                                   YAxes="{Binding IsotopeYAxes}"
+                                                   DrawMargin="{Binding IsotopeDrawMargin}"
+                                                   DrawMarginFrame="{Binding IsotopeDrawMarginFrame}"
+                                                   LegendPosition="Hidden"
+                                                   TooltipTextPaint="{Binding ChartTextPaint}"
+                                                   TooltipBackgroundPaint="{Binding ChartTooltipBackgroundPaint}"/>
+                            </Grid>
+
+                            <!-- Insufficient Data Fallback Message -->
+                            <Border Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="20"
+                                    Visibility="{Binding HasEnoughIsotopeData, Converter={StaticResource InverseBoolToVis}}">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="ChartBarStacked" Width="36" Height="36" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Opacity="0.4"/>
+                                    <TextBlock Text="{DynamicResource LabelInsufficientData}" FontSize="12" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,8,0,0" TextAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- ── الجزء 2: رسم توزيع المصادر حسب الموقع (Top-10 + Others) ── -->
+                    <Border Grid.Column="2" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="14">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
+                        </Border.Effect>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0" Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <materialDesign:PackIcon Kind="MapMarkerMultipleOutline" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource ChartSourcesByLocation}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <TextBlock Text="{DynamicResource ChartSourcesByLocationSubtitle}" FontSize="11" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <!-- رابط "عرض جميع المواقع" -->
+                                <TextBlock Grid.Column="1" Text="{DynamicResource BtnShowAllLocations}"
+                                           FontSize="11" Foreground="{DynamicResource GoldBrush}" Cursor="Hand" TextDecorations="Underline"
+                                           VerticalAlignment="Center" Margin="8,0,0,0">
+                                    <TextBlock.InputBindings>
+                                        <MouseBinding Gesture="LeftClick" Command="{Binding ShowAllLocationsCommand}"/>
+                                    </TextBlock.InputBindings>
+                                </TextBlock>
+                            </Grid>
+
+                            <!-- Chart (When enough data >= 2 locations) -->
+                            <Grid Grid.Row="1" FlowDirection="LeftToRight"
+                                  Visibility="{Binding HasEnoughLocationData, Converter={StaticResource BoolToVis}}">
+                                <lvc:CartesianChart x:Name="LocationChart"
+                                                   Series="{Binding SourcesByLocationSeries}"
+                                                   XAxes="{Binding LocationXAxes}"
+                                                   YAxes="{Binding LocationYAxes}"
+                                                   DrawMargin="{Binding LocationDrawMargin}"
+                                                   DrawMarginFrame="{Binding LocationDrawMarginFrame}"
+                                                   LegendPosition="Hidden"
+                                                   TooltipTextPaint="{Binding ChartTextPaint}"
+                                                   TooltipBackgroundPaint="{Binding ChartTooltipBackgroundPaint}"/>
+                            </Grid>
+
+                            <!-- Insufficient Data Fallback Message -->
+                            <Border Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="20"
+                                    Visibility="{Binding HasEnoughLocationData, Converter={StaticResource InverseBoolToVis}}">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="MapMarkerMultipleOutline" Width="36" Height="36" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Opacity="0.4"/>
+                                    <TextBlock Text="{DynamicResource LabelInsufficientData}" FontSize="12" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,8,0,0" TextAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- ============================================== -->
+                <!-- Row 10: NEW — جدول مصادر منخفضة النشاط        -->
+                <!-- ============================================== -->
+                <Border Grid.Row="10" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="18,14" Margin="0,0,0,8">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
+                    </Border.Effect>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>  <!-- Title row -->
+                            <RowDefinition Height="6"/>     <!-- Spacer -->
+                            <RowDefinition Height="Auto"/>  <!-- Column headers -->
+                            <RowDefinition Height="4"/>     <!-- Spacer -->
+                            <RowDefinition Height="Auto"/>  <!-- Data rows or empty state -->
+                            <RowDefinition Height="Auto"/>  <!-- View All footer -->
+                        </Grid.RowDefinitions>
+
+                        <!-- Header Row with "View All" link -->
+                        <Grid Grid.Row="0">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="AlertOctagonOutline" Width="22" Height="22"
+                                                         Foreground="#C25B4A" VerticalAlignment="Center"/>
+                                <StackPanel Margin="10,0,0,0">
+                                    <TextBlock Text="{DynamicResource LowActivityTableTitle}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center"
+                                       Text="{DynamicResource BtnViewAllLowActivity}"
+                                       FontSize="11" Foreground="{DynamicResource GoldBrush}" Cursor="Hand"
+                                       TextDecorations="Underline"
+                                       Visibility="{Binding HasMoreLowActivitySources, Converter={StaticResource BoolToVis}}">
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftClick" Command="{Binding NavigateToLowActivityReportCommand}"/>
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </Grid>
+
+                        <!-- رأس الأعمدة — يظهر فقط عند وجود بيانات -->
+                        <Grid Grid.Row="2" Margin="12,0">
+                            <Grid.Style>
+                                <Style TargetType="Grid">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding LowActivitySources.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Grid.Style>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="100"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{DynamicResource ColSourceCode}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock Grid.Column="1" Text="{DynamicResource ColRadioisotopes}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock Grid.Column="2" Text="{DynamicResource ColHalfLivesElapsed}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" TextAlignment="Center"/>
+                            <TextBlock Grid.Column="3" Text="{DynamicResource ColSeverityBadge}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" TextAlignment="Center"/>
+                        </Grid>
+
+                        <!-- الحالة الفارغة — يظهر عند عدم وجود مصادر -->
+                        <Border Grid.Row="4" CornerRadius="8" Padding="16,12">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding LowActivitySources.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <TextBlock Text="{DynamicResource LabelNoLowActivity}" FontSize="13"
+                                       Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"
+                                       TextWrapping="Wrap" TextAlignment="Center"/>
+                        </Border>
+
+                        <!-- الجدول — يظهر عند وجود بيانات -->
+                        <ItemsControl Grid.Row="4" ItemsSource="{Binding LowActivitySources}">
+                            <ItemsControl.Style>
+                                <Style TargetType="ItemsControl">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding LowActivitySources.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ItemsControl.Style>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1" Padding="12,10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="100"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0" Text="{Binding SourceCode}"
+                                                       FontSize="13" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextPrimary}"
+                                                       VerticalAlignment="Center"/>
+
+                                            <TextBlock Grid.Column="1" Text="{Binding IsotopeSymbol}"
+                                                       FontSize="13" Foreground="{DynamicResource TextSecondary}"
+                                                       VerticalAlignment="Center" FlowDirection="LeftToRight"/>
+
+                                            <TextBlock Grid.Column="2" Text="{Binding HalfLivesDisplay}"
+                                                       FontSize="13" FontWeight="SemiBold" FontFamily="Consolas, Courier New"
+                                                       Foreground="{Binding SeverityColor, Converter={StaticResource HexToBrush}}"
+                                                       VerticalAlignment="Center" FlowDirection="LeftToRight"
+                                                       HorizontalAlignment="Center"/>
+
+                                            <!-- Severity Badge -->
+                                            <Border Grid.Column="3" CornerRadius="6" Padding="10,4"
+                                                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                    Background="{Binding SeverityBadgeBackground, Converter={StaticResource HexToBrush}}">
+                                                <TextBlock Text="{Binding SeverityLabel}"
+                                                           FontSize="11" FontWeight="Bold"
+                                                           Foreground="{Binding SeverityColor, Converter={StaticResource HexToBrush}}"
+                                                           HorizontalAlignment="Center"/>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- رابط "عرض الكل" في الأسفل -->
+                        <TextBlock Grid.Row="5" Margin="0,8,0,0"
+                                   HorizontalAlignment="Center" Cursor="Hand"
+                                   Visibility="{Binding HasMoreLowActivitySources, Converter={StaticResource BoolToVis}}">
+                            <Hyperlink Command="{Binding NavigateToLowActivityReportCommand}"
+                                       Foreground="{DynamicResource GoldBrush}">
+                                <Run Text="{DynamicResource BtnViewAllLowActivity}"/>
+                            </Hyperlink>
+                        </TextBlock>
+                    </Grid>
+                </Border>
+
+            </Grid>
+        </ScrollViewer>
+
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!-- Side Panel (البند 4) — ينزلق من اليمين فوق المحتوى      -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <Border HorizontalAlignment="Right" Width="420" Background="{DynamicResource CardBackground}"
+                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1,0,0,0"
+                Visibility="{Binding IsSidePanelOpen, Converter={StaticResource BoolToVis}}">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="20" Opacity="0.15" ShadowDepth="0" Direction="180"/>
+            </Border.Effect>
+            <Grid Margin="16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>  <!-- Header + Close -->
+                    <RowDefinition Height="12"/>
+                    <RowDefinition Height="*"/>     <!-- Content -->
+                </Grid.RowDefinitions>
+
+                <!-- Header: زر الإغلاق في أقصى الطرف الأيسر من اللوحة الجانبية -->
+                <Grid Grid.Row="0" FlowDirection="LeftToRight">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0"
+                            Command="{Binding CloseSidePanelCommand}"
+                            Style="{StaticResource SecondaryButton}" 
+                            Height="32" Width="32" Padding="0" Cursor="Hand"
+                            VerticalAlignment="Center"
+                            ToolTip="{DynamicResource SidePanelClose}">
+                        <materialDesign:PackIcon Kind="Close" Width="18" Height="18"/>
+                    </Button>
+                    <TextBlock Grid.Column="1" Text="{Binding SidePanelTitle}" FontSize="15" FontWeight="Bold" 
+                               Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"
+                               HorizontalAlignment="Right" Margin="12,0,0,0" TextTrimming="CharacterEllipsis"/>
+                </Grid>
+
+                <!-- Content: Sources DataGrid (Drill-down from Histogram) -->
+                <DataGrid Grid.Row="2" 
+                          ItemsSource="{Binding SidePanelSources}"
+                          Style="{StaticResource ModernDataGrid}"
+                          AutoGenerateColumns="False" IsReadOnly="True"
+                          Visibility="{Binding SidePanelShowSources, Converter={StaticResource BoolToVis}}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="40" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTemplateColumn Header="{DynamicResource ColSourceCode}" Width="100">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding SourceCode}" FontWeight="Bold" TextAlignment="Center"
+                                               Foreground="{DynamicResource PrimaryBrush}" Cursor="Hand" TextDecorations="Underline">
+                                        <TextBlock.InputBindings>
+                                            <MouseBinding Gesture="LeftClick"
+                                                          Command="{Binding DataContext.ViewSourceDetailsCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                                          CommandParameter="{Binding Source}"/>
+                                        </TextBlock.InputBindings>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="{DynamicResource ColRadioisotopes}" Width="*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <Ellipse Width="8" Height="8" Fill="{Binding CategoryColor, Converter={StaticResource HexToBrush}}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                        <TextBlock Text="{Binding DisplayIsotopes}" TextWrapping="Wrap" Foreground="{DynamicResource TextPrimary}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityDisplay}" Width="90" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColActivityUnit}" Binding="{Binding ActivityUnitSymbol}" Width="60" ElementStyle="{StaticResource CenterAligned}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- Content: Distribution Table (All Isotopes / All Locations) -->
+                <DataGrid Grid.Row="2"
+                          ItemsSource="{Binding SidePanelDistribution}"
+                          Style="{StaticResource ModernDataGrid}"
+                          AutoGenerateColumns="False" IsReadOnly="True"
+                          Visibility="{Binding SidePanelShowSources, Converter={StaticResource InverseBoolToVis}}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="#" Binding="{Binding Label}" Width="*"/>
+                        <DataGridTextColumn Header="{DynamicResource ColCount}" Binding="{Binding Count}" Width="70" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColPercent}" Binding="{Binding Percent}" Width="70" ElementStyle="{StaticResource CenterAligned}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+    </Grid>
 </UserControl>
