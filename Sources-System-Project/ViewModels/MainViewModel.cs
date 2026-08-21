@@ -264,18 +264,18 @@ public partial class MainViewModel : ObservableObject, IDisposable
         CurrentViewName = viewName;
         CurrentView = viewName switch
         {
-            "Dashboard" => App.ServiceProvider.GetService(typeof(DashboardViewModel)) as ObservableObject,
-            "Radioisotopes" => App.ServiceProvider.GetService(typeof(RadioisotopesViewModel)) as ObservableObject,
-            "Sources" => App.ServiceProvider.GetService(typeof(SourcesViewModel)) as ObservableObject,
-            "Locations" => App.ServiceProvider.GetService(typeof(LocationsViewModel)) as ObservableObject,
-            "Borrowing" => App.ServiceProvider.GetService(typeof(BorrowViewModel)) as ObservableObject,
-            "Reports" => App.ServiceProvider.GetService(typeof(ReportsViewModel)) as ObservableObject,
-            "Alerts" => App.ServiceProvider.GetService(typeof(AlertsViewModel)) as ObservableObject,
-            "Users" => App.ServiceProvider.GetService(typeof(UsersViewModel)) as ObservableObject,
-            "Settings" => App.ServiceProvider.GetService(typeof(SettingsViewModel)) as ObservableObject,
-            "ActivityCalculator" => App.ServiceProvider.GetService(typeof(ActivityCalculatorViewModel)) as ObservableObject,
-            "Help" => App.ServiceProvider.GetService(typeof(HelpViewModel)) as ObservableObject,
-            "AboutSystem" => App.ServiceProvider.GetService(typeof(AboutSystemViewModel)) as ObservableObject,
+            "Dashboard" => App.ServiceProvider?.GetService(typeof(DashboardViewModel)) as ObservableObject,
+            "Radioisotopes" => App.ServiceProvider?.GetService(typeof(RadioisotopesViewModel)) as ObservableObject,
+            "Sources" => App.ServiceProvider?.GetService(typeof(SourcesViewModel)) as ObservableObject,
+            "Locations" => App.ServiceProvider?.GetService(typeof(LocationsViewModel)) as ObservableObject,
+            "Borrowing" => App.ServiceProvider?.GetService(typeof(BorrowViewModel)) as ObservableObject,
+            "Reports" => App.ServiceProvider?.GetService(typeof(ReportsViewModel)) as ObservableObject,
+            "Alerts" => App.ServiceProvider?.GetService(typeof(AlertsViewModel)) as ObservableObject,
+            "Users" => App.ServiceProvider?.GetService(typeof(UsersViewModel)) as ObservableObject,
+            "Settings" => App.ServiceProvider?.GetService(typeof(SettingsViewModel)) as ObservableObject,
+            "ActivityCalculator" => App.ServiceProvider?.GetService(typeof(ActivityCalculatorViewModel)) as ObservableObject,
+            "Help" => App.ServiceProvider?.GetService(typeof(HelpViewModel)) as ObservableObject,
+            "AboutSystem" => App.ServiceProvider?.GetService(typeof(AboutSystemViewModel)) as ObservableObject,
             _ => CurrentView
         };
     }
