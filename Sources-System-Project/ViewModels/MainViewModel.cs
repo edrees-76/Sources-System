@@ -116,17 +116,65 @@ public partial class MainViewModel : ObservableObject
     public void RefreshNotifications()
     {
         if (!IsLoggedIn) return;
-        var alerts = _alertService.GenerateAlerts();
-        Notifications = new System.Collections.ObjectModel.ObservableCollection<Sources.Models.AlertNotification>(alerts);
-        UnreadNotificationsCount = _alertService.GetUnreadCount();
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                var alerts = _alertService.GenerateAlerts();
+                var unread = _alertService.GetUnreadCount();
+
+                void updateUi()
+                {
+                    Notifications = new System.Collections.ObjectModel.ObservableCollection<Sources.Models.AlertNotification>(alerts);
+                    UnreadNotificationsCount = unread;
+                }
+
+                if (Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
+                {
+                    Application.Current.Dispatcher.Invoke(updateUi);
+                }
+                else
+                {
+                    updateUi();
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("MainViewModel: RefreshNotifications background task failed", ex);
+            }
+        });
     }
 
     [RelayCommand]
     public void MarkNotificationAsRead(Sources.Models.AlertNotification notification)
     {
         if (notification == null) return;
-        _alertService.MarkAsRead(notification.Id);
-        RefreshNotifications();
+        // Optimistic UI: تحديث الحالة فوراً على الواجهة دون انتظار عملية قاعدة البيانات
+        notification.IsRead = true;
+        if (UnreadNotificationsCount > 0)
+        {
+            UnreadNotificationsCount--;
+        }
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                _alertService.MarkAsRead(notification.Id);
+                var unread = _alertService.GetUnreadCount();
+                if (Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
+                {
+                    Application.Current.Dispatcher.Invoke(() => UnreadNotificationsCount = unread);
+                }
+                else
+                {
+                    UnreadNotificationsCount = unread;
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("MainViewModel: MarkNotificationAsRead failed", ex);
+            }
+        });
     }
 
     [RelayCommand]
@@ -135,16 +183,72 @@ public partial class MainViewModel : ObservableObject
         if (notification == null) return;
         if (DialogHelper.ShowConfirmation(TranslationHelper.GetString("MsgConfirmDismissAlert"), TranslationHelper.GetString("TitleDismissAlert")))
         {
-            _alertService.DismissAlert(notification.Id);
-            RefreshNotifications();
+            // Optimistic UI: إزالة التنبيه فوراً من القائمة المعروضة
+            if (!notification.IsRead && UnreadNotificationsCount > 0)
+            {
+                UnreadNotificationsCount--;
+            }
+            Notifications.Remove(notification);
+
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    _alertService.DismissAlert(notification.Id);
+                    var alerts = _alertService.GetActiveAlerts();
+                    var unread = _alertService.GetUnreadCount();
+                    void updateUi()
+                    {
+                        Notifications = new System.Collections.ObjectModel.ObservableCollection<Sources.Models.AlertNotification>(alerts);
+                        UnreadNotificationsCount = unread;
+                    }
+                    if (Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
+                    {
+                        Application.Current.Dispatcher.Invoke(updateUi);
+                    }
+                    else
+                    {
+                        updateUi();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LoggerService.LogError("MainViewModel: DismissNotification failed", ex);
+                }
+            });
         }
     }
 
     [RelayCommand]
     public void MarkAllNotificationsAsRead()
     {
-        _alertService.MarkAllAsRead();
-        RefreshNotifications();
+        // Optimistic UI: تعليم جميع التنبيهات كمقروءة فوراً
+        foreach (var n in Notifications)
+        {
+            n.IsRead = true;
+        }
+        UnreadNotificationsCount = 0;
+
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                _alertService.MarkAllAsRead();
+                var unread = _alertService.GetUnreadCount();
+                if (Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
+                {
+                    Application.Current.Dispatcher.Invoke(() => UnreadNotificationsCount = unread);
+                }
+                else
+                {
+                    UnreadNotificationsCount = unread;
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("MainViewModel: MarkAllNotificationsAsRead failed", ex);
+            }
+        });
     }
 
     [RelayCommand]

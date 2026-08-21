@@ -106,7 +106,6 @@ public partial class ReportsViewModel : ObservableObject
     [RelayCommand]
     public void LoadReport()
     {
-        _sourceService.UpdateAllCurrentActivities();
         var allSources = _sourceService.GetAllSources() ?? new List<Source>();
         
         switch (SelectedReport)

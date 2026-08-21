@@ -290,11 +290,8 @@ public partial class AlertsViewModel : ObservableObject, IDisposable
     public void DismissAlert(AlertRow? row)
     {
         if (row == null) return;
-        if (DialogHelper.ShowConfirmation(TranslationHelper.GetString("MsgConfirmDismissAlert"), TranslationHelper.GetString("TitleDismissAlert")))
-        {
-            _alertService.DismissAlert(row.Id);
-            LoadData();
-        }
+        _alertService.DismissAlert(row.Id);
+        LoadData();
     }
 
     [RelayCommand]

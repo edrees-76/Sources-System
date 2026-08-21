@@ -26,6 +26,7 @@ public class SourceService : ISourceService
     {
         using var db = _dbFactory.CreateDbContext();
         return db.Sources
+            .AsNoTracking()
             .AsSplitQuery()
             .Include(s => s.Radioisotope)
             .Include(s => s.InitialActivityUnit)
@@ -42,7 +43,8 @@ public class SourceService : ISourceService
     public Source? GetSourceById(Guid id)
     {
         using var db = _dbFactory.CreateDbContext();
-        return db.Sources
+        var source = db.Sources
+            .AsNoTracking()
             .Include(s => s.Radioisotope)
             .Include(s => s.InitialActivityUnit)
             .Include(s => s.CurrentActivityUnit)
@@ -50,6 +52,15 @@ public class SourceService : ISourceService
             .Include(s => s.SourceIsotopes).ThenInclude(si => si.Radioisotope)
             .Include(s => s.SourceIsotopes).ThenInclude(si => si.ActivityUnit)
             .FirstOrDefault(s => s.Id == id);
+
+        if (source != null && (source.Status == "InUse" || source.Status == "Storage"))
+        {
+            var isotopesDict = db.Radioisotopes.AsNoTracking().ToDictionary(r => r.Id);
+            var unitsDict = db.ActivityUnits.AsNoTracking().ToDictionary(u => u.Id);
+            CalculateSourceCurrentActivityInMemory(source, isotopesDict, unitsDict);
+        }
+
+        return source;
     }
 
     public (bool Success, string Message) CreateSource(Source source, List<SourceIsotope>? isotopes = null)
@@ -58,6 +69,9 @@ public class SourceService : ISourceService
         if (db.Sources.Any(s => s.SourceCode == source.SourceCode))
             return (false, "كود المصدر موجود بالفعل");
 
+        var isotopesDict = db.Radioisotopes.ToDictionary(r => r.Id);
+        var unitsDict = db.ActivityUnits.ToDictionary(u => u.Id);
+
         // إضافة النظائر المتعددة أولاً لضمان توفرها للحساب
         if (isotopes != null && isotopes.Count > 0)
         {
@@ -65,15 +79,14 @@ public class SourceService : ISourceService
             foreach (var si in isotopes)
             {
                 si.SourceId = source.Id;
-                // إضافة النظير للمجموعة لضمان وصول UpdateCurrentActivity إليها
                 source.SourceIsotopes.Add(si);
-                UpdateIsotopeActivity(si, db, source.CalibrationDate, source.InitialActivityUnitId);
+                UpdateIsotopeActivityInMemory(si, isotopesDict, unitsDict, source.CalibrationDate, source.InitialActivityUnitId);
                 db.SourceIsotopes.Add(si);
             }
         }
 
-        // حساب النشاط الحالي (سيعمل الآن على النظائر المرتبطة)
-        UpdateCurrentActivity(source, db);
+        // حساب النشاط الحالي
+        CalculateSourceCurrentActivityInMemory(source, isotopesDict, unitsDict);
 
         source.AddedBy = _userService.CurrentUser?.FullName ?? "غير معروف";
 
@@ -131,6 +144,9 @@ public class SourceService : ISourceService
         existing.Notes = source.Notes;
         existing.ImagePath = source.ImagePath;
 
+        var isotopesDict = db.Radioisotopes.ToDictionary(r => r.Id);
+        var unitsDict = db.ActivityUnits.ToDictionary(u => u.Id);
+
         // تحديث النظائر المتعددة أولاً
         if (isotopes != null && isotopes.Count > 0)
         {
@@ -143,7 +159,7 @@ public class SourceService : ISourceService
             {
                 si.SourceId = existing.Id;
                 existing.SourceIsotopes.Add(si);
-                UpdateIsotopeActivity(si, db, existing.CalibrationDate, existing.InitialActivityUnitId);
+                UpdateIsotopeActivityInMemory(si, isotopesDict, unitsDict, existing.CalibrationDate, existing.InitialActivityUnitId);
                 db.SourceIsotopes.Add(si);
             }
         }
@@ -153,7 +169,7 @@ public class SourceService : ISourceService
         }
 
         // إعادة حساب النشاط الحالي بعد تحديث النظائر
-        UpdateCurrentActivity(existing, db);
+        CalculateSourceCurrentActivityInMemory(existing, isotopesDict, unitsDict);
 
         db.SaveChanges();
         _auditService.Log("Update", "Sources", source.Id, $"تعديل مصدر: {source.SourceCode}");
@@ -177,7 +193,7 @@ public class SourceService : ISourceService
     }
 
     /// <summary>
-    /// تحديث النشاط الحالي لجميع المصادر
+    /// تحديث النشاط الحالي لجميع المصادر في قاعدة البيانات
     /// </summary>
     public void UpdateAllCurrentActivities()
     {
@@ -191,77 +207,66 @@ public class SourceService : ISourceService
             .Where(s => s.Status == "InUse" || s.Status == "Storage")
             .ToList();
 
+        var isotopesDict = db.Radioisotopes.ToDictionary(r => r.Id);
+        var unitsDict = db.ActivityUnits.ToDictionary(u => u.Id);
+
         foreach (var source in sources)
         {
-            // الطريقة الموحدة الآن تعالج كلاً من المصدر ونظائره الفردية بدقة
-            UpdateCurrentActivity(source, db);
+            CalculateSourceCurrentActivityInMemory(source, isotopesDict, unitsDict);
         }
         db.SaveChanges();
     }
 
-    private void UpdateCurrentActivity(Source source, AppDbContext db)
+    public void UpdateCurrentActivity(Source source, AppDbContext db)
     {
-        var currentUnit = source.CurrentActivityUnit ?? db.ActivityUnits.Find(source.CurrentActivityUnitId);
-        // التراجع للبيكرل إذا لم تكن وحدة العرض محددة لمتابعة الحساب
+        var isotopesDict = db.Radioisotopes.ToDictionary(r => r.Id);
+        var unitsDict = db.ActivityUnits.ToDictionary(u => u.Id);
+        CalculateSourceCurrentActivityInMemory(source, isotopesDict, unitsDict);
+    }
+
+    private void CalculateSourceCurrentActivityInMemory(
+        Source source, 
+        IReadOnlyDictionary<Guid, Radioisotope> isotopesDict, 
+        IReadOnlyDictionary<Guid, ActivityUnit> unitsDict)
+    {
+        var currentUnit = source.CurrentActivityUnit ?? (unitsDict.TryGetValue(source.CurrentActivityUnitId, out var cu) ? cu : null);
         double curConvFactor = currentUnit?.ConversionToBq ?? 1;
 
-        if (source.HasDetailedIsotopes)
+        if (source.HasDetailedIsotopes && source.SourceIsotopes != null && source.SourceIsotopes.Any())
         {
-            // التأكد من تحميل النظائر المتعددة إذا لم تكن محملة
-            if (source.SourceIsotopes == null || !source.SourceIsotopes.Any())
+            double totalCurrentBq = 0;
+            double totalInitialBq = 0;
+
+            foreach (var si in source.SourceIsotopes)
             {
-                db.Entry(source).Collection(s => s.SourceIsotopes).Load();
-                foreach (var si in source.SourceIsotopes!)
-                {
-                    db.Entry(si).Reference(x => x.Radioisotope).Load();
-                    db.Entry(si).Reference(x => x.ActivityUnit).Load();
-                }
-            }
-
-            if (source.SourceIsotopes != null && source.SourceIsotopes.Any())
-            {
-                // المصادر المتعددة: مجموع النشاط الابتدائي والحالي لكل النظائر
-                double totalCurrentBq = 0;
-                double totalInitialBq = 0;
-
-                foreach (var si in source.SourceIsotopes)
-                {
-                    var siIsotope = si.Radioisotope ?? db.Radioisotopes.Find(si.RadioisotopeId);
-                    // التراجع لوحدة المصدر إذا لم تكن وحدة النظير محددة
-                    var siUnitId = si.ActivityUnitId ?? source.InitialActivityUnitId;
-                    var siUnit = si.ActivityUnit ?? db.ActivityUnits.Find(siUnitId);
-                    
-                    if (siIsotope == null || siUnit == null || si.InitialActivityValue == null) continue;
-
-                    var calibDate = si.CalibrationDate ?? source.CalibrationDate;
-                    
-                    // حساب النشاط الابتدائي بالـ Bq للتجميع
-                    var initialBq = si.InitialActivityValue.Value * siUnit.ConversionToBq;
-                    totalInitialBq += initialBq;
-
-                    // حساب النشاط الحالي بالـ Bq
-                    var curBq = _decayService.CalculateCurrentActivity(initialBq, siIsotope.HalfLife, siIsotope.HalfLifeUnit, calibDate);
-                    
-                    // تحديث القيمة الحالية للنظير الفردي (هذا ما يظهر في نافذة التفاصيل)
-                    si.CurrentActivityValue = _decayService.ConvertFromBq(curBq, siUnit.ConversionToBq);
-                    
-                    totalCurrentBq += curBq;
-                }
+                var siIsotope = si.Radioisotope ?? (isotopesDict.TryGetValue(si.RadioisotopeId, out var ri) ? ri : null);
+                Guid siUnitId = si.ActivityUnitId ?? source.InitialActivityUnitId;
+                var siUnit = si.ActivityUnit ?? (unitsDict.TryGetValue(siUnitId, out var au) ? au : null);
                 
-                // تحديث قيم المصدر الأساسية (للجدول والتقارير)
-                // معامل تحويل النشاط الابتدائي: استخدام وحدة المصدر المحددة أو الافتراضي Bq
-                var initialUnit = source.InitialActivityUnit ?? db.ActivityUnits.Find(source.InitialActivityUnitId);
-                double initConvFactor = initialUnit?.ConversionToBq ?? 1;
+                if (siIsotope == null || siUnit == null || si.InitialActivityValue == null) continue;
 
-                source.InitialActivityValue = _decayService.ConvertFromBq(totalInitialBq, initConvFactor);
-                source.CurrentActivityValue = _decayService.ConvertFromBq(totalCurrentBq, curConvFactor);
+                var calibDate = si.CalibrationDate ?? source.CalibrationDate;
+                
+                var initialBq = si.InitialActivityValue.Value * siUnit.ConversionToBq;
+                totalInitialBq += initialBq;
+
+                var curBq = _decayService.CalculateCurrentActivity(initialBq, siIsotope.HalfLife, siIsotope.HalfLifeUnit, calibDate);
+                si.CurrentActivityValue = _decayService.ConvertFromBq(curBq, siUnit.ConversionToBq);
+                
+                totalCurrentBq += curBq;
             }
+            
+            var initialUnit = source.InitialActivityUnit ?? (unitsDict.TryGetValue(source.InitialActivityUnitId, out var iu) ? iu : null);
+            double initConvFactor = initialUnit?.ConversionToBq ?? 1;
+
+            source.InitialActivityValue = _decayService.ConvertFromBq(totalInitialBq, initConvFactor);
+            source.CurrentActivityValue = _decayService.ConvertFromBq(totalCurrentBq, curConvFactor);
         }
         else
         {
             // المصدر المفرد
-            var isotope = source.Radioisotope ?? db.Radioisotopes.Find(source.RadioisotopeId);
-            var initialUnit = source.InitialActivityUnit ?? db.ActivityUnits.Find(source.InitialActivityUnitId);
+            var isotope = source.Radioisotope ?? (isotopesDict.TryGetValue(source.RadioisotopeId, out var ri) ? ri : null);
+            var initialUnit = source.InitialActivityUnit ?? (unitsDict.TryGetValue(source.InitialActivityUnitId, out var iu) ? iu : null);
 
             if (isotope == null || initialUnit == null || currentUnit == null) return;
 
@@ -271,32 +276,28 @@ public class SourceService : ISourceService
     }
 
     /// <summary>
-    /// حساب النشاط الحالي لنظير واحد داخل مصدر متعدد النظائر
+    /// حساب النشاط الحالي لنظير واحد داخل مصدر متعدد النظائر في الذاكرة
     /// </summary>
-    private void UpdateIsotopeActivity(SourceIsotope si, AppDbContext db, DateTime? parentCalibrationDate = null, Guid? fallbackUnitId = null)
+    private void UpdateIsotopeActivityInMemory(
+        SourceIsotope si, 
+        IReadOnlyDictionary<Guid, Radioisotope> isotopesDict, 
+        IReadOnlyDictionary<Guid, ActivityUnit> unitsDict,
+        DateTime? parentCalibrationDate = null, 
+        Guid? fallbackUnitId = null)
     {
         if (si.InitialActivityValue == null || si.InitialActivityValue <= 0) return;
 
-        var isotope = si.Radioisotope ?? db.Radioisotopes.Find(si.RadioisotopeId);
+        var isotope = si.Radioisotope ?? (isotopesDict.TryGetValue(si.RadioisotopeId, out var ri) ? ri : null);
         var unitId = si.ActivityUnitId ?? fallbackUnitId;
-        var unit = si.ActivityUnit ?? (unitId != null ? db.ActivityUnits.Find(unitId) : null);
+        var unit = si.ActivityUnit ?? (unitId.HasValue && unitsDict.TryGetValue(unitId.Value, out var au) ? au : null);
 
         if (isotope == null || unit == null) return;
 
-        // استخدام تاريخ المعايرة الخاص بالنظير أو تاريخ المصدر أو التاريخ الحالي كملاذ أخير
         var calibDate = si.CalibrationDate ?? parentCalibrationDate ?? si.Source?.CalibrationDate ?? DateTime.Now;
-
-        // تحويل النشاط الابتدائي إلى Bq
         var initialBq = si.InitialActivityValue.Value * unit.ConversionToBq;
-
-        // حساب النشاط الحالي بالـ Bq باستخدام محرك الاضمحلال
         var currentBq = _decayService.CalculateCurrentActivity(initialBq, isotope.HalfLife, isotope.HalfLifeUnit, calibDate);
-
-        // التحويل من Bq إلى وحدة العرض
         si.CurrentActivityValue = _decayService.ConvertFromBq(currentBq, unit.ConversionToBq);
     }
-
-
 
     public int GetTotalSourcesCount()
     {
@@ -306,17 +307,9 @@ public class SourceService : ISourceService
 
     public List<Source> GetLowActivitySources(double thresholdPercent = 10)
     {
-        using var db = _dbFactory.CreateDbContext();
-        return db.Sources
-            .AsSplitQuery()
-            .Include(s => s.Radioisotope)
-            .Include(s => s.InitialActivityUnit)
-            .Include(s => s.CurrentActivityUnit)
-            .Include(s => s.Location)
-            .Include(s => s.SourceIsotopes).ThenInclude(si => si.Radioisotope)
+        var sources = GetAllSources();
+        return sources
             .Where(s => s.Status == "InUse" || s.Status == "Storage")
-            .ToList()
-            .DistinctBy(s => s.Id)
             .Where(s =>
             {
                 if (s.InitialActivityValue <= 0) return false;

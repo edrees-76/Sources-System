@@ -119,25 +119,13 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     [RelayCommand]
     public async Task RefreshAsync()
     {
-        await Task.Run(() => 
-        {
-            _sourceService.UpdateAllCurrentActivities();
-        });
         await LoadDataAsync();
     }
 
     [RelayCommand]
     public async Task LoadDataAsync()
     {
-        // عرض مؤشر تحميل إذا لزم الأمر (يمكن إضافة خاصية IsBusy لاحقاً)
-        
-        // إجراء الحسابات والتحميل في خيط معالج خلفي لمنع تجمد الواجهة
-        await Task.Run(() => 
-        {
-            _sourceService.UpdateAllCurrentActivities();
-        });
-
-        var allSources = _sourceService.GetAllSources();
+        var allSources = await Task.Run(() => _sourceService.GetAllSources());
 
         // تطبيق الفلاتر
         if (!string.IsNullOrWhiteSpace(SearchText))

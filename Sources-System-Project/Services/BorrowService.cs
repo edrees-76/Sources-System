@@ -208,37 +208,36 @@ public class BorrowService : IBorrowService
     {
         var thresholdDays = GetDueSoonDaysThreshold();
         var today = DateTime.Today;
-        var maxDate = today.AddDays(thresholdDays);
+        var maxDate = today.AddDays(thresholdDays).Date.AddDays(1).AddTicks(-1);
 
         if (requests != null)
         {
             return requests.Count(r => r.Status == "Delivered" 
                 && r.ExpectedReturnDate.Date >= today 
-                && r.ExpectedReturnDate.Date <= maxDate);
+                && r.ExpectedReturnDate.Date <= today.AddDays(thresholdDays).Date);
         }
 
         using var db = _dbFactory.CreateDbContext();
         return db.BorrowRequests
-            .AsEnumerable()
             .Count(r => r.Status == "Delivered" 
-                && r.ExpectedReturnDate.Date >= today 
-                && r.ExpectedReturnDate.Date <= maxDate);
+                && r.ExpectedReturnDate >= today 
+                && r.ExpectedReturnDate <= maxDate);
     }
 
     public List<BorrowRequest> GetDueSoonRequests()
     {
         var thresholdDays = GetDueSoonDaysThreshold();
         var today = DateTime.Today;
-        var maxDate = today.AddDays(thresholdDays);
+        var maxDate = today.AddDays(thresholdDays).Date.AddDays(1).AddTicks(-1);
 
         using var db = _dbFactory.CreateDbContext();
         return db.BorrowRequests
+            .AsNoTracking()
             .Include(b => b.Source)
             .Include(b => b.BorrowerUser)
-            .AsEnumerable()
             .Where(r => r.Status == "Delivered" 
-                && r.ExpectedReturnDate.Date >= today 
-                && r.ExpectedReturnDate.Date <= maxDate)
+                && r.ExpectedReturnDate >= today 
+                && r.ExpectedReturnDate <= maxDate)
             .OrderBy(r => r.ExpectedReturnDate)
             .ToList();
     }

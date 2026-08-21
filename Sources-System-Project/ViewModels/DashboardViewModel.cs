@@ -438,9 +438,7 @@ public partial class DashboardViewModel : ObservableObject
     {
         try
         {
-            await Task.Run(() => _sourceService.UpdateAllCurrentActivities());
-
-            var sources = _sourceService.GetAllSources();
+            var sources = await Task.Run(() => _sourceService.GetAllSources());
 
             // ═══ تعبئة الجدول الرئيسي والبطاقة الأولى فوراً على خيط الواجهة ═══
             RunOnUI(() =>
