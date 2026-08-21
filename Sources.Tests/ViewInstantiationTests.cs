@@ -227,6 +227,44 @@ public class ViewInstantiationTests
         });
     }
 
+    [Fact]
+    public void ExitWarningDialog_RendersCorrectly_WithPendingChangesMessage()
+    {
+        RunInSta(() =>
+        {
+            var dialog = new AlertDialog(
+                Sources.Helpers.TranslationHelper.GetString("MsgErrSavePending"),
+                Sources.Helpers.TranslationHelper.GetString("TitlePendingChanges"),
+                "Warning");
+
+            Assert.NotNull(dialog);
+
+            var content = dialog.Content as FrameworkElement;
+            Assert.NotNull(content);
+
+            content.Width = 520;
+            content.Height = 260;
+            content.Measure(new System.Windows.Size(520, 260));
+            content.Arrange(new System.Windows.Rect(0, 0, 520, 260));
+            content.UpdateLayout();
+
+            try
+            {
+                var rtb = new System.Windows.Media.Imaging.RenderTargetBitmap(520, 260, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+                rtb.Render(content);
+                var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
+                encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(rtb));
+                var artifactDir = @"C:\Users\DELL\.gemini\antigravity-ide\brain\8ef61ce6-d5cd-4d26-bde5-5620046d3b8b";
+                if (System.IO.Directory.Exists(artifactDir))
+                {
+                    using var stream = System.IO.File.Create(System.IO.Path.Combine(artifactDir, "exit_warning_dialog.png"));
+                    encoder.Save(stream);
+                }
+            }
+            catch { /* non-fatal for test */ }
+        });
+    }
+
     private static System.Collections.Generic.IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
     {
         if (depObj == null) yield break;

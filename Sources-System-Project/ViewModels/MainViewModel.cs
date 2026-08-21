@@ -297,6 +297,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void Logout()
     {
+        if (CurrentView is IEditableViewModel editable && editable.IsEditing)
+        {
+            DialogHelper.ShowWarning(
+                TranslationHelper.GetString("MsgErrSavePending"),
+                TranslationHelper.GetString("TitlePendingChanges")
+            );
+            return;
+        }
+
         if (DialogHelper.ShowConfirmation(TranslationHelper.GetString("MsgConfirmLogout"), TranslationHelper.GetString("TitleLogout")))
         {
             ForceLogout();
@@ -312,20 +321,23 @@ public partial class MainViewModel : ObservableObject, IDisposable
         CurrentUserRole = string.Empty;
         IsLoggedIn = false;
 
-        var loginWindow = App.ServiceProvider?.GetService(typeof(Views.LoginWindow)) as Views.LoginWindow;
-        loginWindow?.Show();
-        loginWindow?.Activate();
-
-        if (Application.Current != null)
+        RunOnUI(() =>
         {
-            Application.Current.MainWindow = loginWindow;
-        }
+            var loginWindow = App.ServiceProvider?.GetService(typeof(Views.LoginWindow)) as Views.LoginWindow;
+            loginWindow?.Show();
+            loginWindow?.Activate();
 
-        var mainWin = Application.Current?.Windows.OfType<MainWindow>().FirstOrDefault();
-        if (mainWin != null)
-        {
-            mainWin.Close();
-        }
+            if (Application.Current != null)
+            {
+                Application.Current.MainWindow = loginWindow;
+            }
+
+            var mainWin = Application.Current?.Windows.OfType<MainWindow>().FirstOrDefault();
+            if (mainWin != null)
+            {
+                mainWin.Close();
+            }
+        });
     }
 
     public void StartAlertCheckTimer()

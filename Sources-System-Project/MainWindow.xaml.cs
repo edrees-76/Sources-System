@@ -7,6 +7,7 @@ using Sources.ViewModels;
 using Sources.Helpers;
 using Sources.Views;
 using Sources.Services;
+using Sources.Interfaces;
 
 namespace Sources;
 
@@ -104,6 +105,17 @@ public partial class MainWindow : Window
         var viewModel = DataContext as MainViewModel ?? _viewModel;
         if (viewModel != null && viewModel.IsLoggedIn)
         {
+            // التحقق من وجود تعديلات غير محفوظة في الشاشة النشطة حالياً
+            if (viewModel.CurrentView is IEditableViewModel editable && editable.IsEditing)
+            {
+                DialogHelper.ShowWarning(
+                    TranslationHelper.GetString("MsgErrSavePending"),
+                    TranslationHelper.GetString("TitlePendingChanges")
+                );
+                e.Cancel = true;
+                return;
+            }
+
             bool confirmed = DialogHelper.ShowConfirmation(
                 TranslationHelper.GetString("MsgConfirmExitPrompt"),
                 TranslationHelper.GetString("MsgConfirmExitTitle")
