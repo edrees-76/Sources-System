@@ -27,4 +27,4 @@ jobs:
         run: dotnet build Sources.sln --configuration Release --no-restore
 
       - name: Run Unit Tests
-        run: dotnet test Sources.Tests/Sources.Tests.csproj --configuration Release --no-build --verbosity normal
+        run: dotnet test Sources.Tests/Sources.Tests.csproj --configuration Release --no-build --logger "console;verbosity=detailed"

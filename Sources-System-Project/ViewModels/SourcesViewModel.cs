@@ -393,13 +393,35 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
             if (result.Success)
             {
                 IsEditing = false;
-                await LoadDataAsync();
-                WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
+            }
+            else
+            {
+                return;
             }
         }
         catch (Exception ex)
         {
             ShowMessage(TranslationHelper.GetFormat("MsgErrGeneral", ex.Message));
+            return;
+        }
+
+        // 3. إجراءات ما بعد الحفظ (مفصولة تماماً عن كتلة الحفظ الأساسية)
+        try
+        {
+            await LoadDataAsync();
+        }
+        catch (Exception ex)
+        {
+            LoggerService.LogError("SourcesViewModel: Failed to reload data after save", ex);
+        }
+
+        try
+        {
+            WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
+        }
+        catch (Exception ex)
+        {
+            LoggerService.LogError("SourcesViewModel: Failed to broadcast SourcesUpdatedMessage after save", ex);
         }
     }
 
@@ -441,8 +463,23 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         ShowMessage(result.Message);
         if (result.Success)
         {
-            await LoadDataAsync();
-            WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
+            try
+            {
+                await LoadDataAsync();
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("SourcesViewModel: Failed to reload data after delete", ex);
+            }
+
+            try
+            {
+                WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("SourcesViewModel: Failed to broadcast SourcesUpdatedMessage after delete", ex);
+            }
         }
     }
 

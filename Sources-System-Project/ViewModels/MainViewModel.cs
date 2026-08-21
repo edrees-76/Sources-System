@@ -11,7 +11,7 @@ using System.Windows;
 
 namespace Sources.ViewModels;
 
-public partial class MainViewModel : ObservableObject
+public partial class MainViewModel : ObservableObject, IDisposable
 {
     private readonly IUserService _userService;
     private readonly IAlertService _alertService;
@@ -396,5 +396,12 @@ public partial class MainViewModel : ObservableObject
     public void StopInactivityTimer()
     {
         _inactivityTimer?.Stop();
+    }
+
+    public void Dispose()
+    {
+        _alertTimer?.Stop();
+        _inactivityTimer?.Stop();
+        WeakReferenceMessenger.Default.UnregisterAll(this);
     }
 }
