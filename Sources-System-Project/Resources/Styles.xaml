@@ -553,6 +553,13 @@
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
         <Setter Property="Background" Value="{DynamicResource InputBackground}"/>
         <Setter Property="materialDesign:HintAssist.Foreground" Value="{DynamicResource TextSecondary}"/>
+        <Setter Property="ToolTipService.ShowOnDisabled" Value="True"/>
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.55"/>
+                <Setter Property="Cursor" Value="No"/>
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <Style x:Key="FormDatePicker" TargetType="DatePicker" BasedOn="{StaticResource MaterialDesignOutlinedDatePicker}">

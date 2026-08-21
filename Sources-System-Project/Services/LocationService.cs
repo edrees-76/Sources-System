@@ -129,6 +129,7 @@ public class LocationService : ILocationService
             return new List<Source>();
 
         return db.Sources
+            .IgnoreQueryFilters()
             .Include(s => s.Radioisotope)
             .Include(s => s.InitialActivityUnit)
             .Include(s => s.CurrentActivityUnit)

@@ -116,6 +116,13 @@ public class SourceService : ISourceService
         if (db.Sources.Any(s => s.Id != source.Id && s.SourceCode == source.SourceCode))
             return (false, "كود المصدر موجود بالفعل");
 
+        // منع تعديل الموقع أو الحالة لمصدر قيد الاستعارة النشطة
+        bool hasActiveBorrow = db.BorrowRequests.Any(b => b.SourceId == source.Id && (b.Status == "Delivered" || b.Status == "Overdue"));
+        if (hasActiveBorrow && (existing.LocationId != source.LocationId || existing.Status != source.Status))
+        {
+            return (false, "لا يمكن تعديل الموقع أو الحالة لمصدر قيد الاستعارة النشطة حالياً");
+        }
+
         var oldLocationId = existing.LocationId;
         var newLocationId = source.LocationId;
         if (oldLocationId != newLocationId)
@@ -317,5 +324,11 @@ public class SourceService : ISourceService
                 return ratio <= thresholdPercent;
             })
             .ToList();
+    }
+
+    public bool HasActiveBorrow(Guid sourceId)
+    {
+        using var db = _dbFactory.CreateDbContext();
+        return db.BorrowRequests.Any(b => b.SourceId == sourceId && (b.Status == "Delivered" || b.Status == "Overdue"));
     }
 }

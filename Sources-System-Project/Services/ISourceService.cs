@@ -14,4 +14,5 @@ public interface ISourceService
     void UpdateAllCurrentActivities();
     int GetTotalSourcesCount();
     List<Source> GetLowActivitySources(double threshold);
+    bool HasActiveBorrow(Guid sourceId);
 }

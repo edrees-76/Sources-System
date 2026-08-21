@@ -872,4 +872,55 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
     }
 
     #endregion
+
+    #region Historical Queries with Soft-Deleted Sources
+
+    [Fact]
+    public void GetAll_WithSoftDeletedSource_IncludesSourceViaIgnoreQueryFilters_AndShowsDeletedIndicator()
+    {
+        // Arrange
+        using var db = _fixture.CreateContext();
+        var source = TestDataBuilder.CreateSource(_testIsotope, _testUnit, _testLocation, "SRC-HIST-DEL", 100.0, DateTime.Now.AddMonths(-2), "InUse");
+        db.Sources.Add(source);
+
+        var borrowReq = new BorrowRequest
+        {
+            Id = Guid.NewGuid(),
+            SourceId = source.Id,
+            BorrowerName = "مستعير تاريخي",
+            Purpose = "استعارة سابقة",
+            Status = "Returned",
+            RequestDate = DateTime.Today.AddDays(-30),
+            ExpectedReturnDate = DateTime.Today.AddDays(-20),
+            ActualReturnDate = DateTime.Today.AddDays(-20)
+        };
+        db.BorrowRequests.Add(borrowReq);
+        db.SaveChanges();
+
+        // Soft delete the source
+        source.IsDeleted = true;
+        db.SaveChanges();
+
+        // Act
+        var allRequests = _sut.GetAll();
+        var bySource = _sut.GetBySource(source.Id);
+
+        // Assert
+        var reqFromAll = allRequests.FirstOrDefault(r => r.Id == borrowReq.Id);
+        Assert.NotNull(reqFromAll);
+        Assert.NotNull(reqFromAll.Source);
+        Assert.True(reqFromAll.Source.IsDeleted);
+        Assert.Equal("SRC-HIST-DEL (محذوف)", reqFromAll.DisplaySourceCode);
+        Assert.Equal("SRC-HIST-DEL (محذوف)", reqFromAll.Source.DisplaySourceCode);
+
+        Assert.NotEmpty(bySource);
+        Assert.NotNull(bySource[0].Source);
+        Assert.Equal("SRC-HIST-DEL (محذوف)", bySource[0].DisplaySourceCode);
+
+        // Verify operational query: Sources query WITHOUT IgnoreQueryFilters drops the deleted source
+        var activeSources = db.Sources.ToList();
+        Assert.DoesNotContain(activeSources, s => s.Id == source.Id);
+    }
+
+    #endregion
 }

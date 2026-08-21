@@ -30,6 +30,7 @@ public class BorrowService : IBorrowService
     {
         using var db = _dbFactory.CreateDbContext();
         return db.BorrowRequests
+            .IgnoreQueryFilters()
             .Include(b => b.Source)
             .Include(b => b.BorrowerUser)
             .Include(b => b.ApproverUser)
@@ -42,6 +43,7 @@ public class BorrowService : IBorrowService
     {
         using var db = _dbFactory.CreateDbContext();
         return db.BorrowRequests
+            .IgnoreQueryFilters()
             .Include(b => b.Source)
             .Include(b => b.BorrowerUser)
             .Include(b => b.ApproverUser)

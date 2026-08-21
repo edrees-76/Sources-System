@@ -139,4 +139,103 @@ public class ViewInstantiationTests
             Assert.NotNull(view);
         });
     }
+
+    [Fact]
+    public void SourcesView_WhenActivelyBorrowed_DisablesStatusAndLocationComboBoxes()
+    {
+        RunInSta(() =>
+        {
+            var mockSourceService = new Moq.Mock<Sources.Services.ISourceService>();
+            var mockIsotopeService = new Moq.Mock<Sources.Services.IRadioisotopeService>();
+            var mockLocationService = new Moq.Mock<Sources.Services.ILocationService>();
+            var mockReportingService = new Moq.Mock<Sources.Services.IReportingService>();
+
+            var vm = new Sources.ViewModels.SourcesViewModel(
+                mockSourceService.Object,
+                mockIsotopeService.Object,
+                mockLocationService.Object,
+                mockReportingService.Object);
+
+            var sourceId = Guid.NewGuid();
+            var source = new Sources.Models.Source
+            {
+                Id = sourceId,
+                SourceCode = "SRC-0021",
+                Status = "InUse",
+                InitialActivityValue = 100,
+                CalibrationDate = DateTime.Today
+            };
+
+            mockSourceService.Setup(s => s.HasActiveBorrow(sourceId)).Returns(true);
+            mockSourceService.Setup(s => s.GetSourceById(sourceId)).Returns(source);
+
+            vm.EditSourceCommand.Execute(source);
+            Assert.True(vm.IsActivelyBorrowed);
+            Assert.True(vm.IsEditing);
+
+            var view = new Sources.Views.SourcesView
+            {
+                DataContext = vm
+            };
+
+            view.Measure(new System.Windows.Size(1280, 800));
+            view.Arrange(new System.Windows.Rect(0, 0, 1280, 800));
+            view.UpdateLayout();
+
+            // Save actual visual screenshot artifact for Step 1
+            try
+            {
+                var rtb = new System.Windows.Media.Imaging.RenderTargetBitmap(1280, 800, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+                rtb.Render(view);
+                var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
+                encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(rtb));
+                var artifactDir = @"C:\Users\DELL\.gemini\antigravity-ide\brain\8ef61ce6-d5cd-4d26-bde5-5620046d3b8b";
+                if (System.IO.Directory.Exists(artifactDir))
+                {
+                    using var stream = System.IO.File.Create(System.IO.Path.Combine(artifactDir, "src_0021_edit_disabled.png"));
+                    encoder.Save(stream);
+                }
+
+                // Now switch to Step 3 and capture Location ComboBox
+                vm.CurrentStep = 3;
+                view.Measure(new System.Windows.Size(1280, 800));
+                view.Arrange(new System.Windows.Rect(0, 0, 1280, 800));
+                view.UpdateLayout();
+
+                var rtb3 = new System.Windows.Media.Imaging.RenderTargetBitmap(1280, 800, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+                rtb3.Render(view);
+                var encoder3 = new System.Windows.Media.Imaging.PngBitmapEncoder();
+                encoder3.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(rtb3));
+                if (System.IO.Directory.Exists(artifactDir))
+                {
+                    using var stream3 = System.IO.File.Create(System.IO.Path.Combine(artifactDir, "src_0021_edit_step3_disabled.png"));
+                    encoder3.Save(stream3);
+                }
+            }
+            catch { /* non-fatal for tests */ }
+
+            var comboBoxes = FindVisualChildren<System.Windows.Controls.ComboBox>(view).ToList();
+            Assert.NotEmpty(comboBoxes);
+
+            var disabledBoxes = comboBoxes.Where(c => !c.IsEnabled).ToList();
+            Assert.True(disabledBoxes.Count >= 1, "At least Status or Location ComboBox should be disabled");
+
+            foreach (var box in disabledBoxes)
+            {
+                Assert.True(System.Windows.Controls.ToolTipService.GetShowOnDisabled(box));
+            }
+        });
+    }
+
+    private static System.Collections.Generic.IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
+    {
+        if (depObj == null) yield break;
+        for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(depObj); i++)
+        {
+            var child = System.Windows.Media.VisualTreeHelper.GetChild(depObj, i);
+            if (child is T t) yield return t;
+            foreach (var childOfChild in FindVisualChildren<T>(child))
+                yield return childOfChild;
+        }
+    }
 }

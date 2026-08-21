@@ -31,6 +31,7 @@ public class ReportBorrowingRow
     public int RowNumber { get; set; }
     public BorrowRequest Request { get; set; } = null!;
     public Source? Source => Request.Source;
+    public string SourceCode => Request.DisplaySourceCode;
     public string DisplayBorrowerName => Request.DisplayBorrowerName;
     public DateTime RequestDate => Request.RequestDate;
     public DateTime ExpectedReturnDate => Request.ExpectedReturnDate;

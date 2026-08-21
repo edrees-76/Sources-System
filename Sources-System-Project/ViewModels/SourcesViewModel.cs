@@ -87,6 +87,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     [ObservableProperty] private Guid? _editCurrentUnitId;
     [ObservableProperty] private Guid? _editLocationId;
     [ObservableProperty] private string _editStatus = "InUse";
+    [ObservableProperty] private bool _isActivelyBorrowed;
 
     partial void OnEditInitialActivityTextChanged(string value)
     {
@@ -181,6 +182,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     {
         IsNew = true;
         _editingId = null;
+        IsActivelyBorrowed = false;
         ClearForm();
         CurrentStep = 1;
         IsEditing = true;
@@ -203,6 +205,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         EditNotes = string.Empty;
         IsMultiIsotope = false;
         EditImagePath = null;
+        IsActivelyBorrowed = false;
         IsotopeEntries.Clear();
     }
 
@@ -228,6 +231,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         SelectedSource = source;
         IsNew = false;
         _editingId = source.Id;
+        IsActivelyBorrowed = _sourceService.HasActiveBorrow(source.Id);
         EditSourceCode = source.SourceCode;
         EditRadioisotopeId = SelectedSource.RadioisotopeId;
         EditSerialNumber = SelectedSource.SerialNumber ?? "";
@@ -299,6 +303,17 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
             {
                 ShowMessage(TranslationHelper.GetString("MsgErrLocationReq"));
                 return;
+            }
+
+            // التحقق من منع تعديل الموقع أو الحالة لمصدر قيد الاستعارة النشطة
+            if (!IsNew && _editingId.HasValue && _sourceService.HasActiveBorrow(_editingId.Value))
+            {
+                var originalSource = _sourceService.GetSourceById(_editingId.Value) ?? SelectedSource;
+                if (originalSource != null && (originalSource.LocationId != EditLocationId || originalSource.Status != EditStatus))
+                {
+                    ShowMessage("لا يمكن تعديل الموقع أو الحالة لمصدر قيد الاستعارة النشطة حالياً");
+                    return;
+                }
             }
 
             // التحقق من عدم تعطيل النظائر المتعددة لمصدر يحتوي على أكثر من نظير محفوظ

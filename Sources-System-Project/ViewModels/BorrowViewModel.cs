@@ -22,6 +22,7 @@ public class BorrowRequestRow
     public BorrowRequest Request { get; set; } = null!;
     public Guid Id => Request.Id;
     public Source? Source => Request.Source;
+    public string DisplaySourceCode => Request.DisplaySourceCode;
     public string BorrowerName => Request.BorrowerName;
     public string DisplayBorrowerName => Request.DisplayBorrowerName;
     public DateTime RequestDate => Request.RequestDate;

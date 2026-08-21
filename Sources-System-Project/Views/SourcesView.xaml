@@ -1007,12 +1007,19 @@
                                                         <TextBlock Text="{DynamicResource FieldSourceStatusReq}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
                                                     </StackPanel>
                                                     <ComboBox SelectedValue="{Binding EditStatus}" SelectedValuePath="Tag" TabIndex="2"
+                                                              IsEnabled="{Binding IsActivelyBorrowed, Converter={StaticResource InverseBoolConverter}}"
+                                                              ToolTipService.ShowOnDisabled="True"
+                                                              ToolTip="{Binding IsActivelyBorrowed, Converter={StaticResource BoolToValue}, ConverterParameter='لا يمكن تعديل الحالة لمصدر قيد الاستعارة النشطة حالياً|'}"
                                                               Style="{StaticResource FormComboBox}">
                                                         <ComboBoxItem Content="{DynamicResource StatusInUse}" Tag="InUse" Foreground="{DynamicResource TextPrimary}"/>
                                                         <ComboBoxItem Content="{DynamicResource StatusStorage}" Tag="Storage" Foreground="{DynamicResource TextPrimary}"/>
                                                         <ComboBoxItem Content="{DynamicResource StatusWaste}" Tag="Waste" Foreground="{DynamicResource TextPrimary}"/>
                                                         <ComboBoxItem Content="{DynamicResource StatusTransfer}" Tag="Transfer" Foreground="{DynamicResource TextPrimary}"/>
                                                     </ComboBox>
+                                                    <StackPanel Visibility="{Binding IsActivelyBorrowed, Converter={StaticResource BoolToVis}}" Margin="0,6,0,0" Orientation="Horizontal">
+                                                        <materialDesign:PackIcon Kind="LockOutline" Width="14" Height="14" Foreground="#E0A93E" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                                        <TextBlock Text="الحالة مقفلة (المصدر قيد الاستعارة النشطة)" FontSize="11" Foreground="#E0A93E" VerticalAlignment="Center"/>
+                                                    </StackPanel>
                                                 </StackPanel>
                                             </UniformGrid>
 
@@ -1311,7 +1318,15 @@
                                                     <TextBlock Text="{DynamicResource FieldCurrentLocationReq}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
                                                 </StackPanel>
                                                 <ComboBox ItemsSource="{Binding Locations}" SelectedValue="{Binding EditLocationId}" 
-                                                          SelectedValuePath="Id" DisplayMemberPath="LocationName" Style="{StaticResource FormComboBox}"/>
+                                                          SelectedValuePath="Id" DisplayMemberPath="LocationName" 
+                                                          IsEnabled="{Binding IsActivelyBorrowed, Converter={StaticResource InverseBoolConverter}}"
+                                                          ToolTipService.ShowOnDisabled="True"
+                                                          ToolTip="{Binding IsActivelyBorrowed, Converter={StaticResource BoolToValue}, ConverterParameter='لا يمكن تعديل الموقع لمصدر قيد الاستعارة النشطة حالياً|'}"
+                                                          Style="{StaticResource FormComboBox}"/>
+                                                <StackPanel Visibility="{Binding IsActivelyBorrowed, Converter={StaticResource BoolToVis}}" Margin="0,6,0,0" Orientation="Horizontal">
+                                                    <materialDesign:PackIcon Kind="LockOutline" Width="14" Height="14" Foreground="#E0A93E" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                                    <TextBlock Text="الموقع مقفل (المصدر قيد الاستعارة النشطة)" FontSize="11" Foreground="#E0A93E" VerticalAlignment="Center"/>
+                                                </StackPanel>
                                             </StackPanel>
                                         </UniformGrid>
                                     </StackPanel>

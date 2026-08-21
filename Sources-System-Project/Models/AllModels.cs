@@ -323,6 +323,10 @@ public class Source
         _ => AlertSeverity ?? "-"
     };
 
+    /// <summary>كود المصدر مع حالة الحذف إن وُجد</summary>
+    [NotMapped]
+    public string DisplaySourceCode => IsDeleted ? $"{SourceCode} (محذوف)" : SourceCode;
+
     private string FormatActivity(double value, string? unitSymbol)
     {
         // عرض القيمة فقط بدون الرمز لتجنب التكرار في الجدول
@@ -455,6 +459,12 @@ public class BorrowRequest
     public string DisplayBorrowerName => !string.IsNullOrWhiteSpace(BorrowerName)
         ? BorrowerName
         : (BorrowerUser?.FullName ?? "-");
+
+    /// <summary>كود المصدر للعرض مع تمييز المصادر المحذوفة</summary>
+    [NotMapped]
+    public string DisplaySourceCode => Source != null
+        ? (Source.IsDeleted ? $"{Source.SourceCode} (محذوف)" : Source.SourceCode)
+        : "-";
 }
 
 // ─── المستخدمين ───

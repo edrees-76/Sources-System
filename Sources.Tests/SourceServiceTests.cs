@@ -735,4 +735,121 @@ public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
     }
 
     #endregion
+
+    #region 8. Active Borrow Update Prevention Tests
+
+    [Fact]
+    public void UpdateSource_WithActiveBorrow_AttemptingLocationOrStatusChange_FailsWithErrorMessage()
+    {
+        // Arrange
+        var source = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-ACT-BORROW-01", status: "InUse");
+        _sourceService.CreateSource(source);
+
+        var newLocation = TestDataBuilder.CreateLocation("مختبر جديد", "Lab", "المبنى 3", "303");
+        using (var db = _fixture.CreateContext())
+        {
+            db.Locations.Add(newLocation);
+            db.BorrowRequests.Add(new BorrowRequest
+            {
+                Id = Guid.NewGuid(),
+                SourceId = source.Id,
+                BorrowerUserId = _testUser.Id,
+                Purpose = "بحث علمي",
+                RequestDate = DateTime.Now.AddDays(-1),
+                ExpectedReturnDate = DateTime.Now.AddDays(3),
+                Status = "Delivered"
+            });
+            db.SaveChanges();
+        }
+
+        // Act 1: محاولة تعديل الموقع لمصدر مستعار نشطاً
+        source.LocationId = newLocation.Id;
+        var resultLocationChange = _sourceService.UpdateSource(source);
+
+        // Assert 1
+        Assert.False(resultLocationChange.Success);
+        Assert.Equal("لا يمكن تعديل الموقع أو الحالة لمصدر قيد الاستعارة النشطة حالياً", resultLocationChange.Message);
+
+        // Act 2: محاولة تعديل الحالة لمصدر مستعار نشطاً
+        source.LocationId = _testLocation.Id; // إعادة الموقع الأصلي
+        source.Status = "Storage"; // محاولة تغيير الحالة
+        var resultStatusChange = _sourceService.UpdateSource(source);
+
+        // Assert 2
+        Assert.False(resultStatusChange.Success);
+        Assert.Equal("لا يمكن تعديل الموقع أو الحالة لمصدر قيد الاستعارة النشطة حالياً", resultStatusChange.Message);
+    }
+
+    [Fact]
+    public void UpdateSource_WithActiveBorrow_ModifyingNonCriticalFields_Succeeds()
+    {
+        // Arrange
+        var source = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-ACT-BORROW-02", status: "InUse");
+        _sourceService.CreateSource(source);
+
+        using (var db = _fixture.CreateContext())
+        {
+            db.BorrowRequests.Add(new BorrowRequest
+            {
+                Id = Guid.NewGuid(),
+                SourceId = source.Id,
+                BorrowerUserId = _testUser.Id,
+                Purpose = "تجربة فيزيائية",
+                RequestDate = DateTime.Now.AddDays(-2),
+                ExpectedReturnDate = DateTime.Now.AddDays(4),
+                Status = "Overdue"
+            });
+            db.SaveChanges();
+        }
+
+        // Act: تعديل حقول غير حرجة (ملاحظات، شركة مصنعة، موديل) مع الإبقاء على نفس الموقع والحالة
+        source.Notes = "ملاحظات إضافية أثناء الاستعارة";
+        source.Manufacturer = "شركة بديلة";
+        source.Model = "MOD-V2";
+        var result = _sourceService.UpdateSource(source);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.Equal("تم تحديث المصدر بنجاح", result.Message);
+
+        var updated = _sourceService.GetSourceById(source.Id);
+        Assert.NotNull(updated);
+        Assert.Equal("ملاحظات إضافية أثناء الاستعارة", updated.Notes);
+        Assert.Equal("شركة بديلة", updated.Manufacturer);
+        Assert.Equal("MOD-V2", updated.Model);
+    }
+
+    [Fact]
+    public void HasActiveBorrow_ReturnsTrueForDeliveredAndOverdue_FalseForReturnedAndPending()
+    {
+        // Arrange
+        var srcDelivered = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-CHK-DELIV");
+        var srcOverdue = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-CHK-OVERDUE");
+        var srcReturned = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-CHK-RET");
+        var srcPending = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-CHK-PEND");
+
+        _sourceService.CreateSource(srcDelivered);
+        _sourceService.CreateSource(srcOverdue);
+        _sourceService.CreateSource(srcReturned);
+        _sourceService.CreateSource(srcPending);
+
+        using (var db = _fixture.CreateContext())
+        {
+            db.BorrowRequests.AddRange(
+                new BorrowRequest { Id = Guid.NewGuid(), SourceId = srcDelivered.Id, Purpose = "P1", ExpectedReturnDate = DateTime.Now.AddDays(1), Status = "Delivered" },
+                new BorrowRequest { Id = Guid.NewGuid(), SourceId = srcOverdue.Id, Purpose = "P2", ExpectedReturnDate = DateTime.Now.AddDays(-1), Status = "Overdue" },
+                new BorrowRequest { Id = Guid.NewGuid(), SourceId = srcReturned.Id, Purpose = "P3", ExpectedReturnDate = DateTime.Now.AddDays(-2), Status = "Returned" },
+                new BorrowRequest { Id = Guid.NewGuid(), SourceId = srcPending.Id, Purpose = "P4", ExpectedReturnDate = DateTime.Now.AddDays(2), Status = "Pending" }
+            );
+            db.SaveChanges();
+        }
+
+        // Act & Assert
+        Assert.True(_sourceService.HasActiveBorrow(srcDelivered.Id));
+        Assert.True(_sourceService.HasActiveBorrow(srcOverdue.Id));
+        Assert.False(_sourceService.HasActiveBorrow(srcReturned.Id));
+        Assert.False(_sourceService.HasActiveBorrow(srcPending.Id));
+    }
+
+    #endregion
 }

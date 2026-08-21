@@ -195,7 +195,7 @@
                             <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="45" ElementStyle="{StaticResource CenterAligned}"/>
 
                             <!-- 2. كود المصدر -->
-                            <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding Source.SourceCode}" Width="110" ElementStyle="{StaticResource BoldCenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding DisplaySourceCode}" Width="120" ElementStyle="{StaticResource BoldCenterAligned}"/>
 
                             <!-- 3. المستعير -->
                             <DataGridTextColumn Header="{DynamicResource ColBorrower}" Binding="{Binding BorrowerName}" Width="150" ElementStyle="{StaticResource CenterAligned}"/>

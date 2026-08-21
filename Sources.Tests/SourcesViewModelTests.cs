@@ -336,5 +336,72 @@ public class SourcesViewModelTests : IDisposable
         Assert.False(vm.IsEditing);
     }
 
+    [Fact]
+    public void EditSource_WhenSourceHasActiveBorrow_SetsIsActivelyBorrowedTrue()
+    {
+        // Arrange
+        var vm = CreateViewModel();
+        var sourceId = Guid.NewGuid();
+        var source = new Source
+        {
+            Id = sourceId,
+            SourceCode = "SRC-0021",
+            Status = "InUse",
+            LocationId = _locationId,
+            RadioisotopeId = _isotopeCo60Id,
+            InitialActivityValue = 100,
+            InitialActivityUnitId = _unitBqId,
+            CurrentActivityUnitId = _unitBqId,
+            CalibrationDate = DateTime.Today
+        };
+
+        _mockSourceService.Setup(s => s.HasActiveBorrow(sourceId)).Returns(true);
+        _mockSourceService.Setup(s => s.GetSourceById(sourceId)).Returns(source);
+
+        // Act
+        vm.EditSourceCommand.Execute(source);
+
+        // Assert
+        Assert.True(vm.IsActivelyBorrowed);
+        Assert.Equal("SRC-0021", vm.EditSourceCode);
+        Assert.Equal("InUse", vm.EditStatus);
+        Assert.Equal(_locationId, vm.EditLocationId);
+    }
+
+    [Fact]
+    public async Task SaveAsync_WhenActivelyBorrowedSource_AttemptsLocationChange_RejectsWithErrorMessage()
+    {
+        // Arrange
+        var vm = CreateViewModel();
+        var sourceId = Guid.NewGuid();
+        var newLocationId = Guid.NewGuid();
+        var source = new Source
+        {
+            Id = sourceId,
+            SourceCode = "SRC-0021",
+            Status = "InUse",
+            LocationId = _locationId,
+            RadioisotopeId = _isotopeCo60Id,
+            InitialActivityValue = 100,
+            InitialActivityUnitId = _unitBqId,
+            CurrentActivityUnitId = _unitBqId,
+            CalibrationDate = DateTime.Today
+        };
+
+        _mockSourceService.Setup(s => s.HasActiveBorrow(sourceId)).Returns(true);
+        _mockSourceService.Setup(s => s.GetSourceById(sourceId)).Returns(source);
+
+        vm.EditSourceCommand.Execute(source);
+        Assert.True(vm.IsActivelyBorrowed);
+
+        // Act: محاولة تعديل الموقع
+        vm.EditLocationId = newLocationId;
+        await vm.SaveCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Equal("لا يمكن تعديل الموقع أو الحالة لمصدر قيد الاستعارة النشطة حالياً", vm.Message);
+        _mockSourceService.Verify(s => s.UpdateSource(It.IsAny<Source>(), It.IsAny<List<SourceIsotope>>()), Times.Never);
+    }
+
     #endregion
 }

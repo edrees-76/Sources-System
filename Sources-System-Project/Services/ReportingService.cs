@@ -348,7 +348,7 @@ namespace Sources.Services
                 foreach (var req in requests ?? Enumerable.Empty<BorrowRequest>())
                 {
                     worksheet.Cell(row, 1).Value = index++;
-                    worksheet.Cell(row, 2).Value = req.Source?.SourceCode ?? "-";
+                    worksheet.Cell(row, 2).Value = req.DisplaySourceCode;
                     worksheet.Cell(row, 3).Value = req.DisplayBorrowerName;
                     worksheet.Cell(row, 4).Value = req.Purpose ?? "-";
                     worksheet.Cell(row, 5).Value = req.ExpectedReturnDate.ToString("yyyy/MM/dd");
@@ -434,7 +434,7 @@ namespace Sources.Services
                                          var backgroundColor = (i - 1) % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
                                          
                                          table.Cell().Element(CellStyle).Text(i.ToString());
-                                         table.Cell().Element(CellStyle).Text(req.Source?.SourceCode ?? "-");
+                                         table.Cell().Element(CellStyle).Text(req.DisplaySourceCode);
                                          table.Cell().Element(CellStyle).Text(req.DisplayBorrowerName);
                                          table.Cell().Element(CellStyle).Text(req.Purpose ?? "-");
                                          table.Cell().Element(CellStyle).Text(req.ExpectedReturnDate.ToString("yyyy/MM/dd"));
@@ -624,7 +624,7 @@ namespace Sources.Services
                 foreach (var req in borrowing ?? Enumerable.Empty<BorrowRequest>())
                 {
                     wsBorrowing.Cell(row, 1).Value = borIndex++;
-                    wsBorrowing.Cell(row, 2).Value = req.Source?.SourceCode ?? "-";
+                    wsBorrowing.Cell(row, 2).Value = req.DisplaySourceCode;
                     wsBorrowing.Cell(row, 3).Value = req.DisplayBorrowerName;
                     wsBorrowing.Cell(row, 4).Value = req.Purpose ?? "-";
                     wsBorrowing.Cell(row, 5).Value = req.ExpectedReturnDate.ToString("yyyy/MM/dd");
@@ -759,7 +759,7 @@ namespace Sources.Services
                                     {
                                         var bg = (i - 1) % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(i.ToString());
-                                        table.Cell().Element(c => CellStyle(c, bg)).Text(req.Source?.SourceCode ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(req.DisplaySourceCode);
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(req.DisplayBorrowerName);
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(req.Purpose ?? "-");
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(req.ExpectedReturnDate.ToString("yyyy/MM/dd"));
