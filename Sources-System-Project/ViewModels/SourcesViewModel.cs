@@ -1,5 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using Sources.Messages;
 using Sources.Models;
 using Sources.Services;
 using Sources.Helpers;
@@ -404,6 +406,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
             {
                 IsEditing = false;
                 await LoadDataAsync();
+                WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
             }
         }
         catch (Exception ex)
@@ -448,7 +451,11 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         if (source == null) return;
         var result = _sourceService.DeleteSource(source.Id);
         ShowMessage(result.Message);
-        if (result.Success) await LoadDataAsync();
+        if (result.Success)
+        {
+            await LoadDataAsync();
+            WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
+        }
     }
 
     [RelayCommand]

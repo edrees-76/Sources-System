@@ -45,44 +45,7 @@ public class AlertService : IAlertService
         foreach (var source in activeSources)
         {
             // ─── تنبيه انخفاض النشاط الإشعاعي (قانون التحلل: 5 إلى 6 أضعاف نصف العمر T½) ───
-            double maxHalfLivesElapsed = -1;
-            string worstIsotopeSymbol = string.Empty;
-
-            if (source.HasDetailedIsotopes && source.SourceIsotopes != null && source.SourceIsotopes.Any(si => si.Radioisotope != null))
-            {
-                foreach (var si in source.SourceIsotopes.Where(si => si.Radioisotope != null))
-                {
-                    var isotope = si.Radioisotope!;
-                    var calibDate = si.CalibrationDate ?? source.CalibrationDate;
-                    if (calibDate == default) continue;
-
-                    var halfLifeSec = ConvertToSeconds(isotope.HalfLife, isotope.HalfLifeUnit);
-                    if (halfLifeSec <= 0) continue;
-
-                    var elapsedSec = (DateTime.Now - calibDate).TotalSeconds;
-                    if (elapsedSec < 0) elapsedSec = 0;
-
-                    var halfLives = elapsedSec / halfLifeSec;
-                    if (halfLives > maxHalfLivesElapsed)
-                    {
-                        maxHalfLivesElapsed = halfLives;
-                        worstIsotopeSymbol = isotope.Symbol;
-                    }
-                }
-            }
-            else if (source.Radioisotope != null && source.CalibrationDate != default)
-            {
-                var isotope = source.Radioisotope;
-                var halfLifeSec = ConvertToSeconds(isotope.HalfLife, isotope.HalfLifeUnit);
-                if (halfLifeSec > 0)
-                {
-                    var elapsedSec = (DateTime.Now - source.CalibrationDate).TotalSeconds;
-                    if (elapsedSec < 0) elapsedSec = 0;
-
-                    maxHalfLivesElapsed = elapsedSec / halfLifeSec;
-                    worstIsotopeSymbol = isotope.Symbol;
-                }
-            }
+            var (maxHalfLivesElapsed, worstIsotopeSymbol) = CalculateMaxHalfLivesElapsed(source);
 
             if (maxHalfLivesElapsed >= 6.0)
             {
@@ -133,7 +96,54 @@ public class AlertService : IAlertService
         return GetActiveAlerts();
     }
 
-    private static double ConvertToSeconds(double value, string? unit)
+    /// <summary>
+    /// دالة فيزيائية موحدة لحساب عدد فترات نصف العمر المنقضية وأسوأ نظير اضمحلالاً لمصدر معين
+    /// </summary>
+    public static (double HalfLivesElapsed, string WorstIsotopeSymbol) CalculateMaxHalfLivesElapsed(Source source)
+    {
+        double maxHalfLivesElapsed = -1;
+        string worstIsotopeSymbol = string.Empty;
+
+        if (source.HasDetailedIsotopes && source.SourceIsotopes != null && source.SourceIsotopes.Any(si => si.Radioisotope != null))
+        {
+            foreach (var si in source.SourceIsotopes.Where(si => si.Radioisotope != null))
+            {
+                var isotope = si.Radioisotope!;
+                var calibDate = si.CalibrationDate ?? source.CalibrationDate;
+                if (calibDate == default) continue;
+
+                var halfLifeSec = ConvertToSeconds(isotope.HalfLife, isotope.HalfLifeUnit);
+                if (halfLifeSec <= 0) continue;
+
+                var elapsedSec = (DateTime.Now - calibDate).TotalSeconds;
+                if (elapsedSec < 0) elapsedSec = 0;
+
+                var halfLives = elapsedSec / halfLifeSec;
+                if (halfLives > maxHalfLivesElapsed)
+                {
+                    maxHalfLivesElapsed = halfLives;
+                    worstIsotopeSymbol = isotope.Symbol;
+                }
+            }
+        }
+        else if (source.Radioisotope != null && source.CalibrationDate != default)
+        {
+            var isotope = source.Radioisotope;
+            var halfLifeSec = ConvertToSeconds(isotope.HalfLife, isotope.HalfLifeUnit);
+            if (halfLifeSec > 0)
+            {
+                var elapsedSec = (DateTime.Now - source.CalibrationDate).TotalSeconds;
+                if (elapsedSec < 0) elapsedSec = 0;
+
+                maxHalfLivesElapsed = elapsedSec / halfLifeSec;
+                worstIsotopeSymbol = isotope.Symbol;
+            }
+        }
+
+        return (maxHalfLivesElapsed, worstIsotopeSymbol);
+    }
+
+    public static double ConvertToSeconds(double value, string? unit)
     {
         return unit?.ToLower() switch
         {
@@ -174,10 +184,29 @@ public class AlertService : IAlertService
     /// <summary>جلب التنبيهات النشطة</summary>
     public List<AlertNotification> GetActiveAlerts()
     {
+        return GetAllAlerts(false);
+    }
+
+    /// <summary>جلب جميع التنبيهات مع خيار تضمين المخفية</summary>
+    public List<AlertNotification> GetAllAlerts(bool includeDismissed = true)
+    {
         using var db = _dbFactory.CreateDbContext();
-        return db.AlertNotifications
+        var query = db.AlertNotifications
             .Include(a => a.Source)
-            .Where(a => !a.IsDismissed)
+                .ThenInclude(s => s!.Location)
+            .Include(a => a.Source)
+                .ThenInclude(s => s!.Radioisotope)
+            .Include(a => a.Source)
+                .ThenInclude(s => s!.SourceIsotopes)
+                    .ThenInclude(si => si.Radioisotope)
+            .AsQueryable();
+
+        if (!includeDismissed)
+        {
+            query = query.Where(a => !a.IsDismissed);
+        }
+
+        return query
             .OrderByDescending(a => a.Severity == "Critical" ? 3 : a.Severity == "Warning" ? 2 : 1)
             .ThenByDescending(a => a.CreatedAt)
             .ToList();

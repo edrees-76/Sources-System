@@ -645,6 +645,7 @@
     <system:String x:Key="LabelNotes">Notes:</system:String>
     <system:String x:Key="TitleSourceDetails">Source Details</system:String>
     <system:String x:Key="TitleSelectImage">Select Source Image</system:String>
+    <system:String x:Key="MsgSourceNotFound">Source not found or has been deleted from the system.</system:String>
 
     <!-- Login Page -->
     <system:String x:Key="MsgErrUsernameReq">Please enter username</system:String>
@@ -686,11 +687,35 @@
 
 
 
-    <!-- Notifications UI -->
+    <!-- Notifications & Alerts UI -->
     <system:String x:Key="TitleNotifications">System Notifications</system:String>
     <system:String x:Key="ToolTipNotifications">Alerts &amp; Notifications</system:String>
     <system:String x:Key="BtnMarkAllRead">Mark all as read</system:String>
     <system:String x:Key="MsgNoNotifications">No new notifications</system:String>
+    <system:String x:Key="MenuAlerts">Alerts</system:String>
+    <system:String x:Key="AlertsTitle">Smart Alerts System</system:String>
+    <system:String x:Key="AlertsSubtitle">Continuous monitoring of radioactive sources and low-activity alerts</system:String>
+    <system:String x:Key="BtnRefreshAlerts">Check &amp; Refresh Alerts</system:String>
+    <system:String x:Key="MsgAlertsRefreshed">Alerts successfully re-checked and updated</system:String>
+    <system:String x:Key="LabelTotalAlerts">Total Active Alerts</system:String>
+    <system:String x:Key="FilterSeverity">Severity Level</system:String>
+    <system:String x:Key="FilterCritical">Critical Only</system:String>
+    <system:String x:Key="FilterWarning">Warning Only</system:String>
+    <system:String x:Key="FilterDateFrom">Date From</system:String>
+    <system:String x:Key="FilterDateTo">Date To</system:String>
+    <system:String x:Key="FilterShowDismissed">Show Dismissed Alerts</system:String>
+    <system:String x:Key="ColResponsibleIsotope">Affected Isotope</system:String>
+    <system:String x:Key="ColSeverity">Severity</system:String>
+    <system:String x:Key="ColCreatedDate">Alert Date</system:String>
+    <system:String x:Key="ColReadStatus">Read Status</system:String>
+    <system:String x:Key="StatusRead">Read</system:String>
+    <system:String x:Key="StatusUnread">Unread</system:String>
+    <system:String x:Key="StatusDismissed">Dismissed</system:String>
+    <system:String x:Key="MsgNoMatchingAlerts">No alerts match the selected filter criteria.</system:String>
+    <system:String x:Key="ToolTipMarkRead">Mark as Read</system:String>
+    <system:String x:Key="ToolTipDismissAlert">Dismiss Alert</system:String>
+    <system:String x:Key="TitleDismissAlert">Dismiss Alert</system:String>
+    <system:String x:Key="MsgConfirmDismissAlert">Are you sure you want to dismiss this alert?</system:String>
 
     <system:String x:Key="MenuActivityCalculator">Activity Calculator</system:String>
     <system:String x:Key="MenuHelp">Help &amp; Guide</system:String>

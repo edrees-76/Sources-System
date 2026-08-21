@@ -44,7 +44,14 @@ public class AppDbContext : DbContext
                 try { File.Copy(oldDbPath, dbPath); } catch { }
             }
 
-            options.UseSqlite($"Data Source={dbPath}");
+            var connStringBuilder = new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder
+            {
+                DataSource = dbPath,
+                Mode = Microsoft.Data.Sqlite.SqliteOpenMode.ReadWriteCreate,
+                DefaultTimeout = 5
+            };
+
+            options.UseSqlite(connStringBuilder.ToString());
         }
     }
 
@@ -63,6 +70,10 @@ public class AppDbContext : DbContext
         var conn = Database.GetDbConnection();
         conn.Open();
         using var cmd = conn.CreateCommand();
+
+        // تفعيل نمط WAL وضبط مهلة الانتظار 5 ثوانٍ
+        cmd.CommandText = "PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;";
+        cmd.ExecuteNonQuery();
 
         // إضافة جدول SourceIsotopes إذا لم يكن موجوداً
         cmd.CommandText = @"

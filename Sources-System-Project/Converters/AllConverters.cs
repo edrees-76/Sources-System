@@ -189,6 +189,7 @@ public class ViewNameToTitleConverter : IValueConverter
             "Borrowing" => "NavBorrowing",
             "Transactions" => "NavTransactions",
             "Reports" => "NavReports",
+            "Alerts" => "MenuAlerts",
             "Users" => "NavUsers",
             "ActivityCalculator" => "NavActivityCalculator",
             "Help" => "NavHelp",
@@ -206,18 +207,34 @@ public class ViewNameToTitleConverter : IValueConverter
         => throw new NotImplementedException();
 }
 
-// ─── تحويل القيمة الفارغة (Null) إلى ظهور/إخفاء ───
+// ─── تحويل القيمة الفارغة (Null أو الصفر) إلى ظهور/إخفاء ───
 public class NullToVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        bool isNullOrEmpty = value == null || (value is string s && string.IsNullOrWhiteSpace(s));
+        bool isNullOrEmpty = value == null 
+            || (value is string s && string.IsNullOrWhiteSpace(s))
+            || (value is int i && i == 0);
         bool inverse = parameter?.ToString() == "Inverse";
 
         if (inverse)
             return isNullOrEmpty ? Visibility.Visible : Visibility.Collapsed;
         
         return isNullOrEmpty ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}
+
+public class InverseNullToVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        bool isNullOrEmpty = value == null 
+            || (value is string s && string.IsNullOrWhiteSpace(s))
+            || (value is int i && i == 0);
+        return isNullOrEmpty ? Visibility.Visible : Visibility.Collapsed;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

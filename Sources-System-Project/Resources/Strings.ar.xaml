@@ -642,6 +642,7 @@
     <system:String x:Key="LabelNotes">ملاحظات:</system:String>
     <system:String x:Key="TitleSourceDetails">تفاصيل المصدر</system:String>
     <system:String x:Key="TitleSelectImage">اختر صورة للمصدر</system:String>
+    <system:String x:Key="MsgSourceNotFound">المصدر غير موجود أو تم حذفه من المنظومة.</system:String>
 
     <!-- Login Page -->
     <system:String x:Key="MsgErrUsernameReq">الرجاء إدخال اسم المستخدم</system:String>
@@ -683,11 +684,35 @@
 
 
 
-    <!-- Notifications UI -->
+    <!-- Notifications & Alerts UI -->
     <system:String x:Key="TitleNotifications">تنبيهات النظام</system:String>
     <system:String x:Key="ToolTipNotifications">التنبيهات والإشعارات</system:String>
     <system:String x:Key="BtnMarkAllRead">تعليم الكل كمقروء</system:String>
     <system:String x:Key="MsgNoNotifications">لا توجد تنبيهات جديدة</system:String>
+    <system:String x:Key="MenuAlerts">التنبيهات</system:String>
+    <system:String x:Key="AlertsTitle">منظومة التنبيهات الذكية</system:String>
+    <system:String x:Key="AlertsSubtitle">مراقبة مستمرة للمصادر المشعة وتنبيهات انخفاض النشاط الإشعاعي</system:String>
+    <system:String x:Key="BtnRefreshAlerts">تحديث وفحص التنبيهات</system:String>
+    <system:String x:Key="MsgAlertsRefreshed">تم إعادة فحص وتحديث التنبيهات بنجاح</system:String>
+    <system:String x:Key="LabelTotalAlerts">إجمالي التنبيهات النشطة</system:String>
+    <system:String x:Key="FilterSeverity">مستوى الخطورة</system:String>
+    <system:String x:Key="FilterCritical">حرج فقط</system:String>
+    <system:String x:Key="FilterWarning">تحذيري فقط</system:String>
+    <system:String x:Key="FilterDateFrom">من تاريخ</system:String>
+    <system:String x:Key="FilterDateTo">إلى تاريخ</system:String>
+    <system:String x:Key="FilterShowDismissed">إظهار التنبيهات المخفية</system:String>
+    <system:String x:Key="ColResponsibleIsotope">النظير المتأثر</system:String>
+    <system:String x:Key="ColSeverity">مستوى الخطورة</system:String>
+    <system:String x:Key="ColCreatedDate">تاريخ التنبيه</system:String>
+    <system:String x:Key="ColReadStatus">حالة القراءة</system:String>
+    <system:String x:Key="StatusRead">مقروء</system:String>
+    <system:String x:Key="StatusUnread">غير مقروء</system:String>
+    <system:String x:Key="StatusDismissed">مخفي</system:String>
+    <system:String x:Key="MsgNoMatchingAlerts">لا توجد تنبيهات مطابقة لخيارات التصفية المحددة.</system:String>
+    <system:String x:Key="ToolTipMarkRead">تعليم كمقروء</system:String>
+    <system:String x:Key="ToolTipDismissAlert">إخفاء التنبيه</system:String>
+    <system:String x:Key="TitleDismissAlert">إخفاء التنبيه</system:String>
+    <system:String x:Key="MsgConfirmDismissAlert">هل أنت متأكد من رغبتك في إخفاء هذا التنبيه؟</system:String>
 
     <!-- Activity Calculator -->
     <system:String x:Key="MenuActivityCalculator">حاسبة النشاط</system:String>

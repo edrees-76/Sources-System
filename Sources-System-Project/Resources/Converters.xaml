@@ -13,6 +13,7 @@
     <converters:ViewNameToTitleConverter x:Key="ViewNameToTitle"/>
     <converters:BoolToValueConverter x:Key="BoolToValue"/>
     <converters:NullToVisibilityConverter x:Key="NullToVis"/>
+    <converters:InverseNullToVisibilityConverter x:Key="InverseNullToVis"/>
     <converters:RelativePathToAbsolutePathConverter x:Key="RelativePathToAbsolute"/>
     <converters:EqualityToVisibilityConverter x:Key="EqualityToVis"/>
     <converters:IndexConverter x:Key="IndexConverter"/>

@@ -102,6 +102,7 @@ public partial class App : Application
         services.AddTransient<Sources.Views.SplashWindow>();
         services.AddTransient<Sources.Views.LoginWindow>();
         services.AddTransient<Sources.Views.ScreensaverWindow>();
+        services.AddTransient<Sources.Views.AlertsView>();
         services.AddTransient<MainWindow>();
 
         // Services
@@ -128,6 +129,7 @@ public partial class App : Application
         services.AddTransient<LocationsViewModel>();
         services.AddTransient<BorrowViewModel>();
         services.AddTransient<ReportsViewModel>();
+        services.AddTransient<AlertsViewModel>();
         services.AddTransient<UsersViewModel>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<ActivityCalculatorViewModel>();

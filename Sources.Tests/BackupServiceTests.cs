@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.Data.Sqlite;
 using Sources.Services;
 using Xunit;
 
@@ -27,10 +28,23 @@ public class BackupServiceTests : IDisposable
         _sut = new BackupService(_dbPath, _backupDir);
     }
 
+    private void CreateValidSqliteDatabase(string path, string tableName = "Sources", string sampleData = "SRC-TEST-001")
+    {
+        SqliteConnection.ClearAllPools();
+        if (File.Exists(path)) File.Delete(path);
+        using var conn = new SqliteConnection($"Data Source={path}");
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = $"PRAGMA journal_mode=WAL; CREATE TABLE IF NOT EXISTS {tableName} (Id INTEGER PRIMARY KEY, Code TEXT); INSERT INTO {tableName} (Code) VALUES ('{sampleData}');";
+        cmd.ExecuteNonQuery();
+        conn.Close();
+    }
+
     public void Dispose()
     {
         try
         {
+            SqliteConnection.ClearAllPools();
             if (Directory.Exists(_testRoot))
             {
                 Directory.Delete(_testRoot, recursive: true);
@@ -63,11 +77,10 @@ public class BackupServiceTests : IDisposable
     }
 
     [Fact]
-    public void CreateBackup_DefaultLocation_CreatesBackupWithTimestampAndExactContent()
+    public void CreateBackup_DefaultLocation_CreatesBackupWithTimestampAndValidSqliteContent()
     {
         // Arrange
-        var dummyData = Encoding.UTF8.GetBytes("SQLite format 3\0 Test DB Content " + Guid.NewGuid());
-        File.WriteAllBytes(_dbPath, dummyData);
+        CreateValidSqliteDatabase(_dbPath, "Sources", "SRC-DEFAULT-LOC");
 
         // Act
         var result = _sut.CreateBackup();
@@ -80,8 +93,13 @@ public class BackupServiceTests : IDisposable
         var fileName = Path.GetFileName(result.BackupPath);
         Assert.Matches(@"^SOURCES_backup_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.db$", fileName);
 
-        var backupBytes = File.ReadAllBytes(result.BackupPath);
-        Assert.Equal(dummyData, backupBytes);
+        // Verify backup database content
+        using var conn = new SqliteConnection($"Data Source={result.BackupPath}");
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT Code FROM Sources LIMIT 1;";
+        var code = cmd.ExecuteScalar()?.ToString();
+        Assert.Equal("SRC-DEFAULT-LOC", code);
     }
 
     [Fact]
@@ -89,8 +107,7 @@ public class BackupServiceTests : IDisposable
     {
         // Arrange
         var customFolder = Path.Combine(_testRoot, "CustomTargetFolder");
-        var dummyData = Encoding.UTF8.GetBytes("CUSTOM_BACKUP_TEST_DATA");
-        File.WriteAllBytes(_dbPath, dummyData);
+        CreateValidSqliteDatabase(_dbPath, "Sources", "SRC-CUSTOM-LOC");
 
         // Act
         var result = _sut.CreateBackup(customFolder);
@@ -103,8 +120,13 @@ public class BackupServiceTests : IDisposable
         var expectedParentFolder = Path.Combine(customFolder, BackupService.BackupFolderName);
         Assert.Equal(expectedParentFolder, Path.GetDirectoryName(result.BackupPath));
 
-        var backupBytes = File.ReadAllBytes(result.BackupPath);
-        Assert.Equal(dummyData, backupBytes);
+        // Verify backup database content
+        using var conn = new SqliteConnection($"Data Source={result.BackupPath}");
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT Code FROM Sources LIMIT 1;";
+        var code = cmd.ExecuteScalar()?.ToString();
+        Assert.Equal("SRC-CUSTOM-LOC", code);
     }
 
     [Fact]
@@ -112,8 +134,7 @@ public class BackupServiceTests : IDisposable
     {
         // Arrange
         var targetDir = Path.Combine(_testRoot, BackupService.BackupFolderName);
-        var dummyData = Encoding.UTF8.GetBytes("NESTING_TEST_DATA");
-        File.WriteAllBytes(_dbPath, dummyData);
+        CreateValidSqliteDatabase(_dbPath, "Sources", "SRC-NESTING-TEST");
 
         // Act
         var result = _sut.CreateBackup(targetDir);
@@ -129,8 +150,7 @@ public class BackupServiceTests : IDisposable
     {
         // Arrange
         var nonExistentDir = Path.Combine(_testRoot, "Deep", "Nested", "BackupDir");
-        var dummyData = Encoding.UTF8.GetBytes("AUTO_CREATE_DIR_DATA");
-        File.WriteAllBytes(_dbPath, dummyData);
+        CreateValidSqliteDatabase(_dbPath, "Sources", "SRC-AUTO-CREATE-DIR");
 
         // Act
         var result = _sut.CreateBackup(nonExistentDir);
@@ -154,6 +174,86 @@ public class BackupServiceTests : IDisposable
         Assert.False(result.Success);
         Assert.Null(result.BackupPath);
         Assert.Contains("قاعدة البيانات غير موجودة", result.Message);
+    }
+
+    [Fact]
+    public void CreateBackup_UsingVacuumInto_ProducesValidAndIdenticalDatabaseWithWalData()
+    {
+        // Arrange - Create DB with multiple records in WAL mode
+        SqliteConnection.ClearAllPools();
+        if (File.Exists(_dbPath)) File.Delete(_dbPath);
+
+        using (var conn = new SqliteConnection($"Data Source={_dbPath}"))
+        {
+            conn.Open();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                PRAGMA journal_mode=WAL;
+                CREATE TABLE Radioisotopes (Id INTEGER PRIMARY KEY, Symbol TEXT, HalfLife REAL);
+                INSERT INTO Radioisotopes (Symbol, HalfLife) VALUES ('Co-60', 5.27);
+                INSERT INTO Radioisotopes (Symbol, HalfLife) VALUES ('Cs-137', 30.08);
+                INSERT INTO Radioisotopes (Symbol, HalfLife) VALUES ('Am-241', 432.2);
+            ";
+            cmd.ExecuteNonQuery();
+        }
+
+        // Act
+        var result = _sut.CreateBackup();
+
+        // Assert
+        Assert.True(result.Success, result.Message);
+        Assert.NotNull(result.BackupPath);
+        Assert.True(File.Exists(result.BackupPath));
+
+        // Verify that the backup file contains all records seamlessly
+        using (var backupConn = new SqliteConnection($"Data Source={result.BackupPath}"))
+        {
+            backupConn.Open();
+            using var cmd = backupConn.CreateCommand();
+
+            cmd.CommandText = "SELECT COUNT(*) FROM Radioisotopes;";
+            var count = Convert.ToInt32(cmd.ExecuteScalar());
+            Assert.Equal(3, count);
+
+            cmd.CommandText = "SELECT Symbol FROM Radioisotopes ORDER BY Id ASC;";
+            using var reader = cmd.ExecuteReader();
+            Assert.True(reader.Read());
+            Assert.Equal("Co-60", reader.GetString(0));
+            Assert.True(reader.Read());
+            Assert.Equal("Cs-137", reader.GetString(0));
+            Assert.True(reader.Read());
+            Assert.Equal("Am-241", reader.GetString(0));
+        }
+    }
+
+    [Fact]
+    public void CreateBackup_OnRealLocalAppDataDatabase_ProducesFullyValidBackup()
+    {
+        var appDataDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Sources");
+        var realDbPath = Path.Combine(appDataDir, "Sources.db");
+
+        if (File.Exists(realDbPath))
+        {
+            var realService = new BackupService(realDbPath, _backupDir);
+            var result = realService.CreateBackup();
+
+            Assert.True(result.Success, result.Message);
+            Assert.NotNull(result.BackupPath);
+            Assert.True(File.Exists(result.BackupPath));
+
+            using var conn = new SqliteConnection($"Data Source={result.BackupPath}");
+            conn.Open();
+            using var cmd = conn.CreateCommand();
+
+            cmd.CommandText = "SELECT COUNT(*) FROM Sources;";
+            var sourceCount = Convert.ToInt32(cmd.ExecuteScalar());
+            Assert.True(sourceCount >= 0);
+
+            cmd.CommandText = "PRAGMA integrity_check;";
+            var integrity = cmd.ExecuteScalar()?.ToString();
+            Assert.Equal("ok", integrity?.ToLower());
+        }
     }
 
     [Fact]
@@ -302,8 +402,8 @@ public class BackupServiceTests : IDisposable
         File.WriteAllBytes(recentFile2, new byte[64]);
         File.SetCreationTime(recentFile2, DateTime.Now.AddDays(-2));
 
-        // Create dummy source db
-        File.WriteAllBytes(_dbPath, new byte[128]);
+        // Create valid source db
+        CreateValidSqliteDatabase(_dbPath, "Sources", "SRC-CLEAN-TEST");
 
         // Act - CreateBackup internally invokes CleanOldBackups(30, targetDir)
         var result = _sut.CreateBackup(targetDir);

@@ -36,7 +36,26 @@ public partial class MainViewModel : ObservableObject
         _alertService = alertService;
         _settingsService = settingsService;
         IsDarkMode = SettingsHelper.IsDarkMode;
+        
+        // التسجيل لاستقبال رسائل تحديث المصادر وتحديث التنبيهات فورياً
+        WeakReferenceMessenger.Default.Register<Sources.Messages.SourcesUpdatedMessage>(this, (r, m) =>
+        {
+            RunOnUI(RefreshNotifications);
+        });
+
         InitializeUserSession();
+    }
+
+    private static void RunOnUI(Action action)
+    {
+        if (Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
+        {
+            Application.Current.Dispatcher.Invoke(action);
+        }
+        else
+        {
+            action();
+        }
     }
 
     public void InitializeUserSession()
@@ -75,6 +94,7 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private bool _canSeeUsers = true;
     [ObservableProperty] private bool _canSeeSettings = true;
     [ObservableProperty] private bool _canSeeCalculator = true;
+    [ObservableProperty] private bool _canSeeAlerts = true;
     [ObservableProperty] private bool _canSeeHelp = true;
 
     private void RefreshSidebarPermissions()
@@ -89,6 +109,7 @@ public partial class MainViewModel : ObservableObject
         CanSeeUsers = user.HasSectionPermission("Users");
         CanSeeSettings = user.HasSectionPermission("Settings");
         CanSeeCalculator = user.HasSectionPermission("ActivityCalculator");
+        CanSeeAlerts = user.HasSectionPermission("Alerts");
     }
 
     [RelayCommand]
@@ -106,6 +127,17 @@ public partial class MainViewModel : ObservableObject
         if (notification == null) return;
         _alertService.MarkAsRead(notification.Id);
         RefreshNotifications();
+    }
+
+    [RelayCommand]
+    public void DismissNotification(Sources.Models.AlertNotification notification)
+    {
+        if (notification == null) return;
+        if (DialogHelper.ShowConfirmation(TranslationHelper.GetString("MsgConfirmDismissAlert"), TranslationHelper.GetString("TitleDismissAlert")))
+        {
+            _alertService.DismissAlert(notification.Id);
+            RefreshNotifications();
+        }
     }
 
     [RelayCommand]
@@ -134,6 +166,7 @@ public partial class MainViewModel : ObservableObject
             "Locations" => App.ServiceProvider.GetService(typeof(LocationsViewModel)) as ObservableObject,
             "Borrowing" => App.ServiceProvider.GetService(typeof(BorrowViewModel)) as ObservableObject,
             "Reports" => App.ServiceProvider.GetService(typeof(ReportsViewModel)) as ObservableObject,
+            "Alerts" => App.ServiceProvider.GetService(typeof(AlertsViewModel)) as ObservableObject,
             "Users" => App.ServiceProvider.GetService(typeof(UsersViewModel)) as ObservableObject,
             "Settings" => App.ServiceProvider.GetService(typeof(SettingsViewModel)) as ObservableObject,
             "ActivityCalculator" => App.ServiceProvider.GetService(typeof(ActivityCalculatorViewModel)) as ObservableObject,

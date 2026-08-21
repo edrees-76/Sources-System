@@ -1,0 +1,330 @@
+<UserControl x:Class="Sources.Views.AlertsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- 0: Header -->
+            <RowDefinition Height="Auto"/>  <!-- 1: Stat Summary Cards -->
+            <RowDefinition Height="Auto"/>  <!-- 2: Filter Card -->
+            <RowDefinition Height="*"/>     <!-- 3: Table & Content -->
+            <RowDefinition Height="Auto"/>  <!-- 4: Pagination Footer -->
+        </Grid.RowDefinitions>
+
+        <!-- ══ 0: ترويسة الصفحة والأزرار العلوية ══ -->
+        <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,16">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                <materialDesign:PackIcon Kind="BellRingOutline" Width="36" Height="36" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                <StackPanel Margin="12,0,0,0">
+                    <TextBlock Text="{DynamicResource AlertsTitle}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="{DynamicResource AlertsSubtitle}" FontSize="13" Foreground="{DynamicResource TextSecondary}"/>
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- زر تعليم الكل كمقروء -->
+                <Button Command="{Binding MarkAllAsReadCommand}" Style="{StaticResource PrimaryButton}" Margin="0,0,8,0">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="CheckAll" Margin="-4,0,6,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource BtnMarkAllRead}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- زر تحديث وفحص التنبيهات -->
+                <Button Command="{Binding RefreshAlertsCommand}" Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Foreground="{DynamicResource PrimaryBrush}" BorderBrush="{DynamicResource PrimaryBrush}" Height="40">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="Refresh" Margin="-4,0,6,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource BtnRefreshAlerts}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- ══ 1: بطاقات الإحصائيات السريعة ══ -->
+        <Grid Grid.Row="1" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- إجمالي التنبيهات -->
+            <Border Grid.Column="0" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="16,12"
+                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{DynamicResource LabelTotalAlerts}" FontSize="12" Foreground="{DynamicResource TextSecondary}" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding TotalAlertsCount}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <Border Grid.Column="1" Background="#151F5A66" CornerRadius="10" Width="42" Height="42" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="BellOutline" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- التنبيهات الحرجة -->
+            <Border Grid.Column="2" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="16,12"
+                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{DynamicResource LabelCritical}" FontSize="12" Foreground="#C25B4A" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding CriticalAlertsCount}" FontSize="24" FontWeight="Bold" Foreground="#C25B4A" Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <Border Grid.Column="1" Background="#1AC25B4A" CornerRadius="10" Width="42" Height="42" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="AlertOctagonOutline" Width="22" Height="22" Foreground="#C25B4A" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- التنبيهات التحذيرية -->
+            <Border Grid.Column="4" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="16,12"
+                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{DynamicResource LabelWarning}" FontSize="12" Foreground="#E0A93E" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding WarningAlertsCount}" FontSize="24" FontWeight="Bold" Foreground="#E0A93E" Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <Border Grid.Column="1" Background="#1AE0A93E" CornerRadius="10" Width="42" Height="42" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="AlertCircleOutline" Width="22" Height="22" Foreground="#E0A93E" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- غير المقروءة -->
+            <Border Grid.Column="6" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="16,12"
+                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{DynamicResource StatusUnread}" FontSize="12" Foreground="{DynamicResource PrimaryLightBrush}" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding UnreadAlertsCount}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource PrimaryLightBrush}" Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <Border Grid.Column="1" Background="#153D7C89" CornerRadius="10" Width="42" Height="42" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="EmailAlertOutline" Width="22" Height="22" Foreground="{DynamicResource PrimaryLightBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ══ 2: شريط الفلاتر والبحث ══ -->
+        <Border Grid.Row="2" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="16,12" Margin="0,0,0,16"
+                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+            <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- مربع البحث -->
+                <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Width="200" Margin="0,0,12,0"
+                         Style="{DynamicResource SearchBox}" materialDesign:HintAssist.Hint="{DynamicResource HintSearch}"/>
+
+                <!-- فلتر مستوى الخطورة -->
+                <ComboBox SelectedValue="{Binding SelectedSeverityFilter}" Width="140" Margin="0,0,12,0"
+                          Style="{DynamicResource FormComboBox}"
+                          materialDesign:HintAssist.Hint="{DynamicResource FilterSeverity}">
+                    <ComboBoxItem Content="{DynamicResource FilterAll}" Tag="All" IsSelected="True"/>
+                    <ComboBoxItem Content="{DynamicResource FilterCritical}" Tag="Critical"/>
+                    <ComboBoxItem Content="{DynamicResource FilterWarning}" Tag="Warning"/>
+                </ComboBox>
+
+                <!-- فلتر الموقع -->
+                <ComboBox ItemsSource="{Binding AvailableLocations}" SelectedItem="{Binding SelectedLocationFilter}"
+                          Width="160" Margin="0,0,12,0" Style="{DynamicResource FormComboBox}"
+                          materialDesign:HintAssist.Hint="{DynamicResource FilterLocation}"/>
+
+                <!-- فلتر تاريخ البداية -->
+                <DatePicker SelectedDate="{Binding FilterStartDate}" Width="130" Margin="0,0,12,0"
+                            Style="{DynamicResource FormDatePicker}" materialDesign:HintAssist.Hint="{DynamicResource FilterDateFrom}"/>
+
+                <!-- فلتر تاريخ النهاية -->
+                <DatePicker SelectedDate="{Binding FilterEndDate}" Width="130" Margin="0,0,12,0"
+                            Style="{DynamicResource FormDatePicker}" materialDesign:HintAssist.Hint="{DynamicResource FilterDateTo}"/>
+
+                <!-- خيار إظهار المخفية -->
+                <CheckBox IsChecked="{Binding ShowDismissed}" Content="{DynamicResource FilterShowDismissed}"
+                          Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}"/>
+
+                <!-- زر إعادة التعيين -->
+                <Button Command="{Binding ResetFiltersCommand}" Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Height="36" BorderBrush="{DynamicResource BorderColor}" Foreground="{DynamicResource TextSecondary}">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="FilterRemoveOutline" Width="16" Height="16" Margin="-2,0,4,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource BtnClearFilters}" VerticalAlignment="Center" FontSize="12"/>
+                    </StackPanel>
+                </Button>
+            </WrapPanel>
+        </Border>
+
+        <!-- ══ 3: جدول التنبيهات الرئيسي ══ -->
+        <Grid Grid.Row="3">
+            <Border Style="{StaticResource ContentCard}">
+                <Grid>
+                    <!-- الجدول -->
+                    <DataGrid ItemsSource="{Binding PagedAlerts}" SelectedItem="{Binding SelectedAlert}"
+                              Style="{StaticResource ModernDataGrid}"
+                              Visibility="{Binding PagedAlerts.Count, Converter={StaticResource NullToVis}}">
+                        <DataGrid.Columns>
+                            <!-- # الرقم التسلسلي -->
+                            <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="55" ElementStyle="{StaticResource CenterAligned}"/>
+
+                            <!-- رمز المصدر (قابل للنقر لعرض التفاصيل) -->
+                            <DataGridTemplateColumn Header="{DynamicResource ColSourceCode}" Width="125" MinWidth="110">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding SourceCode}"
+                                                   FontWeight="Bold"
+                                                   TextAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"
+                                                   Cursor="Hand"
+                                                   Foreground="{DynamicResource PrimaryBrush}"
+                                                   TextDecorations="Underline"
+                                                   ToolTip="{DynamicResource ToolTipViewDetails}">
+                                            <TextBlock.InputBindings>
+                                                <MouseBinding Gesture="LeftClick"
+                                                              Command="{Binding DataContext.ViewSourceDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                              CommandParameter="{Binding}"/>
+                                            </TextBlock.InputBindings>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- النظير المسؤول -->
+                            <DataGridTextColumn Header="{DynamicResource ColResponsibleIsotope}" Binding="{Binding WorstIsotopeSymbol}" Width="120" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
+
+                            <!-- الموقع -->
+                            <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding LocationName}" Width="1.2*" MinWidth="140" ElementStyle="{StaticResource SecondaryCenterAligned}"/>
+
+                            <!-- عدد فترات نصف العمر المنقضية -->
+                            <DataGridTextColumn Header="{DynamicResource ColHalfLivesElapsed}" Binding="{Binding HalfLivesDisplay}" Width="120" MinWidth="110" ElementStyle="{StaticResource BoldCenterAligned}"/>
+
+                            <!-- مستوى الخطورة -->
+                            <DataGridTemplateColumn Header="{DynamicResource ColSeverity}" Width="110" MinWidth="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="6" Padding="10,4" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                Background="{Binding SeverityBadgeBackground, Converter={StaticResource HexToBrush}}">
+                                            <TextBlock Text="{Binding SeverityLabel}" FontSize="11" FontWeight="Bold"
+                                                       Foreground="{Binding SeverityColor, Converter={StaticResource HexToBrush}}" HorizontalAlignment="Center"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- الرسالة والتفاصيل -->
+                            <DataGridTextColumn Header="{DynamicResource ColMessage}" Binding="{Binding Message}" Width="2.5*" MinWidth="220" ElementStyle="{StaticResource CenterAligned}"/>
+
+                            <!-- تاريخ التنبيه -->
+                            <DataGridTextColumn Header="{DynamicResource ColCreatedDate}" Binding="{Binding CreatedAt, StringFormat='yyyy/MM/dd HH:mm'}" Width="135" MinWidth="125" ElementStyle="{StaticResource SubtleCenterAligned}"/>
+
+                            <!-- حالة القراءة -->
+                            <DataGridTemplateColumn Header="{DynamicResource ColReadStatus}" Width="95" MinWidth="85">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="6" Padding="8,3" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                Background="{Binding IsRead, Converter={StaticResource BoolToValue}, ConverterParameter='#153D7C89|#151F5A66'}">
+                                            <TextBlock Text="{Binding StatusDisplay}" FontSize="11" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- عمود الإجراءات -->
+                            <DataGridTemplateColumn Header="{DynamicResource ColActions}" Width="90" MinWidth="80">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <!-- تعليم كمقروء -->
+                                            <Button Command="{Binding DataContext.MarkAsReadCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource MaterialDesignToolForegroundButton}"
+                                                    Padding="3" Height="28" Width="28"
+                                                    Foreground="{DynamicResource PrimaryBrush}"
+                                                    ToolTip="{DynamicResource ToolTipMarkRead}"
+                                                    Visibility="{Binding IsRead, Converter={StaticResource InverseBoolToVis}}">
+                                                <materialDesign:PackIcon Kind="Check" Width="16" Height="16"/>
+                                            </Button>
+
+                                            <!-- إخفاء التنبيه (Dismiss) -->
+                                            <Button Command="{Binding DataContext.DismissAlertCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource MaterialDesignToolForegroundButton}"
+                                                    Padding="3" Height="28" Width="28"
+                                                    Foreground="{DynamicResource DangerBrush}"
+                                                    ToolTip="{DynamicResource ToolTipDismissAlert}"
+                                                    Visibility="{Binding IsDismissed, Converter={StaticResource InverseBoolToVis}}">
+                                                <materialDesign:PackIcon Kind="EyeOffOutline" Width="16" Height="16"/>
+                                            </Button>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <!-- حالة عدم وجود بيانات -->
+                    <Border VerticalAlignment="Center" HorizontalAlignment="Center" Padding="30"
+                            Visibility="{Binding PagedAlerts.Count, Converter={StaticResource InverseNullToVis}}">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="BellCheckOutline" Width="48" Height="48" Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Center" Opacity="0.7"/>
+                            <TextBlock Text="{DynamicResource MsgNoMatchingAlerts}" FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,12,0,0" TextAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ══ 4: شريط التنقل بين الصفحات (Pagination) ══ -->
+        <Border Grid.Row="4" Margin="0,12,0,0" Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="12,8"
+                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- عدد السجلات في الصفحة -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="{DynamicResource LabelPageSize}" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <ComboBox ItemsSource="{Binding AvailablePageSizes}" SelectedItem="{Binding PageSize, Mode=TwoWay}" Width="75" Style="{DynamicResource FormComboBox}"/>
+                </StackPanel>
+
+                <!-- معلومات الصفحة الحالية -->
+                <TextBlock Grid.Column="1" Text="{Binding PageInfo}" FontSize="12" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                <!-- أزرار التنقل -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Command="{Binding PreviousPageCommand}" Style="{StaticResource MaterialDesignToolButton}"
+                            Height="32" Width="32" Padding="2" Margin="0,0,4,0" ToolTip="{DynamicResource BtnPrevious}">
+                        <materialDesign:PackIcon Kind="ChevronRight" Width="20" Height="20" Foreground="{DynamicResource TextPrimary}"/>
+                    </Button>
+                    <Button Command="{Binding NextPageCommand}" Style="{StaticResource MaterialDesignToolButton}"
+                            Height="32" Width="32" Padding="2" ToolTip="{DynamicResource BtnNext}">
+                        <materialDesign:PackIcon Kind="ChevronLeft" Width="20" Height="20" Foreground="{DynamicResource TextPrimary}"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

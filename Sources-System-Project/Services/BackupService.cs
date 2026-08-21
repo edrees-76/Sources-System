@@ -64,12 +64,33 @@ public class BackupService : IBackupService
             var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
             var backupFile = Path.Combine(targetDir, $"SOURCES_backup_{timestamp}.db");
 
-            File.Copy(_dbPath, backupFile, overwrite: true);
+            // في حال وجود الملف مسبقاً، يجب حذفه لأن VACUUM INTO يفشل إذا كان الملف الهدف موجوداً
+            if (File.Exists(backupFile))
+            {
+                File.Delete(backupFile);
+            }
+
+            // تنفيذ VACUUM INTO الذري والمدمج لـ WAL
+            var connStr = new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder
+            {
+                DataSource = _dbPath,
+                Mode = Microsoft.Data.Sqlite.SqliteOpenMode.ReadOnly,
+                DefaultTimeout = 5
+            }.ToString();
+
+            using (var conn = new Microsoft.Data.Sqlite.SqliteConnection(connStr))
+            {
+                conn.Open();
+                using var cmd = conn.CreateCommand();
+                var escapedPath = backupFile.Replace("'", "''");
+                cmd.CommandText = $"VACUUM INTO '{escapedPath}';";
+                cmd.ExecuteNonQuery();
+            }
 
             // حذف النسخ الأقدم من 30 يوماً
             CleanOldBackups(30, targetDir);
 
-            LoggerService.LogInfo($"تم إنشاء نسخة احتياطية: {backupFile}");
+            LoggerService.LogInfo($"تم إنشاء نسخة احتياطية ذرية: {backupFile}");
             return (true, $"تم إنشاء النسخة الاحتياطية بنجاح\n{backupFile}", backupFile);
         }
         catch (Exception ex)

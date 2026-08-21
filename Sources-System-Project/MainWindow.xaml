@@ -18,7 +18,7 @@
             <Border DockPanel.Dock="Bottom" x:Name="SidebarBorder"
                     Height="88"
                     Background="{StaticResource SidebarGradient}"
-                    BorderBrush="{StaticResource GoldBrush}"
+                    BorderBrush="{DynamicResource BorderColor}"
                     BorderThickness="0,1,0,0"
                     ClipToBounds="False">
                 <Border.Style>
@@ -169,6 +169,21 @@
                                     <materialDesign:PackIcon Kind="FileChart" Width="22" Height="22"
                                                              HorizontalAlignment="Center"/>
                                     <TextBlock Text="{DynamicResource MenuReports}"
+                                               HorizontalAlignment="Center" TextAlignment="Center"
+                                               TextWrapping="Wrap" LineHeight="13" FontSize="11"
+                                               Margin="0,2,0,0"
+                                               Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- التنبيهات -->
+                            <Button Style="{StaticResource BottomNavItem}"
+                                    Command="{Binding NavigateToCommand}" CommandParameter="Alerts"
+                                    Visibility="{Binding CanSeeAlerts, Converter={StaticResource BoolToVis}}">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="BellRingOutline" Width="22" Height="22"
+                                                             HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource MenuAlerts}"
                                                HorizontalAlignment="Center" TextAlignment="Center"
                                                TextWrapping="Wrap" LineHeight="13" FontSize="11"
                                                Margin="0,2,0,0"
@@ -330,7 +345,7 @@
 
 
                             <Border Width="380" MinHeight="100" Background="{DynamicResource CardBackground}" CornerRadius="12"
-                                    BorderThickness="1" BorderBrush="{DynamicResource GoldBrush}"
+                                    BorderThickness="1" BorderBrush="{DynamicResource BorderColor}"
                                     materialDesign:ElevationAssist.Elevation="Dp3">
                                 <DockPanel LastChildFill="True">
                                     <Border DockPanel.Dock="Top" Background="{StaticResource SidebarGradient}" CornerRadius="12,12,0,0" Padding="16,12">
@@ -350,7 +365,7 @@
                                         <ItemsControl ItemsSource="{Binding Notifications}">
                                              <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Border BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderColor}" Padding="16,14"
+                                                    <Border BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderColor}" Padding="14,12"
                                                             Background="{Binding IsRead, Converter={StaticResource BoolToValue}, ConverterParameter=Transparent|#151F5A66}"
                                                             Cursor="Hand">
                                                         <Border.InputBindings>
@@ -363,23 +378,36 @@
                                                                 <ColumnDefinition Width="Auto"/>
                                                                 <ColumnDefinition Width="*"/>
                                                                 <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="Auto"/>
                                                             </Grid.ColumnDefinitions>
 
                                                             <materialDesign:PackIcon Kind="AlertCircle" Width="22" Height="22"
                                                                                    Foreground="{Binding Severity, Converter={StaticResource SeverityToColor}}"
-                                                                                   VerticalAlignment="Top" Margin="0,2,14,0"/>
+                                                                                   VerticalAlignment="Top" Margin="0,2,10,0"/>
 
                                                             <StackPanel Grid.Column="1">
                                                                 <TextBlock Text="{Binding Message}" TextWrapping="Wrap"
-                                                                           Foreground="{DynamicResource TextPrimary}" FontSize="13.5" LineHeight="18"/>
+                                                                           Foreground="{DynamicResource TextPrimary}" FontSize="13" LineHeight="17"/>
                                                                 <TextBlock Text="{Binding CreatedAt, StringFormat=G}"
-                                                                           Foreground="{DynamicResource TextSecondary}" FontSize="10.5" Margin="0,6,0,0" Opacity="0.8"/>
+                                                                           Foreground="{DynamicResource TextSecondary}" FontSize="10.5" Margin="0,4,0,0" Opacity="0.8"/>
                                                             </StackPanel>
 
                                                             <!-- Unread Indicator Dot -->
                                                             <Ellipse Grid.Column="2" Width="8" Height="8" Fill="{DynamicResource PrimaryLightBrush}"
-                                                                     VerticalAlignment="Center" Margin="8,0,0,0"
+                                                                     VerticalAlignment="Center" Margin="6,0,4,0"
                                                                      Visibility="{Binding IsRead, Converter={StaticResource InverseBoolToVis}}"/>
+
+                                                            <!-- Dismiss Button -->
+                                                            <Button Grid.Column="3"
+                                                                    Style="{StaticResource MaterialDesignToolForegroundButton}"
+                                                                    Padding="2" Height="26" Width="26" Margin="2,0,0,0"
+                                                                    VerticalAlignment="Center"
+                                                                    Foreground="{DynamicResource TextSecondary}"
+                                                                    ToolTip="{DynamicResource ToolTipDismissAlert}"
+                                                                    Command="{Binding DataContext.DismissNotificationCommand, RelativeSource={RelativeSource AncestorType=materialDesign:PopupBox}}"
+                                                                    CommandParameter="{Binding}">
+                                                                <materialDesign:PackIcon Kind="Close" Width="15" Height="15"/>
+                                                            </Button>
                                                         </Grid>
                                                     </Border>
                                                 </DataTemplate>

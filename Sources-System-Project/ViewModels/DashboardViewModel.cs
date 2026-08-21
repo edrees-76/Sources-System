@@ -1435,13 +1435,13 @@ public partial class DashboardViewModel : ObservableObject
                         {
                             foreach (var si in s.SourceIsotopes.Where(si => si.Radioisotope != null))
                             {
-                                double sec = ConvertHalfLifeToSeconds(si.Radioisotope!.HalfLife, si.Radioisotope.HalfLifeUnit);
+                                double sec = AlertService.ConvertToSeconds(si.Radioisotope!.HalfLife, si.Radioisotope.HalfLifeUnit);
                                 if (sec > maxHalfLifeSeconds) maxHalfLifeSeconds = sec;
                             }
                         }
                         else if (s.Radioisotope != null)
                         {
-                            double sec = ConvertHalfLifeToSeconds(s.Radioisotope.HalfLife, s.Radioisotope.HalfLifeUnit);
+                            double sec = AlertService.ConvertToSeconds(s.Radioisotope.HalfLife, s.Radioisotope.HalfLifeUnit);
                             if (sec > maxHalfLifeSeconds) maxHalfLifeSeconds = sec;
                         }
                     }
@@ -1490,7 +1490,7 @@ public partial class DashboardViewModel : ObservableObject
                                         var calib = si.CalibrationDate ?? (source.CalibrationDate != default ? source.CalibrationDate : startDate);
                                         double unitConv = si.ActivityUnit?.ConversionToBq ?? source.InitialActivityUnit?.ConversionToBq ?? 1;
                                         double initBq = (si.InitialActivityValue ?? 0) * unitConv;
-                                        double hlSec = ConvertHalfLifeToSeconds(si.Radioisotope!.HalfLife, si.Radioisotope.HalfLifeUnit);
+                                        double hlSec = AlertService.ConvertToSeconds(si.Radioisotope!.HalfLife, si.Radioisotope.HalfLifeUnit);
                                         double el = (t - calib).TotalSeconds;
                                         if (el <= 0) totalAct += initBq;
                                         else totalAct += initBq * Math.Pow(0.5, el / hlSec);
@@ -1592,7 +1592,7 @@ public partial class DashboardViewModel : ObservableObject
         foreach (var source in sources.Where(s =>
             s.Status == "InUse" || s.Status == "Storage"))
         {
-            double maxHalfLives = CalculateMaxHalfLivesElapsed(source);
+            var (maxHalfLives, _) = AlertService.CalculateMaxHalfLivesElapsed(source);
             if (maxHalfLives >= 6.0) criticalCount++;
             else if (maxHalfLives >= 5.0) warningCount++;
         }
@@ -1635,10 +1635,12 @@ public partial class DashboardViewModel : ObservableObject
         foreach (var source in sources.Where(s =>
             s.Status == "InUse" || s.Status == "Storage"))
         {
-            double maxHalfLives = CalculateMaxHalfLivesElapsed(source);
+            var (maxHalfLives, worstIsotope) = AlertService.CalculateMaxHalfLivesElapsed(source);
             if (maxHalfLives < 5.0) continue;
 
-            string symbol = source.DisplayIsotopes ?? source.Radioisotope?.Symbol ?? "-";
+            string symbol = !string.IsNullOrEmpty(worstIsotope) 
+                ? worstIsotope 
+                : (source.DisplayIsotopes ?? source.Radioisotope?.Symbol ?? "-");
             bool isCritical = maxHalfLives >= 6.0;
 
             rows.Add(new LowActivitySourceRow
@@ -1663,55 +1665,6 @@ public partial class DashboardViewModel : ObservableObject
 
         LowActivitySources = new ObservableCollection<LowActivitySourceRow>(rows.Take(5));
     }
-
-    // ───────────── دالة مساعدة: احتساب أعلى عدد فترات نصف عمر منقضية ─────────────
-    private static double CalculateMaxHalfLivesElapsed(Source source)
-    {
-        double max = -1;
-
-        if (source.HasDetailedIsotopes &&
-            source.SourceIsotopes != null &&
-            source.SourceIsotopes.Any(si => si.Radioisotope != null))
-        {
-            foreach (var si in source.SourceIsotopes.Where(si => si.Radioisotope != null))
-            {
-                var isotope  = si.Radioisotope!;
-                var calibDate = si.CalibrationDate ?? source.CalibrationDate;
-                if (calibDate == default) continue;
-
-                double halfLifeSec = ConvertHalfLifeToSeconds(isotope.HalfLife, isotope.HalfLifeUnit);
-                if (halfLifeSec <= 0) continue;
-
-                double elapsed = Math.Max(0, (DateTime.Now - calibDate).TotalSeconds);
-                double hl = elapsed / halfLifeSec;
-                if (hl > max) max = hl;
-            }
-        }
-        else if (source.Radioisotope != null && source.CalibrationDate != default)
-        {
-            double halfLifeSec = ConvertHalfLifeToSeconds(
-                source.Radioisotope.HalfLife, source.Radioisotope.HalfLifeUnit);
-            if (halfLifeSec > 0)
-            {
-                double elapsed = Math.Max(0, (DateTime.Now - source.CalibrationDate).TotalSeconds);
-                max = elapsed / halfLifeSec;
-            }
-        }
-
-        return max;
-    }
-
-    private static double ConvertHalfLifeToSeconds(double value, string? unit) =>
-        unit?.ToLower() switch
-        {
-            "seconds" or "second" or "s" => value,
-            "minutes" or "minute" or "min" or "m" => value * 60,
-            "hours" or "hour" or "h" => value * 3600,
-            "days" or "day" or "d" => value * 86400,
-            "months" or "month" or "mo" => value * 30 * 86400,
-            "years" or "year" or "yr" or "y" => value * 365.25 * 86400,
-            _ => value * 365.25 * 86400
-        };
 
     // ───────────── أوامر التنقل من لوحة القيادة ─────────────
     [RelayCommand]

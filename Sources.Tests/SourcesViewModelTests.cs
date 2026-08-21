@@ -55,8 +55,8 @@ public class SourcesViewModelTests : IDisposable
         // Setup App.ServiceProvider for ViewModel
         var services = new ServiceCollection();
         services.AddSingleton<IDbContextFactory<AppDbContext>>(_fixture.ContextFactory);
-        var sp = services.BuildServiceProvider();
-        typeof(App).GetProperty("ServiceProvider", BindingFlags.Public | BindingFlags.Static)?.SetValue(null, sp);
+        _sp = services.BuildServiceProvider();
+        typeof(App).GetProperty("ServiceProvider", BindingFlags.Public | BindingFlags.Static)?.SetValue(null, _sp);
 
         _mockSourceService = new Mock<ISourceService>();
         _mockIsotopeService = new Mock<IRadioisotopeService>();
@@ -75,10 +75,16 @@ public class SourcesViewModelTests : IDisposable
         });
 
         _mockSourceService.Setup(s => s.GetAllSources()).Returns(new List<Source>());
+
+        CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Reset();
     }
+
+    private readonly IServiceProvider _sp;
 
     private SourcesViewModel CreateViewModel()
     {
+        CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Reset();
+        typeof(App).GetProperty("ServiceProvider", BindingFlags.Public | BindingFlags.Static)?.SetValue(null, _sp);
         return new SourcesViewModel(
             _mockSourceService.Object,
             _mockIsotopeService.Object,
@@ -89,7 +95,7 @@ public class SourcesViewModelTests : IDisposable
 
     public void Dispose()
     {
-        // Cleanup
+        CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Reset();
     }
 
     #region 1. CalibrationDate Validation Tests
