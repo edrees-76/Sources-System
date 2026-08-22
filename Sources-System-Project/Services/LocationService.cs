@@ -23,9 +23,10 @@ public class LocationService : ILocationService
     public List<Location> GetAll()
     {
         using var db = _dbFactory.CreateDbContext();
-        var locations = db.Locations.OrderBy(l => l.LocationName).ToList();
+        var locations = db.Locations.AsNoTracking().OrderBy(l => l.LocationName).ToList();
 
         var counts = db.Sources
+            .AsNoTracking()
             .Where(s => s.LocationId != null)
             .GroupBy(s => s.LocationId!.Value)
             .Select(g => new { LocationId = g.Key, Count = g.Count() })
@@ -57,7 +58,8 @@ public class LocationService : ILocationService
 
         using var db = _dbFactory.CreateDbContext();
         var trimmedName = item.LocationName.Trim();
-        if (db.Locations.Any(l => l.LocationName == trimmedName))
+        var lowerName = trimmedName.ToLower();
+        if (db.Locations.Any(l => l.LocationName.ToLower() == lowerName))
             return (false, "اسم الموقع موجود بالفعل");
 
         item.LocationName = trimmedName;
@@ -78,7 +80,8 @@ public class LocationService : ILocationService
         if (existing == null) return (false, "الموقع غير موجود");
 
         var trimmedName = item.LocationName.Trim();
-        if (db.Locations.Any(l => l.Id != item.Id && l.LocationName == trimmedName))
+        var lowerName = trimmedName.ToLower();
+        if (db.Locations.Any(l => l.Id != item.Id && l.LocationName.ToLower() == lowerName))
             return (false, "اسم الموقع موجود بالفعل");
 
         existing.LocationName = trimmedName;
@@ -96,7 +99,7 @@ public class LocationService : ILocationService
         using var db = _dbFactory.CreateDbContext();
         var item = db.Locations.Include(l => l.Sources).FirstOrDefault(l => l.Id == id);
         if (item == null) return (false, "الموقع غير موجود");
-        if (item.Sources.Any()) return (false, "لا يمكن حذف موقع يحتوي على مصادر");
+        if (item.Sources.Any()) return (false, $"لا يمكن حذف الموقع \"{item.LocationName}\" لاحتوائه على مصادر مرتبطة به");
         item.IsDeleted = true;
         db.SaveChanges();
         _auditService.Log("Delete", "Locations", id, $"حذف موقع: {item.LocationName}");
@@ -114,11 +117,14 @@ public class LocationService : ILocationService
         using var db = _dbFactory.CreateDbContext();
 
         var currentSourceIds = db.Sources
+            .IgnoreQueryFilters()
+            .AsNoTracking()
             .Where(s => s.LocationId == locationId)
             .Select(s => s.Id)
             .ToList();
 
         var historicalSourceIds = db.SourceLocationHistories
+            .AsNoTracking()
             .Where(h => h.LocationId == locationId)
             .Select(h => h.SourceId)
             .ToList();
@@ -130,6 +136,7 @@ public class LocationService : ILocationService
 
         return db.Sources
             .IgnoreQueryFilters()
+            .AsNoTracking()
             .Include(s => s.Radioisotope)
             .Include(s => s.InitialActivityUnit)
             .Include(s => s.CurrentActivityUnit)

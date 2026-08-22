@@ -403,5 +403,96 @@ public class SourcesViewModelTests : IDisposable
         _mockSourceService.Verify(s => s.UpdateSource(It.IsAny<Source>(), It.IsAny<List<SourceIsotope>>()), Times.Never);
     }
 
+    [Fact]
+    public async Task DeleteSourceAsync_WhenUserCancelsConfirmation_DoesNotCallDeleteService()
+    {
+        // Arrange
+        var vm = CreateViewModel();
+        var source = new Source { Id = Guid.NewGuid(), SourceCode = "SRC-CANCEL-01" };
+
+        DialogHelper.IsTestMode = true;
+        DialogHelper.ShowConfirmationResult = false; // المستخدم يلغي الحذف
+
+        try
+        {
+            // Act
+            await vm.DeleteSourceCommand.ExecuteAsync(source);
+
+            // Assert
+            _mockSourceService.Verify(s => s.DeleteSource(It.IsAny<Guid>()), Times.Never);
+        }
+        finally
+        {
+            DialogHelper.IsTestMode = false;
+            DialogHelper.ShowConfirmationResult = null;
+        }
+    }
+
+    [Fact]
+    public async Task DeleteSourceAsync_WhenDeleteFails_ShowsErrorDialogAndDoesNotReload()
+    {
+        // Arrange
+        var vm = CreateViewModel();
+        var sourceId = Guid.NewGuid();
+        var source = new Source { Id = sourceId, SourceCode = "SRC-FAIL-01" };
+
+        _mockSourceService.Setup(s => s.DeleteSource(sourceId))
+            .Returns((false, "لا يمكن حذف المصدر لوجود استعارة نشطة عليه"));
+
+        DialogHelper.IsTestMode = true;
+        DialogHelper.ShowConfirmationResult = true; // المستخدم يؤكد
+        DialogHelper.LastMessage = null;
+
+        try
+        {
+            // Act
+            await vm.DeleteSourceCommand.ExecuteAsync(source);
+
+            // Assert
+            _mockSourceService.Verify(s => s.DeleteSource(sourceId), Times.Once);
+            Assert.Equal("لا يمكن حذف المصدر لوجود استعارة نشطة عليه", DialogHelper.LastMessage);
+            Assert.Equal("لا يمكن حذف المصدر لوجود استعارة نشطة عليه", vm.Message);
+        }
+        finally
+        {
+            DialogHelper.IsTestMode = false;
+            DialogHelper.ShowConfirmationResult = null;
+            DialogHelper.LastMessage = null;
+        }
+    }
+
+    [Fact]
+    public async Task DeleteSourceAsync_WhenDeleteSucceeds_ReloadsDataAndBroadcastsMessage()
+    {
+        // Arrange
+        var vm = CreateViewModel();
+        var sourceId = Guid.NewGuid();
+        var source = new Source { Id = sourceId, SourceCode = "SRC-OK-01" };
+
+        _mockSourceService.Setup(s => s.DeleteSource(sourceId))
+            .Returns((true, "تم حذف المصدر بنجاح"));
+        _mockSourceService.Setup(s => s.GetAllSources()).Returns(new List<Source>());
+
+        DialogHelper.IsTestMode = true;
+        DialogHelper.ShowConfirmationResult = true; // المستخدم يؤكد
+
+        try
+        {
+            // Act
+            await vm.DeleteSourceCommand.ExecuteAsync(source);
+
+            // Assert
+            _mockSourceService.Verify(s => s.DeleteSource(sourceId), Times.Once);
+            _mockSourceService.Verify(s => s.GetAllSources(), Times.AtLeastOnce);
+            Assert.Equal("تم حذف المصدر بنجاح", vm.Message);
+        }
+        finally
+        {
+            DialogHelper.IsTestMode = false;
+            DialogHelper.ShowConfirmationResult = null;
+        }
+    }
+
     #endregion
 }
+

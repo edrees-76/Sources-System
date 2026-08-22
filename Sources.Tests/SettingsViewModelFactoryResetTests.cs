@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Sources.Tests;
 
-public class SettingsViewModelFactoryResetTests
+public class SettingsViewModelFactoryResetTests : IDisposable
 {
     private readonly Mock<IBackupService> _mockBackupService;
     private readonly Mock<ISystemSettingsService> _mockSettingsService;
@@ -19,11 +19,19 @@ public class SettingsViewModelFactoryResetTests
 
     public SettingsViewModelFactoryResetTests()
     {
+        DialogHelper.IsTestMode = true;
         _mockBackupService = new Mock<IBackupService>();
         _mockSettingsService = new Mock<ISystemSettingsService>();
         _mockSettingsService.Setup(s => s.GetAllSettings()).Returns(new Dictionary<string, string>());
         _mockUserService = new Mock<IUserService>();
         _mockResetService = new Mock<ISystemResetService>();
+    }
+
+    public void Dispose()
+    {
+        DialogHelper.IsTestMode = false;
+        DialogHelper.LastMessage = null;
+        DialogHelper.LastTitle = null;
     }
 
     [Fact]

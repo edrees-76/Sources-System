@@ -197,6 +197,8 @@ public class AppDbContext : DbContext
         
         try { cmd.CommandText = "ALTER TABLE Radioisotopes ADD COLUMN EnglishNotes TEXT;"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "ALTER TABLE Sources ADD COLUMN AddedBy TEXT;"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "ALTER TABLE Sources ADD COLUMN DeletedAt TEXT;"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "ALTER TABLE Sources ADD COLUMN DeletedBy TEXT;"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "ALTER TABLE Radioisotopes ADD COLUMN AddedBy TEXT;"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "ALTER TABLE Locations ADD COLUMN AddedBy TEXT;"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "ALTER TABLE BorrowRequests ADD COLUMN AddedBy TEXT;"; cmd.ExecuteNonQuery(); } catch { }
@@ -206,6 +208,7 @@ public class AppDbContext : DbContext
         try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_Users_IsDeleted ON Users(IsDeleted);"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_Radioisotopes_IsDeleted ON Radioisotopes(IsDeleted);"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_Sources_SerialNumber ON Sources(SerialNumber);"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "CREATE UNIQUE INDEX IF NOT EXISTS IX_Locations_LocationName ON Locations(LocationName) WHERE IsDeleted = 0;"; cmd.ExecuteNonQuery(); } catch { }
 
         // ─── جدول تاريخ تنقلات المصادر بين المواقع ───
         cmd.CommandText = @"
@@ -448,7 +451,21 @@ public class AppDbContext : DbContext
                 .HasForeignKey(s => s.LocationId)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            entity.HasOne(s => s.DeletedByUser)
+                .WithMany()
+                .HasForeignKey(s => s.DeletedBy)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
             entity.HasIndex(s => s.SourceCode).IsUnique();
+        });
+
+        // ─── Location relationships & Unique Index ───
+        modelBuilder.Entity<Location>(entity =>
+        {
+            entity.HasIndex(l => l.LocationName)
+                .HasFilter("IsDeleted = 0")
+                .IsUnique();
         });
 
         // ─── BorrowRequest relationships ───

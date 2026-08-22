@@ -5,6 +5,7 @@
     <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,16">
@@ -40,7 +41,29 @@
                 </Button>
             </StackPanel>
         </DockPanel>
-        <Grid Grid.Row="1">
+
+        <!-- بانر الإشعار والرسائل التفاعلية -->
+        <Border Grid.Row="1" Visibility="{Binding HasMessage, Converter={StaticResource BoolToVis}}"
+                Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="1.5"
+                CornerRadius="8" Padding="14,10" Margin="0,0,0,16">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.12" Color="{StaticResource PrimaryColor}"/>
+            </Border.Effect>
+            <DockPanel LastChildFill="True">
+                <Button DockPanel.Dock="Left" Style="{StaticResource MaterialDesignIconButton}"
+                        Command="{Binding CloseMessageCommand}" Width="28" Height="28" Padding="0" VerticalAlignment="Center">
+                    <materialDesign:PackIcon Kind="Close" Width="16" Height="16" Foreground="{DynamicResource TextSecondary}"/>
+                </Button>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <materialDesign:PackIcon Kind="InformationOutline" Width="20" Height="20"
+                                             Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <TextBlock Text="{Binding Message}" FontSize="13" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Grid Grid.Row="2">
             <Border Style="{StaticResource ContentCard}" Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVis}}">
                 <DataGrid ItemsSource="{Binding Locations}" SelectedItem="{Binding Selected}" Style="{StaticResource ModernDataGrid}">
                     <DataGrid.Columns>
@@ -181,7 +204,7 @@
         </Grid>
 
         <!-- ─── لوحة تفاصيل الموقع المنبثقة (Location Details Overlay) ─── -->
-        <Grid Grid.Row="0" Grid.RowSpan="2" Background="#80000000" Margin="-24"
+        <Grid Grid.Row="0" Grid.RowSpan="3" Background="#80000000" Margin="-24"
               Visibility="{Binding IsLocationDetailsOpen, Converter={StaticResource BoolToVis}}">
             <Border Background="{DynamicResource CardBackground}" CornerRadius="12"
                     BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
@@ -250,7 +273,7 @@
                             <DataGrid ItemsSource="{Binding LinkedSourcesForDetails}" Style="{StaticResource ModernDataGrid}" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="350">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="45" ElementStyle="{StaticResource CenterAligned}"/>
-                                    <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding SourceCode}" Width="130" ElementStyle="{StaticResource BoldCenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding DisplaySourceCode}" Width="130" ElementStyle="{StaticResource BoldCenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="110" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="140" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="100" ElementStyle="{StaticResource CenterAligned}"/>

@@ -234,6 +234,10 @@ public class Source
 
     public string? Notes { get; set; }
     public bool IsDeleted { get; set; } = false;
+    public DateTime? DeletedAt { get; set; }
+    public Guid? DeletedBy { get; set; }
+    [ForeignKey(nameof(DeletedBy))]
+    public User? DeletedByUser { get; set; }
     public string? AddedBy { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;

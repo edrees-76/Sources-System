@@ -513,6 +513,7 @@
     <system:String x:Key="LocationTypeStorage">مخزن</system:String>
     <system:String x:Key="LocationTypeHospital">مستشفى</system:String>
     <system:String x:Key="LocationTypeClinic">عيادة</system:String>
+    <system:String x:Key="MsgConfirmDeleteLocation">هل أنت متأكد من حذف هذا الموقع؟</system:String>
 
     <!-- Reports Page -->
     <system:String x:Key="ReportsCenterTitle">مركز التقارير الاستراتيجية</system:String>
@@ -1004,6 +1005,15 @@
     <!-- حالة فارغة - شاشة المصادر -->
     <system:String x:Key="EmptySourcesTitle">لا توجد مصادر مسجّلة بعد</system:String>
     <system:String x:Key="EmptySourcesSubtitle">ابدأ بإضافة أول مصدر إشعاعي لتتبع نشاطه وإدارة دورة حياته بشكل كامل</system:String>
-    <system:String x:Key="LabelSerialShort">تسلسل: </system:String>
+    <!-- تبويبات المصادر والمصادر المحذوفة -->
+    <system:String x:Key="TabActiveSources">المصادر النشطة</system:String>
+    <system:String x:Key="TabDeletedSources">المصادر المحذوفة</system:String>
+    <system:String x:Key="ColDeletedAt">تاريخ الحذف</system:String>
+    <system:String x:Key="ColDeletedBy">حُذف بواسطة</system:String>
+    <system:String x:Key="ColLastStatus">الحالة قبل الحذف</system:String>
+    <system:String x:Key="EmptyDeletedSourcesTitle">لا توجد مصادر محذوفة في سجل الأرشيف</system:String>
+    <system:String x:Key="EmptyDeletedSourcesSubtitle">جميع المصادر المشعة المسجلة في المنظومة نشطة حالياً</system:String>
+    <system:String x:Key="MsgSelectLocationFirst">الرجاء تحديد موقع أولاً للمتابعة.</system:String>
+    <system:String x:Key="MsgConfirmDeleteSource">هل أنت متأكد من حذف هذا المصدر المشع؟</system:String>
 
 </ResourceDictionary>

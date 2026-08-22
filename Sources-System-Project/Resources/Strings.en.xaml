@@ -516,6 +516,7 @@
     <system:String x:Key="LocationTypeStorage">Storage</system:String>
     <system:String x:Key="LocationTypeHospital">Hospital</system:String>
     <system:String x:Key="LocationTypeClinic">Clinic</system:String>
+    <system:String x:Key="MsgConfirmDeleteLocation">Are you sure you want to delete this location?</system:String>
 
     <!-- Reports Page -->
     <system:String x:Key="ReportsCenterTitle">Strategic Reports Center</system:String>
@@ -1006,5 +1007,15 @@
     <system:String x:Key="EmptySourcesTitle">No radioactive sources registered yet</system:String>
     <system:String x:Key="EmptySourcesSubtitle">Start by adding your first radioactive source to track its activity and manage its full lifecycle</system:String>
     <system:String x:Key="LabelSerialShort">S/N: </system:String>
+    <!-- Tabs and Deleted Sources -->
+    <system:String x:Key="TabActiveSources">Active Sources</system:String>
+    <system:String x:Key="TabDeletedSources">Deleted Sources</system:String>
+    <system:String x:Key="ColDeletedAt">Deleted At</system:String>
+    <system:String x:Key="ColDeletedBy">Deleted By</system:String>
+    <system:String x:Key="ColLastStatus">Status Prior Deletion</system:String>
+    <system:String x:Key="EmptyDeletedSourcesTitle">No deleted sources found in archive</system:String>
+    <system:String x:Key="EmptyDeletedSourcesSubtitle">All radioactive sources currently registered in the system are active</system:String>
+    <system:String x:Key="MsgSelectLocationFirst">Please select a location first to proceed.</system:String>
+    <system:String x:Key="MsgConfirmDeleteSource">Are you sure you want to delete this radioactive source?</system:String>
 
 </ResourceDictionary>

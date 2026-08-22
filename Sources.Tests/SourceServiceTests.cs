@@ -491,6 +491,141 @@ public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         Assert.Equal("المصدر غير موجود", result.Message);
     }
 
+    [Fact]
+    public void DeleteSource_WithPendingBorrow_ReturnsFalseAndPreventsDeletion()
+    {
+        // Arrange
+        var source = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-BORROW-PENDING");
+        _sourceService.CreateSource(source);
+
+        using (var context = _fixture.CreateContext())
+        {
+            var borrowRequest = new BorrowRequest
+            {
+                Id = Guid.NewGuid(),
+                SourceId = source.Id,
+                BorrowerUserId = _testUser.Id,
+                Purpose = "طلب معلق قيد المراجعة",
+                RequestDate = DateTime.Now,
+                ExpectedReturnDate = DateTime.Now.AddDays(3),
+                Status = "Pending"
+            };
+            context.BorrowRequests.Add(borrowRequest);
+            context.SaveChanges();
+        }
+
+        // Act
+        var result = _sourceService.DeleteSource(source.Id);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("لا يمكن حذف المصدر لوجود طلب استعارة معلّق عليه (قيد الانتظار)", result.Message);
+
+        var activeSource = _sourceService.GetSourceById(source.Id);
+        Assert.NotNull(activeSource);
+        Assert.False(activeSource.IsDeleted);
+    }
+
+    [Fact]
+    public void DeleteSource_WithApprovedBorrow_ReturnsFalseAndPreventsDeletion()
+    {
+        // Arrange
+        var source = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-BORROW-APPROVED");
+        _sourceService.CreateSource(source);
+
+        using (var context = _fixture.CreateContext())
+        {
+            var borrowRequest = new BorrowRequest
+            {
+                Id = Guid.NewGuid(),
+                SourceId = source.Id,
+                BorrowerUserId = _testUser.Id,
+                Purpose = "طلب معتمد بانتظار التسليم",
+                RequestDate = DateTime.Now.AddDays(-1),
+                ExpectedReturnDate = DateTime.Now.AddDays(4),
+                ApprovalDate = DateTime.Now,
+                ApproverUserId = _testUser.Id,
+                Status = "Approved"
+            };
+            context.BorrowRequests.Add(borrowRequest);
+            context.SaveChanges();
+        }
+
+        // Act
+        var result = _sourceService.DeleteSource(source.Id);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("لا يمكن حذف المصدر لوجود طلب استعارة معتمد عليه", result.Message);
+
+        var activeSource = _sourceService.GetSourceById(source.Id);
+        Assert.NotNull(activeSource);
+        Assert.False(activeSource.IsDeleted);
+    }
+
+    [Fact]
+    public void DeleteSource_WithoutActiveBorrow_SetsDeletedAtAndDeletedByAndLogsAuditWithOldValues()
+    {
+        // Arrange
+        var source = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-AUDIT-DELETED");
+        source.SerialNumber = "SN-AUDIT-99";
+        source.Manufacturer = "AtomicCorp";
+        _sourceService.CreateSource(source);
+
+        _userService.CurrentUser = _testUser;
+
+        // Act
+        var result = _sourceService.DeleteSource(source.Id);
+
+        // Assert
+        Assert.True(result.Success);
+
+        using var context = _fixture.CreateContext();
+        var deletedRecord = context.Sources.IgnoreQueryFilters().FirstOrDefault(s => s.Id == source.Id);
+        Assert.NotNull(deletedRecord);
+        Assert.True(deletedRecord.IsDeleted);
+        Assert.NotNull(deletedRecord.DeletedAt);
+        Assert.Equal(_testUser.Id, deletedRecord.DeletedBy);
+
+        var auditLog = _auditService.LoggedEntries.FirstOrDefault(l =>
+            l.Action == "Delete" &&
+            l.TableName == "Sources" &&
+            l.RecordId == source.Id);
+
+        Assert.NotNull(auditLog);
+        Assert.NotNull(auditLog.OldValues);
+        Assert.Contains("SRC-AUDIT-DELETED", auditLog.OldValues);
+        Assert.Contains("SN-AUDIT-99", auditLog.OldValues);
+        Assert.Contains("AtomicCorp", auditLog.OldValues);
+    }
+
+    [Fact]
+    public void GetDeletedSources_ReturnsOnlyDeletedSourcesOrderedByDeletedAtDescending()
+    {
+        // Arrange
+        var source1 = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-DEL-1");
+        var source2 = TestDataBuilder.CreateSource(_isoCo60, _unitMBq, _testLocation, sourceCode: "SRC-DEL-2");
+        var sourceActive = TestDataBuilder.CreateSource(_isoAm241, _unitCi, _testLocation, sourceCode: "SRC-ACTIVE-STAY");
+
+        _sourceService.CreateSource(source1);
+        _sourceService.CreateSource(source2);
+        _sourceService.CreateSource(sourceActive);
+
+        _sourceService.DeleteSource(source1.Id);
+        System.Threading.Thread.Sleep(50); // ضمان فارق زمني
+        _sourceService.DeleteSource(source2.Id);
+
+        // Act
+        var deletedList = _sourceService.GetDeletedSources();
+
+        // Assert
+        Assert.Equal(2, deletedList.Count);
+        Assert.Equal(source2.Id, deletedList[0].Id); // OrderByDescending(s => s.DeletedAt)
+        Assert.Equal(source1.Id, deletedList[1].Id);
+        Assert.DoesNotContain(deletedList, s => s.Id == sourceActive.Id);
+        Assert.All(deletedList, s => Assert.True(s.IsDeleted));
+    }
+
     #endregion
 
     #region 4. UpdateAllCurrentActivities Tests

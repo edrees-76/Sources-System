@@ -186,17 +186,82 @@ public class SourceService : ISourceService
     public (bool Success, string Message) DeleteSource(Guid id)
     {
         using var db = _dbFactory.CreateDbContext();
-        var source = db.Sources.Find(id);
+        var source = db.Sources
+            .Include(s => s.Radioisotope)
+            .Include(s => s.Location)
+            .Include(s => s.CurrentActivityUnit)
+            .Include(s => s.SourceIsotopes).ThenInclude(si => si.Radioisotope)
+            .FirstOrDefault(s => s.Id == id);
         if (source == null) return (false, "المصدر غير موجود");
 
-        bool hasActiveBorrow = db.BorrowRequests.Any(b => b.SourceId == id && (b.Status == "Delivered" || b.Status == "Overdue"));
-        if (hasActiveBorrow)
-            return (false, "لا يمكن حذف المصدر لوجود استعارة نشطة عليه");
+        var pendingOrActiveBorrow = db.BorrowRequests.FirstOrDefault(b => b.SourceId == id && 
+            (b.Status == "Pending" || b.Status == "Approved" || b.Status == "Delivered" || b.Status == "Overdue"));
+        
+        if (pendingOrActiveBorrow != null)
+        {
+            string statusMsg = pendingOrActiveBorrow.Status switch
+            {
+                "Pending" => "لوجود طلب استعارة معلّق عليه (قيد الانتظار)",
+                "Approved" => "لوجود طلب استعارة معتمد عليه",
+                "Delivered" => "لوجود استعارة نشطة عليه",
+                "Overdue" => "لوجود استعارة نشطة عليه",
+                _ => "لوجود طلب استعارة غير مكتمل عليه"
+            };
+            return (false, $"لا يمكن حذف المصدر {statusMsg}");
+        }
+
+        // إثراء سجل التدقيق: التقاط تفاصيل المصدر الكاملة قبل الحذف
+        var oldValuesObj = new
+        {
+            source.SourceCode,
+            Status = source.Status,
+            ArabicStatus = source.ArabicStatus,
+            Location = source.Location?.LocationName ?? "—",
+            Isotopes = source.DisplayIsotopes,
+            CurrentActivity = source.CurrentActivityWithUnit,
+            SerialNumber = source.SerialNumber ?? "—",
+            Manufacturer = source.Manufacturer ?? "—",
+            Model = source.Model ?? "—",
+            CalibrationDate = source.CalibrationDate.ToString("yyyy-MM-dd")
+        };
+        string oldValuesJson = System.Text.Json.JsonSerializer.Serialize(oldValuesObj);
 
         source.IsDeleted = true;
+        source.DeletedAt = DateTime.Now;
+        var currentUserId = _userService.CurrentUser?.Id;
+        if (currentUserId.HasValue && db.Users.Any(u => u.Id == currentUserId.Value))
+        {
+            source.DeletedBy = currentUserId.Value;
+        }
+        else
+        {
+            source.DeletedBy = null;
+        }
         db.SaveChanges();
-        _auditService.Log("Delete", "Sources", id, $"حذف مصدر: {source.SourceCode}");
+
+        _auditService.LogWithChanges("Delete", "Sources", id, $"حذف مصدر: {source.SourceCode} (الحالة السابقة: {source.ArabicStatus})", oldValuesJson, null);
         return (true, "تم حذف المصدر بنجاح");
+    }
+
+    public List<Source> GetDeletedSources()
+    {
+        using var db = _dbFactory.CreateDbContext();
+        return db.Sources
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(s => s.Radioisotope)
+            .Include(s => s.InitialActivityUnit)
+            .Include(s => s.CurrentActivityUnit)
+            .Include(s => s.Location)
+            .Include(s => s.DeletedByUser)
+            .Include(s => s.SourceIsotopes).ThenInclude(si => si.Radioisotope)
+            .Include(s => s.SourceIsotopes).ThenInclude(si => si.ActivityUnit)
+            .Where(s => s.IsDeleted)
+            .OrderByDescending(s => s.DeletedAt)
+            .ToList()
+            .DistinctBy(s => s.Id)
+            .ToList();
     }
 
     /// <summary>

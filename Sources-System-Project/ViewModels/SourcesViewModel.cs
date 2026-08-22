@@ -108,6 +108,17 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
 
     private Guid? _editingId;
 
+    [ObservableProperty] private bool _isDeletedSourcesView;
+    [ObservableProperty] private ObservableCollection<Source> _deletedSources = new();
+    [ObservableProperty] private ObservableCollection<Source> _pagedDeletedSources = new();
+    [ObservableProperty] private int _deletedCurrentPage = 1;
+    [ObservableProperty] private int _deletedTotalPages = 1;
+    [ObservableProperty] private string _deletedPageStatusText = string.Empty;
+    [ObservableProperty] private int _activeSourcesCount;
+    [ObservableProperty] private int _deletedSourcesCount;
+    [ObservableProperty] private bool _hasActiveSources;
+    [ObservableProperty] private bool _hasDeletedSources;
+
     public SourcesViewModel(ISourceService sourceService, IRadioisotopeService isotopeService, ILocationService locationService, IReportingService reportingService)
     {
         _sourceService = sourceService;
@@ -124,9 +135,32 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     }
 
     [RelayCommand]
+    public async Task SwitchToActiveSourcesAsync()
+    {
+        IsDeletedSourcesView = false;
+        await LoadDataAsync();
+    }
+
+    [RelayCommand]
+    public async Task SwitchToDeletedSourcesAsync()
+    {
+        IsDeletedSourcesView = true;
+        await LoadDeletedDataAsync();
+    }
+
+    [RelayCommand]
     public async Task LoadDataAsync()
     {
+        if (IsDeletedSourcesView)
+        {
+            await LoadDeletedDataAsync();
+            return;
+        }
+
         var allSources = await Task.Run(() => _sourceService.GetAllSources());
+        ActiveSourcesCount = allSources.Count;
+        var deletedList = await Task.Run(() => _sourceService.GetDeletedSources());
+        DeletedSourcesCount = deletedList.Count;
 
         // تطبيق الفلاتر
         if (!string.IsNullOrWhiteSpace(SearchText))
@@ -154,6 +188,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         }
 
         Sources = new ObservableCollection<Source>(allSources);
+        HasActiveSources = Sources.Count > 0;
         OnPropertyChanged(nameof(TotalActivityValue));
         
         // تحديث معلومات الصفحات
@@ -175,6 +210,77 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
 
         // تحديث إجمالي النشاط بجميع الوحدات (بعد تحميل الوحدات)
         UpdateTotalActivityItems();
+    }
+
+    public async Task LoadDeletedDataAsync()
+    {
+        var deleted = await Task.Run(() => _sourceService.GetDeletedSources());
+        DeletedSourcesCount = deleted.Count;
+        var activeList = await Task.Run(() => _sourceService.GetAllSources());
+        ActiveSourcesCount = activeList.Count;
+
+        if (!string.IsNullOrWhiteSpace(SearchText))
+        {
+            var searchLower = SearchText.ToLower();
+            deleted = deleted.Where(s =>
+                (s.SourceCode?.ToLower().Contains(searchLower) ?? false) ||
+                (s.Radioisotope?.Name?.ToLower().Contains(searchLower) ?? false) ||
+                (s.Radioisotope?.Symbol?.ToLower().Contains(searchLower) ?? false) ||
+                (s.SerialNumber?.ToLower().Contains(searchLower) ?? false) ||
+                (s.DisplayIsotopes?.ToLower().Contains(searchLower) ?? false) ||
+                (s.Location?.LocationName?.ToLower().Contains(searchLower) ?? false) ||
+                (s.DeletedByUser?.FullName?.ToLower().Contains(searchLower) ?? false) ||
+                (s.Manufacturer?.ToLower().Contains(searchLower) ?? false) ||
+                (s.Model?.ToLower().Contains(searchLower) ?? false) ||
+                (s.Status?.ToLower().Contains(searchLower) ?? false) ||
+                (s.DeletedAt?.ToString("yyyy-MM-dd").Contains(searchLower) ?? false)
+            ).ToList();
+        }
+
+        DeletedSources = new ObservableCollection<Source>(deleted);
+        HasDeletedSources = DeletedSources.Count > 0;
+        DeletedCurrentPage = 1;
+        UpdateDeletedPagination();
+
+        if (DeletedSources.Count == 0 && !string.IsNullOrWhiteSpace(SearchText))
+        {
+            DialogHelper.ShowInfo(TranslationHelper.GetString("MsgNoSearchSource"), TranslationHelper.GetString("TitleSearchResult"));
+        }
+    }
+
+    [RelayCommand]
+    private void NextDeletedPage()
+    {
+        if (DeletedCurrentPage < DeletedTotalPages)
+        {
+            DeletedCurrentPage++;
+            UpdatePagedDeletedSources();
+        }
+    }
+
+    [RelayCommand]
+    private void PreviousDeletedPage()
+    {
+        if (DeletedCurrentPage > 1)
+        {
+            DeletedCurrentPage--;
+            UpdatePagedDeletedSources();
+        }
+    }
+
+    private void UpdateDeletedPagination()
+    {
+        DeletedTotalPages = (int)Math.Ceiling((double)DeletedSources.Count / PageSize);
+        if (DeletedTotalPages == 0) DeletedTotalPages = 1;
+        if (DeletedCurrentPage > DeletedTotalPages) DeletedCurrentPage = DeletedTotalPages;
+        UpdatePagedDeletedSources();
+    }
+
+    private void UpdatePagedDeletedSources()
+    {
+        var items = DeletedSources.Skip((DeletedCurrentPage - 1) * PageSize).Take(PageSize).ToList();
+        PagedDeletedSources = new ObservableCollection<Source>(items);
+        DeletedPageStatusText = TranslationHelper.GetFormat("PageStatusFormat", DeletedCurrentPage, DeletedTotalPages, DeletedSources.Count);
     }
 
     [RelayCommand]
@@ -474,9 +580,18 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     private async Task DeleteSourceAsync(Source source)
     {
         if (source == null) return;
+
+        string confirmMsg = TranslationHelper.GetString("MsgConfirmDeleteSource") ?? "هل أنت متأكد من حذف هذا المصدر المشع؟";
+        string confirmTitle = TranslationHelper.GetString("AlertConfirmation") ?? "تأكيد الحذف";
+        if (!DialogHelper.ShowConfirmation(confirmMsg, confirmTitle)) return;
+
         var result = _sourceService.DeleteSource(source.Id);
         ShowMessage(result.Message);
-        if (result.Success)
+        if (!result.Success)
+        {
+            DialogHelper.ShowError(result.Message);
+        }
+        else
         {
             try
             {

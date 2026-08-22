@@ -37,7 +37,8 @@ public class LocationSourceRow
     public int RowNumber { get; set; }
     public Source Source { get; set; } = null!;
     public Guid Id => Source.Id;
-    public string SourceCode => Source.SourceCode;
+    public string DisplaySourceCode => Source.DisplaySourceCode;
+    public string SourceCode => Source.DisplaySourceCode;
     public string DisplayIsotopes => Source.DisplayIsotopes;
     public string CurrentActivityWithUnit => Source.CurrentActivityWithUnit;
     public string ArabicStatus => Source.ArabicStatus;
@@ -146,10 +147,26 @@ public partial class LocationsViewModel : ObservableObject, IEditableViewModel
             Location l => l,
             _ => Selected?.Location
         };
-        if (target == null) return;
+        if (target == null)
+        {
+            DialogHelper.ShowWarning(TranslationHelper.GetString("MsgSelectLocationFirst") ?? "الرجاء تحديد موقع أولاً");
+            return;
+        }
+
+        string confirmMsg = TranslationHelper.GetString("MsgConfirmDeleteLocation") ?? "هل أنت متأكد من حذف هذا الموقع؟";
+        string confirmTitle = TranslationHelper.GetString("AlertConfirmation") ?? "تأكيد الحذف";
+        if (!DialogHelper.ShowConfirmation(confirmMsg, confirmTitle)) return;
+
         var r = _service.Delete(target.Id);
         ShowMsg(r.Message);
-        if (r.Success) LoadData();
+        if (!r.Success)
+        {
+            DialogHelper.ShowError(r.Message);
+        }
+        else
+        {
+            LoadData();
+        }
     }
 
     [RelayCommand]
@@ -235,6 +252,7 @@ public partial class LocationsViewModel : ObservableObject, IEditableViewModel
     }
 
     [RelayCommand] private void CancelEdit() { IsEditing = false; ClearForm(); }
+    [RelayCommand] private void CloseMessage() { HasMessage = false; Message = string.Empty; }
     private void ClearForm() { EditName = EditType = EditBuilding = EditRoom = EditPerson = string.Empty; }
     private void ShowMsg(string m) { Message = m; HasMessage = true; }
 }

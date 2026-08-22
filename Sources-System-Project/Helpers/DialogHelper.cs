@@ -6,6 +6,7 @@ namespace Sources.Helpers
     public static class DialogHelper
     {
         public static bool IsTestMode { get; set; } = false;
+        public static bool? ShowConfirmationResult { get; set; }
         public static string? LastMessage { get; set; }
         public static string? LastTitle { get; set; }
 
@@ -64,6 +65,7 @@ namespace Sources.Helpers
         {
             LastMessage = message;
             LastTitle = title;
+            if (ShowConfirmationResult.HasValue) return ShowConfirmationResult.Value;
             if (IsTestMode || Application.Current?.Dispatcher == null) return true;
             bool result = false;
             Application.Current.Dispatcher.Invoke(() =>

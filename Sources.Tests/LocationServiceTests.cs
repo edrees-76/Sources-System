@@ -504,7 +504,7 @@ public class LocationServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
 
         // Assert
         Assert.False(result.Success);
-        Assert.Equal("لا يمكن حذف موقع يحتوي على مصادر", result.Message);
+        Assert.Equal("لا يمكن حذف الموقع \"موقع به مصادر\" لاحتوائه على مصادر مرتبطة به", result.Message);
 
         using var dbVerify = _fixture.CreateContext();
         var notDeleted = dbVerify.Locations.Find(location.Id);
@@ -760,6 +760,89 @@ public class LocationServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
         Assert.Equal(2, rLoc1.SourceCount);
         Assert.Equal(1, rLoc2.SourceCount);
         Assert.Equal(0, rLoc3.SourceCount);
+    }
+
+    [Fact]
+    public void Create_DuplicateLocationName_DifferentCase_ReturnsFailure()
+    {
+        // Arrange
+        var existing = TestDataBuilder.CreateLocation(name: "Storage Room A");
+        using (var db = _fixture.CreateContext())
+        {
+            db.Locations.Add(existing);
+            db.SaveChanges();
+        }
+
+        var newLoc = new Location
+        {
+            Id = Guid.NewGuid(),
+            LocationName = "storage room a", // Different case
+            LocationType = "Storage"
+        };
+
+        // Act
+        var result = _sut.Create(newLoc);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("اسم الموقع موجود بالفعل", result.Message);
+    }
+
+    [Fact]
+    public void Update_DuplicateLocationName_DifferentCase_ReturnsFailure()
+    {
+        // Arrange
+        var loc1 = TestDataBuilder.CreateLocation(name: "Central Lab");
+        var loc2 = TestDataBuilder.CreateLocation(name: "Secondary Lab");
+        using (var db = _fixture.CreateContext())
+        {
+            db.Locations.AddRange(loc1, loc2);
+            db.SaveChanges();
+        }
+
+        loc2.LocationName = "central lab"; // Rename loc2 to loc1's name in lower case
+
+        // Act
+        var result = _sut.Update(loc2);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("اسم الموقع موجود بالفعل", result.Message);
+    }
+
+    [Fact]
+    public void GetSourcesLinkedToLocation_WithSoftDeletedSource_ReturnsSourceWithDeletedBadge()
+    {
+        // Arrange
+        var loc = TestDataBuilder.CreateLocation(name: "موقع به مصدر محذوف");
+        var iso = TestDataBuilder.CreateRadioisotope("Co-60", "Cobalt-60", 5.27, "years", 1332.5);
+        var unit = TestDataBuilder.CreateActivityUnit("Ci", "Ci", 3.7e10);
+
+        var activeSource = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-ACTIVE-01");
+        var deletedSource = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-DEL-HIST-01");
+        deletedSource.IsDeleted = true;
+
+        using (var db = _fixture.CreateContext())
+        {
+            db.Locations.Add(loc);
+            db.Radioisotopes.Add(iso);
+            db.ActivityUnits.Add(unit);
+            db.Sources.AddRange(activeSource, deletedSource);
+            db.SaveChanges();
+        }
+
+        // Act
+        var result = _sut.GetSourcesLinkedToLocation(loc.Id);
+
+        // Assert
+        Assert.Equal(2, result.Count);
+        var active = result.FirstOrDefault(s => s.Id == activeSource.Id);
+        var deleted = result.FirstOrDefault(s => s.Id == deletedSource.Id);
+
+        Assert.NotNull(active);
+        Assert.NotNull(deleted);
+        Assert.Equal("SRC-ACTIVE-01", active.DisplaySourceCode);
+        Assert.Equal("SRC-DEL-HIST-01 (محذوف)", deleted.DisplaySourceCode);
     }
 
     #endregion

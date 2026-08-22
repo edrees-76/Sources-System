@@ -60,6 +60,7 @@ public class BorrowService : IBorrowService
         using var db = _dbFactory.CreateDbContext();
         return db.BorrowRequests
             .AsNoTracking()
+            .IgnoreQueryFilters()
             .Include(b => b.Source)
             .Include(b => b.BorrowerUser)
             .Where(b => b.Status == "Pending")
@@ -78,6 +79,7 @@ public class BorrowService : IBorrowService
         using var db = _dbFactory.CreateDbContext();
         return db.BorrowRequests
             .AsNoTracking()
+            .IgnoreQueryFilters()
             .Include(b => b.Source)
             .Include(b => b.BorrowerUser)
             .Where(b => b.Status == "Overdue")
@@ -239,6 +241,7 @@ public class BorrowService : IBorrowService
         using var db = _dbFactory.CreateDbContext();
         return db.BorrowRequests
             .AsNoTracking()
+            .IgnoreQueryFilters()
             .Include(b => b.Source)
             .Include(b => b.BorrowerUser)
             .Where(r => r.Status == "Delivered" 
