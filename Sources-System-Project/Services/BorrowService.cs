@@ -30,6 +30,7 @@ public class BorrowService : IBorrowService
     {
         using var db = _dbFactory.CreateDbContext();
         return db.BorrowRequests
+            .AsNoTracking()
             .IgnoreQueryFilters()
             .Include(b => b.Source)
             .Include(b => b.BorrowerUser)
@@ -43,6 +44,7 @@ public class BorrowService : IBorrowService
     {
         using var db = _dbFactory.CreateDbContext();
         return db.BorrowRequests
+            .AsNoTracking()
             .IgnoreQueryFilters()
             .Include(b => b.Source)
             .Include(b => b.BorrowerUser)
@@ -57,6 +59,7 @@ public class BorrowService : IBorrowService
     {
         using var db = _dbFactory.CreateDbContext();
         return db.BorrowRequests
+            .AsNoTracking()
             .Include(b => b.Source)
             .Include(b => b.BorrowerUser)
             .Where(b => b.Status == "Pending")
@@ -74,6 +77,7 @@ public class BorrowService : IBorrowService
     {
         using var db = _dbFactory.CreateDbContext();
         return db.BorrowRequests
+            .AsNoTracking()
             .Include(b => b.Source)
             .Include(b => b.BorrowerUser)
             .Where(b => b.Status == "Overdue")
@@ -169,11 +173,11 @@ public class BorrowService : IBorrowService
         try
         {
             using var db = _dbFactory.CreateDbContext();
-            var today = DateTime.Now.Date;
+            var today = DateTime.Today;
             
             // Any request that is delivered or approved and passed expected return date
             var overdueReqs = db.BorrowRequests
-                .Where(b => (b.Status == "Delivered" || b.Status == "Approved") && b.ExpectedReturnDate.Date < today)
+                .Where(b => (b.Status == "Delivered" || b.Status == "Approved") && b.ExpectedReturnDate < today)
                 .ToList();
 
             if (!overdueReqs.Any()) return;

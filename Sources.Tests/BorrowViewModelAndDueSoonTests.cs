@@ -25,6 +25,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
 
     public BorrowViewModelAndDueSoonTests()
     {
+        Sources.Helpers.DialogHelper.IsTestMode = true;
         _fixture = new SqliteInMemoryFixture();
         _fixture.ResetDatabase();
 
@@ -36,6 +37,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
 
     public void Dispose()
     {
+        Sources.Helpers.DialogHelper.IsTestMode = false;
         _fixture.ResetDatabase();
     }
 
@@ -285,6 +287,160 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         Assert.Single(vm.Requests);
         Assert.Equal(1, vm.Requests[0].RowNumber);
         Assert.Equal("مستعير 2", vm.Requests[0].BorrowerName);
+    }
+
+    #endregion
+
+    #region 5. اختبارات الفلترة في الذاكرة ومطابقة المستعير وقريبة الإرجاع
+
+    [Fact]
+    public async Task PerformSearch_FiltersInMemory_WithoutCallingGetAllRepeatedly()
+    {
+        // Arrange
+        var mockSourceService = new Mock<ISourceService>();
+        var mockUserService = new Mock<IUserService>();
+        var mockReportingService = new Mock<IReportingService>();
+        var mockBorrowService = new Mock<IBorrowService>();
+
+        var testRequests = new List<BorrowRequest>
+        {
+            new BorrowRequest { Id = Guid.NewGuid(), BorrowerName = "د. طارق", Status = "Delivered", Source = new Source { SourceCode = "SRC-001" } },
+            new BorrowRequest { Id = Guid.NewGuid(), BorrowerName = "م. سامي", Status = "Returned", Source = new Source { SourceCode = "SRC-002" } }
+        };
+
+        mockBorrowService.Setup(b => b.GetAll()).Returns(testRequests);
+
+        var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object);
+        await vm.LoadDataAsync();
+
+        int initialGetAllCalls = mockBorrowService.Invocations.Count(i => i.Method.Name == nameof(IBorrowService.GetAll));
+
+        // Act: Search multiple times
+        vm.SearchQuery = "طارق";
+        vm.PerformSearchCommand.Execute(null);
+        Assert.Single(vm.Requests);
+        Assert.Equal("د. طارق", vm.Requests[0].BorrowerName);
+        Assert.Equal(2, vm.TotalCount); // TotalCount remains constant
+
+        vm.SearchQuery = "SRC-002";
+        vm.PerformSearchCommand.Execute(null);
+        Assert.Single(vm.Requests);
+        Assert.Equal("م. سامي", vm.Requests[0].BorrowerName);
+        Assert.Equal(2, vm.TotalCount);
+
+        // Assert: GetAll was NOT called again during searches
+        int afterSearchesGetAllCalls = mockBorrowService.Invocations.Count(i => i.Method.Name == nameof(IBorrowService.GetAll));
+        Assert.Equal(initialGetAllCalls, afterSearchesGetAllCalls);
+    }
+
+    [Fact]
+    public async Task PerformSearch_WithDueSoonFilter_FiltersCorrectly()
+    {
+        // Arrange
+        var mockSourceService = new Mock<ISourceService>();
+        var mockUserService = new Mock<IUserService>();
+        var mockReportingService = new Mock<IReportingService>();
+        var mockBorrowService = new Mock<IBorrowService>();
+
+        mockBorrowService.Setup(b => b.GetDueSoonDaysThreshold()).Returns(7);
+
+        var testRequests = new List<BorrowRequest>
+        {
+            new BorrowRequest 
+            { 
+                Id = Guid.NewGuid(), 
+                BorrowerName = "مستعير قريب", 
+                Status = "Delivered", 
+                ExpectedReturnDate = DateTime.Today.AddDays(3) 
+            },
+            new BorrowRequest 
+            { 
+                Id = Guid.NewGuid(), 
+                BorrowerName = "مستعير بعيد", 
+                Status = "Delivered", 
+                ExpectedReturnDate = DateTime.Today.AddDays(20) 
+            },
+            new BorrowRequest 
+            { 
+                Id = Guid.NewGuid(), 
+                BorrowerName = "مستعير متأخر", 
+                Status = "Overdue", 
+                ExpectedReturnDate = DateTime.Today.AddDays(-2) 
+            }
+        };
+
+        mockBorrowService.Setup(b => b.GetAll()).Returns(testRequests);
+
+        var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object);
+        await vm.LoadDataAsync();
+
+        // Act: Filter by "قريبة الإرجاع"
+        vm.SelectedStatusFilter = "قريبة الإرجاع";
+        vm.PerformSearchCommand.Execute(null);
+
+        // Assert
+        Assert.Single(vm.Requests);
+        Assert.Equal("مستعير قريب", vm.Requests[0].BorrowerName);
+        Assert.Equal(3, vm.TotalCount);
+    }
+
+    [Fact]
+    public void Submit_WhenBorrowerMatchesSystemUser_SetsBorrowerUserId_OtherwiseNull()
+    {
+        // Arrange
+        var mockSourceService = new Mock<ISourceService>();
+        var mockUserService = new Mock<IUserService>();
+        var mockReportingService = new Mock<IReportingService>();
+        var mockBorrowService = new Mock<IBorrowService>();
+
+        var currentUser = new User { Id = Guid.NewGuid(), FullName = "أمين المخزن المشغل", Username = "operator" };
+        mockUserService.Setup(u => u.CurrentUser).Returns(currentUser);
+
+        var registeredUser = new User { Id = Guid.NewGuid(), FullName = "د. كريم إبراهيم", Username = "karim" };
+
+        mockBorrowService.Setup(b => b.GetAll()).Returns(new List<BorrowRequest>());
+        mockBorrowService.Setup(b => b.CreateRequest(It.IsAny<BorrowRequest>()))
+            .Returns((true, "نجاح"));
+
+        var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object);
+
+        vm.AvailableBorrowers.Add(registeredUser);
+        vm.AvailableBorrowers.Add(currentUser);
+
+        var testSource = new Source { Id = Guid.NewGuid(), SourceCode = "SRC-001" };
+        vm.SelectedSourceForNew = testSource;
+        vm.NewPurpose = "تجربة";
+
+        // Case 1: Borrower matches registered user
+        vm.NewBorrowerName = "د. كريم إبراهيم";
+        BorrowRequest? capturedReq1 = null;
+        mockBorrowService.Setup(b => b.CreateRequest(It.IsAny<BorrowRequest>()))
+            .Callback<BorrowRequest>(r => capturedReq1 = r)
+            .Returns((true, "نجاح"));
+
+        vm.SubmitCommand.Execute(null);
+
+        Assert.NotNull(capturedReq1);
+        Assert.Equal(registeredUser.Id, capturedReq1.BorrowerUserId);
+        Assert.Equal("أمين المخزن المشغل", capturedReq1.AddedBy);
+
+        // Case 2: Borrower is external / non-registered text
+        vm.IsEditing = true;
+        vm.SelectedSourceForNew = testSource;
+        vm.NewBorrowerName = "جهة خارجية غير مسجلة";
+        vm.NewPurpose = "فحص عينات خارجي";
+        vm.NewExpectedReturnDate = DateTime.Today.AddDays(5);
+        BorrowRequest? capturedReq2 = null;
+        mockBorrowService.Setup(b => b.CreateRequest(It.IsAny<BorrowRequest>()))
+            .Callback<BorrowRequest>(r => capturedReq2 = r)
+            .Returns((true, "نجاح"));
+
+        vm.SubmitCommand.Execute(null);
+
+        Assert.NotNull(capturedReq2);
+        Assert.Null(capturedReq2.BorrowerUserId); // ليس مسجلاً
+        Assert.Equal("جهة خارجية غير مسجلة", capturedReq2.BorrowerName);
+        Assert.Equal("أمين المخزن المشغل", capturedReq2.AddedBy);
     }
 
     #endregion

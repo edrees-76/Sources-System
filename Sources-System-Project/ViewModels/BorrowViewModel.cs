@@ -44,6 +44,8 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
     private readonly IDbContextFactory<AppDbContext>? _dbFactory;
 
     // ─── مجموعات البيانات ───
+    private System.Collections.Generic.List<BorrowRequest> _allRequests = new();
+
     [ObservableProperty]
     private ObservableCollection<BorrowRequestRow> _requests = new();
 
@@ -97,6 +99,9 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
 
     // ─── الإحصائيات ───
     [ObservableProperty]
+    private int _totalCount;
+
+    [ObservableProperty]
     private int _activeCount;
 
     [ObservableProperty]
@@ -117,7 +122,7 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
 
     public ObservableCollection<string> StatusFilters { get; } = new()
     {
-        "الكل", "تم التسليم", "تم الإرجاع", "متأخر"
+        "الكل", "تم التسليم", "تم الإرجاع", "متأخر", "قريبة الإرجاع"
     };
 
     public BorrowViewModel(
@@ -142,7 +147,8 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
         await Task.Run(() =>
         {
             _borrowService.CheckAndUpdateOverdue();
-            var all = _borrowService.GetAll();
+            var all = _borrowService.GetAll() ?? new System.Collections.Generic.List<BorrowRequest>();
+            _allRequests = all;
 
             void updateUi()
             {
@@ -172,6 +178,7 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
 
     private void UpdateStatistics(System.Collections.Generic.List<BorrowRequest> all)
     {
+        TotalCount = all.Count;
         ActiveCount = all.Count(r => r.Status == "Delivered" || r.Status == "Overdue");
         BorrowedCount = all.Count(r => r.Status == "Delivered");
         OverdueCount = all.Count(r => r.Status == "Overdue");
@@ -260,6 +267,7 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
         if (_dbFactory == null) return;
         using var db = _dbFactory.CreateDbContext();
         var sources = db.Sources
+            .AsNoTracking()
             .Include(s => s.SourceIsotopes)
                 .ThenInclude(si => si.Radioisotope)
             .Include(s => s.SourceIsotopes)
@@ -277,12 +285,14 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
     {
         if (_dbFactory == null) return;
         using var db = _dbFactory.CreateDbContext();
-        var users = db.Users.Where(u => u.IsActive).ToList();
+        var users = db.Users.AsNoTracking().Where(u => u.IsActive).ToList();
 
         AvailableBorrowers.Clear();
         foreach (var u in users) AvailableBorrowers.Add(u);
 
-        SelectedReturnedBy = AvailableBorrowers.FirstOrDefault(u => u.Id == borrowerUserId);
+        // الافتراضي للمستلم هو المستخدم الحالي المسجل دخوله بالنظام (أمين المخزن/المشغل)
+        SelectedReturnedBy = AvailableBorrowers.FirstOrDefault(u => u.Id == _userService.CurrentUser?.Id) 
+            ?? AvailableBorrowers.FirstOrDefault(u => u.Id == borrowerUserId);
     }
 
     partial void OnSelectedSourceForNewChanged(Source? value)
@@ -347,14 +357,20 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
         if (!DialogHelper.ShowConfirmation(confirmMsg, TranslationHelper.GetString("AddNewBorrowRequestTitle")))
             return;
 
+        // محاولة مطابقة المستعير مع مستخدم مسجل بالنظام، وإلا يبقى null ويُعتمد على BorrowerName
+        var matchedUser = AvailableBorrowers.FirstOrDefault(u =>
+            string.Equals(u.FullName, NewBorrowerName.Trim(), StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(u.Username, NewBorrowerName.Trim(), StringComparison.OrdinalIgnoreCase));
+
         var req = new BorrowRequest
         {
             SourceId = SelectedSourceForNew.Id,
             BorrowerName = NewBorrowerName.Trim(),
-            BorrowerUserId = _userService.CurrentUser?.Id,
+            BorrowerUserId = matchedUser?.Id,
             Purpose = NewPurpose.Trim(),
             ExpectedReturnDate = NewExpectedReturnDate,
-            Notes = string.IsNullOrWhiteSpace(NewNotes) ? null : NewNotes.Trim()
+            Notes = string.IsNullOrWhiteSpace(NewNotes) ? null : NewNotes.Trim(),
+            AddedBy = _userService.CurrentUser?.FullName ?? "النظام"
         };
 
         var result = _borrowService.CreateRequest(req);
@@ -464,29 +480,40 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
     [RelayCommand]
     private void PerformSearch()
     {
-        var all = _borrowService.GetAll();
-
-        var filtered = all.AsEnumerable();
+        var filtered = _allRequests.AsEnumerable();
 
         if (!string.IsNullOrWhiteSpace(SearchQuery))
         {
             filtered = filtered.Where(r =>
                 (r.Source?.SourceCode?.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 (r.BorrowerName?.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                (r.BorrowerUser?.FullName?.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ?? false));
+                (r.BorrowerUser?.FullName?.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (r.Purpose?.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ?? false));
         }
 
         if (SelectedStatusFilter != "الكل")
         {
-            string enStatus = SelectedStatusFilter switch
+            if (SelectedStatusFilter == "قريبة الإرجاع")
             {
-                "تم التسليم" => "Delivered",
-                "تم الإرجاع" => "Returned",
-                "متأخر" => "Overdue",
-                _ => ""
-            };
-            if (!string.IsNullOrEmpty(enStatus))
-                filtered = filtered.Where(r => r.Status == enStatus);
+                var thresholdDays = _borrowService.GetDueSoonDaysThreshold();
+                var today = DateTime.Today;
+                var maxDate = today.AddDays(thresholdDays + 1).Date;
+                filtered = filtered.Where(r => r.Status == "Delivered" 
+                    && r.ExpectedReturnDate.Date >= today 
+                    && r.ExpectedReturnDate.Date < maxDate);
+            }
+            else
+            {
+                string enStatus = SelectedStatusFilter switch
+                {
+                    "تم التسليم" => "Delivered",
+                    "تم الإرجاع" => "Returned",
+                    "متأخر" => "Overdue",
+                    _ => ""
+                };
+                if (!string.IsNullOrEmpty(enStatus))
+                    filtered = filtered.Where(r => r.Status == enStatus);
+            }
         }
 
         var list = filtered.ToList();

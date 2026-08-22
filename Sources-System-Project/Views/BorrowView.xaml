@@ -92,7 +92,7 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="{DynamicResource TotalBorrows}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
-                                <TextBlock Text="{Binding Requests.Count}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,0"/>
+                                <TextBlock Text="{Binding TotalCount}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,0"/>
                             </StackPanel>
                             <Border Grid.Column="1" Width="40" Height="40" CornerRadius="20" Background="#144F7FA3" VerticalAlignment="Center">
                                 <materialDesign:PackIcon Kind="BookSyncOutline" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
@@ -198,7 +198,7 @@
                             <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding DisplaySourceCode}" Width="120" ElementStyle="{StaticResource BoldCenterAligned}"/>
 
                             <!-- 3. المستعير -->
-                            <DataGridTextColumn Header="{DynamicResource ColBorrower}" Binding="{Binding BorrowerName}" Width="150" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColBorrower}" Binding="{Binding DisplayBorrowerName}" Width="150" ElementStyle="{StaticResource CenterAligned}"/>
 
                             <!-- 4. تاريخ الاستعارة -->
                             <DataGridTextColumn Header="{DynamicResource ColBorrowDate}" Binding="{Binding RequestDate, StringFormat='{}{0:yyyy/MM/dd}'}" Width="120" ElementStyle="{StaticResource CenterAligned}"/>
@@ -615,7 +615,7 @@
                                     
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock Text="{DynamicResource BorrowDetailsTitle}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
-                                        <TextBlock Text="{Binding SelectedRequest.Source.SourceCode, StringFormat='المصدر: {0}'}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                                        <TextBlock Text="{Binding SelectedRequest.DisplaySourceCode, StringFormat='المصدر: {0}'}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
                                     </StackPanel>
                                     
                                     <Button Grid.Column="2" Command="{Binding CancelEditCommand}"
@@ -638,7 +638,7 @@
                                         <UniformGrid Columns="2" Margin="0,0,0,10">
                                             <TextBlock Margin="0,0,0,6">
                                                 <Run Text="• كود المصدر: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                                <Run Text="{Binding SelectedRequest.Source.SourceCode}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
+                                                <Run Text="{Binding SelectedRequest.DisplaySourceCode}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
                                             </TextBlock>
                                             <TextBlock Margin="0,0,0,6">
                                                 <Run Text="• اسم المستعير: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
