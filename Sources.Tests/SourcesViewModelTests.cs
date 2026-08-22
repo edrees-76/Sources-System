@@ -493,6 +493,35 @@ public class SourcesViewModelTests : IDisposable
         }
     }
 
+    [Fact]
+    public async Task SwitchToDeletedSourcesAsync_PopulatesPagedDeletedSourcesWithCorrectRowNumbers()
+    {
+        // Arrange
+        var deletedList = new List<Source>
+        {
+            new() { Id = Guid.NewGuid(), SourceCode = "DEL-01", Status = "Waste" },
+            new() { Id = Guid.NewGuid(), SourceCode = "DEL-02", Status = "Disposed" },
+            new() { Id = Guid.NewGuid(), SourceCode = "DEL-03", Status = "Waste" }
+        };
+        _mockSourceService.Setup(s => s.GetDeletedSources()).Returns(deletedList);
+
+        var vm = CreateViewModel();
+
+        // Act
+        await vm.SwitchToDeletedSourcesAsync();
+
+        // Assert
+        Assert.True(vm.IsDeletedSourcesView);
+        Assert.Equal(3, vm.DeletedSourcesCount);
+        Assert.Equal(3, vm.PagedDeletedSources.Count);
+        Assert.Equal(1, vm.PagedDeletedSources[0].RowNumber);
+        Assert.Equal("DEL-01", vm.PagedDeletedSources[0].SourceCode);
+        Assert.Equal(2, vm.PagedDeletedSources[1].RowNumber);
+        Assert.Equal("DEL-02", vm.PagedDeletedSources[1].SourceCode);
+        Assert.Equal(3, vm.PagedDeletedSources[2].RowNumber);
+        Assert.Equal("DEL-03", vm.PagedDeletedSources[2].SourceCode);
+    }
+
     #endregion
 }
 

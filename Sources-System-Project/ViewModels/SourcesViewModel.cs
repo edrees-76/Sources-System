@@ -45,6 +45,24 @@ public partial class IsotopeEntryViewModel : ObservableObject
     }
 }
 
+/// <summary>
+/// صف مخصص لجدول المصادر المحذوفة لعرض الرقم التسلسلي # وثبات البيانات أثناء التمرير
+/// </summary>
+public class DeletedSourceRow
+{
+    public int RowNumber { get; set; }
+    public Source Source { get; set; } = null!;
+    public Guid Id => Source.Id;
+    public string DisplaySourceCode => Source.DisplaySourceCode;
+    public string SourceCode => Source.SourceCode;
+    public string DisplayIsotopes => Source.DisplayIsotopes;
+    public string CurrentActivityWithUnit => Source.CurrentActivityWithUnit;
+    public Location? Location => Source.Location;
+    public string ArabicStatus => Source.ArabicStatus;
+    public DateTime? DeletedAt => Source.DeletedAt;
+    public User? DeletedByUser => Source.DeletedByUser;
+}
+
 public partial class SourcesViewModel : ObservableObject, IEditableViewModel
 {
     private readonly ISourceService _sourceService;
@@ -110,7 +128,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
 
     [ObservableProperty] private bool _isDeletedSourcesView;
     [ObservableProperty] private ObservableCollection<Source> _deletedSources = new();
-    [ObservableProperty] private ObservableCollection<Source> _pagedDeletedSources = new();
+    [ObservableProperty] private ObservableCollection<DeletedSourceRow> _pagedDeletedSources = new();
     [ObservableProperty] private int _deletedCurrentPage = 1;
     [ObservableProperty] private int _deletedTotalPages = 1;
     [ObservableProperty] private string _deletedPageStatusText = string.Empty;
@@ -278,8 +296,14 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
 
     private void UpdatePagedDeletedSources()
     {
-        var items = DeletedSources.Skip((DeletedCurrentPage - 1) * PageSize).Take(PageSize).ToList();
-        PagedDeletedSources = new ObservableCollection<Source>(items);
+        int startRank = (DeletedCurrentPage - 1) * PageSize;
+        var items = DeletedSources.Skip(startRank).Take(PageSize)
+            .Select((src, index) => new DeletedSourceRow
+            {
+                RowNumber = startRank + index + 1,
+                Source = src
+            }).ToList();
+        PagedDeletedSources = new ObservableCollection<DeletedSourceRow>(items);
         DeletedPageStatusText = TranslationHelper.GetFormat("PageStatusFormat", DeletedCurrentPage, DeletedTotalPages, DeletedSources.Count);
     }
 
@@ -614,8 +638,14 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     }
 
     [RelayCommand]
-    private void ViewSourceDetails(Source source)
+    private void ViewSourceDetails(object? param)
     {
+        Source? source = param switch
+        {
+            DeletedSourceRow dsr => dsr.Source,
+            Source s => s,
+            _ => null
+        };
         if (source == null) return;
         // استخدام LRE (\u202A) و PDF (\u202C) لضمان الاتجاه من اليسار لليمين للنصوص اللاتينية/الأرقام داخل الواجهة العربية
         string lre = "\u202A";

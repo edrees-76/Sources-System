@@ -184,7 +184,7 @@
                             <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="55" ElementStyle="{StaticResource CenterAligned}"/>
 
                             <!-- رمز المصدر (قابل للنقر لعرض التفاصيل) -->
-                            <DataGridTemplateColumn Header="{DynamicResource ColSourceCode}" Width="125" MinWidth="110">
+                            <DataGridTemplateColumn Header="{DynamicResource ColSourceCode}" Width="Auto" MinWidth="110">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding SourceCode}"
@@ -207,16 +207,16 @@
                             </DataGridTemplateColumn>
 
                             <!-- النظير المسؤول -->
-                            <DataGridTextColumn Header="{DynamicResource ColResponsibleIsotope}" Binding="{Binding WorstIsotopeSymbol}" Width="120" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColResponsibleIsotope}" Binding="{Binding WorstIsotopeSymbol}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
 
                             <!-- الموقع -->
-                            <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding LocationName}" Width="1.2*" MinWidth="140" ElementStyle="{StaticResource SecondaryCenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding LocationName}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource SecondaryCenterAligned}"/>
 
                             <!-- عدد فترات نصف العمر المنقضية -->
-                            <DataGridTextColumn Header="{DynamicResource ColHalfLivesElapsed}" Binding="{Binding HalfLivesDisplay}" Width="120" MinWidth="110" ElementStyle="{StaticResource BoldCenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColHalfLivesElapsed}" Binding="{Binding HalfLivesDisplay}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource BoldCenterAligned}"/>
 
                             <!-- مستوى الخطورة -->
-                            <DataGridTemplateColumn Header="{DynamicResource ColSeverity}" Width="110" MinWidth="100">
+                            <DataGridTemplateColumn Header="{DynamicResource ColSeverity}" Width="Auto" MinWidth="100">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Border CornerRadius="6" Padding="10,4" HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -229,13 +229,13 @@
                             </DataGridTemplateColumn>
 
                             <!-- الرسالة والتفاصيل -->
-                            <DataGridTextColumn Header="{DynamicResource ColMessage}" Binding="{Binding Message}" Width="2.5*" MinWidth="220" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColMessage}" Binding="{Binding Message}" Width="Auto" MinWidth="220" ElementStyle="{StaticResource CenterAligned}"/>
 
                             <!-- تاريخ التنبيه -->
-                            <DataGridTextColumn Header="{DynamicResource ColCreatedDate}" Binding="{Binding CreatedAt, StringFormat='yyyy/MM/dd HH:mm'}" Width="135" MinWidth="125" ElementStyle="{StaticResource SubtleCenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColCreatedDate}" Binding="{Binding CreatedAt, StringFormat='yyyy/MM/dd HH:mm'}" Width="Auto" MinWidth="125" ElementStyle="{StaticResource SubtleCenterAligned}"/>
 
                             <!-- حالة القراءة -->
-                            <DataGridTemplateColumn Header="{DynamicResource ColReadStatus}" Width="95" MinWidth="85">
+                            <DataGridTemplateColumn Header="{DynamicResource ColReadStatus}" Width="Auto" MinWidth="85">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Border CornerRadius="6" Padding="8,3" HorizontalAlignment="Center" VerticalAlignment="Center"

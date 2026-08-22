@@ -337,14 +337,14 @@
                         <DataGrid ItemsSource="{Binding FilteredUsers}" SelectedItem="{Binding Selected}" Style="{StaticResource ModernDataGrid}">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                                <DataGridTextColumn Header="{DynamicResource ColFullName}" Binding="{Binding FullName}" Width="180" ElementStyle="{StaticResource BoldCenterAligned}"/>
-                                <DataGridTextColumn Header="{DynamicResource ColUsername}" Binding="{Binding Username}" Width="130" ElementStyle="{StaticResource CenterAligned}"/>
-                                <DataGridTextColumn Header="{DynamicResource ColRole}" Binding="{Binding Role.DisplayName}" Width="130" ElementStyle="{StaticResource CenterAligned}"/>
-                                <DataGridTextColumn Header="{DynamicResource ColEmail}" Binding="{Binding Email}" Width="180" ElementStyle="{StaticResource CenterAligned}"/>
-                                <DataGridTextColumn Header="{DynamicResource ColLastLogin}" Binding="{Binding LastLoginDate, StringFormat='yyyy/MM/dd HH:mm'}" Width="140" ElementStyle="{StaticResource CenterAligned}"/>
+                                <DataGridTextColumn Header="{DynamicResource ColFullName}" Binding="{Binding FullName}" Width="Auto" MinWidth="150" ElementStyle="{StaticResource BoldCenterAligned}"/>
+                                <DataGridTextColumn Header="{DynamicResource ColUsername}" Binding="{Binding Username}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
+                                <DataGridTextColumn Header="{DynamicResource ColRole}" Binding="{Binding Role.DisplayName}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
+                                <DataGridTextColumn Header="{DynamicResource ColEmail}" Binding="{Binding Email}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource CenterAligned}"/>
+                                <DataGridTextColumn Header="{DynamicResource ColLastLogin}" Binding="{Binding LastLoginDate, StringFormat='yyyy/MM/dd HH:mm'}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterAligned}"/>
                                 
                                 <!-- عمود الحالة (خلفية شفافة مع نص واضح بدون بهتان) -->
-                                <DataGridTemplateColumn Header="{DynamicResource ColStatus}" Width="100">
+                                <DataGridTemplateColumn Header="{DynamicResource ColStatus}" Width="Auto" MinWidth="95">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Border CornerRadius="12" Padding="8,3" HorizontalAlignment="Center" MinWidth="75">
@@ -636,11 +636,11 @@
                     <DataGrid ItemsSource="{Binding AuditLogs}" SelectedItem="{Binding SelectedAuditLog}" Style="{StaticResource ModernDataGrid}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#" Binding="{Binding Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                            <DataGridTextColumn Header="{DynamicResource ColUser}" Binding="{Binding User.FullName}" Width="150" ElementStyle="{StaticResource CenterAligned}"/>
-                            <DataGridTextColumn Header="{DynamicResource ColOperation}" Binding="{Binding Action}" Width="110" ElementStyle="{StaticResource PrimaryCenterAligned}"/>
-                            <DataGridTextColumn Header="{DynamicResource ColAffectedTable}" Binding="{Binding TableName}" Width="110" ElementStyle="{StaticResource SecondaryCenterAligned}"/>
-                            <DataGridTextColumn Header="{DynamicResource ColDetails}" Binding="{Binding Details}" Width="*" ElementStyle="{StaticResource NotesCellStyle}"/>
-                            <DataGridTextColumn Header="{DynamicResource ColDate}" Binding="{Binding ActionDate, StringFormat='yyyy/MM/dd HH:mm:ss'}" Width="160" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColUser}" Binding="{Binding User.FullName}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColOperation}" Binding="{Binding Action}" Width="Auto" MinWidth="95" ElementStyle="{StaticResource PrimaryCenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColAffectedTable}" Binding="{Binding TableName}" Width="Auto" MinWidth="95" ElementStyle="{StaticResource SecondaryCenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColDetails}" Binding="{Binding Details}" Width="Auto" MinWidth="180" ElementStyle="{StaticResource NotesCellStyle}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColDate}" Binding="{Binding ActionDate, StringFormat='yyyy/MM/dd HH:mm:ss'}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTemplateColumn Header="{DynamicResource BtnViewDiff}" Width="100">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>

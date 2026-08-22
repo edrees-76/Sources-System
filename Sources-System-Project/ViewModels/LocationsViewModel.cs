@@ -190,6 +190,46 @@ public partial class LocationsViewModel : ObservableObject, IEditableViewModel
             }));
         HasLinkedSources = LinkedSourcesForDetails.Count > 0;
         IsLocationDetailsOpen = true;
+
+        OpenLocationDetailsWindow(target, sources);
+    }
+
+    public Action<Location, IEnumerable<Source>>? OpenDetailsWindowCustomAction { get; set; }
+
+    private void OpenLocationDetailsWindow(Location target, IEnumerable<Source> sources)
+    {
+        if (OpenDetailsWindowCustomAction != null)
+        {
+            OpenDetailsWindowCustomAction(target, sources);
+            return;
+        }
+
+        if (DialogHelper.IsTestMode) return;
+
+        var app = System.Windows.Application.Current;
+        if (app == null) return;
+
+        if (app.Dispatcher != null && !app.Dispatcher.CheckAccess())
+        {
+            app.Dispatcher.BeginInvoke(() => OpenLocationDetailsWindow(target, sources));
+            return;
+        }
+
+        try
+        {
+            if (app.MainWindow == null || !app.MainWindow.IsVisible) return;
+
+            var detailsVm = new LocationDetailsViewModel(target, sources, _reportingService);
+            var win = new Views.LocationDetailsWindow(detailsVm)
+            {
+                Owner = app.MainWindow
+            };
+            win.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            LoggerService.LogError("LocationsViewModel: Failed to open LocationDetailsWindow", ex);
+        }
     }
 
     [RelayCommand]

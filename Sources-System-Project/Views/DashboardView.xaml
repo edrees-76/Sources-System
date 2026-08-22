@@ -433,10 +433,10 @@
                                     <!-- عمود الترقيم التسلسلي # ثابت ومستقر مباشرة من النموذج -->
                                     <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
 
-                                    <DataGridTextColumn Header="{DynamicResource ColSerialNumber}" Binding="{Binding SerialNumber}" Width="110" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColSerialNumber}" Binding="{Binding SerialNumber}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
                                     
                                     <!-- كود المصدر التفاعلي -->
-                                    <DataGridTemplateColumn Header="{DynamicResource ColSourceCode}" Width="120">
+                                    <DataGridTemplateColumn Header="{DynamicResource ColSourceCode}" Width="Auto" MinWidth="110">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <TextBlock Text="{Binding SourceCode}"
@@ -459,7 +459,7 @@
                                     </DataGridTemplateColumn>
 
                                     <!-- عمود النظائر مع شارة الفئة الرقابية (البند 6) -->
-                                    <DataGridTemplateColumn Header="{DynamicResource ColRadioisotopes}" Width="*">
+                                    <DataGridTemplateColumn Header="{DynamicResource ColRadioisotopes}" Width="Auto" MinWidth="130">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -478,7 +478,7 @@
                                     </DataGridTemplateColumn>
                                     
                                     <!-- عمود الموقع مع التفاف النص والتلميح لمنع الاقتطاع -->
-                                    <DataGridTemplateColumn Header="{DynamicResource ColLocation}" Width="150">
+                                    <DataGridTemplateColumn Header="{DynamicResource ColLocation}" Width="Auto" MinWidth="130">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <TextBlock Text="{Binding LocationName}"
@@ -493,8 +493,8 @@
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
 
-                                    <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityDisplay}" Width="120" ElementStyle="{StaticResource CenterAligned}"/>
-                                    <DataGridTextColumn Header="{DynamicResource ColActivityUnit}" Binding="{Binding ActivityUnitSymbol}" Width="90" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityDisplay}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColActivityUnit}" Binding="{Binding ActivityUnitSymbol}" Width="Auto" MinWidth="75" ElementStyle="{StaticResource CenterAligned}"/>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Border>
@@ -970,7 +970,7 @@
                           Visibility="{Binding SidePanelShowSources, Converter={StaticResource BoolToVis}}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="40" ElementStyle="{StaticResource CenterAligned}"/>
-                        <DataGridTemplateColumn Header="{DynamicResource ColSourceCode}" Width="100">
+                        <DataGridTemplateColumn Header="{DynamicResource ColSourceCode}" Width="Auto" MinWidth="95">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding SourceCode}" FontWeight="Bold" TextAlignment="Center"
@@ -984,7 +984,7 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTemplateColumn Header="{DynamicResource ColRadioisotopes}" Width="*">
+                        <DataGridTemplateColumn Header="{DynamicResource ColRadioisotopes}" Width="Auto" MinWidth="110">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -994,8 +994,8 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityDisplay}" Width="90" ElementStyle="{StaticResource CenterAligned}"/>
-                        <DataGridTextColumn Header="{DynamicResource ColActivityUnit}" Binding="{Binding ActivityUnitSymbol}" Width="60" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityDisplay}" Width="Auto" MinWidth="85" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColActivityUnit}" Binding="{Binding ActivityUnitSymbol}" Width="Auto" MinWidth="60" ElementStyle="{StaticResource CenterAligned}"/>
                     </DataGrid.Columns>
                 </DataGrid>
 

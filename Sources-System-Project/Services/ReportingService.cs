@@ -20,6 +20,31 @@ namespace Sources.Services
             QuestPDF.Settings.License = LicenseType.Community;
         }
 
+        private static readonly char[] InvalidSheetChars = { '\\', '/', '?', '*', '[', ']', ':' };
+
+        public static string SanitizeSheetName(string? name, string defaultName = "تقرير")
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return defaultName;
+
+            // 1. Remove invalid characters: \ / ? * [ ] :
+            var clean = new string(name.Where(c => !InvalidSheetChars.Contains(c) && !char.IsControl(c)).ToArray()).Trim();
+
+            // 2. Remove single quotes from start and end
+            clean = clean.Trim('\'').Trim();
+
+            if (string.IsNullOrWhiteSpace(clean))
+                clean = defaultName;
+
+            // 3. Truncate to maximum 31 characters
+            if (clean.Length > 31)
+            {
+                clean = clean.Substring(0, 31).Trim();
+            }
+
+            return string.IsNullOrWhiteSpace(clean) ? defaultName : clean;
+        }
+
         private static string GetNoDataText()
         {
             try
@@ -178,7 +203,8 @@ namespace Sources.Services
             await Task.Run(() =>
             {
                 using var workbook = new XLWorkbook();
-                var worksheet = workbook.Worksheets.Add(reportTitle);
+                var sheetName = SanitizeSheetName(reportTitle, "جرد المصادر");
+                var worksheet = workbook.Worksheets.Add(sheetName);
                 
                 worksheet.RightToLeft = true;
 

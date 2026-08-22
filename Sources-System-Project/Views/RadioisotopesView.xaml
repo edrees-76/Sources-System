@@ -110,7 +110,7 @@
                             </DataGridTextColumn>
 
                             <!-- 2. الاسم -->
-                            <DataGridTextColumn Header="{DynamicResource ColArabicName}" Binding="{Binding DisplayName}" Width="150">
+                            <DataGridTextColumn Header="{DynamicResource ColArabicName}" Binding="{Binding DisplayName}" Width="Auto" MinWidth="130">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock" BasedOn="{StaticResource CenterAligned}">
                                         <Setter Property="FontWeight" Value="SemiBold"/>
@@ -121,7 +121,7 @@
                             </DataGridTextColumn>
 
                             <!-- 3. الرمز -->
-                            <DataGridTextColumn Header="{DynamicResource ColSymbol}" Binding="{Binding DisplaySymbol}" Width="90">
+                            <DataGridTextColumn Header="{DynamicResource ColSymbol}" Binding="{Binding DisplaySymbol}" Width="Auto" MinWidth="90">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock" BasedOn="{StaticResource CenterAligned}">
                                         <Setter Property="FontWeight" Value="Bold"/>
@@ -132,7 +132,7 @@
                             </DataGridTextColumn>
 
                             <!-- 4. نوع الإشعاع (شارات ملونة) -->
-                            <DataGridTemplateColumn Header="{DynamicResource ColRadiationType}" Width="115">
+                            <DataGridTemplateColumn Header="{DynamicResource ColRadiationType}" Width="Auto" MinWidth="115">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Border x:Name="TypeBadge" CornerRadius="10" Padding="8,3" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="75" Background="#1A64748B" BorderThickness="1" BorderBrush="#3364748B">
@@ -216,19 +216,19 @@
                             </DataGridTemplateColumn>
 
                             <!-- 5. نصف العمر -->
-                            <DataGridTextColumn Header="{DynamicResource ColHalfLife}" Binding="{Binding DisplayHalfLife}" Width="130" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColHalfLife}" Binding="{Binding DisplayHalfLife}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
 
                             <!-- 6. الطاقة keV -->
-                            <DataGridTextColumn Header="{DynamicResource ColEnergyKeV}" Binding="{Binding Energy, StringFormat=\{0:0.##\}}" Width="110" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColEnergyKeV}" Binding="{Binding Energy, StringFormat=\{0:0.##\}}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterAligned}"/>
 
                             <!-- 7. المردود / الاحتمالية -->
-                            <DataGridTextColumn Header="{DynamicResource ColYield}" Binding="{Binding Yield, StringFormat=P1}" Width="85" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColYield}" Binding="{Binding Yield, StringFormat=P1}" Width="Auto" MinWidth="85" ElementStyle="{StaticResource CenterAligned}"/>
 
                             <!-- 8. أضيف بواسطة -->
-                            <DataGridTextColumn Header="{DynamicResource ColAddedBy}" Binding="{Binding AddedBy}" Width="120" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColAddedBy}" Binding="{Binding AddedBy}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
 
                             <!-- 9. ملاحظات مع TextTrimming و ToolTip -->
-                            <DataGridTemplateColumn Header="{DynamicResource ColNotes}" Width="*">
+                            <DataGridTemplateColumn Header="{DynamicResource ColNotes}" Width="Auto" MinWidth="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding DisplayNotes}" 

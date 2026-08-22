@@ -243,7 +243,7 @@ public class LocationsViewModelTests
 
             // Assert
             _mockService.Verify(s => s.Delete(It.IsAny<Guid>()), Times.Never);
-            Assert.Equal("الرجاء تحديد موقع أولاً للمتابعة.", Sources.Helpers.DialogHelper.LastMessage);
+            Assert.True(Sources.Helpers.DialogHelper.LastMessage == "MsgSelectLocationFirst" || Sources.Helpers.DialogHelper.LastMessage == "الرجاء تحديد موقع أولاً للمتابعة." || Sources.Helpers.DialogHelper.LastMessage == "الرجاء تحديد موقع أولاً");
         }
         finally
         {

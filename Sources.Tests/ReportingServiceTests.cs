@@ -719,5 +719,49 @@ public class ReportingServiceTests : IDisposable
         Assert.True(File.Exists(pdfLogPath) && new FileInfo(pdfLogPath).Length > 0);
     }
 
+    [Theory]
+    [InlineData("تقرير مصادر الموقع: مختبر الأبحاث النووية والتحاليل المتقدمة", 31)]
+    [InlineData("Sheet:with*invalid/chars?and[brackets]", 31)]
+    [InlineData("", 5)]
+    [InlineData("   ", 5)]
+    [InlineData(null, 5)]
+    [InlineData("'SingleQuotedSheet'", 17)]
+    public void SanitizeSheetName_AlwaysReturnsValidExcelSheetName(string? input, int maxExpectedLength)
+    {
+        // Act
+        var result = ReportingService.SanitizeSheetName(input);
+
+        // Assert
+        Assert.False(string.IsNullOrWhiteSpace(result));
+        Assert.True(result.Length <= 31);
+        Assert.True(result.Length <= maxExpectedLength);
+        Assert.DoesNotContain('\\', result);
+        Assert.DoesNotContain('/', result);
+        Assert.DoesNotContain('?', result);
+        Assert.DoesNotContain('*', result);
+        Assert.DoesNotContain('[', result);
+        Assert.DoesNotContain(']', result);
+        Assert.DoesNotContain(':', result);
+    }
+
+    [Fact]
+    public async Task GenerateInventoryReportExcelAsync_WithLongSheetName_SucceedsWithoutClosedXmlException()
+    {
+        // Arrange
+        var sources = CreateSampleSources();
+        var filePath = GetTempFilePath("xlsx");
+        var veryLongTitle = "تقرير مصادر الموقع: مختبر الأبحاث النووية والتحاليل الطبية المتقدمة التابع لقسم الفيزياء";
+
+        // Act
+        await _sut.GenerateInventoryReportExcelAsync(sources, filePath, veryLongTitle);
+
+        // Assert
+        Assert.True(File.Exists(filePath));
+        using var wb = new XLWorkbook(filePath);
+        Assert.Single(wb.Worksheets);
+        var ws = wb.Worksheets.First();
+        Assert.True(ws.Name.Length <= 31);
+    }
+
     #endregion
 }

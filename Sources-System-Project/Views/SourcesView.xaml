@@ -710,26 +710,29 @@
                                       IsReadOnly="True" AutoGenerateColumns="False"
                                       Visibility="{Binding HasDeletedSources, Converter={StaticResource BoolToVis}}">
                                 <DataGrid.Columns>
+                                    <!-- الترقيم التسلسلي -->
+                                    <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+
                                     <!-- كود المصدر -->
-                                    <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding DisplaySourceCode}" Width="140" ElementStyle="{StaticResource BoldCenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding DisplaySourceCode}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource BoldCenterAligned}"/>
 
                                     <!-- النظائر -->
-                                    <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="120" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
 
                                     <!-- آخر نشاط إشعاعي -->
-                                    <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="150" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource CenterAligned}"/>
 
                                     <!-- الموقع -->
-                                    <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName, TargetNullValue='—'}" Width="150" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName, TargetNullValue='—'}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterAligned}"/>
 
                                     <!-- الحالة قبل الحذف -->
-                                    <DataGridTextColumn Header="{DynamicResource ColLastStatus}" Binding="{Binding ArabicStatus}" Width="120" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColLastStatus}" Binding="{Binding ArabicStatus}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
 
                                     <!-- تاريخ الحذف -->
-                                    <DataGridTextColumn Header="{DynamicResource ColDeletedAt}" Binding="{Binding DeletedAt, StringFormat='yyyy-MM-dd HH:mm', TargetNullValue='—'}" Width="150" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColDeletedAt}" Binding="{Binding DeletedAt, StringFormat='yyyy-MM-dd HH:mm', TargetNullValue='—'}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource CenterAligned}"/>
 
                                     <!-- حُذف بواسطة -->
-                                    <DataGridTextColumn Header="{DynamicResource ColDeletedBy}" Binding="{Binding DeletedByUser.FullName, TargetNullValue='—'}" Width="140" ElementStyle="{StaticResource SubtleCenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColDeletedBy}" Binding="{Binding DeletedByUser.FullName, TargetNullValue='—'}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource SubtleCenterAligned}"/>
 
                                     <!-- إجراءات (عرض التفاصيل للقراءة فقط) -->
                                     <DataGridTemplateColumn Header="{DynamicResource ColActions}" Width="80">

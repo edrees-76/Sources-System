@@ -51,6 +51,20 @@ public class ViewInstantiationTests
     }
 
     [Fact]
+    public void LocationDetailsWindow_InstantiatesSuccessfully()
+    {
+        RunInSta(() =>
+        {
+            var location = new Sources.Models.Location { Id = Guid.NewGuid(), LocationName = "مختبر الفحص" };
+            var sources = new List<Sources.Models.Source>();
+            var vm = new Sources.ViewModels.LocationDetailsViewModel(location, sources);
+            var window = new Sources.Views.LocationDetailsWindow(vm);
+            Assert.NotNull(window);
+            Assert.Equal(vm, window.DataContext);
+        });
+    }
+
+    [Fact]
     public void BorrowView_InstantiatesSuccessfully()
     {
         RunInSta(() =>

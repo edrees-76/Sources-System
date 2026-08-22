@@ -682,6 +682,8 @@
     <system:String x:Key="ToolTipLocationDetails">View location details and linked sources</system:String>
     <system:String x:Key="ColSourceCount">Sources Count</system:String>
     <system:String x:Key="BtnClose">Close</system:String>
+    <system:String x:Key="PlaceholderSearchLocationSources">Search by source code, isotope, serial number, or manufacturer...</system:String>
+    <system:String x:Key="MsgNoSourcesMatchFilter">No sources match the specified search and filter criteria</system:String>
 
 
 

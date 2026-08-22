@@ -679,6 +679,8 @@
     <system:String x:Key="ToolTipLocationDetails">عرض تفاصيل الموقع والمصادر المرتبطة</system:String>
     <system:String x:Key="ColSourceCount">عدد المصادر</system:String>
     <system:String x:Key="BtnClose">إغلاق</system:String>
+    <system:String x:Key="PlaceholderSearchLocationSources">بحث بكود المصدر، النظير، الرقم التسلسلي، أو الصانع...</system:String>
+    <system:String x:Key="MsgNoSourcesMatchFilter">لا توجد مصادر تطابق معايير البحث والفلترة المحددة</system:String>
 
 
 
