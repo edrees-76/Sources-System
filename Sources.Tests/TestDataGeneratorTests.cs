@@ -169,6 +169,50 @@ public class TestDataGeneratorTests : IDisposable
         var delivered = borrows.Where(b => b.Status == "Delivered").ToList();
         Assert.Equal(15, delivered.Count);
         Assert.All(delivered, d => Assert.True(d.ExpectedReturnDate.Date >= DateTime.Today));
+
+        // 4. Status Consistency between Sources and Borrow Requests
+        var inUseSources = sources.Where(s => s.Status == "InUse").ToList();
+        Assert.Equal(25, inUseSources.Count);
+        Assert.All(inUseSources, s =>
+        {
+            var activeBorrow = activeBorrows.FirstOrDefault(b => b.SourceId == s.Id);
+            Assert.NotNull(activeBorrow);
+        });
+
+        var returnedOnlySources = sources
+            .Where(s => borrows.Any(b => b.SourceId == s.Id && b.Status == "Returned") &&
+                        !borrows.Any(b => b.SourceId == s.Id && (b.Status == "Delivered" || b.Status == "Overdue")))
+            .ToList();
+        Assert.All(returnedOnlySources, s =>
+        {
+            Assert.True(s.Status == "Storage" || s.Status == "Waste" || s.Status == "Transfer",
+                $"Source {s.SourceCode} with only returned borrows must not be InUse; actual: {s.Status}");
+        });
+    }
+
+    [Fact]
+    public async Task GenerateRealisticDataAsync_SourceWithOnlyReturnedBorrowRequestsMustBeStorage()
+    {
+        // Act
+        var result = await TestDataGeneratorService.GenerateRealisticDataAsync(_factory, _decayService);
+        Assert.True(result.Success, result.Message);
+
+        using var db = new AppDbContext(_options);
+        var sources = await db.Sources.ToListAsync();
+        var borrows = await db.BorrowRequests.ToListAsync();
+
+        var returnedSourceIds = borrows.Where(b => b.Status == "Returned").Select(b => b.SourceId).ToHashSet();
+        var activeSourceIds = borrows.Where(b => b.Status == "Delivered" || b.Status == "Overdue").Select(b => b.SourceId).ToHashSet();
+
+        foreach (var sourceId in returnedSourceIds)
+        {
+            var source = sources.First(s => s.Id == sourceId);
+            if (!activeSourceIds.Contains(sourceId))
+            {
+                Assert.NotEqual("InUse", source.Status);
+                Assert.True(source.Status == "Storage" || source.Status == "Waste" || source.Status == "Transfer");
+            }
+        }
     }
 }
 #endif

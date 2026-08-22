@@ -554,19 +554,19 @@
                                             <TextBlock Text="{DynamicResource ReviewSummaryTitle}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,0,8"/>
                                             <TextBlock Margin="0,0,0,4">
                                                 <Run Text="• المصدر: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                                <Run Text="{Binding SelectedSourceForNew.SourceCode}" Foreground="{DynamicResource PrimaryBrush}" FontWeight="Bold"/>
+                                                <Run Text="{Binding SelectedSourceForNew.SourceCode, Mode=OneWay}" Foreground="{DynamicResource PrimaryBrush}" FontWeight="Bold"/>
                                             </TextBlock>
                                             <TextBlock Margin="0,0,0,4">
                                                 <Run Text="• المستعير: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                                <Run Text="{Binding NewBorrowerName}" Foreground="{DynamicResource TextSecondary}"/>
+                                                <Run Text="{Binding NewBorrowerName, Mode=OneWay}" Foreground="{DynamicResource TextSecondary}"/>
                                             </TextBlock>
                                             <TextBlock Margin="0,0,0,4">
                                                 <Run Text="• الغرض: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                                <Run Text="{Binding NewPurpose}" Foreground="{DynamicResource TextSecondary}"/>
+                                                <Run Text="{Binding NewPurpose, Mode=OneWay}" Foreground="{DynamicResource TextSecondary}"/>
                                             </TextBlock>
                                             <TextBlock>
                                                 <Run Text="• موعد الإرجاع المتوقع: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                                <Run Text="{Binding NewExpectedReturnDate, StringFormat='{}{0:yyyy/MM/dd}'}" Foreground="{DynamicResource TextSecondary}"/>
+                                                <Run Text="{Binding NewExpectedReturnDate, StringFormat='{}{0:yyyy/MM/dd}', Mode=OneWay}" Foreground="{DynamicResource TextSecondary}"/>
                                             </TextBlock>
                                         </StackPanel>
                                     </Border>
@@ -638,33 +638,33 @@
                                         <UniformGrid Columns="2" Margin="0,0,0,10">
                                             <TextBlock Margin="0,0,0,6">
                                                 <Run Text="• كود المصدر: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                                <Run Text="{Binding SelectedRequest.DisplaySourceCode}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
+                                                <Run Text="{Binding SelectedRequest.DisplaySourceCode, Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
                                             </TextBlock>
                                             <TextBlock Margin="0,0,0,6">
                                                 <Run Text="• اسم المستعير: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                                <Run Text="{Binding SelectedRequest.BorrowerName}" Foreground="{DynamicResource TextSecondary}"/>
+                                                <Run Text="{Binding SelectedRequest.BorrowerName, Mode=OneWay}" Foreground="{DynamicResource TextSecondary}"/>
                                             </TextBlock>
                                         </UniformGrid>
 
                                         <UniformGrid Columns="2" Margin="0,0,0,10">
                                             <TextBlock Margin="0,0,0,6">
                                                 <Run Text="• تاريخ الاستعارة: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                                <Run Text="{Binding SelectedRequest.RequestDate, StringFormat='{}{0:yyyy/MM/dd}'}" Foreground="{DynamicResource TextSecondary}"/>
+                                                <Run Text="{Binding SelectedRequest.RequestDate, StringFormat='{}{0:yyyy/MM/dd}', Mode=OneWay}" Foreground="{DynamicResource TextSecondary}"/>
                                             </TextBlock>
                                             <TextBlock Margin="0,0,0,6">
                                                 <Run Text="• موعد الإرجاع المتوقع: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                                <Run Text="{Binding SelectedRequest.ExpectedReturnDate, StringFormat='{}{0:yyyy/MM/dd}'}" Foreground="{DynamicResource TextSecondary}"/>
+                                                <Run Text="{Binding SelectedRequest.ExpectedReturnDate, StringFormat='{}{0:yyyy/MM/dd}', Mode=OneWay}" Foreground="{DynamicResource TextSecondary}"/>
                                             </TextBlock>
                                         </UniformGrid>
 
                                         <TextBlock Margin="0,0,0,10">
                                             <Run Text="• الغرض: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                            <Run Text="{Binding SelectedRequest.Purpose}" Foreground="{DynamicResource TextSecondary}"/>
+                                            <Run Text="{Binding SelectedRequest.Purpose, Mode=OneWay}" Foreground="{DynamicResource TextSecondary}"/>
                                         </TextBlock>
 
                                         <TextBlock Margin="0,0,0,8" Visibility="{Binding SelectedRequest.Notes, Converter={StaticResource NullToVis}}">
                                             <Run Text="• الملاحظات: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                            <Run Text="{Binding SelectedRequest.Notes}" Foreground="{DynamicResource TextSecondary}"/>
+                                            <Run Text="{Binding SelectedRequest.Notes, Mode=OneWay}" Foreground="{DynamicResource TextSecondary}"/>
                                         </TextBlock>
 
                                         <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
@@ -748,7 +748,7 @@
                                         </StackPanel>
                                         <TextBlock Margin="28,0,0,0">
                                             <Run Text="تاريخ الإرجاع الفعلي المسجّل: " Foreground="{DynamicResource TextSecondary}"/>
-                                            <Run Text="{Binding SelectedRequest.ActualReturnDate, StringFormat='{}{0:yyyy/MM/dd}'}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                            <Run Text="{Binding SelectedRequest.ActualReturnDate, StringFormat='{}{0:yyyy/MM/dd}', Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                                         </TextBlock>
                                     </StackPanel>
                                 </Border>

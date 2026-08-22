@@ -265,6 +265,64 @@ public class ViewInstantiationTests
         });
     }
 
+    [Fact]
+    public void BorrowView_WhenOpeningDetailsCard_RendersSuccessfullyWithoutBindingExceptions()
+    {
+        RunInSta(() =>
+        {
+            var mockBorrowService = new Moq.Mock<Sources.Services.IBorrowService>();
+            var mockSourceService = new Moq.Mock<Sources.Services.ISourceService>();
+            var mockUserService = new Moq.Mock<Sources.Services.IUserService>();
+            var mockReportingService = new Moq.Mock<Sources.Services.IReportingService>();
+
+            var vm = new Sources.ViewModels.BorrowViewModel(
+                mockBorrowService.Object,
+                mockSourceService.Object,
+                mockUserService.Object,
+                mockReportingService.Object);
+
+            var source = new Sources.Models.Source
+            {
+                Id = Guid.NewGuid(),
+                SourceCode = "SRC-0138",
+                Status = "Storage",
+                IsDeleted = false
+            };
+
+            var request = new Sources.Models.BorrowRequest
+            {
+                Id = Guid.NewGuid(),
+                SourceId = source.Id,
+                Source = source,
+                BorrowerName = "أ. منى البكوش",
+                Purpose = "معايرة دورية",
+                RequestDate = DateTime.Today.AddDays(-10),
+                ExpectedReturnDate = DateTime.Today.AddDays(-2),
+                ActualReturnDate = DateTime.Today,
+                Status = "Returned",
+                Notes = "تم الإرجاع بحالة سليمة ومطابقة القياسات."
+            };
+
+            vm.SelectedRequest = request;
+            vm.IsEditing = true;
+            vm.IsNew = false;
+
+            var view = new Sources.Views.BorrowView
+            {
+                DataContext = vm
+            };
+
+            view.Measure(new System.Windows.Size(1280, 800));
+            view.Arrange(new System.Windows.Rect(0, 0, 1280, 800));
+            view.UpdateLayout();
+
+            Assert.NotNull(view);
+            Assert.False(vm.IsNew);
+            Assert.True(vm.IsEditing);
+            Assert.Equal("SRC-0138", vm.SelectedRequest.DisplaySourceCode);
+        });
+    }
+
     private static System.Collections.Generic.IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
     {
         if (depObj == null) yield break;

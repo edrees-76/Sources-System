@@ -177,7 +177,7 @@ public static class TestDataGeneratorService
                         source.RadioisotopeId = iso.Id;
                         source.Radioisotope = iso;
                         source.HasDetailedIsotopes = false;
-                        source.Status = random.Next(100) < 80 ? "InUse" : "Storage"; // فقط InUse أو Storage للتنبيهات
+                        source.Status = "Storage"; // تبدأ في المخزن وتتغير لاحقاً إذا ارتبطت باستعارة نشطة
 
                         // اختيار وحدة مناسبة للنويدة
                         var (initVal, unit) = GetRealisticActivity(iso, random, uCiUnit, mCiUnit, ciUnit, bqUnit);
@@ -205,7 +205,7 @@ public static class TestDataGeneratorService
                         source.RadioisotopeId = iso.Id;
                         source.Radioisotope = iso;
                         source.HasDetailedIsotopes = false;
-                        source.Status = random.Next(100) < 80 ? "InUse" : "Storage"; // فقط InUse أو Storage للتنبيهات
+                        source.Status = "Storage"; // تبدأ في المخزن وتتغير لاحقاً إذا ارتبطت باستعارة نشطة
 
                         var (initVal, unit) = GetRealisticActivity(iso, random, uCiUnit, mCiUnit, ciUnit, bqUnit);
                         source.InitialActivityValue = initVal;
@@ -227,10 +227,9 @@ public static class TestDataGeneratorService
                     else
                     {
                         // ─── المجموعة (a): 250 مصدراً عادياً (بين 0.05 إلى 2.5 فترة نصف عمر، بحد أقصى 3 سنوات) ───
-                        // الحالة: 70% InUse، 20% Storage، 5% Waste، 5% Transfer
+                        // الحالة الافتراضية: 90% Storage، 5% Waste، 5% Transfer (تتحول إلى InUse لاحقاً فقط للاستعارات النشطة)
                         int statusRoll = random.Next(100);
-                        if (statusRoll < 70) source.Status = "InUse";
-                        else if (statusRoll < 90) source.Status = "Storage";
+                        if (statusRoll < 90) source.Status = "Storage";
                         else if (statusRoll < 95) source.Status = "Waste";
                         else source.Status = "Transfer";
 
@@ -379,14 +378,17 @@ public static class TestDataGeneratorService
                     "اختبار استجابة أجهزة الرصد البيئي المستمر"
                 };
 
-                // مصادر InUse المتاحة للاستعارات النشطة والمتأخرة
-                var inUseSources = generatedSources.Where(s => s.Status == "InUse").ToList();
                 var usedSourceIdsForActiveBorrow = new HashSet<Guid>();
 
                 // أ) 70 طلباً مرتجعاً بالكامل (Status = "Returned")
                 for (int i = 0; i < 70; i++)
                 {
                     var src = generatedSources[random.Next(generatedSources.Count)];
+                    if (src.Status != "Waste" && src.Status != "Transfer")
+                    {
+                        src.Status = "Storage"; // المصدر المرتجع يعود للمخزن
+                    }
+
                     var reqDate = DateTime.Now.AddDays(-random.Next(60, 300));
                     var appDate = reqDate.AddHours(random.Next(2, 24));
                     var delDate = appDate.AddHours(random.Next(1, 12));
@@ -412,15 +414,19 @@ public static class TestDataGeneratorService
                     result.ReturnedBorrows++;
                 }
 
+                // مصادر Storage المتاحة للاستعارات النشطة والمتأخرة
+                var availableSourcesForActiveBorrow = generatedSources.Where(s => s.Status == "Storage").ToList();
+
                 // ب) 15 طلباً مستلماً ونشطاً (Status = "Delivered" — غير متأخر، ExpectedReturnDate في المستقبل)
                 // الالتزام التام بفهرس التفرد: مصدر واحد لكل استعارة نشطة
                 int deliveredCount = 0;
-                foreach (var src in inUseSources)
+                foreach (var src in availableSourcesForActiveBorrow)
                 {
                     if (deliveredCount >= 15) break;
                     if (usedSourceIdsForActiveBorrow.Contains(src.Id)) continue;
 
                     usedSourceIdsForActiveBorrow.Add(src.Id);
+                    src.Status = "InUse"; // تحديث حالة المصدر ليكون قيد الاستخدام
                     var reqDate = DateTime.Now.AddDays(-random.Next(1, 10));
                     var appDate = reqDate.AddHours(random.Next(1, 12));
                     var delDate = appDate.AddHours(random.Next(1, 6));
@@ -448,12 +454,13 @@ public static class TestDataGeneratorService
 
                 // ج) 10 طلبات متأخرة صراحةً (Status = "Overdue" — ExpectedReturnDate في الماضي)
                 int overdueCount = 0;
-                foreach (var src in inUseSources)
+                foreach (var src in availableSourcesForActiveBorrow)
                 {
                     if (overdueCount >= 10) break;
                     if (usedSourceIdsForActiveBorrow.Contains(src.Id)) continue;
 
                     usedSourceIdsForActiveBorrow.Add(src.Id);
+                    src.Status = "InUse"; // تحديث حالة المصدر ليكون قيد الاستخدام ومتأخراً
                     var reqDate = DateTime.Now.AddDays(-random.Next(25, 70));
                     var appDate = reqDate.AddHours(random.Next(1, 12));
                     var delDate = appDate.AddHours(random.Next(1, 6));
