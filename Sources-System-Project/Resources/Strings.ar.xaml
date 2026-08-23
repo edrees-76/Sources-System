@@ -308,6 +308,8 @@
     <system:String x:Key="BtnShowAllIsotopes">عرض جميع النظائر ←</system:String>
     <system:String x:Key="BtnShowAllLocations">عرض جميع المواقع ←</system:String>
     <system:String x:Key="LabelOthers">أخرى</system:String>
+    <system:String x:Key="DashboardWelcomeTitle">لوحة المتابعة الشاملة</system:String>
+    <system:String x:Key="DashboardWelcomeSubtitle">المراقبة الإشعاعية والتشغيلية المباشرة للمصادر</system:String>
     <system:String x:Key="DashboardSearchHint">بحث بالكود أو الرقم المسلسل...</system:String>
     <system:String x:Key="FilterIsotope">النظير</system:String>
     <system:String x:Key="FilterLocation">الموقع</system:String>
@@ -318,6 +320,8 @@
     <system:String x:Key="LabelPerPage">صف/صفحة</system:String>
     <system:String x:Key="BtnPreviousPage">السابق</system:String>
     <system:String x:Key="BtnNextPage">التالي</system:String>
+    <system:String x:Key="BtnFirstPage">أول صفحة</system:String>
+    <system:String x:Key="BtnLastPage">آخر صفحة</system:String>
     <system:String x:Key="SidePanelClose">إغلاق</system:String>
     <system:String x:Key="CategoryLegendTitle">دليل الفئات الرقابية</system:String>
     <system:String x:Key="Category1Label">فئة 1 — خطر عالي جداً</system:String>

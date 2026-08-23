@@ -624,6 +624,13 @@
                                        DockPanel.Dock="Right"/>
                             <!-- أزرار التنقل -->
                             <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                                <Button Command="{Binding FirstPageCommand}"
+                                        Style="{StaticResource MaterialDesignToolButton}"
+                                        Height="32" Width="32" Padding="4"
+                                        ToolTip="{DynamicResource BtnFirstPage}">
+                                    <materialDesign:PackIcon Kind="ChevronDoubleRight" Width="20" Height="20"
+                                                             Foreground="{DynamicResource GoldBrush}"/>
+                                </Button>
                                 <Button Command="{Binding PreviousPageCommand}"
                                         Style="{StaticResource MaterialDesignToolButton}"
                                         Height="32" Width="32" Padding="4"
@@ -649,6 +656,13 @@
                                         Height="32" Width="32" Padding="4"
                                         ToolTip="{DynamicResource BtnNext}">
                                     <materialDesign:PackIcon Kind="ChevronLeft" Width="20" Height="20"
+                                                             Foreground="{DynamicResource GoldBrush}"/>
+                                </Button>
+                                <Button Command="{Binding LastPageCommand}"
+                                        Style="{StaticResource MaterialDesignToolButton}"
+                                        Height="32" Width="32" Padding="4"
+                                        ToolTip="{DynamicResource BtnLastPage}">
+                                    <materialDesign:PackIcon Kind="ChevronDoubleLeft" Width="20" Height="20"
                                                              Foreground="{DynamicResource GoldBrush}"/>
                                 </Button>
                             </StackPanel>
@@ -770,7 +784,10 @@
                         <DockPanel>
                             <TextBlock Text="{Binding DeletedPageStatusText}" Foreground="{DynamicResource TextSecondary}" FontSize="12" FontFamily="Segoe UI" VerticalAlignment="Center" DockPanel.Dock="Right"/>
                             <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                                <Button Command="{Binding PreviousDeletedPageCommand}" Style="{StaticResource MaterialDesignToolButton}" Height="32" Width="32" Padding="4">
+                                <Button Command="{Binding FirstDeletedPageCommand}" Style="{StaticResource MaterialDesignToolButton}" Height="32" Width="32" Padding="4" ToolTip="{DynamicResource BtnFirstPage}">
+                                    <materialDesign:PackIcon Kind="ChevronDoubleRight" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}"/>
+                                </Button>
+                                <Button Command="{Binding PreviousDeletedPageCommand}" Style="{StaticResource MaterialDesignToolButton}" Height="32" Width="32" Padding="4" ToolTip="{DynamicResource BtnPrevious}">
                                     <materialDesign:PackIcon Kind="ChevronRight" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}"/>
                                 </Button>
                                 <Border Background="{DynamicResource InputBackground}" CornerRadius="6" Padding="12,4" Margin="4,0">
@@ -783,8 +800,11 @@
                                         </TextBlock.Text>
                                     </TextBlock>
                                 </Border>
-                                <Button Command="{Binding NextDeletedPageCommand}" Style="{StaticResource MaterialDesignToolButton}" Height="32" Width="32" Padding="4">
+                                <Button Command="{Binding NextDeletedPageCommand}" Style="{StaticResource MaterialDesignToolButton}" Height="32" Width="32" Padding="4" ToolTip="{DynamicResource BtnNext}">
                                     <materialDesign:PackIcon Kind="ChevronLeft" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}"/>
+                                </Button>
+                                <Button Command="{Binding LastDeletedPageCommand}" Style="{StaticResource MaterialDesignToolButton}" Height="32" Width="32" Padding="4" ToolTip="{DynamicResource BtnLastPage}">
+                                    <materialDesign:PackIcon Kind="ChevronDoubleLeft" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}"/>
                                 </Button>
                             </StackPanel>
                         </DockPanel>

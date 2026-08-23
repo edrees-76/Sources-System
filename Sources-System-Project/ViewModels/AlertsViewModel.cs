@@ -295,6 +295,10 @@ public partial class AlertsViewModel : ObservableObject, IDisposable
         Alerts = new ObservableCollection<AlertRow>(list);
         PagedAlerts = new ObservableCollection<AlertRow>(pagedList);
         PageInfo = $"{CurrentPage} / {TotalPages}";
+        FirstPageCommand.NotifyCanExecuteChanged();
+        PreviousPageCommand.NotifyCanExecuteChanged();
+        NextPageCommand.NotifyCanExecuteChanged();
+        LastPageCommand.NotifyCanExecuteChanged();
     }
 
     [RelayCommand]
@@ -334,7 +338,30 @@ public partial class AlertsViewModel : ObservableObject, IDisposable
         ApplyFiltersAndPagination();
     }
 
-    [RelayCommand]
+    private bool CanGoToPreviousPage => CurrentPage > 1;
+    private bool CanGoToNextPage => CurrentPage < TotalPages;
+
+    [RelayCommand(CanExecute = nameof(CanGoToPreviousPage))]
+    public void FirstPage()
+    {
+        if (CurrentPage > 1)
+        {
+            CurrentPage = 1;
+            ApplyFiltersAndPagination();
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanGoToPreviousPage))]
+    public void PreviousPage()
+    {
+        if (CurrentPage > 1)
+        {
+            CurrentPage--;
+            ApplyFiltersAndPagination();
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanGoToNextPage))]
     public void NextPage()
     {
         if (CurrentPage < TotalPages)
@@ -344,12 +371,12 @@ public partial class AlertsViewModel : ObservableObject, IDisposable
         }
     }
 
-    [RelayCommand]
-    public void PreviousPage()
+    [RelayCommand(CanExecute = nameof(CanGoToNextPage))]
+    public void LastPage()
     {
-        if (CurrentPage > 1)
+        if (CurrentPage < TotalPages)
         {
-            CurrentPage--;
+            CurrentPage = TotalPages;
             ApplyFiltersAndPagination();
         }
     }

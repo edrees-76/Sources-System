@@ -364,13 +364,21 @@
 
                 <!-- أزرار التنقل -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Command="{Binding FirstPageCommand}" Style="{StaticResource MaterialDesignToolButton}"
+                            Height="32" Width="32" Padding="2" Margin="0,0,4,0" ToolTip="{DynamicResource BtnFirstPage}">
+                        <materialDesign:PackIcon Kind="ChevronDoubleRight" Width="20" Height="20" Foreground="{DynamicResource TextPrimary}"/>
+                    </Button>
                     <Button Command="{Binding PreviousPageCommand}" Style="{StaticResource MaterialDesignToolButton}"
                             Height="32" Width="32" Padding="2" Margin="0,0,4,0" ToolTip="{DynamicResource BtnPrevious}">
                         <materialDesign:PackIcon Kind="ChevronRight" Width="20" Height="20" Foreground="{DynamicResource TextPrimary}"/>
                     </Button>
                     <Button Command="{Binding NextPageCommand}" Style="{StaticResource MaterialDesignToolButton}"
-                            Height="32" Width="32" Padding="2" ToolTip="{DynamicResource BtnNext}">
+                            Height="32" Width="32" Padding="2" Margin="0,0,4,0" ToolTip="{DynamicResource BtnNext}">
                         <materialDesign:PackIcon Kind="ChevronLeft" Width="20" Height="20" Foreground="{DynamicResource TextPrimary}"/>
+                    </Button>
+                    <Button Command="{Binding LastPageCommand}" Style="{StaticResource MaterialDesignToolButton}"
+                            Height="32" Width="32" Padding="2" ToolTip="{DynamicResource BtnLastPage}">
+                        <materialDesign:PackIcon Kind="ChevronDoubleLeft" Width="20" Height="20" Foreground="{DynamicResource TextPrimary}"/>
                     </Button>
                 </StackPanel>
             </Grid>

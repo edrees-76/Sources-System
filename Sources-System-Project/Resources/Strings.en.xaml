@@ -311,6 +311,8 @@
     <system:String x:Key="BtnShowAllIsotopes">Show All Isotopes ←</system:String>
     <system:String x:Key="BtnShowAllLocations">Show All Locations ←</system:String>
     <system:String x:Key="LabelOthers">Others</system:String>
+    <system:String x:Key="DashboardWelcomeTitle">Overview Dashboard</system:String>
+    <system:String x:Key="DashboardWelcomeSubtitle">Real-time radiological and operational monitoring</system:String>
     <system:String x:Key="DashboardSearchHint">Search by code or serial number...</system:String>
     <system:String x:Key="FilterIsotope">Isotope</system:String>
     <system:String x:Key="FilterLocation">Location</system:String>
@@ -321,6 +323,8 @@
     <system:String x:Key="LabelPerPage">rows/page</system:String>
     <system:String x:Key="BtnPreviousPage">Previous</system:String>
     <system:String x:Key="BtnNextPage">Next</system:String>
+    <system:String x:Key="BtnFirstPage">First Page</system:String>
+    <system:String x:Key="BtnLastPage">Last Page</system:String>
     <system:String x:Key="SidePanelClose">Close</system:String>
     <system:String x:Key="CategoryLegendTitle">Regulatory Category Legend</system:String>
     <system:String x:Key="Category1Label">Cat. 1 — Very High Risk</system:String>

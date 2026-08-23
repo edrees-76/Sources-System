@@ -118,7 +118,7 @@ public class ActivityBinInfo
     public double UpperBound { get; set; }
 }
 
-public partial class DashboardViewModel : ObservableObject
+public partial class DashboardViewModel : ObservableObject, IDisposable
 {
     private static readonly string[] ChartPalette = new[]
     {
@@ -139,6 +139,11 @@ public partial class DashboardViewModel : ObservableObject
     private readonly IBorrowService _borrowService;
     private readonly ISystemSettingsService _settingsService;
     private readonly IAlertService? _alertService;
+
+    // ─── ساعة وتاريخ الداشبورد المباشرة ───
+    [ObservableProperty] private string _currentDateDisplay = string.Empty;
+    [ObservableProperty] private string _currentTimeDisplay = string.Empty;
+    private System.Windows.Threading.DispatcherTimer? _clockTimer;
 
     // ─── بطاقة 1: عدد المصادر ───
     [ObservableProperty] private int _totalSources;
@@ -406,6 +411,7 @@ public partial class DashboardViewModel : ObservableObject
 
         InitDrawMarginFrames();
         InitFilterOptions();
+        StartClock();
         _ = LoadDataAsync();
     }
 
@@ -1205,7 +1211,7 @@ public partial class DashboardViewModel : ObservableObject
     // البند 3: بحث + فلاتر + Pagination
     // ═══════════════════════════════════════════════════════════════════════
 
-    private void ApplyFiltersAndPagination()
+    public void ApplyFiltersAndPagination()
     {
         var filtered = _allSourceRows.AsEnumerable();
 
@@ -1261,9 +1267,36 @@ public partial class DashboardViewModel : ObservableObject
 
         DashboardSources = new ObservableCollection<DashboardSourceRow>(pageItems);
         PageInfo = $"{CurrentPage} / {TotalPages}";
+        FirstPageCommand.NotifyCanExecuteChanged();
+        PreviousPageCommand.NotifyCanExecuteChanged();
+        NextPageCommand.NotifyCanExecuteChanged();
+        LastPageCommand.NotifyCanExecuteChanged();
     }
 
-    [RelayCommand]
+    private bool CanGoToPreviousPage => CurrentPage > 1;
+    private bool CanGoToNextPage => CurrentPage < TotalPages;
+
+    [RelayCommand(CanExecute = nameof(CanGoToPreviousPage))]
+    public void FirstPage()
+    {
+        if (CurrentPage > 1)
+        {
+            CurrentPage = 1;
+            ApplyFiltersAndPagination();
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanGoToPreviousPage))]
+    public void PreviousPage()
+    {
+        if (CurrentPage > 1)
+        {
+            CurrentPage--;
+            ApplyFiltersAndPagination();
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanGoToNextPage))]
     public void NextPage()
     {
         if (CurrentPage < TotalPages)
@@ -1273,12 +1306,12 @@ public partial class DashboardViewModel : ObservableObject
         }
     }
 
-    [RelayCommand]
-    public void PreviousPage()
+    [RelayCommand(CanExecute = nameof(CanGoToNextPage))]
+    public void LastPage()
     {
-        if (CurrentPage > 1)
+        if (CurrentPage < TotalPages)
         {
-            CurrentPage--;
+            CurrentPage = TotalPages;
             ApplyFiltersAndPagination();
         }
     }
@@ -1303,6 +1336,50 @@ public partial class DashboardViewModel : ObservableObject
             CurrentPage = 1;
             ApplyFiltersAndPagination();
         }
+    }
+
+    // ─── إدارة الساعة المباشرة وتنظيف الموارد ───
+    public void StartClock()
+    {
+        UpdateClock();
+        if (_clockTimer == null)
+        {
+            _clockTimer = new System.Windows.Threading.DispatcherTimer(System.Windows.Threading.DispatcherPriority.Background)
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
+            _clockTimer.Tick += (s, e) => UpdateClock();
+            _clockTimer.Start();
+        }
+    }
+
+    public void UpdateClock()
+    {
+        var now = DateTime.Now;
+        var culture = System.Threading.Thread.CurrentThread.CurrentUICulture;
+        bool isArabic = culture.TwoLetterISOLanguageName.Equals("ar", StringComparison.OrdinalIgnoreCase);
+
+        if (isArabic)
+        {
+            CurrentDateDisplay = now.ToString("dddd، d MMMM yyyy", culture);
+            CurrentTimeDisplay = now.ToString("hh:mm:ss tt", culture)
+                                    .Replace("AM", "ص")
+                                    .Replace("PM", "م");
+        }
+        else
+        {
+            CurrentDateDisplay = now.ToString("dddd, MMMM d, yyyy", culture);
+            CurrentTimeDisplay = now.ToString("hh:mm:ss tt", culture);
+        }
+    }
+
+    public void Dispose()
+    {
+        _clockTimer?.Stop();
+        _clockTimer = null;
+        _searchDebounceTimer?.Stop();
+        _searchDebounceTimer?.Dispose();
+        _searchDebounceTimer = null;
     }
 
     // ───────────── منحنى التحلل الزمني — وضع المقارنة (أ) ووضع المصدر المفرد (ب) ─────────────

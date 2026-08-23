@@ -267,7 +267,30 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         }
     }
 
-    [RelayCommand]
+    private bool CanGoToPreviousDeletedPage => DeletedCurrentPage > 1;
+    private bool CanGoToNextDeletedPage => DeletedCurrentPage < DeletedTotalPages;
+
+    [RelayCommand(CanExecute = nameof(CanGoToPreviousDeletedPage))]
+    private void FirstDeletedPage()
+    {
+        if (DeletedCurrentPage > 1)
+        {
+            DeletedCurrentPage = 1;
+            UpdatePagedDeletedSources();
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanGoToPreviousDeletedPage))]
+    private void PreviousDeletedPage()
+    {
+        if (DeletedCurrentPage > 1)
+        {
+            DeletedCurrentPage--;
+            UpdatePagedDeletedSources();
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanGoToNextDeletedPage))]
     private void NextDeletedPage()
     {
         if (DeletedCurrentPage < DeletedTotalPages)
@@ -277,12 +300,12 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         }
     }
 
-    [RelayCommand]
-    private void PreviousDeletedPage()
+    [RelayCommand(CanExecute = nameof(CanGoToNextDeletedPage))]
+    private void LastDeletedPage()
     {
-        if (DeletedCurrentPage > 1)
+        if (DeletedCurrentPage < DeletedTotalPages)
         {
-            DeletedCurrentPage--;
+            DeletedCurrentPage = DeletedTotalPages;
             UpdatePagedDeletedSources();
         }
     }
@@ -306,6 +329,10 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
             }).ToList();
         PagedDeletedSources = new ObservableCollection<DeletedSourceRow>(items);
         DeletedPageStatusText = TranslationHelper.GetFormat("PageStatusFormat", DeletedCurrentPage, DeletedTotalPages, DeletedSources.Count);
+        FirstDeletedPageCommand.NotifyCanExecuteChanged();
+        PreviousDeletedPageCommand.NotifyCanExecuteChanged();
+        NextDeletedPageCommand.NotifyCanExecuteChanged();
+        LastDeletedPageCommand.NotifyCanExecuteChanged();
     }
 
     [RelayCommand]
@@ -766,7 +793,30 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     }
 
     // ─── أوامر التنقل بين الصفحات ───
-    [RelayCommand]
+    private bool CanGoToPreviousPage => CurrentPage > 1;
+    private bool CanGoToNextPage => CurrentPage < TotalPages;
+
+    [RelayCommand(CanExecute = nameof(CanGoToPreviousPage))]
+    private void FirstPage()
+    {
+        if (CurrentPage > 1)
+        {
+            CurrentPage = 1;
+            UpdatePagedSources();
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanGoToPreviousPage))]
+    private void PreviousPage()
+    {
+        if (CurrentPage > 1)
+        {
+            CurrentPage--;
+            UpdatePagedSources();
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanGoToNextPage))]
     private void NextPage()
     {
         if (CurrentPage < TotalPages)
@@ -776,12 +826,12 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         }
     }
 
-    [RelayCommand]
-    private void PreviousPage()
+    [RelayCommand(CanExecute = nameof(CanGoToNextPage))]
+    private void LastPage()
     {
-        if (CurrentPage > 1)
+        if (CurrentPage < TotalPages)
         {
-            CurrentPage--;
+            CurrentPage = TotalPages;
             UpdatePagedSources();
         }
     }
@@ -799,6 +849,10 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         var items = Sources.Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
         PagedSources = new ObservableCollection<Source>(items);
         PageStatusText = TranslationHelper.GetFormat("PageStatusFormat", CurrentPage, TotalPages, Sources.Count);
+        FirstPageCommand.NotifyCanExecuteChanged();
+        PreviousPageCommand.NotifyCanExecuteChanged();
+        NextPageCommand.NotifyCanExecuteChanged();
+        LastPageCommand.NotifyCanExecuteChanged();
     }
 
 

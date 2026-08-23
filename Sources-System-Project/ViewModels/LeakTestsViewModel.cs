@@ -123,6 +123,10 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
         OnPropertyChanged(nameof(HasRecords));
 
         PageStatusText = $"عرض {paged.Count} من أصل {TotalRecordsCount} سجل (الصفحة {CurrentPage} من {TotalPages})";
+        FirstPageCommand.NotifyCanExecuteChanged();
+        PreviousPageCommand.NotifyCanExecuteChanged();
+        NextPageCommand.NotifyCanExecuteChanged();
+        LastPageCommand.NotifyCanExecuteChanged();
     }
 
     partial void OnResultFilterChanged(string value) => _ = LoadDataAsync();
@@ -154,7 +158,30 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
         await LoadDataAsync();
     }
 
-    [RelayCommand]
+    private bool CanGoToPreviousPage => CurrentPage > 1;
+    private bool CanGoToNextPage => CurrentPage < TotalPages;
+
+    [RelayCommand(CanExecute = nameof(CanGoToPreviousPage))]
+    private void FirstPage()
+    {
+        if (CurrentPage > 1)
+        {
+            CurrentPage = 1;
+            UpdatePagedView();
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanGoToPreviousPage))]
+    private void PreviousPage()
+    {
+        if (CurrentPage > 1)
+        {
+            CurrentPage--;
+            UpdatePagedView();
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanGoToNextPage))]
     private void NextPage()
     {
         if (CurrentPage < TotalPages)
@@ -164,12 +191,12 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
         }
     }
 
-    [RelayCommand]
-    private void PreviousPage()
+    [RelayCommand(CanExecute = nameof(CanGoToNextPage))]
+    private void LastPage()
     {
-        if (CurrentPage > 1)
+        if (CurrentPage < TotalPages)
         {
-            CurrentPage--;
+            CurrentPage = TotalPages;
             UpdatePagedView();
         }
     }
