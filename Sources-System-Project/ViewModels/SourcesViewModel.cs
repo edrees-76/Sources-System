@@ -145,6 +145,45 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         _locationService = locationService;
         _reportingService = reportingService;
         _ = LoadDataAsync();
+
+        WeakReferenceMessenger.Default.Register<NavigateToSearchResultMessage>(this, (r, m) =>
+        {
+            if (m.Category == SearchCategory.Sources)
+            {
+                SelectSourceById(m.EntityId);
+            }
+        });
+    }
+
+    public void SelectSourceById(Guid sourceId)
+    {
+        IsDeletedSourcesView = false;
+        SearchText = string.Empty;
+        StatusFilter = "All";
+
+        var source = Sources.FirstOrDefault(s => s.Id == sourceId);
+        if (source == null)
+        {
+            var all = _sourceService.GetAllSources();
+            source = all.FirstOrDefault(s => s.Id == sourceId);
+            if (source != null && !Sources.Any(s => s.Id == sourceId))
+            {
+                Sources.Insert(0, source);
+            }
+        }
+
+        if (source != null)
+        {
+            int index = Sources.IndexOf(source);
+            if (index >= 0)
+            {
+                CurrentPage = (index / PageSize) + 1;
+                UpdatePagination();
+            }
+
+            SelectedSource = source;
+            ViewSourceDetails(source);
+        }
     }
 
     [RelayCommand]

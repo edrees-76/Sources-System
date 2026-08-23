@@ -1,8 +1,10 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Sources.Models;
 using Sources.Services;
 using Sources.Helpers;
+using Sources.Messages;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -1899,7 +1901,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         DialogHelper.ShowInfo(details, TranslationHelper.GetString("TitleSourceDetails"), source.ImagePath);
     }
 
-    // ─── منطق البحث الموحّد (Global Search Logic) ───
+    // ─── منطق البحث الموحّد (Global Search Logic - Phase B) ───
     partial void OnGlobalSearchQueryChanged(string value)
     {
         _globalSearchCts?.Cancel();
@@ -1936,6 +1938,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
                     TotalGlobalSearchResultsCount = groups.Sum(g => g.Items.Count);
                     IsGlobalSearchResultsOpen = groups.Count > 0;
                     SelectedGlobalSearchResultItem = groups.FirstOrDefault()?.Items.FirstOrDefault();
+                    UpdateSelectionFlags();
                     IsGlobalSearching = false;
                 });
             }
@@ -1946,6 +1949,22 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
                 RunOnUI(() => IsGlobalSearching = false);
             }
         }, token);
+    }
+
+    partial void OnSelectedGlobalSearchResultItemChanged(GlobalSearchResultItem? value)
+    {
+        UpdateSelectionFlags();
+    }
+
+    private void UpdateSelectionFlags()
+    {
+        foreach (var group in GlobalSearchResultGroups)
+        {
+            foreach (var itm in group.Items)
+            {
+                itm.IsSelected = (itm == SelectedGlobalSearchResultItem);
+            }
+        }
     }
 
     [RelayCommand]
@@ -1972,6 +1991,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
             TotalGlobalSearchResultsCount = groups.Sum(g => g.Items.Count);
             IsGlobalSearchResultsOpen = groups.Count > 0;
             SelectedGlobalSearchResultItem = groups.FirstOrDefault()?.Items.FirstOrDefault();
+            UpdateSelectionFlags();
         }
         catch (Exception ex)
         {
@@ -1981,6 +2001,43 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         {
             IsGlobalSearching = false;
         }
+    }
+
+    [RelayCommand]
+    public async Task ConfirmGlobalSearchResultAsync()
+    {
+        if (IsGlobalSearchResultsOpen && SelectedGlobalSearchResultItem != null)
+        {
+            SelectGlobalSearchResult(SelectedGlobalSearchResultItem);
+        }
+        else
+        {
+            await ExecuteGlobalSearchNowAsync();
+        }
+    }
+
+    [RelayCommand]
+    public void SelectNextSearchResult()
+    {
+        if (!IsGlobalSearchResultsOpen || GlobalSearchResultGroups.Count == 0) return;
+        var allItems = GlobalSearchResultGroups.SelectMany(g => g.Items).ToList();
+        if (allItems.Count == 0) return;
+
+        int currentIndex = SelectedGlobalSearchResultItem != null ? allItems.IndexOf(SelectedGlobalSearchResultItem) : -1;
+        int nextIndex = (currentIndex + 1) % allItems.Count;
+        SelectedGlobalSearchResultItem = allItems[nextIndex];
+    }
+
+    [RelayCommand]
+    public void SelectPreviousSearchResult()
+    {
+        if (!IsGlobalSearchResultsOpen || GlobalSearchResultGroups.Count == 0) return;
+        var allItems = GlobalSearchResultGroups.SelectMany(g => g.Items).ToList();
+        if (allItems.Count == 0) return;
+
+        int currentIndex = SelectedGlobalSearchResultItem != null ? allItems.IndexOf(SelectedGlobalSearchResultItem) : 0;
+        int prevIndex = (currentIndex - 1 + allItems.Count) % allItems.Count;
+        SelectedGlobalSearchResultItem = allItems[prevIndex];
     }
 
     [RelayCommand]
@@ -2004,6 +2061,22 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     [RelayCommand]
     public void SelectGlobalSearchResult(GlobalSearchResultItem? item)
     {
-        SelectedGlobalSearchResultItem = item;
+        if (item == null) return;
+
+        // 1. إغلاق القائمة وتفريغ البحث
+        IsGlobalSearchResultsOpen = false;
+        GlobalSearchQuery = string.Empty;
+        GlobalSearchResultGroups.Clear();
+        TotalGlobalSearchResultsCount = 0;
+        SelectedGlobalSearchResultItem = null;
+
+        // 2. الانتقال إلى الشاشة المستهدفة عبر MainViewModel
+        if (App.ServiceProvider?.GetService(typeof(MainViewModel)) is MainViewModel main)
+        {
+            main.NavigateTo(item.TargetView);
+        }
+
+        // 3. إرسال رسالة لتحديد/فتح تفاصيل العنصر فوراً داخل الشاشة المستهدفة
+        WeakReferenceMessenger.Default.Send(new NavigateToSearchResultMessage(item.Category, item.Id));
     }
 }

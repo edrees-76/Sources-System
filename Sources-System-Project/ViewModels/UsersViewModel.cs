@@ -1,9 +1,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Sources.Models;
 using Sources.Services;
 using Sources.Interfaces;
 using Sources.Helpers;
+using Sources.Messages;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -120,6 +122,34 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
         _userService = userService;
         _reportingService = reportingService;
         LoadData();
+
+        CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Register<Sources.Messages.NavigateToSearchResultMessage>(this, (r, m) =>
+        {
+            if (m.Category == SearchCategory.Users)
+            {
+                SelectUserById(m.EntityId);
+            }
+        });
+    }
+
+    public void SelectUserById(Guid userId)
+    {
+        SelectedTab = "UsersManagement";
+        SearchText = string.Empty;
+        SelectedStatusFilter = "All";
+        SelectedRoleFilter = null;
+
+        var user = Users.FirstOrDefault(u => u.Id == userId);
+        if (user == null)
+        {
+            LoadData();
+            user = Users.FirstOrDefault(u => u.Id == userId);
+        }
+
+        if (user != null)
+        {
+            Selected = user;
+        }
     }
 
     [RelayCommand]
@@ -225,7 +255,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
     [RelayCommand]
     private void LoadAuditLogs()
     {
-        var logs = _userService.GetAuditLogs(SelectedUserFilter?.Id, FilterStartDate, FilterEndDate);
+        var logs = _userService.GetAuditLogs(SelectedUserFilter?.Id, FilterStartDate, FilterEndDate) ?? new List<AuditLog>();
 
         if (SelectedActionFilter != "All" && !string.IsNullOrEmpty(SelectedActionFilter))
         {

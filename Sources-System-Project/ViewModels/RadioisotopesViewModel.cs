@@ -1,8 +1,10 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Sources.Models;
 using Sources.Services;
 using Sources.Interfaces;
+using Sources.Messages;
 using System;
 using System.Collections.ObjectModel;
 
@@ -66,6 +68,30 @@ public partial class RadioisotopesViewModel : ObservableObject, IEditableViewMod
     {
         _service = service;
         LoadData();
+
+        CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Register<Sources.Messages.NavigateToSearchResultMessage>(this, (r, m) =>
+        {
+            if (m.Category == SearchCategory.Radioisotopes)
+            {
+                SelectRadioisotopeById(m.EntityId);
+            }
+        });
+    }
+
+    public void SelectRadioisotopeById(Guid isotopeId)
+    {
+        SearchText = string.Empty;
+        var isotope = Radioisotopes.FirstOrDefault(r => r.Id == isotopeId);
+        if (isotope == null)
+        {
+            LoadData();
+            isotope = Radioisotopes.FirstOrDefault(r => r.Id == isotopeId);
+        }
+
+        if (isotope != null)
+        {
+            Selected = isotope;
+        }
     }
 
 

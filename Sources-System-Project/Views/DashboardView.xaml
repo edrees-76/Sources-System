@@ -88,8 +88,10 @@
                                          materialDesign:HintAssist.IsFloating="False"
                                          materialDesign:TextFieldAssist.DecorationVisibility="Hidden">
                                     <TextBox.InputBindings>
-                                        <KeyBinding Key="Enter" Command="{Binding ExecuteGlobalSearchNowCommand}"/>
+                                        <KeyBinding Key="Enter" Command="{Binding ConfirmGlobalSearchResultCommand}"/>
                                         <KeyBinding Key="Escape" Command="{Binding ClearGlobalSearchCommand}"/>
+                                        <KeyBinding Key="Down" Command="{Binding SelectNextSearchResultCommand}"/>
+                                        <KeyBinding Key="Up" Command="{Binding SelectPreviousSearchResultCommand}"/>
                                     </TextBox.InputBindings>
                                 </TextBox>
 
@@ -200,12 +202,16 @@
                                                                 <DataTemplate>
                                                                     <Border CornerRadius="8" Padding="10,8" Margin="0,1"
                                                                             Cursor="Hand"
-                                                                            Background="Transparent"
-                                                                            BorderThickness="1"
-                                                                            BorderBrush="Transparent">
+                                                                            BorderThickness="1">
                                                                         <Border.Style>
                                                                             <Style TargetType="Border">
+                                                                                <Setter Property="Background" Value="Transparent"/>
+                                                                                <Setter Property="BorderBrush" Value="Transparent"/>
                                                                                 <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                                        <Setter Property="Background" Value="{DynamicResource CardHoverBackground}"/>
+                                                                                        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                                                                    </DataTrigger>
                                                                                     <Trigger Property="IsMouseOver" Value="True">
                                                                                         <Setter Property="Background" Value="{DynamicResource CardHoverBackground}"/>
                                                                                         <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>

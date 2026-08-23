@@ -1,9 +1,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Sources.Models;
 using Sources.Services;
 using Sources.Interfaces;
 using Sources.Helpers;
+using Sources.Messages;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -77,6 +79,30 @@ public partial class LocationsViewModel : ObservableObject, IEditableViewModel
         _service = service;
         _reportingService = reportingService ?? (App.ServiceProvider?.GetService(typeof(IReportingService)) as IReportingService);
         LoadData();
+
+        CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Register<Sources.Messages.NavigateToSearchResultMessage>(this, (r, m) =>
+        {
+            if (m.Category == SearchCategory.Locations)
+            {
+                SelectLocationById(m.EntityId);
+            }
+        });
+    }
+
+    public void SelectLocationById(Guid locationId)
+    {
+        var locRow = Locations.FirstOrDefault(l => l.Id == locationId);
+        if (locRow == null)
+        {
+            LoadData();
+            locRow = Locations.FirstOrDefault(l => l.Id == locationId);
+        }
+
+        if (locRow != null)
+        {
+            Selected = locRow;
+            ViewLocationDetails(locRow);
+        }
     }
 
     [RelayCommand]

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Sources.Models;
 
@@ -11,7 +12,7 @@ public enum SearchCategory
     Radioisotopes
 }
 
-public class GlobalSearchResultItem
+public partial class GlobalSearchResultItem : ObservableObject
 {
     public Guid Id { get; set; }
     public SearchCategory Category { get; set; }
@@ -20,6 +21,8 @@ public class GlobalSearchResultItem
     public string? ExtraInfo { get; set; }
     public string IconKind { get; set; } = "Radioactive";
     public string TargetView { get; set; } = "Sources";
+
+    [ObservableProperty] private bool _isSelected;
 }
 
 public class GlobalSearchResultGroup
