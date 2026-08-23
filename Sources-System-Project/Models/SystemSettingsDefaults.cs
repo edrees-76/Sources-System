@@ -34,6 +34,12 @@ public static class SystemSettingsDefaults
     public const string BackupPathKey = "BackupPath";
     public const string DefaultBackupPath = "";
 
+    public const string LeakTestIntervalMonthsKey = "LeakTestIntervalMonths";
+    public const string DefaultLeakTestIntervalMonths = "6";
+
+    public const string LeakTestWarningDaysThresholdKey = "LeakTestWarningDaysThreshold";
+    public const string DefaultLeakTestWarningDaysThreshold = "30";
+
     /// <summary>
     /// قاموس يجمع كافة الإعدادات بقيمها الافتراضية.
     /// </summary>
@@ -47,6 +53,9 @@ public static class SystemSettingsDefaults
         { FacilityNameKey, DefaultFacilityName },
         { FacilityAddressKey, DefaultFacilityAddress },
         { TechnicalDirectorKey, DefaultTechnicalDirector },
-        { BackupPathKey, DefaultBackupPath }
+        { BackupPathKey, DefaultBackupPath },
+        { LeakTestIntervalMonthsKey, DefaultLeakTestIntervalMonths },
+        { LeakTestWarningDaysThresholdKey, DefaultLeakTestWarningDaysThreshold }
     };
 }
+

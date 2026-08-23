@@ -1074,5 +1074,153 @@ namespace Sources.Services
                 }).GeneratePdf(filePath);
             });
         }
+
+        public async Task GenerateLeakTestsReportExcelAsync(IEnumerable<LeakTestRecord> records, string filePath, string reportTitle)
+        {
+            await Task.Run(() =>
+            {
+                using var workbook = new XLWorkbook();
+                var sheetName = SanitizeSheetName(reportTitle, "اختبارات التسرب");
+                var ws = workbook.Worksheets.Add(sheetName);
+                ws.RightToLeft = true;
+
+                // Title
+                ws.Cell(1, 1).Value = "منظومة مصادر — " + (string.IsNullOrWhiteSpace(reportTitle) ? "تقرير اختبارات التسرب الدوري" : reportTitle);
+                ws.Range(1, 1, 1, 10).Merge().Style.Font.SetBold().Font.SetFontSize(14).Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+
+                ws.Cell(2, 1).Value = $"تاريخ استخراج التقرير: {DateTime.Now:yyyy/MM/dd HH:mm}";
+                ws.Range(2, 1, 2, 10).Merge().Style.Font.SetFontSize(10).Font.SetFontColor(XLColor.DarkGray).Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+
+                // Table Headers
+                string[] headers = { "#", "كود المصدر", "النظير المشع", "تاريخ الفحص", "الاستحقاق القادم", "النتيجة", "النشاط المقاس (Bq)", "القائم بالفحص / المفتش", "رقم الشهادة", "ملاحظات" };
+                for (int col = 0; col < headers.Length; col++)
+                {
+                    var cell = ws.Cell(4, col + 1);
+                    cell.Value = headers[col];
+                    cell.Style.Font.SetBold().Font.SetFontColor(XLColor.White);
+                    cell.Style.Fill.SetBackgroundColor(XLColor.FromHtml("#1F5A66"));
+                    cell.Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+                }
+
+                int row = 5;
+                int index = 1;
+                foreach (var r in records)
+                {
+                    ws.Cell(row, 1).Value = index++;
+                    ws.Cell(row, 2).Value = r.Source?.SourceCode ?? "-";
+                    ws.Cell(row, 3).Value = r.Source?.DisplayIsotopes ?? "-";
+                    ws.Cell(row, 4).Value = r.TestDate.ToString("yyyy/MM/dd");
+                    ws.Cell(row, 5).Value = r.NextDueDate.ToString("yyyy/MM/dd");
+                    ws.Cell(row, 6).Value = r.ArabicResult;
+                    ws.Cell(row, 7).Value = r.MeasuredActivityBq.HasValue ? r.MeasuredActivityBq.Value.ToString("N2") : "-";
+                    ws.Cell(row, 8).Value = !string.IsNullOrWhiteSpace(r.InspectorName) ? r.InspectorName : (r.PerformedByUser?.FullName ?? "-");
+                    ws.Cell(row, 9).Value = r.CertificateNumber ?? "-";
+                    ws.Cell(row, 10).Value = r.Notes ?? "-";
+
+                    for (int c = 1; c <= 10; c++)
+                    {
+                        ws.Cell(row, c).Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+                        ws.Cell(row, c).Style.Border.SetOutsideBorder(XLBorderStyleValues.Thin).Border.SetOutsideBorderColor(XLColor.LightGray);
+                        if (row % 2 == 0)
+                        {
+                            ws.Cell(row, c).Style.Fill.SetBackgroundColor(XLColor.FromHtml("#F9FAFB"));
+                        }
+                    }
+                    row++;
+                }
+
+                ws.Columns().AdjustToContents();
+                workbook.SaveAs(filePath);
+            });
+        }
+
+        public async Task GenerateLeakTestsReportPdfAsync(IEnumerable<LeakTestRecord> records, string filePath, string reportTitle)
+        {
+            await Task.Run(() =>
+            {
+                var list = records?.ToList() ?? new List<LeakTestRecord>();
+                var noDataText = GetNoDataText();
+                var title = string.IsNullOrWhiteSpace(reportTitle) ? "تقرير اختبارات التسرب الدوري (Leak/Wipe Tests)" : reportTitle;
+
+                Document.Create(container =>
+                {
+                    container.Page(page =>
+                    {
+                        page.Size(PageSizes.A4.Landscape());
+                        page.Margin(1.5f, Unit.Centimetre);
+                        page.PageColor(Colors.White);
+                        page.DefaultTextStyle(x => x.FontFamily("Segoe UI").FontSize(9.5f));
+                        page.ContentFromRightToLeft();
+
+                        page.Header().Element(c => ComposeHeader(c, title));
+
+                        page.Content().PaddingVertical(0.8f, Unit.Centimetre).Column(column =>
+                        {
+                            column.Item().Table(table =>
+                            {
+                                table.ColumnsDefinition(columns =>
+                                {
+                                    columns.RelativeColumn(0.7f);  // #
+                                    columns.RelativeColumn(1.8f);  // Source Code
+                                    columns.RelativeColumn(1.8f);  // Isotope
+                                    columns.RelativeColumn(1.8f);  // Test Date
+                                    columns.RelativeColumn(1.8f);  // Next Due
+                                    columns.RelativeColumn(1.5f);  // Result
+                                    columns.RelativeColumn(2.0f);  // Activity
+                                    columns.RelativeColumn(2.2f);  // Inspector
+                                    columns.RelativeColumn(1.8f);  // Cert Number
+                                    columns.RelativeColumn(2.5f);  // Notes
+                                });
+
+                                table.Header(header =>
+                                {
+                                    header.Cell().Element(HeaderStyle).Text("#");
+                                    header.Cell().Element(HeaderStyle).Text("كود المصدر");
+                                    header.Cell().Element(HeaderStyle).Text("النظير");
+                                    header.Cell().Element(HeaderStyle).Text("تاريخ الفحص");
+                                    header.Cell().Element(HeaderStyle).Text("الاستحقاق القادم");
+                                    header.Cell().Element(HeaderStyle).Text("النتيجة");
+                                    header.Cell().Element(HeaderStyle).Text("النشاط (Bq)");
+                                    header.Cell().Element(HeaderStyle).Text("المفتش / الفاحص");
+                                    header.Cell().Element(HeaderStyle).Text("رقم الشهادة");
+                                    header.Cell().Element(HeaderStyle).Text("ملاحظات");
+
+                                    static IContainer HeaderStyle(IContainer c) => c.Background(Colors.Blue.Medium).PaddingVertical(6).AlignCenter().DefaultTextStyle(x => x.SemiBold().FontColor(Colors.White));
+                                });
+
+                                if (!list.Any())
+                                {
+                                    table.Cell().ColumnSpan(10).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
+                                }
+                                else
+                                {
+                                    int i = 1;
+                                    foreach (var r in list)
+                                    {
+                                        var bg = i % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(i.ToString());
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(r.Source?.SourceCode ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(r.Source?.DisplayIsotopes ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(r.TestDate.ToString("yyyy/MM/dd"));
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(r.NextDueDate.ToString("yyyy/MM/dd"));
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(r.ArabicResult);
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(r.MeasuredActivityBq.HasValue ? r.MeasuredActivityBq.Value.ToString("N2") : "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(!string.IsNullOrWhiteSpace(r.InspectorName) ? r.InspectorName : (r.PerformedByUser?.FullName ?? "-"));
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(r.CertificateNumber ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(r.Notes ?? "-");
+                                        i++;
+                                    }
+                                }
+
+                                static IContainer CellStyle(IContainer c, string bg) => c.Background(bg).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(4).AlignCenter();
+                            });
+                        });
+
+                        page.Footer().Element(ComposeFooter);
+                    });
+                }).GeneratePdf(filePath);
+            });
+        }
     }
 }
+

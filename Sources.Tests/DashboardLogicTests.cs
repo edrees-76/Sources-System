@@ -1,5 +1,15 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Moq;
+using Sources.Interfaces;
+using Sources.Models;
+using Sources.Services;
 using Sources.ViewModels;
+using Xunit;
 
 namespace Sources.Tests;
 
@@ -402,6 +412,63 @@ public class DashboardLogicTests
         // Assert: Y must stay within [6, controlHeight - tooltipHeight - 6]
         Assert.True(y >= 6.0);
         Assert.True(y + tooltipHeight <= controlHeight - 6.0, $"Tooltip Y ({y + tooltipHeight}) clipped on bottom");
+    }
+
+    #endregion
+
+    #region Leak Test Alerts Card Tests
+
+    [Fact]
+    public async Task DashboardViewModel_LeakTestCard_MatchesAlertsViewModelCounts_ForSameDataset()
+    {
+        // Arrange
+        var mockSourceService = new Mock<ISourceService>();
+        var mockIsotopeService = new Mock<IRadioisotopeService>();
+        var mockLocationService = new Mock<ILocationService>();
+        var mockDecayService = new Mock<IDecayCalculationService>();
+        var mockBorrowService = new Mock<IBorrowService>();
+        var mockSettingsService = new Mock<ISystemSettingsService>();
+        var mockAlertService = new Mock<IAlertService>();
+
+        var testAlerts = new List<AlertNotification>
+        {
+            // Leak test alerts
+            new AlertNotification { Id = Guid.NewGuid(), AlertType = "LeakTestDue", Severity = "Warning", IsDismissed = false },
+            new AlertNotification { Id = Guid.NewGuid(), AlertType = "LeakTestDue", Severity = "Warning", IsDismissed = false },
+            new AlertNotification { Id = Guid.NewGuid(), AlertType = "LeakTestOverdue", Severity = "Critical", IsDismissed = false },
+            // Dismissed alerts (should not be counted in active cards)
+            new AlertNotification { Id = Guid.NewGuid(), AlertType = "LeakTestDue", Severity = "Warning", IsDismissed = true }
+        };
+
+        mockAlertService.Setup(s => s.GetAllAlerts(false)).Returns(testAlerts.Where(a => !a.IsDismissed).ToList());
+        mockAlertService.Setup(s => s.GetAllAlerts(true)).Returns(testAlerts);
+        mockSourceService.Setup(s => s.GetAllSources()).Returns(new List<Source>());
+        mockBorrowService.Setup(s => s.GetAll()).Returns(new List<BorrowRequest>());
+
+        // Act
+        var dashboardVm = new DashboardViewModel(
+            mockSourceService.Object,
+            mockIsotopeService.Object,
+            mockLocationService.Object,
+            mockDecayService.Object,
+            mockBorrowService.Object,
+            mockSettingsService.Object,
+            mockAlertService.Object);
+
+        await dashboardVm.LoadDataAsync();
+
+        var alertsVm = new AlertsViewModel(mockAlertService.Object, mockLocationService.Object, mockSourceService.Object);
+        alertsVm.LoadData();
+
+        // Assert
+        // Dashboard leak test card numbers match active LeakTest notifications
+        Assert.Equal(2, dashboardVm.LeakTestWarningCount);
+        Assert.Equal(1, dashboardVm.LeakTestCriticalCount);
+        Assert.True(dashboardVm.HasLeakTestAlerts);
+
+        // Verification against AlertsViewModel counts
+        Assert.Equal(alertsVm.WarningAlertsCount, dashboardVm.LeakTestWarningCount);
+        Assert.Equal(alertsVm.CriticalAlertsCount, dashboardVm.LeakTestCriticalCount);
     }
 
     #endregion

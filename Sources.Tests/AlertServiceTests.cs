@@ -443,4 +443,194 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
     }
 
     #endregion
+
+    #region Periodic Leak Test Alert Tests
+
+    [Fact]
+    public void GenerateAlerts_SealedSourceWithNoLeakTest_GeneratesLeakTestDueWarning()
+    {
+        // Arrange - مصدر مختوم بدون أي سجل اختبار تسرب سابق
+        var source = TestDataBuilder.CreateSource(
+            _isoCs137,
+            _unitBq,
+            _testLocation,
+            sourceCode: "SRC-SEALED-NO-TEST",
+            calibrationDate: DateTime.Now,
+            isSealed: true);
+
+        using (var context = _fixture.CreateContext())
+        {
+            context.Sources.Add(source);
+            context.SaveChanges();
+        }
+
+        // Act
+        var alerts = _alertService.GenerateAlerts();
+
+        // Assert
+        var leakAlert = alerts.FirstOrDefault(a => a.SourceId == source.Id && a.AlertType == "LeakTestDue");
+        Assert.NotNull(leakAlert);
+        Assert.Equal("Warning", leakAlert.Severity);
+        Assert.Contains("لم يتم إجراء أي اختبار تسرب له حتى الآن", leakAlert.Message);
+    }
+
+    [Fact]
+    public void GenerateAlerts_UnsealedSource_DoesNotGenerateLeakTestAlerts()
+    {
+        // Arrange - مصدر غير مختوم (IsSealed = false)
+        var source = TestDataBuilder.CreateSource(
+            _isoCs137,
+            _unitBq,
+            _testLocation,
+            sourceCode: "SRC-UNSEALED-TEST",
+            calibrationDate: DateTime.Now,
+            isSealed: false);
+
+        using (var context = _fixture.CreateContext())
+        {
+            context.Sources.Add(source);
+            context.SaveChanges();
+        }
+
+        // Act
+        var alerts = _alertService.GenerateAlerts();
+
+        // Assert - يجب ألا يُولد أي تنبيه اختبار تسرب للمصدر غير المختوم
+        var leakAlert = alerts.FirstOrDefault(a => a.SourceId == source.Id && (a.AlertType == "LeakTestDue" || a.AlertType == "LeakTestOverdue"));
+        Assert.Null(leakAlert);
+    }
+
+    [Fact]
+    public void GenerateAlerts_SealedSourceWithOverdueLeakTest_GeneratesLeakTestOverdueCritical()
+    {
+        // Arrange - مصدر مختوم مع فحص تسرب متأخر
+        var source = TestDataBuilder.CreateSource(
+            _isoCs137,
+            _unitBq,
+            _testLocation,
+            sourceCode: "SRC-SEALED-OVERDUE",
+            calibrationDate: DateTime.Now,
+            isSealed: true);
+
+        var oldTest = new LeakTestRecord
+        {
+            Id = Guid.NewGuid(),
+            SourceId = source.Id,
+            TestDate = DateTime.Today.AddMonths(-8),
+            NextDueDate = DateTime.Today.AddDays(-15), // Overdue by 15 days
+            Result = "Pass",
+            CreatedAt = DateTime.Now.AddMonths(-8)
+        };
+
+        using (var context = _fixture.CreateContext())
+        {
+            context.Sources.Add(source);
+            context.LeakTestRecords.Add(oldTest);
+            context.SaveChanges();
+        }
+
+        // Act
+        var alerts = _alertService.GenerateAlerts();
+
+        // Assert
+        var leakAlert = alerts.FirstOrDefault(a => a.SourceId == source.Id && a.AlertType == "LeakTestOverdue");
+        Assert.NotNull(leakAlert);
+        Assert.Equal("Critical", leakAlert.Severity);
+        Assert.Contains("متأخر", leakAlert.Message);
+    }
+
+    [Fact]
+    public void GenerateAlerts_SealedSourceWithUpcomingLeakTestWithinThreshold_GeneratesLeakTestDueWarning()
+    {
+        // Arrange - فحص يستحق خلال 10 أيام (ضمن مهلة 30 يوم)
+        var source = TestDataBuilder.CreateSource(
+            _isoCs137,
+            _unitBq,
+            _testLocation,
+            sourceCode: "SRC-SEALED-DUE-SOON",
+            calibrationDate: DateTime.Now,
+            isSealed: true);
+
+        var testRecord = new LeakTestRecord
+        {
+            Id = Guid.NewGuid(),
+            SourceId = source.Id,
+            TestDate = DateTime.Today.AddMonths(-5).AddDays(-20),
+            NextDueDate = DateTime.Today.AddDays(10), // Due in 10 days
+            Result = "Pass",
+            CreatedAt = DateTime.Now.AddMonths(-5)
+        };
+
+        using (var context = _fixture.CreateContext())
+        {
+            context.Sources.Add(source);
+            context.LeakTestRecords.Add(testRecord);
+            context.SaveChanges();
+        }
+
+        // Act
+        var alerts = _alertService.GenerateAlerts();
+
+        // Assert
+        var leakAlert = alerts.FirstOrDefault(a => a.SourceId == source.Id && a.AlertType == "LeakTestDue");
+        Assert.NotNull(leakAlert);
+        Assert.Equal("Warning", leakAlert.Severity);
+        Assert.Contains("يستحق اختبار التسرب خلال", leakAlert.Message);
+    }
+
+    [Fact]
+    public void GenerateAlerts_CleansLeakTestAlert_WhenNewValidTestRecorded()
+    {
+        // Arrange
+        // 1. مصدر مختوم بدون فحص يولد تنبيهاً
+        var source = TestDataBuilder.CreateSource(
+            _isoCs137,
+            _unitBq,
+            _testLocation,
+            sourceCode: "SRC-CLEAN-LEAK-ALERT",
+            calibrationDate: DateTime.Now,
+            isSealed: true);
+
+        using (var context = _fixture.CreateContext())
+        {
+            context.Sources.Add(source);
+            context.SaveChanges();
+        }
+
+        var initialAlerts = _alertService.GenerateAlerts();
+        Assert.Contains(initialAlerts, a => a.SourceId == source.Id && a.AlertType == "LeakTestDue");
+
+        // 2. تسجيل فحص تسرب جديد صالح ومستقبل بعيد (6 أشهر)
+        var newTest = new LeakTestRecord
+        {
+            Id = Guid.NewGuid(),
+            SourceId = source.Id,
+            TestDate = DateTime.Today,
+            NextDueDate = DateTime.Today.AddMonths(6),
+            Result = "Pass",
+            CreatedAt = DateTime.Now
+        };
+
+        using (var context = _fixture.CreateContext())
+        {
+            context.LeakTestRecords.Add(newTest);
+            context.SaveChanges();
+        }
+
+        // Act - إعادة فحص التنبيهات
+        var updatedAlerts = _alertService.GenerateAlerts();
+
+        // Assert - يجب أن يختفي تنبيه فحص التسرب
+        var remainingLeakAlert = updatedAlerts.FirstOrDefault(a => a.SourceId == source.Id && (a.AlertType == "LeakTestDue" || a.AlertType == "LeakTestOverdue"));
+        Assert.Null(remainingLeakAlert);
+
+        using (var context = _fixture.CreateContext())
+        {
+            var dbAlerts = context.AlertNotifications.Where(a => a.SourceId == source.Id && (a.AlertType == "LeakTestDue" || a.AlertType == "LeakTestOverdue")).ToList();
+            Assert.Empty(dbAlerts);
+        }
+    }
+
+    #endregion
 }
+

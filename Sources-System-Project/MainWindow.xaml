@@ -161,6 +161,22 @@
                                 </StackPanel>
                             </Button>
 
+                            <!-- اختبارات التسرب الدوري (Leak Tests) -->
+                            <Button Style="{StaticResource BottomNavItem}"
+                                    Command="{Binding NavigateToCommand}" CommandParameter="LeakTests"
+                                    Visibility="{Binding CanSeeLeakTests, Converter={StaticResource BoolToVis}}">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="ShieldCheckOutline" Width="22" Height="22"
+                                                             HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource MenuLeakTests}"
+                                               HorizontalAlignment="Center" TextAlignment="Center"
+                                               TextWrapping="Wrap" LineHeight="13" FontSize="11"
+                                               Margin="0,2,0,0"
+                                               Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}"/>
+                                </StackPanel>
+                            </Button>
+
+
                             <!-- التقارير -->
                             <Button Style="{StaticResource BottomNavItem}"
                                     Command="{Binding NavigateToCommand}" CommandParameter="Reports"

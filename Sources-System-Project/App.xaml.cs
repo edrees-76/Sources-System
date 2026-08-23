@@ -104,6 +104,7 @@ public partial class App : Application
         services.AddTransient<Sources.Views.ScreensaverWindow>();
         services.AddTransient<Sources.Views.LocationDetailsWindow>();
         services.AddTransient<Sources.Views.AlertsView>();
+        services.AddTransient<Sources.Views.LeakTestsView>();
         services.AddTransient<MainWindow>();
 
         // Services
@@ -120,6 +121,7 @@ public partial class App : Application
         services.AddTransient<ILocationService, LocationService>();
         services.AddTransient<IIsotopeImportService, IsotopeImportService>();
         services.AddTransient<IBorrowService, BorrowService>();
+        services.AddTransient<ILeakTestService, LeakTestService>();
         services.AddTransient<ISystemResetService, SystemResetService>();
 
         // ViewModels
@@ -129,6 +131,7 @@ public partial class App : Application
         services.AddTransient<RadioisotopesViewModel>();
         services.AddTransient<LocationsViewModel>();
         services.AddTransient<BorrowViewModel>();
+        services.AddTransient<LeakTestsViewModel>();
         services.AddTransient<ReportsViewModel>();
         services.AddTransient<AlertsViewModel>();
         services.AddTransient<UsersViewModel>();
@@ -137,6 +140,7 @@ public partial class App : Application
         services.AddTransient<HelpViewModel>();
         services.AddTransient<AboutSystemViewModel>();
     }
+
 
     public static void ApplyLanguage(string cultureCode)
     {

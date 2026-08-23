@@ -964,14 +964,31 @@
                             </StackPanel>
 
                             <!-- مهلة التنبيه بالاستعارات المستحقة -->
-                            <StackPanel Margin="0,0,0,8">
+                            <StackPanel Margin="0,0,0,16">
                                 <TextBlock Text="{DynamicResource LabelDueSoonThreshold}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4"/>
                                 <TextBlock Text="{DynamicResource DescDueSoonThreshold}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,8"/>
                                 <TextBox Text="{Binding DueSoonDaysThreshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          Style="{StaticResource FormTextBox}" Width="200" HorizontalAlignment="Left" FlowDirection="LeftToRight"/>
                             </StackPanel>
+
+                            <!-- دورية اختبار التسرب الدوري (أشهر) -->
+                            <StackPanel Margin="0,0,0,16">
+                                <TextBlock Text="{DynamicResource LabelLeakTestInterval}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4"/>
+                                <TextBlock Text="{DynamicResource DescLeakTestInterval}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,8"/>
+                                <TextBox Text="{Binding LeakTestIntervalMonths, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource FormTextBox}" Width="200" HorizontalAlignment="Left" FlowDirection="LeftToRight"/>
+                            </StackPanel>
+
+                            <!-- مهلة التنبيه باختبار التسرب المستحق (أيام) -->
+                            <StackPanel Margin="0,0,0,8">
+                                <TextBlock Text="{DynamicResource LabelLeakTestWarningDays}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4"/>
+                                <TextBlock Text="{DynamicResource DescLeakTestWarningDays}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,8"/>
+                                <TextBox Text="{Binding LeakTestWarningDaysThreshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource FormTextBox}" Width="200" HorizontalAlignment="Left" FlowDirection="LeftToRight"/>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
+
 
                     <!-- بيانات ترويسة التقارير والمؤسسة -->
                     <Border Background="{DynamicResource CardBackground}" CornerRadius="12" 

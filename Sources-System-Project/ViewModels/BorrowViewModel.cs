@@ -2,12 +2,15 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.EntityFrameworkCore;
 using Sources.Data;
 using Sources.Helpers;
 using Sources.Interfaces;
+using Sources.Messages;
 using Sources.Models;
 using Sources.Services;
 
@@ -35,13 +38,18 @@ public class BorrowRequestRow
     public string? AddedBy => Request.AddedBy;
 }
 
-public sealed partial class BorrowViewModel : ObservableObject, IEditableViewModel
+public sealed partial class BorrowViewModel : ObservableObject, IEditableViewModel, IDisposable
 {
     private readonly IBorrowService _borrowService;
     private readonly ISourceService _sourceService;
     private readonly IUserService _userService;
     private readonly IReportingService _reportingService;
     private readonly IDbContextFactory<AppDbContext>? _dbFactory;
+
+    public void Dispose()
+    {
+        WeakReferenceMessenger.Default.UnregisterAll(this);
+    }
 
     // ─── مجموعات البيانات ───
     private System.Collections.Generic.List<BorrowRequest> _allRequests = new();
@@ -138,7 +146,28 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
         _reportingService = reportingService;
         _dbFactory = dbFactory ?? (App.ServiceProvider?.GetService(typeof(IDbContextFactory<AppDbContext>)) as IDbContextFactory<AppDbContext>);
 
+        // الاستماع لرسالة تحديث المصادر لتحديث قائمة المصادر المتاحة تلقائياً
+        WeakReferenceMessenger.Default.Register<SourcesUpdatedMessage>(this, (r, m) =>
+        {
+            RunOnUI(() =>
+            {
+                LoadAvailableSources();
+            });
+        });
+
         _ = LoadDataAsync();
+    }
+
+    private static void RunOnUI(Action action)
+    {
+        if (Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
+        {
+            Application.Current.Dispatcher.Invoke(action);
+        }
+        else
+        {
+            action();
+        }
     }
 
     [RelayCommand]
@@ -262,7 +291,7 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
         SelectedRequest = null;
     }
 
-    private void LoadAvailableSources()
+    public void LoadAvailableSources()
     {
         if (_dbFactory == null) return;
         using var db = _dbFactory.CreateDbContext();
@@ -275,7 +304,9 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
             .Include(s => s.Location)
             .Include(s => s.Radioisotope)
             .Include(s => s.InitialActivityUnit)
-            .Where(s => s.Status == "Storage").ToList();
+            .Where(s => !s.IsDeleted && s.Status == "Storage")
+            .OrderBy(s => s.SourceCode)
+            .ToList();
 
         AvailableSources.Clear();
         foreach (var s in sources) AvailableSources.Add(s);

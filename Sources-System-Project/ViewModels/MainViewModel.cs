@@ -85,11 +85,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
         NavigateTo("Dashboard");
     }
 
-    // ─── صلاحيات القائمة الجانبية ───
     [ObservableProperty] private bool _canSeeRadioisotopes = true;
     [ObservableProperty] private bool _canSeeSources = true;
     [ObservableProperty] private bool _canSeeLocations = true;
     [ObservableProperty] private bool _canSeeBorrowing = true;
+    [ObservableProperty] private bool _canSeeLeakTests = true;
     [ObservableProperty] private bool _canSeeReports = true;
     [ObservableProperty] private bool _canSeeUsers = true;
     [ObservableProperty] private bool _canSeeSettings = true;
@@ -105,12 +105,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
         CanSeeSources = user.HasSectionPermission("Sources");
         CanSeeLocations = user.HasSectionPermission("Locations");
         CanSeeBorrowing = user.HasSectionPermission("Borrowing");
+        CanSeeLeakTests = user.HasSectionPermission("LeakTests") || user.HasSectionPermission("Sources");
         CanSeeReports = user.HasSectionPermission("Reports");
         CanSeeUsers = user.HasSectionPermission("Users");
         CanSeeSettings = user.HasSectionPermission("Settings");
         CanSeeCalculator = user.HasSectionPermission("ActivityCalculator");
         CanSeeAlerts = user.HasSectionPermission("Alerts");
     }
+
 
     [RelayCommand]
     public void RefreshNotifications()
@@ -269,6 +271,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             "Sources" => App.ServiceProvider?.GetService(typeof(SourcesViewModel)) as ObservableObject,
             "Locations" => App.ServiceProvider?.GetService(typeof(LocationsViewModel)) as ObservableObject,
             "Borrowing" => App.ServiceProvider?.GetService(typeof(BorrowViewModel)) as ObservableObject,
+            "LeakTests" => App.ServiceProvider?.GetService(typeof(LeakTestsViewModel)) as ObservableObject,
             "Reports" => App.ServiceProvider?.GetService(typeof(ReportsViewModel)) as ObservableObject,
             "Alerts" => App.ServiceProvider?.GetService(typeof(AlertsViewModel)) as ObservableObject,
             "Users" => App.ServiceProvider?.GetService(typeof(UsersViewModel)) as ObservableObject,
@@ -278,7 +281,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
             "AboutSystem" => App.ServiceProvider?.GetService(typeof(AboutSystemViewModel)) as ObservableObject,
             _ => CurrentView
         };
+
+        if (CurrentView is LeakTestsViewModel leakTestsVm)
+        {
+            _ = leakTestsVm.InitializeAsync();
+        }
     }
+
 
     [RelayCommand]
     private void ToggleSidebar()

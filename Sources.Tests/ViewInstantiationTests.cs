@@ -155,6 +155,39 @@ public class ViewInstantiationTests
     }
 
     [Fact]
+    public void LeakTestsView_InstantiatesSuccessfully_WithDataGridAndBindings()
+    {
+        RunInSta(() =>
+        {
+            var mockLeakService = new Moq.Mock<Sources.Services.ILeakTestService>();
+            var mockSourceService = new Moq.Mock<Sources.Services.ISourceService>();
+            var mockReportingService = new Moq.Mock<Sources.Services.IReportingService>();
+            var mockUserService = new Moq.Mock<Sources.Services.IUserService>();
+            var mockSettingsService = new Moq.Mock<Sources.Services.ISystemSettingsService>();
+
+            var vm = new Sources.ViewModels.LeakTestsViewModel(
+                mockLeakService.Object,
+                mockSourceService.Object,
+                mockReportingService.Object,
+                mockUserService.Object,
+                mockSettingsService.Object);
+
+            var view = new LeakTestsView
+            {
+                DataContext = vm
+            };
+
+            view.Measure(new System.Windows.Size(1280, 800));
+            view.Arrange(new System.Windows.Rect(0, 0, 1280, 800));
+            view.UpdateLayout();
+
+            Assert.NotNull(view);
+            Assert.Equal(vm, view.DataContext);
+        });
+    }
+
+
+    [Fact]
     public void SourcesView_WhenActivelyBorrowed_DisablesStatusAndLocationComboBoxes()
     {
         RunInSta(() =>

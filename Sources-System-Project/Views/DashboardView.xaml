@@ -95,19 +95,22 @@
                 </Grid>
 
                 <!-- ============================================== -->
-                <!-- Row 2: Low Activity Alert + Borrow + Quick Actions -->
-                <!-- ============================================== -->
+                <!-- ============================================================= -->
+                <!-- Row 2: Low Activity + Leak Tests + Borrow + Quick Actions    -->
+                <!-- ============================================================= -->
                 <Grid Grid.Row="2">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>   <!-- Low Activity Alert Card -->
-                        <ColumnDefinition Width="16"/>  <!-- Spacer -->
+                        <ColumnDefinition Width="14"/>  <!-- Spacer -->
+                        <ColumnDefinition Width="*"/>   <!-- Leak Tests Alert Card -->
+                        <ColumnDefinition Width="14"/>  <!-- Spacer -->
                         <ColumnDefinition Width="*"/>   <!-- Borrow Summary Card -->
-                        <ColumnDefinition Width="16"/>  <!-- Spacer -->
+                        <ColumnDefinition Width="14"/>  <!-- Spacer -->
                         <ColumnDefinition Width="*"/>   <!-- Quick Actions Card -->
                     </Grid.ColumnDefinitions>
 
                     <!-- ═══ الجزء 1: بطاقة تنبيهات انخفاض النشاط ═══ -->
-                    <Border Grid.Column="0" CornerRadius="12" Padding="18,14">
+                    <Border Grid.Column="0" CornerRadius="12" Padding="16,14">
                         <Border.Style>
                             <Style TargetType="Border">
                                 <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
@@ -149,8 +152,8 @@
                                     </materialDesign:PackIcon.Style>
                                 </materialDesign:PackIcon>
                                 <StackPanel Margin="10,0,0,0">
-                                    <TextBlock Text="{DynamicResource CardLowActivityTitle}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
-                                    <TextBlock Text="{DynamicResource CardLowActivitySubtitle}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                    <TextBlock Text="{DynamicResource CardLowActivityTitle}" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                    <TextBlock Text="{DynamicResource CardLowActivitySubtitle}" FontSize="10.5" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
                                 </StackPanel>
                             </StackPanel>
 
@@ -158,33 +161,33 @@
                             <Grid Grid.Row="2" Visibility="{Binding HasLowActivityAlerts, Converter={StaticResource BoolToVis}}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="12"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <!-- Critical -->
-                                <Border Grid.Column="0" Background="#1AC25B4A" CornerRadius="10" Padding="12,10">
+                                <Border Grid.Column="0" Background="#1AC25B4A" CornerRadius="10" Padding="8,8">
                                     <StackPanel HorizontalAlignment="Center">
-                                        <TextBlock Text="{Binding LowActivityCriticalCount}" FontSize="32" FontWeight="Bold"
+                                        <TextBlock Text="{Binding LowActivityCriticalCount}" FontSize="26" FontWeight="Bold"
                                                    Foreground="#C25B4A" HorizontalAlignment="Center"/>
-                                        <TextBlock Text="{DynamicResource LabelCritical}" FontSize="11" FontWeight="SemiBold"
+                                        <TextBlock Text="{DynamicResource LabelCritical}" FontSize="10" FontWeight="SemiBold"
                                                    Foreground="#C25B4A" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
                                 <!-- Warning -->
-                                <Border Grid.Column="2" Background="#1AE0A93E" CornerRadius="10" Padding="12,10">
+                                <Border Grid.Column="2" Background="#1AE0A93E" CornerRadius="10" Padding="8,8">
                                     <StackPanel HorizontalAlignment="Center">
-                                        <TextBlock Text="{Binding LowActivityWarningCount}" FontSize="32" FontWeight="Bold"
+                                        <TextBlock Text="{Binding LowActivityWarningCount}" FontSize="26" FontWeight="Bold"
                                                    Foreground="#E0A93E" HorizontalAlignment="Center"/>
-                                        <TextBlock Text="{DynamicResource LabelWarning}" FontSize="11" FontWeight="SemiBold"
+                                        <TextBlock Text="{DynamicResource LabelWarning}" FontSize="10" FontWeight="SemiBold"
                                                    Foreground="#E0A93E" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
                             </Grid>
 
                             <!-- رسالة "ضمن الحدود الآمنة" — تظهر فقط عندما لا توجد تنبيهات -->
-                            <Border Grid.Row="2" Background="#1A3FAE7A" CornerRadius="10" Padding="12,14"
+                            <Border Grid.Row="2" Background="#1A3FAE7A" CornerRadius="10" Padding="10,12"
                                     Visibility="{Binding HasLowActivityAlerts, Converter={StaticResource InverseBoolToVis}}">
-                                <TextBlock Text="{DynamicResource LabelAllSafe}" FontSize="13" FontWeight="SemiBold"
+                                <TextBlock Text="{DynamicResource LabelAllSafe}" FontSize="12" FontWeight="SemiBold"
                                            Foreground="#3FAE7A" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
                             </Border>
 
@@ -199,8 +202,101 @@
                         </Grid>
                     </Border>
 
+                    <!-- ═══ الجزء 1b: بطاقة تنبيهات اختبارات التسرب ═══ -->
+                    <Border Grid.Column="2" CornerRadius="12" Padding="16,14">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+                                <Setter Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <!-- حدة حمراء جانبية عند وجود تنبيهات -->
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasLeakTestAlerts}" Value="True">
+                                        <Setter Property="BorderBrush" Value="#C25B4A"/>
+                                        <Setter Property="BorderThickness" Value="0,0,4,0"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="12"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="10"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Header -->
+                            <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="ShieldAlertOutline" Width="22" Height="22" VerticalAlignment="Center">
+                                    <materialDesign:PackIcon.Style>
+                                        <Style TargetType="materialDesign:PackIcon">
+                                            <Setter Property="Foreground" Value="{DynamicResource GoldBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasLeakTestAlerts}" Value="True">
+                                                    <Setter Property="Foreground" Value="#C25B4A"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </materialDesign:PackIcon.Style>
+                                </materialDesign:PackIcon>
+                                <StackPanel Margin="10,0,0,0">
+                                    <TextBlock Text="{DynamicResource CardLeakTestAlertsTitle}" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                    <TextBlock Text="{DynamicResource CardLeakTestAlertsSubtitle}" FontSize="10.5" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Alert Numbers — يظهر فقط عند وجود تنبيهات -->
+                            <Grid Grid.Row="2" Visibility="{Binding HasLeakTestAlerts, Converter={StaticResource BoolToVis}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Critical (Overdue / Fail) -->
+                                <Border Grid.Column="0" Background="#1AC25B4A" CornerRadius="10" Padding="8,8">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding LeakTestCriticalCount}" FontSize="26" FontWeight="Bold"
+                                                   Foreground="#C25B4A" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource LabelLeakTestOverdue}" FontSize="10" FontWeight="SemiBold"
+                                                   Foreground="#C25B4A" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <!-- Warning (Due soon / Initial) -->
+                                <Border Grid.Column="2" Background="#1AE0A93E" CornerRadius="10" Padding="8,8">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding LeakTestWarningCount}" FontSize="26" FontWeight="Bold"
+                                                   Foreground="#E0A93E" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource LabelLeakTestDue}" FontSize="10" FontWeight="SemiBold"
+                                                   Foreground="#E0A93E" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+
+                            <!-- رسالة "سارية" — تظهر فقط عندما لا توجد تنبيهات -->
+                            <Border Grid.Row="2" Background="#1A3FAE7A" CornerRadius="10" Padding="10,12"
+                                    Visibility="{Binding HasLeakTestAlerts, Converter={StaticResource InverseBoolToVis}}">
+                                <TextBlock Text="{DynamicResource LabelAllLeakTestsValid}" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="#3FAE7A" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+                            </Border>
+
+                            <!-- رابط التقرير -->
+                            <TextBlock Grid.Row="4" Text="{DynamicResource BtnViewLeakTestsReport}"
+                                       FontSize="11" Foreground="{DynamicResource GoldBrush}" 
+                                       HorizontalAlignment="Left" Cursor="Hand" TextDecorations="Underline">
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftClick" Command="{Binding NavigateToLeakTestsCommand}"/>
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </Grid>
+                    </Border>
+
                     <!-- ═══ الجزء 2: بطاقة ملخص الاستعارات ═══ -->
-                    <Border Grid.Column="2" CornerRadius="12" Padding="18,14">
+                    <Border Grid.Column="4" CornerRadius="12" Padding="16,14">
                         <Border.Style>
                             <Style TargetType="Border">
                                 <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
@@ -228,45 +324,45 @@
                             <StackPanel Grid.Row="0" Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="SwapHorizontalCircleOutline" Width="22" Height="22"
                                                          Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center"/>
-                                <TextBlock Text="{DynamicResource CardBorrowSummaryTitle}" FontSize="14" FontWeight="Bold"
+                                <TextBlock Text="{DynamicResource CardBorrowSummaryTitle}" FontSize="13.5" FontWeight="Bold"
                                            Foreground="{DynamicResource TextPrimary}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                             <Grid Grid.Row="2" Visibility="{Binding BorrowSummary.HasAny, Converter={StaticResource BoolToVis}}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="6"/>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="6"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" Background="#1AC25B4A" CornerRadius="10" Padding="8,10">
+                                <Border Grid.Column="0" Background="#1AC25B4A" CornerRadius="10" Padding="6,8">
                                     <StackPanel HorizontalAlignment="Center">
-                                        <TextBlock Text="{Binding BorrowSummary.OverdueCount}" FontSize="28" FontWeight="Bold"
+                                        <TextBlock Text="{Binding BorrowSummary.OverdueCount}" FontSize="24" FontWeight="Bold"
                                                    Foreground="#C25B4A" HorizontalAlignment="Center"/>
-                                        <TextBlock Text="{DynamicResource LabelOverdue}" FontSize="10" FontWeight="SemiBold"
+                                        <TextBlock Text="{DynamicResource LabelOverdue}" FontSize="9.5" FontWeight="SemiBold"
                                                    Foreground="#C25B4A" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
-                                <Border Grid.Column="2" Background="#1AE0A93E" CornerRadius="10" Padding="8,10">
+                                <Border Grid.Column="2" Background="#1AE0A93E" CornerRadius="10" Padding="6,8">
                                     <StackPanel HorizontalAlignment="Center">
-                                        <TextBlock Text="{Binding BorrowSummary.DueSoonCount}" FontSize="28" FontWeight="Bold"
+                                        <TextBlock Text="{Binding BorrowSummary.DueSoonCount}" FontSize="24" FontWeight="Bold"
                                                    Foreground="#E0A93E" HorizontalAlignment="Center"/>
-                                        <TextBlock Text="{DynamicResource LabelDueSoon}" FontSize="10" FontWeight="SemiBold"
+                                        <TextBlock Text="{DynamicResource LabelDueSoon}" FontSize="9.5" FontWeight="SemiBold"
                                                    Foreground="#E0A93E" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
-                                <Border Grid.Column="4" Background="#1A1F5A66" CornerRadius="10" Padding="8,10">
+                                <Border Grid.Column="4" Background="#1A1F5A66" CornerRadius="10" Padding="6,8">
                                     <StackPanel HorizontalAlignment="Center">
-                                        <TextBlock Text="{Binding BorrowSummary.ActiveCount}" FontSize="28" FontWeight="Bold"
+                                        <TextBlock Text="{Binding BorrowSummary.ActiveCount}" FontSize="24" FontWeight="Bold"
                                                    Foreground="{DynamicResource GoldBrush}" HorizontalAlignment="Center"/>
-                                        <TextBlock Text="{DynamicResource LabelActiveBorrows}" FontSize="10" FontWeight="SemiBold"
+                                        <TextBlock Text="{DynamicResource LabelActiveBorrows}" FontSize="9.5" FontWeight="SemiBold"
                                                    Foreground="{DynamicResource GoldBrush}" HorizontalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
                             </Grid>
-                            <Border Grid.Row="2" Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="12,14"
+                            <Border Grid.Row="2" Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="10,12"
                                     Visibility="{Binding BorrowSummary.HasAny, Converter={StaticResource InverseBoolToVis}}">
-                                <TextBlock Text="{DynamicResource LabelNoBorrows}" FontSize="13"
+                                <TextBlock Text="{DynamicResource LabelNoBorrows}" FontSize="12"
                                            Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"
                                            TextWrapping="Wrap" TextAlignment="Center"/>
                             </Border>
@@ -281,7 +377,7 @@
                     </Border>
 
                     <!-- ═══ الجزء 3: بطاقة الاختصارات السريعة ═══ -->
-                    <Border Grid.Column="4" CornerRadius="12" Padding="18,14" Background="{DynamicResource CardBackground}">
+                    <Border Grid.Column="6" CornerRadius="12" Padding="16,14" Background="{DynamicResource CardBackground}">
                         <Border.Effect>
                             <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
                         </Border.Effect>
@@ -295,8 +391,8 @@
                                 <materialDesign:PackIcon Kind="LightningBoltCircle" Width="22" Height="22"
                                                          Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center"/>
                                 <StackPanel Margin="10,0,0,0">
-                                    <TextBlock Text="{DynamicResource CardQuickActionsTitle}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
-                                    <TextBlock Text="{DynamicResource CardQuickActionsSubtitle}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                    <TextBlock Text="{DynamicResource CardQuickActionsTitle}" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                    <TextBlock Text="{DynamicResource CardQuickActionsSubtitle}" FontSize="10.5" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
                                 </StackPanel>
                             </StackPanel>
                             <Grid Grid.Row="2" VerticalAlignment="Center">
@@ -307,18 +403,18 @@
                                 </Grid.RowDefinitions>
                                 <Button Grid.Row="0" Command="{Binding QuickAddSourceCommand}"
                                         Style="{StaticResource PrimaryButton}"
-                                        HorizontalAlignment="Stretch" Height="40" Padding="10,0">
+                                        HorizontalAlignment="Stretch" Height="38" Padding="8,0">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                        <materialDesign:PackIcon Kind="PlusCircleOutline" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                        <TextBlock Text="{DynamicResource BtnQuickAddSource}" FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
+                                        <materialDesign:PackIcon Kind="PlusCircleOutline" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="{DynamicResource BtnQuickAddSource}" FontSize="11.5" FontWeight="Bold" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Button>
                                 <Button Grid.Row="2" Command="{Binding QuickBorrowSourceCommand}"
                                         Style="{StaticResource SecondaryButton}"
-                                        HorizontalAlignment="Stretch" Height="40" Padding="10,0">
+                                        HorizontalAlignment="Stretch" Height="38" Padding="8,0">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                        <materialDesign:PackIcon Kind="SwapHorizontalCircleOutline" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                        <TextBlock Text="{DynamicResource BtnQuickBorrowSource}" FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
+                                        <materialDesign:PackIcon Kind="SwapHorizontalCircleOutline" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="{DynamicResource BtnQuickBorrowSource}" FontSize="11.5" FontWeight="Bold" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Button>
                             </Grid>

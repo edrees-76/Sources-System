@@ -25,6 +25,7 @@ public class AppDbContext : DbContext
     public DbSet<AlertNotification> AlertNotifications { get; set; } = null!;
     public DbSet<AppSetting> AppSettings { get; set; } = null!;
     public DbSet<SourceLocationHistory> SourceLocationHistories { get; set; } = null!;
+    public DbSet<LeakTestRecord> LeakTestRecords { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
@@ -227,6 +228,31 @@ public class AppDbContext : DbContext
         try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_SourceLocationHistories_SourceId ON SourceLocationHistories(SourceId);"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_SourceLocationHistories_LocationId ON SourceLocationHistories(LocationId);"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_SourceLocationHistories_MovedAt ON SourceLocationHistories(MovedAt);"; cmd.ExecuteNonQuery(); } catch { }
+
+        // ─── مرحلة 8: اختبارات التسرب الدوري والمسح الإشعاعي (Leak/Wipe Tests) ───
+        try { cmd.CommandText = "ALTER TABLE Sources ADD COLUMN IsSealed INTEGER NOT NULL DEFAULT 1;"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_Sources_IsSealed ON Sources(IsSealed);"; cmd.ExecuteNonQuery(); } catch { }
+
+        cmd.CommandText = @"
+            CREATE TABLE IF NOT EXISTS LeakTestRecords (
+                Id TEXT PRIMARY KEY NOT NULL,
+                SourceId TEXT NOT NULL,
+                TestDate TEXT NOT NULL,
+                NextDueDate TEXT NOT NULL,
+                Result TEXT NOT NULL DEFAULT 'Pass',
+                MeasuredActivityBq REAL,
+                PerformedByUserId TEXT,
+                InspectorName TEXT,
+                CertificateNumber TEXT,
+                Notes TEXT,
+                CreatedAt TEXT NOT NULL,
+                FOREIGN KEY (SourceId) REFERENCES Sources(Id) ON DELETE CASCADE,
+                FOREIGN KEY (PerformedByUserId) REFERENCES Users(Id) ON DELETE SET NULL
+            );";
+        cmd.ExecuteNonQuery();
+
+        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_LeakTestRecords_SourceId ON LeakTestRecords(SourceId);"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_LeakTestRecords_NextDueDate ON LeakTestRecords(NextDueDate);"; cmd.ExecuteNonQuery(); } catch { }
 
         conn.Close();
     }
@@ -575,6 +601,24 @@ public class AppDbContext : DbContext
             entity.HasIndex(h => h.SourceId);
             entity.HasIndex(h => h.LocationId);
             entity.HasIndex(h => h.MovedAt);
+        });
+
+        // ─── LeakTestRecord relationships & Performance indexing ───
+        modelBuilder.Entity<LeakTestRecord>(entity =>
+        {
+            entity.HasOne(l => l.Source)
+                .WithMany(s => s.LeakTestRecords)
+                .HasForeignKey(l => l.SourceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(l => l.PerformedByUser)
+                .WithMany()
+                .HasForeignKey(l => l.PerformedByUserId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(l => l.SourceId);
+            entity.HasIndex(l => l.NextDueDate);
         });
 
         // ─── Global Query Filters (Soft Delete) ───

@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Sources.Data;
+using Sources.Messages;
 using Sources.Models;
 using Sources.Services;
 using Sources.Tests.Fakes;
@@ -441,6 +443,118 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         Assert.Null(capturedReq2.BorrowerUserId); // ليس مسجلاً
         Assert.Equal("جهة خارجية غير مسجلة", capturedReq2.BorrowerName);
         Assert.Equal("أمين المخزن المشغل", capturedReq2.AddedBy);
+    }
+
+    #endregion
+
+    #region 4. اختبارات ترتيب وتحديث قائمة المصادر المتاحة للاستعارة (LoadAvailableSources)
+
+    [Fact]
+    public void LoadAvailableSources_ReturnsSourcesOrderedAlphabeticallyBySourceCode()
+    {
+        // Arrange
+        using var db = _fixture.CreateContext();
+        var iso = TestDataBuilder.CreateRadioisotope("Cs-137", "Cesium-137");
+        var unit = TestDataBuilder.CreateActivityUnit("mCi", "mCi");
+        var loc = TestDataBuilder.CreateLocation("مستودع أ");
+        db.Radioisotopes.Add(iso);
+        db.ActivityUnits.Add(unit);
+        db.Locations.Add(loc);
+
+        // إضافة مصادر بأسماء غير مرتبة
+        var srcZ = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-Z999", 10.0, DateTime.Now, "Storage");
+        var srcA = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-A001", 10.0, DateTime.Now, "Storage");
+        var srcM = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-M500", 10.0, DateTime.Now, "Storage");
+        var srcEdr = TestDataBuilder.CreateSource(iso, unit, loc, "edr-1976", 10.0, DateTime.Now, "Storage");
+        var srcInUse = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-INUSE", 10.0, DateTime.Now, "InUse");
+        var srcDeleted = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-DELETED", 10.0, DateTime.Now, "Storage");
+        srcDeleted.IsDeleted = true;
+
+        db.Sources.AddRange(srcZ, srcA, srcM, srcEdr, srcInUse, srcDeleted);
+        db.SaveChanges();
+
+        var mockSourceService = new Mock<ISourceService>();
+        var mockUserService = new Mock<IUserService>();
+        var mockReportingService = new Mock<IReportingService>();
+
+        var vm = new BorrowViewModel(_borrowService, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, _fixture.ContextFactory);
+
+        // Act
+        vm.LoadAvailableSources();
+
+        // Assert
+        Assert.Equal(4, vm.AvailableSources.Count); // Z, A, M, edr-1976 فقط (استبعاد InUse و Deleted)
+        Assert.DoesNotContain(vm.AvailableSources, s => s.SourceCode == "SRC-INUSE");
+        Assert.DoesNotContain(vm.AvailableSources, s => s.SourceCode == "SRC-DELETED");
+
+        var codes = vm.AvailableSources.Select(s => s.SourceCode).ToList();
+        var sortedCodes = codes.OrderBy(c => c, StringComparer.Ordinal).ToList();
+        Assert.Equal(sortedCodes, codes); // مرتبة أبجدياً (مطابقة لـ SQL ORDER BY)
+    }
+
+    [Fact]
+    public void LoadAvailableSources_IncludesActiveStorageSource_SuchAs_edr1976()
+    {
+        // Arrange
+        using var db = _fixture.CreateContext();
+        var iso = TestDataBuilder.CreateRadioisotope("Am-241", "Americium-241");
+        var unit = TestDataBuilder.CreateActivityUnit("µCi", "µCi");
+        var loc = TestDataBuilder.CreateLocation("مستودع المواد المشعة");
+        db.Radioisotopes.Add(iso);
+        db.ActivityUnits.Add(unit);
+        db.Locations.Add(loc);
+
+        var edrSource = TestDataBuilder.CreateSource(iso, unit, loc, "edr-1976", 25.0, DateTime.Now, "Storage");
+        edrSource.IsDeleted = false;
+        edrSource.IsSealed = true;
+        db.Sources.Add(edrSource);
+        db.SaveChanges();
+
+        var mockSourceService = new Mock<ISourceService>();
+        var mockUserService = new Mock<IUserService>();
+        var mockReportingService = new Mock<IReportingService>();
+
+        var vm = new BorrowViewModel(_borrowService, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, _fixture.ContextFactory);
+
+        // Act
+        vm.LoadAvailableSources();
+
+        // Assert
+        Assert.Contains(vm.AvailableSources, s => s.SourceCode == "edr-1976" && s.Status == "Storage");
+    }
+
+    [Fact]
+    public void BorrowViewModel_ReceivesSourcesUpdatedMessage_RefreshesAvailableSources()
+    {
+        // Arrange
+        using var db = _fixture.CreateContext();
+        var iso = TestDataBuilder.CreateRadioisotope("Co-60", "Cobalt-60");
+        var unit = TestDataBuilder.CreateActivityUnit("Ci", "Ci");
+        var loc = TestDataBuilder.CreateLocation("المستودع");
+        db.Radioisotopes.Add(iso);
+        db.ActivityUnits.Add(unit);
+        db.Locations.Add(loc);
+        db.SaveChanges();
+
+        var mockSourceService = new Mock<ISourceService>();
+        var mockUserService = new Mock<IUserService>();
+        var mockReportingService = new Mock<IReportingService>();
+
+        using var vm = new BorrowViewModel(_borrowService, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, _fixture.ContextFactory);
+
+        vm.LoadAvailableSources();
+        Assert.Empty(vm.AvailableSources);
+
+        // إضافة مصدر في قاعدة البيانات
+        var newSource = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-NEW-STORAGE", 5.0, DateTime.Now, "Storage");
+        db.Sources.Add(newSource);
+        db.SaveChanges();
+
+        // Act: إرسال رسالة تحديث المصادر
+        CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new Sources.Messages.SourcesUpdatedMessage());
+
+        // Assert
+        Assert.Contains(vm.AvailableSources, s => s.SourceCode == "SRC-NEW-STORAGE");
     }
 
     #endregion

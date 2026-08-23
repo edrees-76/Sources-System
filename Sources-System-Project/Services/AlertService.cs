@@ -42,9 +42,16 @@ public class AlertService : IAlertService
             .Where(s => s.Status == "InUse" || s.Status == "Storage")
             .ToList();
 
+        int warningDays = _settingsService.GetSetting<int>(
+            SystemSettingsDefaults.LeakTestWarningDaysThresholdKey,
+            int.Parse(SystemSettingsDefaults.DefaultLeakTestWarningDaysThreshold));
+        if (warningDays <= 0) warningDays = 30;
+
+        var today = DateTime.Today;
+
         foreach (var source in activeSources)
         {
-            // ─── تنبيه انخفاض النشاط الإشعاعي (قانون التحلل: 5 إلى 6 أضعاف نصف العمر T½) ───
+            // ─── 1. تنبيه انخفاض النشاط الإشعاعي (قانون التحلل: 5 إلى 6 أضعاف نصف العمر T½) ───
             var (maxHalfLivesElapsed, worstIsotopeSymbol) = CalculateMaxHalfLivesElapsed(source);
 
             if (maxHalfLivesElapsed >= 6.0)
@@ -69,6 +76,63 @@ public class AlertService : IAlertService
                     SourceId = source.Id
                 });
             }
+
+            // ─── 2. تنبيه اختبار التسرب الدوري (للمصادر المختومة IsSealed = true فقط) ───
+            if (source.IsSealed)
+            {
+                var latestLeakTest = db.LeakTestRecords
+                    .Where(r => r.SourceId == source.Id)
+                    .OrderByDescending(r => r.TestDate)
+                    .ThenByDescending(r => r.CreatedAt)
+                    .FirstOrDefault();
+
+                if (latestLeakTest == null)
+                {
+                    alerts.Add(new AlertNotification
+                    {
+                        AlertType = "LeakTestDue",
+                        Severity = "Warning",
+                        Message = $"المصدر المختوم {source.SourceCode}: لم يتم إجراء أي اختبار تسرب له حتى الآن (مطلوب فحص أولي)",
+                        SourceId = source.Id
+                    });
+                }
+                else
+                {
+                    var dueDate = latestLeakTest.NextDueDate.Date;
+                    if (dueDate < today)
+                    {
+                        int overdueDays = (today - dueDate).Days;
+                        alerts.Add(new AlertNotification
+                        {
+                            AlertType = "LeakTestOverdue",
+                            Severity = "Critical",
+                            Message = $"المصدر {source.SourceCode}: اختبار التسرب متأخر بمقدار {overdueDays} يوم (استحق في {dueDate:yyyy/MM/dd})",
+                            SourceId = source.Id
+                        });
+                    }
+                    else if ((dueDate - today).TotalDays <= warningDays)
+                    {
+                        int remainingDays = (dueDate - today).Days;
+                        alerts.Add(new AlertNotification
+                        {
+                            AlertType = "LeakTestDue",
+                            Severity = "Warning",
+                            Message = $"المصدر {source.SourceCode}: يستحق اختبار التسرب خلال {remainingDays} يوم (تاريخ الاستحقاق: {dueDate:yyyy/MM/dd})",
+                            SourceId = source.Id
+                        });
+                    }
+                    else if (latestLeakTest.Result == "Fail")
+                    {
+                        alerts.Add(new AlertNotification
+                        {
+                            AlertType = "LeakTestOverdue",
+                            Severity = "Critical",
+                            Message = $"المصدر {source.SourceCode}: نتيجة آخر اختبار تسرب هي رسوب (تسرب إشعاعي مكتشف)",
+                            SourceId = source.Id
+                        });
+                    }
+                }
+            }
         }
 
         // تنظيف أي تنبيهات ملغاة من النوع القديم (CalibrationDue أو نص المعايرة)
@@ -80,11 +144,18 @@ public class AlertService : IAlertService
             db.AlertNotifications.RemoveRange(obsoleteAlerts);
         }
 
-        // تنظيف تنبيهات المصادر التي لم تعد في حالة نشاط منخفض
-        var currentAlertSourceIds = alerts.Select(a => a.SourceId).Where(id => id.HasValue).Select(id => id!.Value).ToHashSet();
+        // تنظيف التنبيهات التي زال سببها بدقة لكل زوج (SourceId, AlertType)
+        var currentAlertKeys = alerts
+            .Where(a => a.SourceId.HasValue)
+            .Select(a => (SourceId: a.SourceId!.Value, a.AlertType))
+            .ToHashSet();
+
         var resolvedAlerts = db.AlertNotifications
-            .Where(a => a.SourceId.HasValue && !currentAlertSourceIds.Contains(a.SourceId.Value))
+            .Where(a => a.SourceId.HasValue)
+            .ToList()
+            .Where(a => !currentAlertKeys.Contains((a.SourceId!.Value, a.AlertType)))
             .ToList();
+
         if (resolvedAlerts.Any())
         {
             db.AlertNotifications.RemoveRange(resolvedAlerts);
@@ -95,6 +166,7 @@ public class AlertService : IAlertService
 
         return GetActiveAlerts();
     }
+
 
     /// <summary>
     /// دالة فيزيائية موحدة لحساب عدد فترات نصف العمر المنقضية وأسوأ نظير اضمحلالاً لمصدر معين

@@ -138,6 +138,7 @@ public partial class DashboardViewModel : ObservableObject
     private readonly IDecayCalculationService _decayService;
     private readonly IBorrowService _borrowService;
     private readonly ISystemSettingsService _settingsService;
+    private readonly IAlertService? _alertService;
 
     // ─── بطاقة 1: عدد المصادر ───
     [ObservableProperty] private int _totalSources;
@@ -219,6 +220,11 @@ public partial class DashboardViewModel : ObservableObject
     [ObservableProperty] private int _lowActivityCriticalCount;
     [ObservableProperty] private int _lowActivityWarningCount;
     [ObservableProperty] private bool _hasLowActivityAlerts;   // false → رسالة "ضمن الحدود الآمنة"
+
+    // ─── الجزء 1b: بطاقة تنبيهات اختبارات التسرب ───
+    [ObservableProperty] private int _leakTestCriticalCount;
+    [ObservableProperty] private int _leakTestWarningCount;
+    [ObservableProperty] private bool _hasLeakTestAlerts;
 
     // ─── الجزء 2: بطاقة ملخص الاستعارات ───
     [ObservableProperty] private DashboardBorrowSummary _borrowSummary = new();
@@ -387,7 +393,8 @@ public partial class DashboardViewModel : ObservableObject
         ILocationService locationService,
         IDecayCalculationService decayService,
         IBorrowService borrowService,
-        ISystemSettingsService settingsService)
+        ISystemSettingsService settingsService,
+        IAlertService? alertService = null)
     {
         _sourceService = sourceService;
         _isotopeService = isotopeService;
@@ -395,6 +402,7 @@ public partial class DashboardViewModel : ObservableObject
         _decayService = decayService;
         _borrowService = borrowService;
         _settingsService = settingsService;
+        _alertService = alertService ?? (App.ServiceProvider?.GetService(typeof(IAlertService)) as IAlertService);
 
         InitDrawMarginFrames();
         InitFilterOptions();
@@ -537,6 +545,16 @@ public partial class DashboardViewModel : ObservableObject
             catch (Exception ex)
             {
                 LoggerService.LogError("DashboardViewModel: UpdateLowActivityAlertCard failed", ex);
+            }
+
+            // ═══ الجزء 1b: بطاقة تنبيهات اختبارات التسرب (try/catch منفصل) ═══
+            try
+            {
+                UpdateLeakTestAlertCard();
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("DashboardViewModel: UpdateLeakTestAlertCard failed", ex);
             }
 
             // ═══ الجزء 2: بطاقة ملخص الاستعارات (try/catch منفصل) ═══
@@ -1600,6 +1618,27 @@ public partial class DashboardViewModel : ObservableObject
         HasLowActivityAlerts = criticalCount > 0 || warningCount > 0;
     }
 
+    // ───────────── الجزء 1b: بطاقة تنبيهات اختبارات التسرب ─────────────
+    private void UpdateLeakTestAlertCard()
+    {
+        try
+        {
+            if (_alertService == null) return;
+            var activeAlerts = _alertService.GetAllAlerts(includeDismissed: false);
+
+            int warning = activeAlerts.Count(a => a.AlertType == "LeakTestDue" && a.Severity == "Warning");
+            int critical = activeAlerts.Count(a => a.AlertType == "LeakTestOverdue" && a.Severity == "Critical");
+
+            LeakTestWarningCount = warning;
+            LeakTestCriticalCount = critical;
+            HasLeakTestAlerts = warning > 0 || critical > 0;
+        }
+        catch (Exception ex)
+        {
+            LoggerService.LogError("DashboardViewModel: Failed to update leak test alerts", ex);
+        }
+    }
+
     // ───────────── الجزء 2: بطاقة ملخص الاستعارات ─────────────
     private void UpdateBorrowSummaryCard()
     {
@@ -1669,13 +1708,22 @@ public partial class DashboardViewModel : ObservableObject
     private void NavigateToLowActivityReport()
     {
         // الحصول على MainViewModel وتحديد نافذة التقارير وفتح تقرير المصادر المنخفضة
-        if (App.ServiceProvider.GetService(typeof(MainViewModel)) is MainViewModel main)
+        if (App.ServiceProvider?.GetService(typeof(MainViewModel)) is MainViewModel main)
         {
             main.NavigateTo("Reports");
             if (main.CurrentView is ReportsViewModel reportsVm)
             {
                 reportsVm.SelectReportCommand.Execute("LowActivityReport");
             }
+        }
+    }
+
+    [RelayCommand]
+    private void NavigateToLeakTests()
+    {
+        if (App.ServiceProvider?.GetService(typeof(MainViewModel)) is MainViewModel main)
+        {
+            main.NavigateTo("LeakTests");
         }
     }
 

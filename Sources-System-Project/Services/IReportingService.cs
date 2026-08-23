@@ -20,5 +20,8 @@ namespace Sources.Services
         Task GenerateUsersReportExcelAsync(IEnumerable<User> users, string filePath);
         Task GenerateAuditLogsPdfAsync(IEnumerable<AuditLog> logs, string filePath);
         Task GenerateAuditLogsExcelAsync(IEnumerable<AuditLog> logs, string filePath);
+        Task GenerateLeakTestsReportPdfAsync(IEnumerable<LeakTestRecord> records, string filePath, string reportTitle);
+        Task GenerateLeakTestsReportExcelAsync(IEnumerable<LeakTestRecord> records, string filePath, string reportTitle);
     }
 }
+

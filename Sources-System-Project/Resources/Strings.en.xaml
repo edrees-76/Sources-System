@@ -270,6 +270,15 @@
     <system:String x:Key="LabelAllSafe">✅ All sources are within safe limits</system:String>
     <system:String x:Key="BtnViewLowActivityReport">View Low Activity Report →</system:String>
 
+    <!-- ── Leak Test Alerts Card (Part 1b) ── -->
+    <system:String x:Key="CardLeakTestAlertsTitle">Leak Test Alerts</system:String>
+    <system:String x:Key="CardLeakTestAlertsSubtitle">Sealed sources due or overdue for testing</system:String>
+    <system:String x:Key="LabelLeakTestOverdue">Overdue / Fail</system:String>
+    <system:String x:Key="LabelLeakTestDue">Due Soon</system:String>
+    <system:String x:Key="LabelAllLeakTestsValid">✅ All leak tests are up to date</system:String>
+    <system:String x:Key="BtnViewLeakTestsReport">View Leak Tests Report →</system:String>
+    <system:String x:Key="HintBorrowStorageOnly">The list only shows sources currently in Storage. If your source does not appear, ensure its status in the Sources screen is 'In Storage'.</system:String>
+
     <!-- ── Borrow Summary Card (Part 2) ── -->
     <system:String x:Key="CardBorrowSummaryTitle">Borrowing Summary</system:String>
     <system:String x:Key="LabelOverdue">Overdue</system:String>
@@ -1020,4 +1029,41 @@
     <system:String x:Key="MsgSelectLocationFirst">Please select a location first to proceed.</system:String>
     <system:String x:Key="MsgConfirmDeleteSource">Are you sure you want to delete this radioactive source?</system:String>
 
+    <!-- Periodic Wipe/Leak Tests -->
+    <system:String x:Key="MenuLeakTests">Leak Tests</system:String>
+    <system:String x:Key="SubtitleLeakTests">Periodic radiation wipe and leak testing logs for sealed sources</system:String>
+    <system:String x:Key="BtnAddLeakTest">New Leak Test</system:String>
+    <system:String x:Key="HintSearchLeakTests">Search by source code, cert number, inspector, notes...</system:String>
+    <system:String x:Key="LabelResultFilter">Result:</system:String>
+    <system:String x:Key="ResultPass">Pass (Clean)</system:String>
+    <system:String x:Key="ResultFail">Fail (Leak)</system:String>
+    <system:String x:Key="ResultInconclusive">Inconclusive</system:String>
+    <system:String x:Key="LabelDueStatusFilter">Due Status:</system:String>
+    <system:String x:Key="DueStatusDueSoon">Due Soon</system:String>
+    <system:String x:Key="DueStatusOverdue">Overdue</system:String>
+    <system:String x:Key="DueStatusValid">Valid</system:String>
+    <system:String x:Key="ColTestDate">Test Date</system:String>
+    <system:String x:Key="ColNextDueDate">Next Due Date</system:String>
+    <system:String x:Key="ColResult">Result</system:String>
+    <system:String x:Key="ColMeasuredActivity">Measured Activity</system:String>
+    <system:String x:Key="ColInspector">Inspector / Examiner</system:String>
+    <system:String x:Key="ColCertificateNumber">Certificate #</system:String>
+    <system:String x:Key="EmptyLeakTestsTitle">No Leak Test Records</system:String>
+    <system:String x:Key="EmptyLeakTestsSubtitle">No periodic leak test records found matching current search criteria</system:String>
+    <system:String x:Key="FieldTestDateReq">Test Date *</system:String>
+    <system:String x:Key="FieldNextDueDateReq">Next Due Date *</system:String>
+    <system:String x:Key="FieldResultReq">Result *</system:String>
+    <system:String x:Key="FieldMeasuredActivity">Measured Activity (Bq)</system:String>
+    <system:String x:Key="FieldInspectorName">Inspector Name</system:String>
+    <system:String x:Key="FieldCertificateNumber">Certificate Number</system:String>
+    <system:String x:Key="LabelIsSealedSource">Sealed Source (Subject to periodic leak testing)</system:String>
+    <system:String x:Key="LabelIsSealed">Source Type:</system:String>
+    <system:String x:Key="LabelSealedYes">Sealed</system:String>
+    <system:String x:Key="LabelSealedNo">Unsealed</system:String>
+    <system:String x:Key="LabelLeakTestInterval">Sealed Source Leak Test Interval (Months)</system:String>
+    <system:String x:Key="DescLeakTestInterval">Time period between periodic leak tests (Default: 6 months)</system:String>
+    <system:String x:Key="LabelLeakTestWarningDays">Leak Test Due Warning Threshold (Days)</system:String>
+    <system:String x:Key="DescLeakTestWarningDays">Days before due date to start showing leak test warning alert (Default: 30 days)</system:String>
+
 </ResourceDictionary>
+

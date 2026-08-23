@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.EntityFrameworkCore;
 using Sources.Data;
 using Sources.Helpers;
+using Sources.Models;
 using Sources.Services;
 using System;
 using System.IO;
@@ -76,6 +77,8 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private double _lowActivityThresholdPercent = 10.0;
     [ObservableProperty] private int _notificationCheckIntervalMinutes = 60;
     [ObservableProperty] private int _dueSoonDaysThreshold = 7;
+    [ObservableProperty] private int _leakTestIntervalMonths = 6;
+    [ObservableProperty] private int _leakTestWarningDaysThreshold = 30;
     [ObservableProperty] private string _facilityName = string.Empty;
     [ObservableProperty] private string _facilityAddress = string.Empty;
     [ObservableProperty] private string _technicalDirector = string.Empty;
@@ -138,9 +141,14 @@ public partial class SettingsViewModel : ObservableObject
         LowActivityThresholdPercent = _settingsService.GetSetting("LowActivityThresholdPercent", 10.0);
         NotificationCheckIntervalMinutes = _settingsService.GetSetting("NotificationCheckIntervalMinutes", 60);
         DueSoonDaysThreshold = _settingsService.GetSetting("DueSoonDaysThreshold", 7);
+        LeakTestIntervalMonths = _settingsService.GetSetting(SystemSettingsDefaults.LeakTestIntervalMonthsKey, 6);
+        if (LeakTestIntervalMonths <= 0) LeakTestIntervalMonths = 6;
+        LeakTestWarningDaysThreshold = _settingsService.GetSetting(SystemSettingsDefaults.LeakTestWarningDaysThresholdKey, 30);
+        if (LeakTestWarningDaysThreshold <= 0) LeakTestWarningDaysThreshold = 30;
         FacilityName = _settingsService.GetSetting("FacilityName", string.Empty);
         FacilityAddress = _settingsService.GetSetting("FacilityAddress", string.Empty);
         TechnicalDirector = _settingsService.GetSetting("TechnicalDirector", string.Empty);
+
 
         UpdateLastBackupInfo();
 
@@ -395,9 +403,23 @@ public partial class SettingsViewModel : ObservableObject
             return;
         }
 
+        if (LeakTestIntervalMonths < 1 || LeakTestIntervalMonths > 120)
+        {
+            DialogHelper.ShowWarning("يجب أن تكون دورية فحص التسرب بين 1 شهر و 120 شهراً", TranslationHelper.GetString("TabSystemSettings"));
+            return;
+        }
+
+        if (LeakTestWarningDaysThreshold < 1 || LeakTestWarningDaysThreshold > 365)
+        {
+            DialogHelper.ShowWarning("يجب أن تكون مهلة التنبيه بفحص التسرب بين 1 يوم و 365 يوماً", TranslationHelper.GetString("TabSystemSettings"));
+            return;
+        }
+
         _settingsService.SaveSetting("LowActivityThresholdPercent", LowActivityThresholdPercent.ToString());
         _settingsService.SaveSetting("NotificationCheckIntervalMinutes", NotificationCheckIntervalMinutes.ToString());
         _settingsService.SaveSetting("DueSoonDaysThreshold", DueSoonDaysThreshold.ToString());
+        _settingsService.SaveSetting(SystemSettingsDefaults.LeakTestIntervalMonthsKey, LeakTestIntervalMonths.ToString());
+        _settingsService.SaveSetting(SystemSettingsDefaults.LeakTestWarningDaysThresholdKey, LeakTestWarningDaysThreshold.ToString());
         _settingsService.SaveSetting("FacilityName", FacilityName ?? string.Empty);
         _settingsService.SaveSetting("FacilityAddress", FacilityAddress ?? string.Empty);
         _settingsService.SaveSetting("TechnicalDirector", TechnicalDirector ?? string.Empty);

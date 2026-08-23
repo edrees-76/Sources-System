@@ -253,6 +253,33 @@ public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
     }
 
     [Fact]
+    public void UpdateSource_UpdatesIsSealedProperty_PersistsToDatabase()
+    {
+        // Arrange - إنشاء مصدر IsSealed = true
+        var source = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-SEAL-UPD-01", isSealed: true);
+        var createResult = _sourceService.CreateSource(source);
+        Assert.True(createResult.Success);
+
+        // التأكد من أن القيمة الأولية المحفوظة هي true
+        var initial = _sourceService.GetSourceById(source.Id);
+        Assert.NotNull(initial);
+        Assert.True(initial.IsSealed);
+
+        // Act - تعديل IsSealed إلى false
+        source.IsSealed = false;
+        var updateResult = _sourceService.UpdateSource(source);
+
+        // Assert
+        Assert.True(updateResult.Success);
+        Assert.Equal("تم تحديث المصدر بنجاح", updateResult.Message);
+
+        var updated = _sourceService.GetSourceById(source.Id);
+        Assert.NotNull(updated);
+        Assert.False(updated.IsSealed);
+    }
+
+
+    [Fact]
     public void UpdateSource_DuplicateSourceCodeFromAnotherSource_ReturnsFalseWithErrorMessage()
     {
         // Arrange

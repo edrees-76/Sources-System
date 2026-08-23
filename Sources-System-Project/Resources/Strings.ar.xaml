@@ -267,6 +267,15 @@
     <system:String x:Key="LabelAllSafe">✅ جميع المصادر ضمن الحدود الآمنة</system:String>
     <system:String x:Key="BtnViewLowActivityReport">عرض تقرير انخفاض النشاط ←</system:String>
 
+    <!-- ── بطاقة تنبيهات اختبارات التسرب (الجزء 1b) ── -->
+    <system:String x:Key="CardLeakTestAlertsTitle">تنبيهات اختبارات التسرب</system:String>
+    <system:String x:Key="CardLeakTestAlertsSubtitle">المصادر المختومة المستحقة والمتأخرة</system:String>
+    <system:String x:Key="LabelLeakTestOverdue">متأخر / راسب</system:String>
+    <system:String x:Key="LabelLeakTestDue">مستحق قريباً</system:String>
+    <system:String x:Key="LabelAllLeakTestsValid">✅ جميع اختبارات التسرب سارية</system:String>
+    <system:String x:Key="BtnViewLeakTestsReport">عرض تقرير اختبارات التسرب ←</system:String>
+    <system:String x:Key="HintBorrowStorageOnly">القائمة تعرض فقط المصادر الموجودة حالياً في المخزن (Storage) — إن لم يظهر مصدرك، تأكد من أن حالته الحالية في شاشة المصادر هي 'في المخزن'.</system:String>
+
     <!-- ── بطاقة ملخص الاستعارات (الجزء 2) ── -->
     <system:String x:Key="CardBorrowSummaryTitle">ملخص الاستعارات</system:String>
     <system:String x:Key="LabelOverdue">متأخرة</system:String>
@@ -1018,4 +1027,41 @@
     <system:String x:Key="MsgSelectLocationFirst">الرجاء تحديد موقع أولاً للمتابعة.</system:String>
     <system:String x:Key="MsgConfirmDeleteSource">هل أنت متأكد من حذف هذا المصدر المشع؟</system:String>
 
+    <!-- اختبارات التسرب الدوري والمسح الإشعاعي (Leak/Wipe Test) -->
+    <system:String x:Key="MenuLeakTests">اختبارات التسرب</system:String>
+    <system:String x:Key="SubtitleLeakTests">سجل ومتابعة الفحوصات والمسح الدوري للتسرب الإشعاعي للمصادر المختومة</system:String>
+    <system:String x:Key="BtnAddLeakTest">تسجيل فحص تسرب</system:String>
+    <system:String x:Key="HintSearchLeakTests">ابحث برقم المصدر، رقم الشهادة، المفتش، الملاحظات...</system:String>
+    <system:String x:Key="LabelResultFilter">النتيجة:</system:String>
+    <system:String x:Key="ResultPass">ناجح (سليم)</system:String>
+    <system:String x:Key="ResultFail">راسب (تسرب)</system:String>
+    <system:String x:Key="ResultInconclusive">غير حاسم</system:String>
+    <system:String x:Key="LabelDueStatusFilter">الاستحقاق:</system:String>
+    <system:String x:Key="DueStatusDueSoon">مستحق قريباً</system:String>
+    <system:String x:Key="DueStatusOverdue">متأخر</system:String>
+    <system:String x:Key="DueStatusValid">ساري</system:String>
+    <system:String x:Key="ColTestDate">تاريخ الفحص</system:String>
+    <system:String x:Key="ColNextDueDate">الاستحقاق القادم</system:String>
+    <system:String x:Key="ColResult">النتيجة</system:String>
+    <system:String x:Key="ColMeasuredActivity">النشاط المقاس</system:String>
+    <system:String x:Key="ColInspector">المفتش / الفاحص</system:String>
+    <system:String x:Key="ColCertificateNumber">رقم الشهادة</system:String>
+    <system:String x:Key="EmptyLeakTestsTitle">لا توجد سجلات اختبار تسرب</system:String>
+    <system:String x:Key="EmptyLeakTestsSubtitle">لم يتم تسجيل أي فحوصات تسرب تطابق خيارات البحث والتصفية الحالية</system:String>
+    <system:String x:Key="FieldTestDateReq">تاريخ الفحص *</system:String>
+    <system:String x:Key="FieldNextDueDateReq">تاريخ الاستحقاق القادم *</system:String>
+    <system:String x:Key="FieldResultReq">النتيجة *</system:String>
+    <system:String x:Key="FieldMeasuredActivity">النشاط المقاس (Bq)</system:String>
+    <system:String x:Key="FieldInspectorName">اسم المفتش / الفاحص</system:String>
+    <system:String x:Key="FieldCertificateNumber">رقم شهادة الفحص</system:String>
+    <system:String x:Key="LabelIsSealedSource">مصدر مختوم (خاضع لاختبار التسرب الدوري)</system:String>
+    <system:String x:Key="LabelIsSealed">نوع المصدر:</system:String>
+    <system:String x:Key="LabelSealedYes">مختوم (Sealed)</system:String>
+    <system:String x:Key="LabelSealedNo">غير مختوم (Unsealed)</system:String>
+    <system:String x:Key="LabelLeakTestInterval">دورية اختبار التسرب للمصادر المختومة (أشهر)</system:String>
+    <system:String x:Key="DescLeakTestInterval">الفترة الزمنية بين كل فحص تسرب والذي يليه (افتراضياً: 6 أشهر)</system:String>
+    <system:String x:Key="LabelLeakTestWarningDays">مهلة التنبيه باقتراب استحقاق فحص التسرب (أيام)</system:String>
+    <system:String x:Key="DescLeakTestWarningDays">عدد الأيام المتبقية لبدء ظهور تنبيه استحقاق الفحص (افتراضياً: 30 يوماً)</system:String>
+
 </ResourceDictionary>
+

@@ -477,9 +477,21 @@
                                     
                                     <!-- اختيار المصدر -->
                                     <StackPanel Margin="0,0,0,16">
-                                        <TextBlock Text="{DynamicResource SelectSource}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
-                                        <ComboBox ItemsSource="{Binding AvailableSources}" SelectedItem="{Binding SelectedSourceForNew}" 
-                                                  DisplayMemberPath="SourceCode" Style="{StaticResource FormComboBox}"/>
+                                        <DockPanel Margin="0,0,0,6">
+                                            <TextBlock Text="{DynamicResource SelectSource}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" DockPanel.Dock="Left"/>
+                                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center" ToolTip="{DynamicResource HintBorrowStorageOnly}">
+                                                <materialDesign:PackIcon Kind="InformationOutline" Width="14" Height="14" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                                <TextBlock Text="المخزن فقط" FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </DockPanel>
+                                        <ComboBox ItemsSource="{Binding AvailableSources}"
+                                                  SelectedItem="{Binding SelectedSourceForNew}"
+                                                  DisplayMemberPath="SourceCode"
+                                                  IsEditable="True"
+                                                  IsTextSearchEnabled="True"
+                                                  IsTextSearchCaseSensitive="False"
+                                                  Style="{StaticResource FormComboBox}"/>
+                                        <TextBlock Text="{DynamicResource HintBorrowStorageOnly}" FontSize="11" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" Margin="2,6,0,0"/>
                                     </StackPanel>
 
                                     <!-- بطاقة معلومات المصدر المختار -->

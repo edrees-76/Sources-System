@@ -148,8 +148,10 @@ public class SourceService : ISourceService
         existing.CurrentActivityUnitId = source.CurrentActivityUnitId;
         existing.LocationId = source.LocationId;
         existing.Status = source.Status;
+        existing.IsSealed = source.IsSealed;
         existing.Notes = source.Notes;
         existing.ImagePath = source.ImagePath;
+
 
         var isotopesDict = db.Radioisotopes.ToDictionary(r => r.Id);
         var unitsDict = db.ActivityUnits.ToDictionary(u => u.Id);

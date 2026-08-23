@@ -230,6 +230,9 @@ public class Source
     /// <summary>هل المصدر يحتوي على تفاصيل متعددة النظائر؟</summary>
     public bool HasDetailedIsotopes { get; set; }
 
+    /// <summary>هل المصدر مختوم (خاضع لاختبار التسرب الدوري)؟</summary>
+    public bool IsSealed { get; set; } = true;
+
     public string? ImagePath { get; set; }
 
     public string? Notes { get; set; }
@@ -246,6 +249,7 @@ public class Source
     public ICollection<BorrowRequest> BorrowRequests { get; set; } = new List<BorrowRequest>();
     public ICollection<SourceIsotope> SourceIsotopes { get; set; } = new List<SourceIsotope>();
     public ICollection<SourceLocationHistory> LocationHistories { get; set; } = new List<SourceLocationHistory>();
+    public ICollection<LeakTestRecord> LeakTestRecords { get; set; } = new List<LeakTestRecord>();
 
     /// <summary>عرض النظائر كنص مختصر للجدول الرئيسي</summary>
     [NotMapped]
@@ -629,3 +633,50 @@ public class AppSetting
 
     public string? Description { get; set; }
 }
+
+// ─── اختبارات التسرب الدوري والمسح الإشعاعي (Leak/Wipe Test) ───
+public class LeakTestRecord
+{
+    [Key]
+    public Guid Id { get; set; } = Guid.NewGuid();
+
+    public Guid SourceId { get; set; }
+    [ForeignKey(nameof(SourceId))]
+    public Source? Source { get; set; }
+
+    public DateTime TestDate { get; set; } = DateTime.Today;
+
+    public DateTime NextDueDate { get; set; }
+
+    [Required, MaxLength(20)]
+    public string Result { get; set; } = "Pass"; // Pass, Fail, Inconclusive
+
+    public double? MeasuredActivityBq { get; set; }
+
+    public Guid? PerformedByUserId { get; set; }
+    [ForeignKey(nameof(PerformedByUserId))]
+    public User? PerformedByUser { get; set; }
+
+    [MaxLength(200)]
+    public string? InspectorName { get; set; }
+
+    [MaxLength(100)]
+    public string? CertificateNumber { get; set; }
+
+    public string? Notes { get; set; }
+
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+    [NotMapped]
+    public string ArabicResult => Result switch
+    {
+        "Pass" => "ناجح (سليم)",
+        "Fail" => "راسب (تسرب)",
+        "Inconclusive" => "غير حاسم",
+        _ => Result
+    };
+
+    [NotMapped]
+    public string StatusDisplay => (NextDueDate.Date < DateTime.Today) ? "متأخر" : "ساري";
+}
+

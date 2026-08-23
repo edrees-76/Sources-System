@@ -105,6 +105,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     [ObservableProperty] private Guid? _editCurrentUnitId;
     [ObservableProperty] private Guid? _editLocationId;
     [ObservableProperty] private string _editStatus = "InUse";
+    [ObservableProperty] private bool _editIsSealed = true;
     [ObservableProperty] private bool _isActivelyBorrowed;
 
     partial void OnEditInitialActivityTextChanged(string value)
@@ -332,6 +333,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         EditCurrentUnitId = ActivityUnits.FirstOrDefault()?.Id;
         EditLocationId = Locations.FirstOrDefault()?.Id;
         EditStatus = "InUse";
+        EditIsSealed = true;
         EditNotes = string.Empty;
         IsMultiIsotope = false;
         EditImagePath = null;
@@ -374,6 +376,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         EditCurrentUnitId = SelectedSource.CurrentActivityUnitId;
         EditLocationId = SelectedSource.LocationId;
         EditStatus = SelectedSource.Status;
+        EditIsSealed = SelectedSource.IsSealed;
         EditNotes = SelectedSource.Notes ?? "";
         EditImagePath = SelectedSource.ImagePath;
         CurrentStep = 1;
@@ -521,6 +524,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                 CurrentActivityUnitId = EditCurrentUnitId.Value,
                 LocationId = EditLocationId,
                 Status = EditStatus,
+                IsSealed = EditIsSealed,
                 Notes = EditNotes,
                 HasDetailedIsotopes = IsMultiIsotope,
                 ImagePath = EditImagePath
@@ -538,11 +542,13 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
             if (result.Success)
             {
                 IsEditing = false;
+                DialogHelper.ShowInfo(result.Message, "نجاح العملية");
             }
             else
             {
                 return;
             }
+
         }
         catch (Exception ex)
         {
@@ -676,6 +682,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                   $"{TranslationHelper.GetString("LabelLocation")} {lre}{source.Location?.LocationName ?? "N/A"}{pdf}\n" +
                   $"{TranslationHelper.GetString("LabelCalibrationDate")} {lre}{source.CalibrationDate:yyyy-MM-dd}{pdf}\n" +
                   $"{TranslationHelper.GetString("LabelStatus")} {source.ArabicStatus}\n" +
+                  $"{TranslationHelper.GetString("LabelIsSealed")} {(source.IsSealed ? (TranslationHelper.GetString("LabelSealedYes") ?? "نعم (مصدر مختوم)") : (TranslationHelper.GetString("LabelSealedNo") ?? "لا (غير مختوم)"))}\n" +
                   $"{TranslationHelper.GetString("LabelManufacturer")} {lre}{source.Manufacturer ?? "N/A"}{pdf}\n" +
                   $"{TranslationHelper.GetString("LabelNotes")} {source.Notes ?? "N/A"}";
 

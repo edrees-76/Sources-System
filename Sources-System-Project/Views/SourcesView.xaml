@@ -1286,7 +1286,7 @@
                                             </UniformGrid>
 
                                             <!-- الشركة المصنعة -->
-                                            <StackPanel>
+                                            <StackPanel Margin="0,0,0,12">
                                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                                     <materialDesign:PackIcon Kind="Factory" Width="15" Height="15" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                                     <TextBlock Text="{DynamicResource FieldManufacturer}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
@@ -1295,10 +1295,17 @@
                                                          Style="{StaticResource FormTextBox}"
                                                          materialDesign:HintAssist.Hint="Amersham"/>
                                             </StackPanel>
+
+                                            <!-- خيار المصدر المختوم (خاضع لاختبار التسرب الدوري) -->
+                                            <Border Background="{DynamicResource InputBackground}" CornerRadius="6" Padding="12,10" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                                                <CheckBox Content="{DynamicResource LabelIsSealedSource}" IsChecked="{Binding EditIsSealed}" 
+                                                          FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                            </Border>
                                         </StackPanel>
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
+
 
                             <!-- ─── الخطوة 2: البيانات والخصائص الإشعاعية ─── -->
                             <StackPanel Visibility="{Binding CurrentStep, Converter={StaticResource EqualityToVis}, ConverterParameter=2}">

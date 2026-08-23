@@ -67,7 +67,9 @@ public static class TestDataBuilder
         double initialActivity = 1000.0,
         DateTime? calibrationDate = null,
         string status = "InUse",
-        bool hasDetailedIsotopes = false)
+        bool hasDetailedIsotopes = false,
+        bool isSealed = false)
+
     {
         var calDate = calibrationDate ?? DateTime.Now.AddDays(-30);
         return new Source
@@ -83,12 +85,14 @@ public static class TestDataBuilder
             LocationId = location?.Id,
             Status = status,
             HasDetailedIsotopes = hasDetailedIsotopes,
+            IsSealed = isSealed,
             SerialNumber = $"SN-{Guid.NewGuid().ToString().Substring(0, 8)}",
             Manufacturer = "Test Manufacturer",
             Model = "Model-X",
             CreatedAt = DateTime.Now
         };
     }
+
 
     public static SourceIsotope CreateSourceIsotope(
         Source source,
