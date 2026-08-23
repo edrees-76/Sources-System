@@ -139,6 +139,16 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     private readonly IBorrowService _borrowService;
     private readonly ISystemSettingsService _settingsService;
     private readonly IAlertService? _alertService;
+    private readonly IGlobalSearchService _globalSearchService;
+
+    // ─── البحث الموحّد في لوحة القيادة (Global Search) ───
+    [ObservableProperty] private string _globalSearchQuery = string.Empty;
+    [ObservableProperty] private bool _isGlobalSearchResultsOpen;
+    [ObservableProperty] private bool _isGlobalSearching;
+    [ObservableProperty] private int _totalGlobalSearchResultsCount;
+    [ObservableProperty] private ObservableCollection<GlobalSearchResultGroup> _globalSearchResultGroups = new();
+    [ObservableProperty] private GlobalSearchResultItem? _selectedGlobalSearchResultItem;
+    private System.Threading.CancellationTokenSource? _globalSearchCts;
 
     // ─── ساعة وتاريخ الداشبورد المباشرة ───
     [ObservableProperty] private string _currentDateDisplay = string.Empty;
@@ -399,7 +409,8 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         IDecayCalculationService decayService,
         IBorrowService borrowService,
         ISystemSettingsService settingsService,
-        IAlertService? alertService = null)
+        IAlertService? alertService = null,
+        IGlobalSearchService? globalSearchService = null)
     {
         _sourceService = sourceService;
         _isotopeService = isotopeService;
@@ -408,6 +419,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         _borrowService = borrowService;
         _settingsService = settingsService;
         _alertService = alertService ?? (App.ServiceProvider?.GetService(typeof(IAlertService)) as IAlertService);
+        _globalSearchService = globalSearchService ?? (App.ServiceProvider?.GetService(typeof(IGlobalSearchService)) as IGlobalSearchService)!;
 
         InitDrawMarginFrames();
         InitFilterOptions();
@@ -1380,6 +1392,9 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         _searchDebounceTimer?.Stop();
         _searchDebounceTimer?.Dispose();
         _searchDebounceTimer = null;
+        _globalSearchCts?.Cancel();
+        _globalSearchCts?.Dispose();
+        _globalSearchCts = null;
     }
 
     // ───────────── منحنى التحلل الزمني — وضع المقارنة (أ) ووضع المصدر المفرد (ب) ─────────────
@@ -1882,5 +1897,113 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
                   $"{TranslationHelper.GetString("LabelNotes")} {source.Notes ?? "N/A"}";
 
         DialogHelper.ShowInfo(details, TranslationHelper.GetString("TitleSourceDetails"), source.ImagePath);
+    }
+
+    // ─── منطق البحث الموحّد (Global Search Logic) ───
+    partial void OnGlobalSearchQueryChanged(string value)
+    {
+        _globalSearchCts?.Cancel();
+
+        if (string.IsNullOrWhiteSpace(value) || value.Trim().Length < 2)
+        {
+            GlobalSearchResultGroups.Clear();
+            TotalGlobalSearchResultsCount = 0;
+            IsGlobalSearchResultsOpen = false;
+            IsGlobalSearching = false;
+            SelectedGlobalSearchResultItem = null;
+            return;
+        }
+
+        _globalSearchCts = new System.Threading.CancellationTokenSource();
+        var token = _globalSearchCts.Token;
+        var query = value.Trim();
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(250, token);
+                if (token.IsCancellationRequested) return;
+
+                RunOnUI(() => IsGlobalSearching = true);
+
+                var groups = await _globalSearchService.SearchAsync(query, token);
+                if (token.IsCancellationRequested) return;
+
+                RunOnUI(() =>
+                {
+                    GlobalSearchResultGroups = new ObservableCollection<GlobalSearchResultGroup>(groups);
+                    TotalGlobalSearchResultsCount = groups.Sum(g => g.Items.Count);
+                    IsGlobalSearchResultsOpen = groups.Count > 0;
+                    SelectedGlobalSearchResultItem = groups.FirstOrDefault()?.Items.FirstOrDefault();
+                    IsGlobalSearching = false;
+                });
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("DashboardViewModel: GlobalSearch error", ex);
+                RunOnUI(() => IsGlobalSearching = false);
+            }
+        }, token);
+    }
+
+    [RelayCommand]
+    public async Task ExecuteGlobalSearchNowAsync()
+    {
+        _globalSearchCts?.Cancel();
+        var query = GlobalSearchQuery?.Trim() ?? string.Empty;
+
+        if (query.Length < 2)
+        {
+            GlobalSearchResultGroups.Clear();
+            TotalGlobalSearchResultsCount = 0;
+            IsGlobalSearchResultsOpen = false;
+            IsGlobalSearching = false;
+            SelectedGlobalSearchResultItem = null;
+            return;
+        }
+
+        try
+        {
+            IsGlobalSearching = true;
+            var groups = await _globalSearchService.SearchAsync(query);
+            GlobalSearchResultGroups = new ObservableCollection<GlobalSearchResultGroup>(groups);
+            TotalGlobalSearchResultsCount = groups.Sum(g => g.Items.Count);
+            IsGlobalSearchResultsOpen = groups.Count > 0;
+            SelectedGlobalSearchResultItem = groups.FirstOrDefault()?.Items.FirstOrDefault();
+        }
+        catch (Exception ex)
+        {
+            LoggerService.LogError("DashboardViewModel: ExecuteGlobalSearchNowAsync failed", ex);
+        }
+        finally
+        {
+            IsGlobalSearching = false;
+        }
+    }
+
+    [RelayCommand]
+    public void ClearGlobalSearch()
+    {
+        _globalSearchCts?.Cancel();
+        GlobalSearchQuery = string.Empty;
+        GlobalSearchResultGroups.Clear();
+        TotalGlobalSearchResultsCount = 0;
+        IsGlobalSearchResultsOpen = false;
+        IsGlobalSearching = false;
+        SelectedGlobalSearchResultItem = null;
+    }
+
+    [RelayCommand]
+    public void CloseGlobalSearchResults()
+    {
+        IsGlobalSearchResultsOpen = false;
+    }
+
+    [RelayCommand]
+    public void SelectGlobalSearchResult(GlobalSearchResultItem? item)
+    {
+        SelectedGlobalSearchResultItem = item;
     }
 }

@@ -123,6 +123,7 @@ public partial class App : Application
         services.AddTransient<IBorrowService, BorrowService>();
         services.AddTransient<ILeakTestService, LeakTestService>();
         services.AddTransient<ISystemResetService, SystemResetService>();
+        services.AddTransient<IGlobalSearchService, GlobalSearchService>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();

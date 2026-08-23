@@ -1,8 +1,10 @@
 using System.Windows.Controls;
 using LiveChartsCore.Kernel.Sketches;
 using LiveChartsCore.Kernel;
+using CommunityToolkit.Mvvm.Messaging;
 using Sources.ViewModels;
 using Sources.Helpers;
+using Sources.Messages;
 
 namespace Sources.Views;
 public partial class DashboardView : UserControl
@@ -14,6 +16,15 @@ public partial class DashboardView : UserControl
         LocationChart.Tooltip = new AutoFlipChartTooltip();
         HistogramChart.Tooltip = new AutoFlipChartTooltip();
         DecayChart.Tooltip = new AutoFlipChartTooltip();
+
+        WeakReferenceMessenger.Default.Register<FocusDashboardSearchMessage>(this, (r, m) =>
+        {
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Input, new System.Action(() =>
+            {
+                TxtDashboardGlobalSearch?.Focus();
+                TxtDashboardGlobalSearch?.SelectAll();
+            }));
+        });
     }
 
     /// <summary>

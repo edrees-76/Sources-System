@@ -2,12 +2,14 @@ using System;
 using System.Windows;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using Sources.ViewModels;
 using Sources.Helpers;
 using Sources.Views;
 using Sources.Services;
 using Sources.Interfaces;
+using Sources.Messages;
 
 namespace Sources;
 
@@ -29,11 +31,32 @@ public partial class MainWindow : Window
         // Inactivity timer event handlers (1-minute test / 15-minute screensaver)
         _viewModel.LockRequested += ViewModel_LockRequested;
         this.PreviewMouseMove += (s, e) => _viewModel.ResetInactivity();
-        this.PreviewKeyDown += (s, e) => _viewModel.ResetInactivity();
+        this.PreviewKeyDown += MainWindow_PreviewKeyDown;
         this.PreviewMouseDown += (s, e) => _viewModel.ResetInactivity();
 
         _viewModel.StartInactivityTimer();
         this.Loaded += MainWindow_Loaded;
+    }
+
+    private void MainWindow_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        _viewModel.ResetInactivity();
+
+        // اختصار Ctrl+K لتركيز شريط البحث الموحّد في لوحة التحكم (مع التنقل إليها إن لزم)
+        if (e.Key == System.Windows.Input.Key.K && (System.Windows.Input.Keyboard.Modifiers & System.Windows.Input.ModifierKeys.Control) == System.Windows.Input.ModifierKeys.Control)
+        {
+            if (_viewModel.CurrentViewName != "Dashboard")
+            {
+                _viewModel.NavigateTo("Dashboard");
+            }
+
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Input, new Action(() =>
+            {
+                WeakReferenceMessenger.Default.Send(new FocusDashboardSearchMessage());
+            }));
+
+            e.Handled = true;
+        }
     }
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)

@@ -6,3 +6,11 @@ namespace Sources.Messages;
 public class SourcesUpdatedMessage
 {
 }
+
+/// <summary>
+/// رسالة لطلب التركيز على شريط البحث الموحّد في لوحة التحكم (عند الضغط على Ctrl+K)
+/// </summary>
+public class FocusDashboardSearchMessage
+{
+}
+
