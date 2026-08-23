@@ -707,6 +707,11 @@
     <system:String x:Key="BtnRefreshAlerts">تحديث وفحص التنبيهات</system:String>
     <system:String x:Key="MsgAlertsRefreshed">تم إعادة فحص وتحديث التنبيهات بنجاح</system:String>
     <system:String x:Key="LabelTotalAlerts">إجمالي التنبيهات النشطة</system:String>
+    <system:String x:Key="LabelLeakTestAlerts">تنبيهات اختبارات التسرب</system:String>
+    <system:String x:Key="LabelLowActivityAlerts">تنبيهات انخفاض النشاط</system:String>
+    <system:String x:Key="FilterAlertType">نوع التنبيه</system:String>
+    <system:String x:Key="FilterLeakTestAlerts">اختبارات التسرب</system:String>
+    <system:String x:Key="FilterLowActivityAlerts">انخفاض النشاط</system:String>
     <system:String x:Key="FilterSeverity">مستوى الخطورة</system:String>
     <system:String x:Key="FilterCritical">حرج فقط</system:String>
     <system:String x:Key="FilterWarning">تحذيري فقط</system:String>

@@ -104,6 +104,8 @@ public partial class ReportsViewModel : ObservableObject
         LoadReport();
     }
 
+    partial void OnSelectedReportChanged(string value) => LoadReport();
+
     [RelayCommand]
     public void LoadReport()
     {
@@ -113,7 +115,7 @@ public partial class ReportsViewModel : ObservableObject
         {
             case "InventoryReport":
                 InventoryData = new ObservableCollection<ReportInventoryRow>(
-                    allSources.Select((s, index) => new ReportInventoryRow { RowNumber = index + 1, Source = s }));
+                    allSources.OrderBy(s => s.SourceCode).Select((s, index) => new ReportInventoryRow { RowNumber = index + 1, Source = s }));
                 break;
             case "BorrowingReport":
                 var borrows = _borrowService.GetAll() ?? new List<BorrowRequest>();
@@ -121,7 +123,7 @@ public partial class ReportsViewModel : ObservableObject
                     borrows.Select((b, index) => new ReportBorrowingRow { RowNumber = index + 1, Request = b }));
                 break;
             case "ActivityReport":
-                var activeSources = allSources.Where(s => s.Status == "InUse" || s.Status == "Storage").ToList();
+                var activeSources = allSources.Where(s => s.Status == "InUse" || s.Status == "Storage").OrderBy(s => s.SourceCode).ToList();
                 ActivityData = new ObservableCollection<ReportActivityRow>(
                     activeSources.Select((s, index) => new ReportActivityRow { RowNumber = index + 1, Source = s }));
                 break;
@@ -138,11 +140,11 @@ public partial class ReportsViewModel : ObservableObject
                 break;
             case "GeneralReport":
                 InventoryData = new ObservableCollection<ReportInventoryRow>(
-                    allSources.Select((s, index) => new ReportInventoryRow { RowNumber = index + 1, Source = s }));
+                    allSources.OrderBy(s => s.SourceCode).Select((s, index) => new ReportInventoryRow { RowNumber = index + 1, Source = s }));
                 BorrowingData = new ObservableCollection<ReportBorrowingRow>(
                     (_borrowService.GetAll() ?? new List<BorrowRequest>()).Select((b, index) => new ReportBorrowingRow { RowNumber = index + 1, Request = b }));
                 ActivityData = new ObservableCollection<ReportActivityRow>(
-                    allSources.Where(s => s.Status == "InUse" || s.Status == "Storage").Select((s, index) => new ReportActivityRow { RowNumber = index + 1, Source = s }));
+                    allSources.Where(s => s.Status == "InUse" || s.Status == "Storage").OrderBy(s => s.SourceCode).Select((s, index) => new ReportActivityRow { RowNumber = index + 1, Source = s }));
                 LowActivityData = new ObservableCollection<ReportLowActivityRow>(
                     (_sourceService.GetLowActivitySources(LowActivityThreshold) ?? new List<Source>()).Select((s, index) => new ReportLowActivityRow { RowNumber = index + 1, Source = s }));
                 LowActivityAlertData = new ObservableCollection<ReportLowActivityAlertRow>(
@@ -166,6 +168,7 @@ public partial class ReportsViewModel : ObservableObject
             .Where(s => (s.AlertHalfLivesElapsed ?? -1) >= 5.0)
             .OrderByDescending(s => s.AlertSeverity == "Critical" ? 2 : 1)
             .ThenByDescending(s => s.AlertHalfLivesElapsed ?? 0)
+            .ThenBy(s => s.SourceCode)
             .ToList();
     }
 

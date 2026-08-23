@@ -34,7 +34,7 @@ public class SourceService : ISourceService
             .Include(s => s.Location)
             .Include(s => s.SourceIsotopes).ThenInclude(si => si.Radioisotope)
             .Include(s => s.SourceIsotopes).ThenInclude(si => si.ActivityUnit)
-            .OrderByDescending(s => s.CreatedAt)
+            .OrderBy(s => s.SourceCode)
             .ToList()
             .DistinctBy(s => s.Id)
             .ToList();
@@ -261,6 +261,7 @@ public class SourceService : ISourceService
             .Include(s => s.SourceIsotopes).ThenInclude(si => si.ActivityUnit)
             .Where(s => s.IsDeleted)
             .OrderByDescending(s => s.DeletedAt)
+            .ThenBy(s => s.SourceCode)
             .ToList()
             .DistinctBy(s => s.Id)
             .ToList();
@@ -390,6 +391,8 @@ public class SourceService : ISourceService
                 var ratio = (s.CurrentActivityValue / s.InitialActivityValue) * 100;
                 return ratio <= thresholdPercent;
             })
+            .OrderBy(s => (s.CurrentActivityValue / s.InitialActivityValue))
+            .ThenBy(s => s.SourceCode)
             .ToList();
     }
 

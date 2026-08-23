@@ -710,6 +710,11 @@
     <system:String x:Key="BtnRefreshAlerts">Check &amp; Refresh Alerts</system:String>
     <system:String x:Key="MsgAlertsRefreshed">Alerts successfully re-checked and updated</system:String>
     <system:String x:Key="LabelTotalAlerts">Total Active Alerts</system:String>
+    <system:String x:Key="LabelLeakTestAlerts">Leak Test Alerts</system:String>
+    <system:String x:Key="LabelLowActivityAlerts">Low Activity Alerts</system:String>
+    <system:String x:Key="FilterAlertType">Alert Type</system:String>
+    <system:String x:Key="FilterLeakTestAlerts">Leak Tests</system:String>
+    <system:String x:Key="FilterLowActivityAlerts">Low Activity</system:String>
     <system:String x:Key="FilterSeverity">Severity Level</system:String>
     <system:String x:Key="FilterCritical">Critical Only</system:String>
     <system:String x:Key="FilterWarning">Warning Only</system:String>

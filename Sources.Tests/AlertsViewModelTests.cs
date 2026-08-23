@@ -379,4 +379,55 @@ public class AlertsViewModelTests : IDisposable
         var exception = Record.Exception(() => vm.ViewSourceDetailsCommand.Execute(row));
         Assert.Null(exception);
     }
+
+    [Fact]
+    public void AlertsViewModel_Calculates_LeakTestAndLowActivityCounts_Correctly()
+    {
+        // Arrange
+        var alerts = new List<AlertNotification>
+        {
+            new AlertNotification { Id = Guid.NewGuid(), AlertType = "LeakTestDue", Severity = "Warning", IsDismissed = false },
+            new AlertNotification { Id = Guid.NewGuid(), AlertType = "LeakTestOverdue", Severity = "Critical", IsDismissed = false },
+            new AlertNotification { Id = Guid.NewGuid(), AlertType = "LowActivity", Severity = "Critical", IsDismissed = false },
+            new AlertNotification { Id = Guid.NewGuid(), AlertType = "LowActivity", Severity = "Warning", IsDismissed = false },
+            new AlertNotification { Id = Guid.NewGuid(), AlertType = "LeakTestDue", Severity = "Warning", IsDismissed = true } // Dismissed should not be counted
+        };
+        _mockAlertService.Setup(s => s.GetAllAlerts(true)).Returns(alerts);
+
+        // Act
+        var vm = CreateViewModel();
+
+        // Assert
+        Assert.Equal(2, vm.LeakTestAlertsCount);
+        Assert.Equal(2, vm.LowActivityAlertsCount);
+        Assert.Equal(4, vm.TotalAlertsCount);
+    }
+
+    [Fact]
+    public void AlertsViewModel_SelectedAlertTypeFilter_FiltersCorrectly()
+    {
+        // Arrange
+        var alerts = new List<AlertNotification>
+        {
+            new AlertNotification { Id = Guid.NewGuid(), AlertType = "LeakTestDue", Severity = "Warning", IsDismissed = false },
+            new AlertNotification { Id = Guid.NewGuid(), AlertType = "LeakTestOverdue", Severity = "Critical", IsDismissed = false },
+            new AlertNotification { Id = Guid.NewGuid(), AlertType = "LowActivity", Severity = "Critical", IsDismissed = false },
+        };
+        _mockAlertService.Setup(s => s.GetAllAlerts(true)).Returns(alerts);
+        var vm = CreateViewModel();
+
+        // Act - Filter LeakTest
+        vm.SelectedAlertTypeFilter = "LeakTest";
+        Assert.Equal(2, vm.Alerts.Count);
+        Assert.All(vm.Alerts, a => Assert.Contains("LeakTest", a.AlertType));
+
+        // Act - Filter LowActivity
+        vm.SelectedAlertTypeFilter = "LowActivity";
+        Assert.Single(vm.Alerts);
+        Assert.Equal("LowActivity", vm.Alerts[0].AlertType);
+
+        // Act - Filter All
+        vm.SelectedAlertTypeFilter = "All";
+        Assert.Equal(3, vm.Alerts.Count);
+    }
 }

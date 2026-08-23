@@ -82,6 +82,7 @@ public partial class AlertsViewModel : ObservableObject, IDisposable
     // ─── الفلاتر والبحث ───
     [ObservableProperty] private string _searchText = string.Empty;
     [ObservableProperty] private string _selectedSeverityFilter = "All";
+    [ObservableProperty] private string _selectedAlertTypeFilter = "All";
     [ObservableProperty] private string _selectedLocationFilter = string.Empty;
     [ObservableProperty] private DateTime? _filterStartDate;
     [ObservableProperty] private DateTime? _filterEndDate;
@@ -94,6 +95,8 @@ public partial class AlertsViewModel : ObservableObject, IDisposable
     [ObservableProperty] private int _criticalAlertsCount;
     [ObservableProperty] private int _warningAlertsCount;
     [ObservableProperty] private int _unreadAlertsCount;
+    [ObservableProperty] private int _leakTestAlertsCount;
+    [ObservableProperty] private int _lowActivityAlertsCount;
 
     // ─── تقسيم الصفحات (Pagination) ───
     [ObservableProperty] private int _currentPage = 1;
@@ -190,6 +193,8 @@ public partial class AlertsViewModel : ObservableObject, IDisposable
             CriticalAlertsCount = _allAlertRows.Count(a => a.Severity == "Critical" && !a.IsDismissed);
             WarningAlertsCount = _allAlertRows.Count(a => a.Severity == "Warning" && !a.IsDismissed);
             UnreadAlertsCount = _allAlertRows.Count(a => !a.IsRead && !a.IsDismissed);
+            LeakTestAlertsCount = _allAlertRows.Count(a => (a.AlertType == "LeakTestDue" || a.AlertType == "LeakTestOverdue") && !a.IsDismissed);
+            LowActivityAlertsCount = _allAlertRows.Count(a => a.AlertType == "LowActivity" && !a.IsDismissed);
 
             ApplyFiltersAndPagination();
         }
@@ -209,6 +214,7 @@ public partial class AlertsViewModel : ObservableObject, IDisposable
 
     partial void OnSearchTextChanged(string value) => ApplyFiltersAndPagination();
     partial void OnSelectedSeverityFilterChanged(string value) => ApplyFiltersAndPagination();
+    partial void OnSelectedAlertTypeFilterChanged(string value) => ApplyFiltersAndPagination();
     partial void OnSelectedLocationFilterChanged(string value) => ApplyFiltersAndPagination();
     partial void OnFilterStartDateChanged(DateTime? value) => ApplyFiltersAndPagination();
     partial void OnFilterEndDateChanged(DateTime? value) => ApplyFiltersAndPagination();
@@ -228,6 +234,19 @@ public partial class AlertsViewModel : ObservableObject, IDisposable
         if (!string.IsNullOrWhiteSpace(SelectedSeverityFilter) && SelectedSeverityFilter != "All")
         {
             filtered = filtered.Where(a => a.Severity.Equals(SelectedSeverityFilter, StringComparison.OrdinalIgnoreCase));
+        }
+
+        // 2.5 فلتر نوع التنبيه
+        if (!string.IsNullOrWhiteSpace(SelectedAlertTypeFilter) && SelectedAlertTypeFilter != "All")
+        {
+            if (SelectedAlertTypeFilter.Equals("LeakTest", StringComparison.OrdinalIgnoreCase))
+            {
+                filtered = filtered.Where(a => a.AlertType == "LeakTestDue" || a.AlertType == "LeakTestOverdue");
+            }
+            else if (SelectedAlertTypeFilter.Equals("LowActivity", StringComparison.OrdinalIgnoreCase))
+            {
+                filtered = filtered.Where(a => a.AlertType == "LowActivity");
+            }
         }
 
         // 3. فلتر الموقع
@@ -306,6 +325,7 @@ public partial class AlertsViewModel : ObservableObject, IDisposable
     {
         SearchText = string.Empty;
         SelectedSeverityFilter = "All";
+        SelectedAlertTypeFilter = "All";
         SelectedLocationFilter = string.Empty;
         FilterStartDate = null;
         FilterEndDate = null;

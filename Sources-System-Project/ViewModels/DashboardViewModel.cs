@@ -452,7 +452,7 @@ public partial class DashboardViewModel : ObservableObject
             RunOnUI(() =>
             {
                 TotalSources = sources.Count;
-                _allSourceRows = sources.Select((s, index) => new DashboardSourceRow
+                _allSourceRows = sources.OrderBy(s => s.SourceCode).Select((s, index) => new DashboardSourceRow
                 {
                     RowNumber = index + 1,
                     Source = s
@@ -484,7 +484,7 @@ public partial class DashboardViewModel : ObservableObject
                     sources.Where(s =>
                         (s.Radioisotope != null && s.InitialActivityUnit != null) ||
                         (s.HasDetailedIsotopes && s.SourceIsotopes != null && s.SourceIsotopes.Any(si => si.Radioisotope != null))
-                    ).ToList());
+                    ).OrderBy(s => s.SourceCode).ToList());
             });
 
             // ═══ بطاقة 2: إجمالي النشاط بجميع الوحدات (try/catch منفصل) ═══

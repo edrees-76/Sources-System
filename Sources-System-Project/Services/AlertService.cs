@@ -281,6 +281,7 @@ public class AlertService : IAlertService
         return query
             .OrderByDescending(a => a.Severity == "Critical" ? 3 : a.Severity == "Warning" ? 2 : 1)
             .ThenByDescending(a => a.CreatedAt)
+            .ThenBy(a => a.Source != null ? a.Source.SourceCode : string.Empty)
             .ToList();
     }
 

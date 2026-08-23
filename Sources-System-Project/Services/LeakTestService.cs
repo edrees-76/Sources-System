@@ -101,6 +101,7 @@ public class LeakTestService : ILeakTestService
         return query
             .OrderByDescending(r => r.TestDate)
             .ThenByDescending(r => r.CreatedAt)
+            .ThenBy(r => r.Source != null ? r.Source.SourceCode : string.Empty)
             .ToList();
     }
 

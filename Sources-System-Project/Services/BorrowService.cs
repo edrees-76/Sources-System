@@ -37,6 +37,7 @@ public class BorrowService : IBorrowService
             .Include(b => b.ApproverUser)
             .Include(b => b.ReturnedByUser)
             .OrderByDescending(b => b.RequestDate)
+            .ThenBy(b => b.Source != null ? b.Source.SourceCode : string.Empty)
             .ToList();
     }
 
@@ -52,6 +53,7 @@ public class BorrowService : IBorrowService
             .Include(b => b.ReturnedByUser)
             .Where(b => b.SourceId == sourceId)
             .OrderByDescending(b => b.RequestDate)
+            .ThenBy(b => b.Source != null ? b.Source.SourceCode : string.Empty)
             .ToList();
     }
 

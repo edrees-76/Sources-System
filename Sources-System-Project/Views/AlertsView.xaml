@@ -45,16 +45,20 @@
         <Grid Grid.Row="1" Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="12"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="12"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
             <!-- إجمالي التنبيهات -->
-            <Border Grid.Column="0" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="16,12"
+            <Border Grid.Column="0" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="14,12"
                     BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -62,17 +66,17 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="{DynamicResource LabelTotalAlerts}" FontSize="12" Foreground="{DynamicResource TextSecondary}" FontWeight="SemiBold"/>
-                        <TextBlock Text="{Binding TotalAlertsCount}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,0"/>
+                        <TextBlock Text="{DynamicResource LabelTotalAlerts}" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding TotalAlertsCount}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,0"/>
                     </StackPanel>
-                    <Border Grid.Column="1" Background="#151F5A66" CornerRadius="10" Width="42" Height="42" VerticalAlignment="Center">
-                        <materialDesign:PackIcon Kind="BellOutline" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Border Grid.Column="1" Background="#151F5A66" CornerRadius="10" Width="38" Height="38" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="BellOutline" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                 </Grid>
             </Border>
 
             <!-- التنبيهات الحرجة -->
-            <Border Grid.Column="2" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="16,12"
+            <Border Grid.Column="2" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="14,12"
                     BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -80,17 +84,17 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="{DynamicResource LabelCritical}" FontSize="12" Foreground="#C25B4A" FontWeight="SemiBold"/>
-                        <TextBlock Text="{Binding CriticalAlertsCount}" FontSize="24" FontWeight="Bold" Foreground="#C25B4A" Margin="0,4,0,0"/>
+                        <TextBlock Text="{DynamicResource LabelCritical}" FontSize="11" Foreground="#C25B4A" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding CriticalAlertsCount}" FontSize="22" FontWeight="Bold" Foreground="#C25B4A" Margin="0,4,0,0"/>
                     </StackPanel>
-                    <Border Grid.Column="1" Background="#1AC25B4A" CornerRadius="10" Width="42" Height="42" VerticalAlignment="Center">
-                        <materialDesign:PackIcon Kind="AlertOctagonOutline" Width="22" Height="22" Foreground="#C25B4A" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Border Grid.Column="1" Background="#1AC25B4A" CornerRadius="10" Width="38" Height="38" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="AlertOctagonOutline" Width="20" Height="20" Foreground="#C25B4A" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                 </Grid>
             </Border>
 
             <!-- التنبيهات التحذيرية -->
-            <Border Grid.Column="4" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="16,12"
+            <Border Grid.Column="4" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="14,12"
                     BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -98,17 +102,17 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="{DynamicResource LabelWarning}" FontSize="12" Foreground="#E0A93E" FontWeight="SemiBold"/>
-                        <TextBlock Text="{Binding WarningAlertsCount}" FontSize="24" FontWeight="Bold" Foreground="#E0A93E" Margin="0,4,0,0"/>
+                        <TextBlock Text="{DynamicResource LabelWarning}" FontSize="11" Foreground="#E0A93E" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding WarningAlertsCount}" FontSize="22" FontWeight="Bold" Foreground="#E0A93E" Margin="0,4,0,0"/>
                     </StackPanel>
-                    <Border Grid.Column="1" Background="#1AE0A93E" CornerRadius="10" Width="42" Height="42" VerticalAlignment="Center">
-                        <materialDesign:PackIcon Kind="AlertCircleOutline" Width="22" Height="22" Foreground="#E0A93E" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Border Grid.Column="1" Background="#1AE0A93E" CornerRadius="10" Width="38" Height="38" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="AlertCircleOutline" Width="20" Height="20" Foreground="#E0A93E" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                 </Grid>
             </Border>
 
             <!-- غير المقروءة -->
-            <Border Grid.Column="6" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="16,12"
+            <Border Grid.Column="6" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="14,12"
                     BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -116,11 +120,47 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="{DynamicResource StatusUnread}" FontSize="12" Foreground="{DynamicResource PrimaryLightBrush}" FontWeight="SemiBold"/>
-                        <TextBlock Text="{Binding UnreadAlertsCount}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource PrimaryLightBrush}" Margin="0,4,0,0"/>
+                        <TextBlock Text="{DynamicResource StatusUnread}" FontSize="11" Foreground="{DynamicResource PrimaryLightBrush}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding UnreadAlertsCount}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource PrimaryLightBrush}" Margin="0,4,0,0"/>
                     </StackPanel>
-                    <Border Grid.Column="1" Background="#153D7C89" CornerRadius="10" Width="42" Height="42" VerticalAlignment="Center">
-                        <materialDesign:PackIcon Kind="EmailAlertOutline" Width="22" Height="22" Foreground="{DynamicResource PrimaryLightBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Border Grid.Column="1" Background="#153D7C89" CornerRadius="10" Width="38" Height="38" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="EmailAlertOutline" Width="20" Height="20" Foreground="{DynamicResource PrimaryLightBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- تنبيهات اختبارات التسرب -->
+            <Border Grid.Column="8" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="14,12"
+                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{DynamicResource LabelLeakTestAlerts}" FontSize="11" Foreground="#8E44AD" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding LeakTestAlertsCount}" FontSize="22" FontWeight="Bold" Foreground="#8E44AD" Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <Border Grid.Column="1" Background="#1A8E44AD" CornerRadius="10" Width="38" Height="38" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="ShieldAlertOutline" Width="20" Height="20" Foreground="#8E44AD" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- تنبيهات انخفاض النشاط -->
+            <Border Grid.Column="10" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="14,12"
+                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{DynamicResource LabelLowActivityAlerts}" FontSize="11" Foreground="#3F51B5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding LowActivityAlertsCount}" FontSize="22" FontWeight="Bold" Foreground="#3F51B5" Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <Border Grid.Column="1" Background="#1A3F51B5" CornerRadius="10" Width="38" Height="38" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="RadioactiveCircleOutline" Width="20" Height="20" Foreground="#3F51B5" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                 </Grid>
             </Border>
@@ -131,11 +171,11 @@
                 BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
             <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <!-- مربع البحث -->
-                <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Width="200" Margin="0,0,12,0"
+                <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Width="190" Margin="0,0,12,0"
                          Style="{DynamicResource SearchBox}" materialDesign:HintAssist.Hint="{DynamicResource HintSearch}"/>
 
                 <!-- فلتر مستوى الخطورة -->
-                <ComboBox SelectedValue="{Binding SelectedSeverityFilter}" Width="140" Margin="0,0,12,0"
+                <ComboBox SelectedValue="{Binding SelectedSeverityFilter}" SelectedValuePath="Tag" Width="135" Margin="0,0,12,0"
                           Style="{DynamicResource FormComboBox}"
                           materialDesign:HintAssist.Hint="{DynamicResource FilterSeverity}">
                     <ComboBoxItem Content="{DynamicResource FilterAll}" Tag="All" IsSelected="True"/>
@@ -143,17 +183,26 @@
                     <ComboBoxItem Content="{DynamicResource FilterWarning}" Tag="Warning"/>
                 </ComboBox>
 
+                <!-- فلتر نوع التنبيه -->
+                <ComboBox SelectedValue="{Binding SelectedAlertTypeFilter}" SelectedValuePath="Tag" Width="145" Margin="0,0,12,0"
+                          Style="{DynamicResource FormComboBox}"
+                          materialDesign:HintAssist.Hint="{DynamicResource FilterAlertType}">
+                    <ComboBoxItem Content="{DynamicResource FilterAll}" Tag="All" IsSelected="True"/>
+                    <ComboBoxItem Content="{DynamicResource FilterLeakTestAlerts}" Tag="LeakTest"/>
+                    <ComboBoxItem Content="{DynamicResource FilterLowActivityAlerts}" Tag="LowActivity"/>
+                </ComboBox>
+
                 <!-- فلتر الموقع -->
                 <ComboBox ItemsSource="{Binding AvailableLocations}" SelectedItem="{Binding SelectedLocationFilter}"
-                          Width="160" Margin="0,0,12,0" Style="{DynamicResource FormComboBox}"
+                          Width="150" Margin="0,0,12,0" Style="{DynamicResource FormComboBox}"
                           materialDesign:HintAssist.Hint="{DynamicResource FilterLocation}"/>
 
                 <!-- فلتر تاريخ البداية -->
-                <DatePicker SelectedDate="{Binding FilterStartDate}" Width="130" Margin="0,0,12,0"
+                <DatePicker SelectedDate="{Binding FilterStartDate}" Width="125" Margin="0,0,12,0"
                             Style="{DynamicResource FormDatePicker}" materialDesign:HintAssist.Hint="{DynamicResource FilterDateFrom}"/>
 
                 <!-- فلتر تاريخ النهاية -->
-                <DatePicker SelectedDate="{Binding FilterEndDate}" Width="130" Margin="0,0,12,0"
+                <DatePicker SelectedDate="{Binding FilterEndDate}" Width="125" Margin="0,0,12,0"
                             Style="{DynamicResource FormDatePicker}" materialDesign:HintAssist.Hint="{DynamicResource FilterDateTo}"/>
 
                 <!-- خيار إظهار المخفية -->
