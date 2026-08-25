@@ -329,6 +329,104 @@ public class DecayCalculationService : IDecayCalculationService
         return ConvertToSeconds(value, unit);
     }
 
+    /// <summary>
+    /// حساب معدل الجرعة الإشعاعية التقديري عند 1 متر في الهواء لمجموعة من النظائر
+    /// Dose Rate (µSv/h) = Σ (Activity_i [MBq] × GammaConstant_i [µSv·m²/(MBq·h)])
+    /// </summary>
+    public DoseRateResult CalculateDoseRateAtOneMeter(IEnumerable<(Radioisotope Isotope, double ActivityMBq)> isotopeActivities)
+    {
+        var result = new DoseRateResult();
+        if (isotopeActivities == null) return result;
+
+        double totalDoseRate = 0;
+
+        foreach (var (isotope, activityMBq) in isotopeActivities)
+        {
+            if (isotope == null) continue;
+
+            var contribution = new DoseRateIsotopeContribution
+            {
+                Isotope = isotope,
+                ActivityMBq = activityMBq,
+                GammaConstant = isotope.GammaConstant
+            };
+
+            // 1. التحقق هل النظير باعث لأشعة غاما
+            if (!isotope.IsGammaEmitter)
+            {
+                contribution.Status = DoseRateContributionStatus.NonGammaEmitter;
+                contribution.ContributionMicroSvPerHour = 0;
+                contribution.StatusText = "غير مساهم عند هذه المسافة";
+            }
+            // 2. النظير باعث لغاما ولكن ثابت غاما غير مسجل (null أو <= 0)
+            else if (!isotope.GammaConstant.HasValue || isotope.GammaConstant.Value <= 0)
+            {
+                contribution.Status = DoseRateContributionStatus.MissingGammaConstant;
+                contribution.ContributionMicroSvPerHour = 0;
+                contribution.StatusText = "بيانات ثابت غاما غير مسجلة";
+            }
+            // 3. النظير باعث لغاما ولديه ثابت غاما مسجل
+            else
+            {
+                contribution.Status = DoseRateContributionStatus.Contributing;
+                double dose = activityMBq * isotope.GammaConstant.Value;
+                contribution.ContributionMicroSvPerHour = dose;
+                contribution.StatusText = $"{dose:0.####} µSv/h";
+                totalDoseRate += dose;
+            }
+
+            result.Contributions.Add(contribution);
+        }
+
+        result.TotalDoseRateMicroSvPerHour = totalDoseRate;
+        return result;
+    }
+
+    /// <summary>
+    /// حساب معدل الجرعة الإشعاعية التقديري عند 1 متر لمصدر مشع كامل (سواء كان أحادي أو متعدد النظائر)
+    /// </summary>
+    public DoseRateResult CalculateDoseRateAtOneMeterForSource(Source source)
+    {
+        if (source == null) return new DoseRateResult();
+
+        var list = new List<(Radioisotope, double)>();
+
+        if (source.HasDetailedIsotopes && source.SourceIsotopes != null && source.SourceIsotopes.Any())
+        {
+            foreach (var si in source.SourceIsotopes)
+            {
+                if (si.Radioisotope == null) continue;
+                double unitConv = si.ActivityUnit?.ConversionToBq ?? source.InitialActivityUnit?.ConversionToBq ?? 1;
+                // النشاط بالـ MBq = (CurrentActivityValue * ConversionToBq) / 1e6
+                double curBq = (si.CurrentActivityValue ?? 0) * unitConv;
+                list.Add((si.Radioisotope, curBq / 1e6));
+            }
+        }
+        else if (source.Radioisotope != null)
+        {
+            double unitConv = source.CurrentActivityUnit?.ConversionToBq ?? source.InitialActivityUnit?.ConversionToBq ?? 1;
+            double curBq = source.CurrentActivityValue * unitConv;
+            list.Add((source.Radioisotope, curBq / 1e6));
+        }
+
+        return CalculateDoseRateAtOneMeter(list);
+    }
+
+    /// <summary>
+    /// تحويل معدل الجرعة من µSv/h إلى mR/h (1 µSv/h ≈ 0.115 mR/h)
+    /// </summary>
+    public double ConvertDoseRateMicroSvTomR(double microSvPerHour)
+    {
+        return microSvPerHour * 0.115;
+    }
+
+    /// <summary>
+    /// تحويل معدل الجرعة من µSv/h إلى mrem/h (1 µSv/h = 0.1 mrem/h)
+    /// </summary>
+    public double ConvertDoseRateMicroSvTomrem(double microSvPerHour)
+    {
+        return microSvPerHour * 0.1;
+    }
 
     private double ConvertToSeconds(double value, string unit)
     {

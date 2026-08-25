@@ -94,6 +94,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private bool _canSeeUsers = true;
     [ObservableProperty] private bool _canSeeSettings = true;
     [ObservableProperty] private bool _canSeeCalculator = true;
+    [ObservableProperty] private bool _canSeeIsotopeLibrary = true;
     [ObservableProperty] private bool _canSeeAlerts = true;
     [ObservableProperty] private bool _canSeeHelp = true;
 
@@ -110,6 +111,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         CanSeeUsers = user.HasSectionPermission("Users");
         CanSeeSettings = user.HasSectionPermission("Settings");
         CanSeeCalculator = user.HasSectionPermission("ActivityCalculator");
+        CanSeeIsotopeLibrary = true;
         CanSeeAlerts = user.HasSectionPermission("Alerts");
     }
 
@@ -277,6 +279,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             "Users" => App.ServiceProvider?.GetService(typeof(UsersViewModel)) as ObservableObject,
             "Settings" => App.ServiceProvider?.GetService(typeof(SettingsViewModel)) as ObservableObject,
             "ActivityCalculator" => App.ServiceProvider?.GetService(typeof(ActivityCalculatorViewModel)) as ObservableObject,
+            "IsotopeLibrary" => App.ServiceProvider?.GetService(typeof(IsotopeLibraryViewModel)) as ObservableObject,
             "Help" => App.ServiceProvider?.GetService(typeof(HelpViewModel)) as ObservableObject,
             "AboutSystem" => App.ServiceProvider?.GetService(typeof(AboutSystemViewModel)) as ObservableObject,
             _ => CurrentView

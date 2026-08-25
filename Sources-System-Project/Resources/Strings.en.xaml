@@ -15,6 +15,7 @@
     <system:String x:Key="MenuReports">Reports</system:String>
     <system:String x:Key="MenuUsers">Users</system:String>
     <system:String x:Key="MenuSettings">Settings</system:String>
+    <system:String x:Key="MenuIsotopeLibrary">Isotope Library</system:String>
     <system:String x:Key="MenuToggleTheme">Toggle Theme</system:String>
     <system:String x:Key="MenuAbout">About System</system:String>
     <system:String x:Key="MenuLogout">Logout</system:String>
@@ -800,6 +801,13 @@
     <system:String x:Key="HelpRadioisotopesStep3Title">Multi-isotope Calculation Rule</system:String>
     <system:String x:Key="HelpRadioisotopesStep3Desc">For composite sources containing multiple radioisotopes, the alert engine uses the shortest half-life isotope to ensure maximum vigilance and safety.</system:String>
     <system:String x:Key="HelpRadioisotopesWarning1">⚠ Important Notice: An isotope linked to registered sources cannot be deleted until its associated sources are reassigned or removed.</system:String>
+    <system:String x:Key="HelpSectionGammaReferenceTitle">Standard Reference for Gamma Constants (ORNL/RSIC-45/R1)</system:String>
+    <system:String x:Key="HelpGammaRefDescription">The system bases all dose rate calculations and gamma constants on the official scientific report issued by Oak Ridge National Laboratory (ORNL) in collaboration with the Radiation Shielding Information Center (RSIC).</system:String>
+    <system:String x:Key="HelpGammaRefAuthorsTitle">Report Metadata &amp; Authors</system:String>
+    <system:String x:Key="HelpGammaRefAuthorsDesc">Report Title: Specific Gamma-Ray Dose Constants for Radionuclides at 1 Meter in Water, Air, Concrete, etc. (ORNL/RSIC-45/R1), authored by L.M. Unger and D.K. Trubey, published May 1982.</system:String>
+    <system:String x:Key="HelpGammaRefUnitsTitle">Standard Units &amp; Official Conversion Factor</system:String>
+    <system:String x:Key="HelpGammaRefUnitsDesc">Data is presented in SI units as (mSv/h)/MBq at 1 meter. Footnote on Page 4 explicitly specifies the single documented conversion factor to legacy units (mrem/h)/µCi by multiplying by 3.7.</system:String>
+    <system:String x:Key="HelpGammaRefTip">💡 You can browse all reference nuclides, gamma constants, and lead shielding data via the 'Isotope Library' screen, or open the full PDF reference report in one click.</system:String>
 
     <!-- 4. Sources -->
     <system:String x:Key="HelpTopicSourcesTitle">4. Sources Inventory &amp; Workflows</system:String>
@@ -1073,6 +1081,66 @@
     <system:String x:Key="DescLeakTestInterval">Time period between periodic leak tests (Default: 6 months)</system:String>
     <system:String x:Key="LabelLeakTestWarningDays">Leak Test Due Warning Threshold (Days)</system:String>
     <system:String x:Key="DescLeakTestWarningDays">Days before due date to start showing leak test warning alert (Default: 30 days)</system:String>
+
+    <!-- Estimated Dose Rate at 1m -->
+    <system:String x:Key="FieldGammaConstant">Specific Gamma Constant (Γ)</system:String>
+    <system:String x:Key="ColGammaConstant">Gamma Constant (Γ)</system:String>
+    <system:String x:Key="MsgErrGammaConstantPositive">Gamma Constant must be a positive number greater than zero</system:String>
+    <system:String x:Key="DoseRateEstimatedTitle">Estimated Dose Rate at 1m</system:String>
+    <system:String x:Key="LabelTotalDoseRate">Total Dose Rate</system:String>
+    <system:String x:Key="LabelEquivalentUnits">In Equivalent Units</system:String>
+    <system:String x:Key="DoseRateNonGamma">Non-contributing at this distance (pure Alpha/Beta absorbed)</system:String>
+    <system:String x:Key="DoseRateMissingData">Gamma constant data not recorded for isotope</system:String>
+
+    <!-- ─── Isotope Reference Library ─── -->
+    <system:String x:Key="IsotopeLibraryTitle">Isotope Reference Library</system:String>
+    <system:String x:Key="IsotopeLibrarySubtitle">Specific Gamma-Ray Dose Constants &amp; Shielding Reference (ORNL/RSIC-45/R1)</system:String>
+    <system:String x:Key="IsotopeLibraryCredibilityBanner">Data in this library is documented through internationally recognized scientific references, including the IAEA's International Nuclear Information System (IAEA-INIS) and publications of the International Commission on Radiological Protection (ICRP).</system:String>
+    <system:String x:Key="IsotopeLibrarySearchHint">Search by nuclide symbol (e.g. Cs-131, Co-60, H-3, Sr-90, I-131)...</system:String>
+    <system:String x:Key="IsotopeLibraryBtnOpenPdf">Open ORNL Reference (PDF)</system:String>
+    <system:String x:Key="IsotopeLibraryBtnOpenIcrpPdf">Open ICRP 107 (PDF)</system:String>
+    <system:String x:Key="IsotopeLibraryBtnOpenPdfManual">Open ORNL PDF for Manual Lookup</system:String>
+    <system:String x:Key="IsotopeLibraryNotFoundTitle">Nuclide Not Found in Quick Index</system:String>
+    <system:String x:Key="IsotopeLibraryNotFoundMsg">This nuclide is not indexed in the quick ORNL and ICRP 107 databases. You can look it up manually in the original reference documents below.</system:String>
+    <system:String x:Key="IsotopeLibraryIcrpWarning">Specific gamma constant is not available for this nuclide in ORNL — Data shown from ICRP Publication 107 for general reference only, and must not be used for dose rate calculations.</system:String>
+    <system:String x:Key="LabelTotalIsotopes">Total Nuclides:</system:String>
+    <system:String x:Key="LabelOrnlCount">Certified Gamma:</system:String>
+    <system:String x:Key="LabelIcrpCount">General Reference (ICRP):</system:String>
+    <system:String x:Key="LabelSearchResultsCount">Results:</system:String>
+    <system:String x:Key="LabelHalfLifePrefix">Half-Life:</system:String>
+    <system:String x:Key="LabelGammaConstantSI">Specific Gamma Constant (SI Unit)</system:String>
+    <system:String x:Key="LabelGammaConstantTrad">Specific Gamma Constant (Legacy Unit)</system:String>
+    <system:String x:Key="LabelLeadThickness95">Lead Thickness (95% Attenuation - T95%)</system:String>
+    <system:String x:Key="LabelLeadThicknessDesc">Lead shielding thickness required for 95% gamma attenuation</system:String>
+    <system:String x:Key="LabelLinearAttenuation">Mean Linear Attenuation Coeff. (µ)</system:String>
+    <system:String x:Key="LabelLinearAttenuationDesc">Mean linear attenuation coefficient in lead shield</system:String>
+    <system:String x:Key="LabelPhotonLinesCount">Photon Emission Lines:</system:String>
+    <system:String x:Key="LabelDecayMode">Decay Mode:</system:String>
+    <system:String x:Key="LabelAlphaEnergy">Alpha Energy:</system:String>
+    <system:String x:Key="LabelElectronEnergy">Electron Energy:</system:String>
+    <system:String x:Key="LabelPhotonEnergy">Photon Energy:</system:String>
+    <system:String x:Key="LabelTotalEnergy">Total Emitted Energy:</system:String>
+    <system:String x:Key="MsgErrOpenRefPdf">Could not open the reference PDF file. Please ensure 14724519.pdf exists and a PDF viewer is installed.</system:String>
+    <system:String x:Key="MsgErrOpenIcrpPdf">Could not open the ICRP 107 PDF file. Please ensure ANIB_38_3.pdf exists and a PDF viewer is installed.</system:String>
+    <system:String x:Key="TitleReferencePdf">ORNL Reference Document</system:String>
+    <system:String x:Key="TitleIcrpPdf">ICRP 107 Reference Document</system:String>
+    <system:String x:Key="MsgCopyDetailsSuccess">All isotope reference data copied to clipboard successfully.</system:String>
+    <system:String x:Key="MsgCopyValueSuccess">Value copied to clipboard successfully.</system:String>
+    <system:String x:Key="TooltipCopyValue">Copy this value</system:String>
+    <system:String x:Key="TitleCopySuccess">Copied</system:String>
+    <system:String x:Key="BtnCopyDetails">Copy All Details</system:String>
+    <system:String x:Key="BtnViewFullDetails">Full Details</system:String>
+    <system:String x:Key="TooltipOpenPdfPage">Open reference at the specific page for this nuclide (page navigation depends on your default PDF viewer)</system:String>
+    <system:String x:Key="TitleIsotopeDetails">Extended Isotope Reference Details</system:String>
+
+    <!-- Isotope Reference Library Help -->
+    <system:String x:Key="HelpTopicIsotopeLibraryTitle">Isotope Reference Library &amp; Radiation Constants</system:String>
+    <system:String x:Key="HelpTopicIsotopeLibrarySubtitle">Guide to using certified databases (ORNL and ICRP 107) for dose and shielding lookups</system:String>
+    <system:String x:Key="HelpIsotopeLibraryLead">The system includes a comprehensive reference library integrating two internationally recognized scientific standards: ORNL/RSIC-45/R1 for gamma dose rate and shielding constants, and ICRP Publication 107 for general radioactive decay properties.</system:String>
+    <system:String x:Key="HelpIsotopeLibrarySectionOrnl">1. Gamma Dose Constants &amp; Shielding (ORNL/RSIC-45/R1)</system:String>
+    <system:String x:Key="HelpIsotopeLibrarySectionOrnlDesc">Contains 322 certified radionuclides with specific gamma-ray dose constants (Γ) in SI units ((mSv/h)/MBq) and legacy units ((mrem/h)/µCi), along with 95% lead attenuation thickness and linear attenuation coefficient (µ). This data is strictly used for 1-meter estimated dose rate calculations.</system:String>
+    <system:String x:Key="HelpIsotopeLibrarySectionIcrp">2. Radionuclide Decay Database (ICRP Publication 107)</system:String>
+    <system:String x:Key="HelpIsotopeLibrarySectionIcrpDesc">Covers 1,252 radionuclides as a secondary reference for general physical decay properties (half-life, decay modes, and emission energies). Notice: This reference does not contain gamma dose constants and is provided solely for scientific reference.</system:String>
 
 </ResourceDictionary>
 

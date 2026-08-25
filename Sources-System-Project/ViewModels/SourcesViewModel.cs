@@ -69,6 +69,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     private readonly IRadioisotopeService _isotopeService;
     private readonly ILocationService _locationService;
     private readonly IReportingService _reportingService;
+    private readonly IDecayCalculationService _decayService;
 
     [ObservableProperty] private ObservableCollection<Source> _sources = new();
     [ObservableProperty] private ObservableCollection<Radioisotope> _radioisotopes = new();
@@ -138,12 +139,13 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     [ObservableProperty] private bool _hasActiveSources;
     [ObservableProperty] private bool _hasDeletedSources;
 
-    public SourcesViewModel(ISourceService sourceService, IRadioisotopeService isotopeService, ILocationService locationService, IReportingService reportingService)
+    public SourcesViewModel(ISourceService sourceService, IRadioisotopeService isotopeService, ILocationService locationService, IReportingService reportingService, IDecayCalculationService? decayService = null)
     {
         _sourceService = sourceService;
         _isotopeService = isotopeService;
         _locationService = locationService;
         _reportingService = reportingService;
+        _decayService = decayService ?? new DecayCalculationService();
         _ = LoadDataAsync();
 
         WeakReferenceMessenger.Default.Register<NavigateToSearchResultMessage>(this, (r, m) =>
@@ -750,7 +752,45 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                   $"{TranslationHelper.GetString("LabelStatus")} {source.ArabicStatus}\n" +
                   $"{TranslationHelper.GetString("LabelIsSealed")} {(source.IsSealed ? (TranslationHelper.GetString("LabelSealedYes") ?? "نعم (مصدر مختوم)") : (TranslationHelper.GetString("LabelSealedNo") ?? "لا (غير مختوم)"))}\n" +
                   $"{TranslationHelper.GetString("LabelManufacturer")} {lre}{source.Manufacturer ?? "N/A"}{pdf}\n" +
-                  $"{TranslationHelper.GetString("LabelNotes")} {source.Notes ?? "N/A"}";
+                  $"{TranslationHelper.GetString("LabelNotes")} {source.Notes ?? "N/A"}\n";
+
+        // ─── سكشن معدل الجرعة الإشعاعية التقديري عند 1 متر ───
+        var doseResult = source.CurrentDoseRateResult ?? _decayService.CalculateDoseRateAtOneMeterForSource(source);
+        details += $"\n── معدل الجرعة التقديري عند 1 متر ──\n";
+        if (doseResult.HasContributingIsotopes)
+        {
+            details += $"• القيمة الإجمالية: {lre}{doseResult.TotalDoseRateMicroSvPerHour:N4} µSv/h{pdf}\n";
+            details += $"• بالوحدات المكافئة: {lre}{doseResult.TotalDoseRatemRPerHour:N4} mR/h | {doseResult.TotalDoseRatemremPerHour:N4} mrem/h{pdf}\n";
+        }
+        else if (doseResult.IsAllNonGamma)
+        {
+            details += $"• الحالة: غير مؤثر عند هذه المسافة (أشعة ألفا/بيتا فقط ممتصة بغلاف المصدر والهواء)\n";
+        }
+        else if (doseResult.HasMissingData)
+        {
+            details += $"• الحالة: بيانات ثابت غاما غير مسجلة للنظير\n";
+        }
+
+        if (source.HasDetailedIsotopes && doseResult.Contributions.Count > 1)
+        {
+            details += $"تفصيل مساهمة النظائر:\n";
+            foreach (var c in doseResult.Contributions)
+            {
+                string sym = c.Isotope?.Symbol ?? "نظير";
+                if (c.Status == DoseRateContributionStatus.Contributing)
+                {
+                    details += $"  - {lre}{sym}: {c.ContributionMicroSvPerHour:N4} µSv/h (Γ = {c.GammaConstant:0.####}){pdf}\n";
+                }
+                else if (c.Status == DoseRateContributionStatus.NonGammaEmitter)
+                {
+                    details += $"  - {lre}{sym}: غير مساهم عند 1م (أشعة {c.Isotope?.RadiationType ?? "ألفا/بيتا"} فقط){pdf}\n";
+                }
+                else if (c.Status == DoseRateContributionStatus.MissingGammaConstant)
+                {
+                    details += $"  - {lre}{sym}: بيانات ثابت غاما غير مسجلة{pdf}\n";
+                }
+            }
+        }
 
         DialogHelper.ShowInfo(details, TranslationHelper.GetString("TitleSourceDetails"), source.ImagePath);
     }

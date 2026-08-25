@@ -224,7 +224,10 @@
                             <!-- 7. المردود / الاحتمالية -->
                             <DataGridTextColumn Header="{DynamicResource ColYield}" Binding="{Binding Yield, StringFormat=P1}" Width="Auto" MinWidth="85" ElementStyle="{StaticResource CenterAligned}"/>
 
-                            <!-- 8. أضيف بواسطة -->
+                            <!-- 8. ثابت غاما (Γ) -->
+                            <DataGridTextColumn Header="{DynamicResource ColGammaConstant}" Binding="{Binding GammaConstant, StringFormat=\{0:0.####\}, TargetNullValue='—'}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
+
+                            <!-- 9. أضيف بواسطة -->
                             <DataGridTextColumn Header="{DynamicResource ColAddedBy}" Binding="{Binding AddedBy}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
 
                             <!-- 9. ملاحظات مع TextTrimming و ToolTip -->
@@ -624,7 +627,7 @@
                                                 </UniformGrid>
 
                                                 <!-- صف الطاقة والمردود -->
-                                                <UniformGrid Columns="2">
+                                                <UniformGrid Columns="2" Margin="0,0,0,12">
                                                     <StackPanel Margin="0,0,12,0">
                                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                                             <materialDesign:PackIcon Kind="Flash" Width="15" Height="15" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
@@ -644,6 +647,19 @@
                                                                  materialDesign:HintAssist.Hint="مثال: 0.85"/>
                                                     </StackPanel>
                                                 </UniformGrid>
+
+                                                <!-- صف ثابت غاما النوعي (Γ) -->
+                                                <StackPanel Margin="0,12,0,0">
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                        <materialDesign:PackIcon Kind="SineWave" Width="15" Height="15" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                        <TextBlock Text="{DynamicResource FieldGammaConstant}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                        <materialDesign:PackIcon Kind="InformationOutline" Width="14" Height="14" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="6,0,0,0" ToolTip="الوحدة الدولية المعتمدة: µSv·m²/(MBq·h) — اختياري للنظائر الباعثة لأشعة غاما"/>
+                                                    </StackPanel>
+                                                    <TextBox Text="{Binding EditGammaConstantText, UpdateSourceTrigger=LostFocus}" TabIndex="9"
+                                                             Style="{StaticResource FormTextBox}"
+                                                             materialDesign:HintAssist.Hint="مثال: 0.0772 (µSv·m²/(MBq·h))"
+                                                             ToolTip="الوحدة الدولية المعتمدة: µSv·m²/(MBq·h) — اختياري"/>
+                                                </StackPanel>
                                             </StackPanel>
                                         </StackPanel>
                                     </Border>

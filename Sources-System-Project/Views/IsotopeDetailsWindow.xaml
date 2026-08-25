@@ -1,0 +1,420 @@
+<Window x:Class="Sources.Views.IsotopeDetailsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:converters="clr-namespace:Sources.Converters"
+        Title="{DynamicResource TitleIsotopeDetails}"
+        Width="880" Height="660"
+        MinWidth="760" MinHeight="520"
+        WindowStartupLocation="CenterOwner"
+        WindowState="Normal"
+        Background="{DynamicResource WindowBackground}"
+        FontFamily="Segoe UI"
+        FlowDirection="RightToLeft">
+
+    <Window.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVis"/>
+        <converters:NullToVisibilityConverter x:Key="NullToVis"/>
+    </Window.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- 1. Header (Title & Symbol) -->
+            <RowDefinition Height="*"/>    <!-- 2. Scrollable Body Cards -->
+            <RowDefinition Height="Auto"/> <!-- 3. Footer Action Buttons -->
+        </Grid.RowDefinitions>
+
+        <!-- ════════ 1. Titled Header Card ════════ -->
+        <Border Grid.Row="0" Margin="0,0,0,16" Padding="20,16" Background="{DynamicResource CardBackground}"
+                CornerRadius="10" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="12" ShadowDepth="1" Opacity="0.06"/>
+            </Border.Effect>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Symbol & Half-life Info -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="{DynamicResource PrimaryBrush}" CornerRadius="12" Padding="18,8" Margin="0,0,16,0" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Entry.DisplaySymbol}" FontSize="24" FontWeight="Bold" Foreground="White"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{DynamicResource LabelHalfLifePrefix}" FontSize="14" Foreground="{DynamicResource TextSecondary}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Entry.DisplayHalfLife}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" FlowDirection="LeftToRight" VerticalAlignment="Center"/>
+                            <Button Click="BtnCopyValue_Click" Tag="{Binding Entry.DisplayHalfLife}"
+                                    ToolTip="{DynamicResource TooltipCopyValue}"
+                                    Style="{StaticResource MaterialDesignToolButton}"
+                                    Padding="0" Width="22" Height="22" Margin="6,0,0,0"
+                                    Foreground="{DynamicResource TextSecondary}"
+                                    Opacity="0.75" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="ContentCopy" Width="13" Height="13"/>
+                            </Button>
+                        </StackPanel>
+                        <!-- Reference Badge -->
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <materialDesign:PackIcon Kind="BookInformationVariant" Width="16" Height="16" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Entry.DisplayPageBadge}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock FlowDirection="LeftToRight" Text="— ORNL / ICRP Standard Reference" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Quick Action Button in Header (Open PDF with Page) -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Click="BtnOpenPdf_Click"
+                            Style="{StaticResource MaterialDesignRaisedButton}"
+                            Background="{DynamicResource PrimaryBrush}" Foreground="White"
+                            Padding="14,8" Height="38" Margin="0,0,8,0" VerticalAlignment="Center"
+                            ToolTip="{DynamicResource TooltipOpenPdfPage}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FilePdfBox" Width="18" Height="18" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource IsotopeLibraryBtnOpenPdf}" FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ════════ 2. Detailed Data Area ════════ -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,0,16">
+            <StackPanel>
+                <!-- ─── الحالة (أ): نظير من مرجع ORNL ─── -->
+                <StackPanel Visibility="{Binding Entry.IsOrnlSource, Converter={StaticResource BoolToVis}}">
+                    <!-- بطاقات الـ KPI الأربع للثوابت والتدريع -->
+                    <UniformGrid Rows="2" Columns="2" Margin="0,0,0,16">
+                        <!-- 1. ثابت غاما بالوحدة الدولية SI -->
+                        <Border Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="18,16" Margin="0,0,8,8"
+                                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="AlphaGCircleOutline" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource LabelGammaConstantSI}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Click="BtnCopyValue_Click" Tag="{Binding Entry.SpecificGammaConstantFormatted}"
+                                            ToolTip="{DynamicResource TooltipCopyValue}"
+                                            Style="{StaticResource MaterialDesignToolButton}"
+                                            Padding="0" Width="22" Height="22"
+                                            Foreground="{DynamicResource TextSecondary}"
+                                            Opacity="0.75">
+                                        <materialDesign:PackIcon Kind="ContentCopy" Width="13" Height="13"/>
+                                    </Button>
+                                </Grid>
+                                <TextBlock Text="{Binding Entry.SpecificGammaConstantFormatted}" FontSize="22" FontWeight="Bold" FontFamily="Consolas" Foreground="{DynamicResource PrimaryBrush}" Margin="0,2,0,4"/>
+                                <TextBlock FontSize="12" Foreground="{DynamicResource TextSecondary}">
+                                    <Run Text="(mSv/h)/MBq عند 1 متر" FlowDirection="RightToLeft"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 2. ثابت غاما بالوحدة المرجعية التقليدية -->
+                        <Border Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="18,16" Margin="8,0,0,8"
+                                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="CalculatorVariantOutline" Width="22" Height="22" Foreground="#2E7D32" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource LabelGammaConstantTrad}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Click="BtnCopyValue_Click" Tag="{Binding Entry.GammaMremPerUciFormatted}"
+                                            ToolTip="{DynamicResource TooltipCopyValue}"
+                                            Style="{StaticResource MaterialDesignToolButton}"
+                                            Padding="0" Width="22" Height="22"
+                                            Foreground="{DynamicResource TextSecondary}"
+                                            Opacity="0.75">
+                                        <materialDesign:PackIcon Kind="ContentCopy" Width="13" Height="13"/>
+                                    </Button>
+                                </Grid>
+                                <TextBlock Text="{Binding Entry.GammaMremPerUciFormatted}" FontSize="22" FontWeight="Bold" FontFamily="Consolas" Foreground="#2E7D32" Margin="0,2,0,4"/>
+                                <TextBlock FontSize="12" Foreground="{DynamicResource TextSecondary}">
+                                    <Run Text="(mrem/h)/µCi عند 1 متر (× 3.7)&#x200F;" FlowDirection="RightToLeft"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 3. سُمك درع الرصاص لتوهين 95% -->
+                        <Border Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="18,16" Margin="0,8,8,0"
+                                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="ShieldCheckOutline" Width="22" Height="22" Foreground="#E65100" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource LabelLeadThickness95}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Click="BtnCopyValue_Click" Tag="{Binding Entry.DisplayLeadThickness}"
+                                            ToolTip="{DynamicResource TooltipCopyValue}"
+                                            Style="{StaticResource MaterialDesignToolButton}"
+                                            Padding="0" Width="22" Height="22"
+                                            Foreground="{DynamicResource TextSecondary}"
+                                            Opacity="0.75">
+                                        <materialDesign:PackIcon Kind="ContentCopy" Width="13" Height="13"/>
+                                    </Button>
+                                </Grid>
+                                <TextBlock Text="{Binding Entry.DisplayLeadThickness}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,4"/>
+                                <TextBlock Text="{DynamicResource LabelLeadThicknessDesc}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 4. معامل التوهين الخطي المتوسط في الرصاص -->
+                        <Border Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="18,16" Margin="8,8,0,0"
+                                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="SigmaLower" Width="22" Height="22" Foreground="#1565C0" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource LabelLinearAttenuation}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Click="BtnCopyValue_Click" Tag="{Binding Entry.DisplayAttenuationCoeff}"
+                                            ToolTip="{DynamicResource TooltipCopyValue}"
+                                            Style="{StaticResource MaterialDesignToolButton}"
+                                            Padding="0" Width="22" Height="22"
+                                            Foreground="{DynamicResource TextSecondary}"
+                                            Opacity="0.75">
+                                        <materialDesign:PackIcon Kind="ContentCopy" Width="13" Height="13"/>
+                                    </Button>
+                                </Grid>
+                                <TextBlock Text="{Binding Entry.DisplayAttenuationCoeff}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,4"/>
+                                <TextBlock Text="{DynamicResource LabelLinearAttenuationDesc}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
+
+                    <!-- بطاقة التفاصيل الإضافية لمرجع ORNL -->
+                    <Border Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="20,16"
+                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="RayVertex" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource LabelPhotonLinesCount}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Entry.PhotonEmissionsCount}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                <Button Click="BtnCopyValue_Click" Tag="{Binding Entry.PhotonEmissionsCount}"
+                                        ToolTip="{DynamicResource TooltipCopyValue}"
+                                        Style="{StaticResource MaterialDesignToolButton}"
+                                        Padding="0" Width="20" Height="20" Margin="6,0,0,0"
+                                        Foreground="{DynamicResource TextSecondary}"
+                                        Opacity="0.75" VerticalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="ContentCopy" Width="12" Height="12"/>
+                                </Button>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="LibraryShelves" Width="20" Height="20" Foreground="{DynamicResource TextSecondary}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock FlowDirection="LeftToRight" Text="{Binding Entry.SourceReference}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+
+                <!-- ─── الحالة (ب): نظير من مرجع ICRP 107 فقط ─── -->
+                <StackPanel Visibility="{Binding Entry.IsIcrpSource, Converter={StaticResource BoolToVis}}">
+                    <!-- شريط التحذير البارز بنظام الألوان المعتمد (WarningBrush #E0A93E) -->
+                    <Border Background="{DynamicResource WarningLightBrush}" BorderBrush="{DynamicResource WarningBrush}"
+                            BorderThickness="1" CornerRadius="8" Padding="16,12" Margin="0,0,0,16">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <materialDesign:PackIcon Grid.Column="0" Kind="AlertOutline" Width="24" Height="24"
+                                                     Foreground="{DynamicResource WarningBrush}"
+                                                     VerticalAlignment="Center" Margin="0,0,12,0"/>
+
+                            <TextBlock Grid.Column="1" Text="{DynamicResource IsotopeLibraryIcrpWarning}"
+                                       FontSize="12" FontWeight="SemiBold" LineHeight="18"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       VerticalAlignment="Center" TextWrapping="Wrap"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- بطاقات البيانات الفيزيائية والانحلال من ICRP 107 -->
+                    <UniformGrid Rows="2" Columns="2" Margin="0,0,0,16">
+                        <!-- 1. نمط الانحلال الإشعاعي -->
+                        <Border Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="18,16" Margin="0,0,8,8"
+                                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="AtomVariant" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource LabelDecayMode}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Click="BtnCopyValue_Click" Tag="{Binding Entry.DisplayDecayMode}"
+                                            ToolTip="{DynamicResource TooltipCopyValue}"
+                                            Style="{StaticResource MaterialDesignToolButton}"
+                                            Padding="0" Width="22" Height="22"
+                                            Foreground="{DynamicResource TextSecondary}"
+                                            Opacity="0.75">
+                                        <materialDesign:PackIcon Kind="ContentCopy" Width="13" Height="13"/>
+                                    </Button>
+                                </Grid>
+                                <TextBlock Text="{Binding Entry.DisplayDecayMode}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="0,2,0,4"/>
+                                <TextBlock Text="Decay Transition Type" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 2. طاقة الإلكترونات المنبعثة -->
+                        <Border Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="18,16" Margin="8,0,0,8"
+                                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="LightningBoltCircle" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource LabelElectronEnergy}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Click="BtnCopyValue_Click" Tag="{Binding Entry.ElectronEnergyMeV}"
+                                            ToolTip="{DynamicResource TooltipCopyValue}"
+                                            Style="{StaticResource MaterialDesignToolButton}"
+                                            Padding="0" Width="22" Height="22"
+                                            Foreground="{DynamicResource TextSecondary}"
+                                            Opacity="0.75">
+                                        <materialDesign:PackIcon Kind="ContentCopy" Width="13" Height="13"/>
+                                    </Button>
+                                </Grid>
+                                <TextBlock Text="{Binding Entry.DisplayElectronEnergy}" FontSize="22" FontWeight="Bold" FontFamily="Consolas" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,4"/>
+                                <TextBlock Text="Beta / Electron Transition Energy" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 3. طاقة الفوتونات المنبعثة -->
+                        <Border Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="18,16" Margin="0,8,8,0"
+                                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="RayVertex" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource LabelPhotonEnergy}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Click="BtnCopyValue_Click" Tag="{Binding Entry.PhotonEnergyMeV}"
+                                            ToolTip="{DynamicResource TooltipCopyValue}"
+                                            Style="{StaticResource MaterialDesignToolButton}"
+                                            Padding="0" Width="22" Height="22"
+                                            Foreground="{DynamicResource TextSecondary}"
+                                            Opacity="0.75">
+                                        <materialDesign:PackIcon Kind="ContentCopy" Width="13" Height="13"/>
+                                    </Button>
+                                </Grid>
+                                <TextBlock Text="{Binding Entry.DisplayPhotonEnergy}" FontSize="22" FontWeight="Bold" FontFamily="Consolas" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,4"/>
+                                <TextBlock Text="Gamma / X-Ray Energy per Nuclear Transition" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 4. إجمالي الطاقة المنبعثة لكل تحلل -->
+                        <Border Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="18,16" Margin="8,8,0,0"
+                                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="Sigma" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource LabelTotalEnergy}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Click="BtnCopyValue_Click" Tag="{Binding Entry.TotalEnergyMeV}"
+                                            ToolTip="{DynamicResource TooltipCopyValue}"
+                                            Style="{StaticResource MaterialDesignToolButton}"
+                                            Padding="0" Width="22" Height="22"
+                                            Foreground="{DynamicResource TextSecondary}"
+                                            Opacity="0.75">
+                                        <materialDesign:PackIcon Kind="ContentCopy" Width="13" Height="13"/>
+                                    </Button>
+                                </Grid>
+                                <TextBlock Text="{Binding Entry.DisplayTotalEnergy}" FontSize="22" FontWeight="Bold" FontFamily="Consolas" Foreground="{DynamicResource PrimaryBrush}" Margin="0,2,0,4"/>
+                                <TextBlock Text="Total Emitted Energy per Nuclear Transition" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
+
+                    <!-- بطاقة التوثيق لمرجع ICRP 107 -->
+                    <Border Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="20,16"
+                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="ShieldAlertOutline" Width="18" Height="18" Foreground="{DynamicResource WarningBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="بيانات استرشادية فيزيائية فقط (ICRP 107)" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="LibraryShelves" Width="18" Height="18" Foreground="{DynamicResource TextSecondary}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock FlowDirection="LeftToRight" Text="{Binding Entry.SourceReference}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- ════════ 3. Footer Action Buttons ════════ -->
+        <Border Grid.Row="2" Padding="0,12,0,0" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,1,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- زر نسخ كل التفاصيل -->
+                <Button Grid.Column="0" Click="BtnCopyDetails_Click"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Foreground="{DynamicResource PrimaryBrush}" BorderBrush="{DynamicResource PrimaryBrush}"
+                        Height="40" Padding="18,0">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="ContentCopy" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource BtnCopyDetails}" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- زر الإغلاق -->
+                <Button Grid.Column="2" Click="BtnClose_Click"
+                        Style="{StaticResource MaterialDesignRaisedButton}"
+                        Background="{DynamicResource PrimaryBrush}" Foreground="White"
+                        Height="40" Padding="24,0" IsCancel="True">
+                    <TextBlock Text="{DynamicResource BtnClose}" FontWeight="SemiBold" FontSize="13"/>
+                </Button>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

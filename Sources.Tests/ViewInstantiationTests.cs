@@ -370,6 +370,206 @@ public class ViewInstantiationTests
         });
     }
 
+    [Fact]
+    public async Task IsotopeLibraryView_InstantiatesSuccessfully_WithViewModelAndData()
+    {
+        var service = new Sources.Services.IsotopeLibraryService();
+        var all = await service.GetAllEntriesAsync();
+        var cs131 = all.FirstOrDefault(x => x.NuclideSymbol == "131Cs") ?? all.First();
+        var be7 = all.FirstOrDefault(x => x.NuclideSymbol == "7Be") ?? all.First();
+        var co60 = all.FirstOrDefault(x => x.NuclideSymbol == "60Co") ?? all.First();
+
+        RunInSta(() =>
+        {
+            var vm = new Sources.ViewModels.IsotopeLibraryViewModel(service)
+            {
+                FilteredEntries = new System.Collections.ObjectModel.ObservableCollection<Sources.Models.IsotopeReferenceEntry>(all),
+                TotalCount = all.Count,
+                ResultsCount = all.Count,
+                HasResults = true,
+                SelectedEntry = co60
+            };
+
+            var view = new Sources.Views.IsotopeLibraryView(vm);
+            view.Measure(new System.Windows.Size(1280, 800));
+            view.Arrange(new System.Windows.Rect(0, 0, 1280, 800));
+            view.UpdateLayout();
+
+            Assert.NotNull(view);
+            Assert.NotNull(view.DataContext);
+            Assert.IsType<Sources.ViewModels.IsotopeLibraryViewModel>(view.DataContext);
+
+            var artifactDir = @"C:\Users\DELL\.gemini\antigravity-ide\brain\4c75130f-5a36-40b1-ac93-2a233d58214c";
+            if (System.IO.Directory.Exists(artifactDir))
+            {
+                // 1. Capture Default Alphabetical Numbered Catalog
+                vm.SearchText = "";
+                for (int i = 0; i < all.Count; i++) all[i].ItemIndex = i + 1;
+                vm.FilteredEntries = new System.Collections.ObjectModel.ObservableCollection<Sources.Models.IsotopeReferenceEntry>(all);
+                vm.ResultsCount = all.Count;
+                vm.SelectedEntry = all.FirstOrDefault();
+                view.Measure(new System.Windows.Size(1280, 850));
+                view.Arrange(new System.Windows.Rect(0, 0, 1280, 850));
+                view.UpdateLayout();
+
+                var rtbAlpha = new System.Windows.Media.Imaging.RenderTargetBitmap(1280, 850, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+                rtbAlpha.Render(view);
+                var encoderAlpha = new System.Windows.Media.Imaging.PngBitmapEncoder();
+                encoderAlpha.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(rtbAlpha));
+                using (var stream = System.IO.File.Create(System.IO.Path.Combine(artifactDir, "isotope_library_alphabetical_numbered.png")))
+                {
+                    encoderAlpha.Save(stream);
+                }
+
+                // 2. Capture Filtered Cs-131 with 1-based serial index
+                var csResults = all.Where(x => x.DisplaySymbol.StartsWith("Cs-")).ToList();
+                for (int i = 0; i < csResults.Count; i++) csResults[i].ItemIndex = i + 1;
+                vm.SearchText = "Cs-131";
+                vm.FilteredEntries = new System.Collections.ObjectModel.ObservableCollection<Sources.Models.IsotopeReferenceEntry>(csResults);
+                vm.ResultsCount = csResults.Count;
+                vm.SelectedEntry = csResults.FirstOrDefault();
+                view.Measure(new System.Windows.Size(1280, 850));
+                view.Arrange(new System.Windows.Rect(0, 0, 1280, 850));
+                view.UpdateLayout();
+
+                var rtbCs = new System.Windows.Media.Imaging.RenderTargetBitmap(1280, 850, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+                rtbCs.Render(view);
+                var encoderCs = new System.Windows.Media.Imaging.PngBitmapEncoder();
+                encoderCs.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(rtbCs));
+                using (var stream = System.IO.File.Create(System.IO.Path.Combine(artifactDir, "isotope_library_ornl_cs131.png")))
+                {
+                    encoderCs.Save(stream);
+                }
+
+                // 3. Capture ORNL Isotope (K-40) with exponential half life (1.28 × 10⁹ y)
+                var k40Entry = all.FirstOrDefault(x => x.DisplaySymbol == "K-40" || x.NuclideSymbol == "40K");
+                var kEntries = all.Where(x => x.DisplaySymbol.StartsWith("K-")).ToList();
+                if (k40Entry != null)
+                {
+                    for (int i = 0; i < kEntries.Count; i++) kEntries[i].ItemIndex = i + 1;
+                    vm.SearchText = "K-40";
+                    vm.FilteredEntries = new System.Collections.ObjectModel.ObservableCollection<Sources.Models.IsotopeReferenceEntry>(kEntries);
+                    vm.ResultsCount = kEntries.Count;
+                    vm.SelectedEntry = k40Entry;
+                    view.Measure(new System.Windows.Size(1280, 850));
+                    view.Arrange(new System.Windows.Rect(0, 0, 1280, 850));
+                    view.UpdateLayout();
+
+                    var rtbK40 = new System.Windows.Media.Imaging.RenderTargetBitmap(1280, 850, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+                    rtbK40.Render(view);
+                    var encoderK40 = new System.Windows.Media.Imaging.PngBitmapEncoder();
+                    encoderK40.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(rtbK40));
+                    using (var stream = System.IO.File.Create(System.IO.Path.Combine(artifactDir, "isotope_library_ornl_k40.png")))
+                    {
+                        encoderK40.Save(stream);
+                    }
+                }
+
+                // 4. Capture ICRP 107 Fallback Isotope (H-3)
+                var h3Entry = all.FirstOrDefault(x => x.NuclideSymbol == "H-3" || x.DisplaySymbol == "H-3");
+                var hEntries = all.Where(x => x.NuclideSymbol.StartsWith("H-") || x.DisplaySymbol.StartsWith("H-")).ToList();
+                if (h3Entry != null)
+                {
+                    vm.SearchText = "H-3";
+                    vm.FilteredEntries = new System.Collections.ObjectModel.ObservableCollection<Sources.Models.IsotopeReferenceEntry>(hEntries);
+                    vm.ResultsCount = hEntries.Count;
+                    vm.SelectedEntry = h3Entry;
+                    view.Measure(new System.Windows.Size(1280, 850));
+                    view.Arrange(new System.Windows.Rect(0, 0, 1280, 850));
+                    view.UpdateLayout();
+
+                    var rtbH3 = new System.Windows.Media.Imaging.RenderTargetBitmap(1280, 850, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+                    rtbH3.Render(view);
+                    var encoderH3 = new System.Windows.Media.Imaging.PngBitmapEncoder();
+                    encoderH3.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(rtbH3));
+                    using (var stream = System.IO.File.Create(System.IO.Path.Combine(artifactDir, "isotope_library_icrp_h3.png")))
+                    {
+                        encoderH3.Save(stream);
+                    }
+                }
+
+                // 5. Capture Not Found state with dual PDF buttons
+                vm.SearchText = "Unobtainium-999";
+                vm.IsNotFound = true;
+                vm.HasResults = false;
+                vm.FilteredEntries.Clear();
+                vm.ResultsCount = 0;
+                view.Measure(new System.Windows.Size(1280, 850));
+                view.Arrange(new System.Windows.Rect(0, 0, 1280, 850));
+                view.UpdateLayout();
+
+                var rtbNotFound = new System.Windows.Media.Imaging.RenderTargetBitmap(1280, 850, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+                rtbNotFound.Render(view);
+                var encoderNotFound = new System.Windows.Media.Imaging.PngBitmapEncoder();
+                encoderNotFound.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(rtbNotFound));
+                using (var stream = System.IO.File.Create(System.IO.Path.Combine(artifactDir, "isotope_library_not_found_dual_pdf.png")))
+                {
+                    encoderNotFound.Save(stream);
+                }
+            }
+        });
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task IsotopeDetailsWindow_InstantiatesSuccessfully_WithEntry()
+    {
+        var service = new Sources.Services.IsotopeLibraryService();
+        var all = await service.GetAllEntriesAsync();
+        var cs131 = all.FirstOrDefault(x => x.DisplaySymbol == "Cs-131") ?? all.First();
+        var k40 = all.FirstOrDefault(x => x.DisplaySymbol == "K-40") ?? all.First();
+
+        RunInSta(() =>
+        {
+            var window = new Sources.Views.IsotopeDetailsWindow(cs131, service);
+            Assert.NotNull(window);
+            Assert.Equal("Cs-131", window.Entry.DisplaySymbol);
+
+            var artifactDir = @"C:\Users\DELL\.gemini\antigravity-ide\brain\4c75130f-5a36-40b1-ac93-2a233d58214c";
+
+            if (window.Content is FrameworkElement root)
+            {
+                root.DataContext = window;
+                root.Measure(new System.Windows.Size(880, 660));
+                root.Arrange(new System.Windows.Rect(0, 0, 880, 660));
+                root.UpdateLayout();
+
+                if (System.IO.Directory.Exists(artifactDir))
+                {
+                    var rtb = new System.Windows.Media.Imaging.RenderTargetBitmap(880, 660, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+                    rtb.Render(root);
+                    var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
+                    encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(rtb));
+                    using (var stream = System.IO.File.Create(System.IO.Path.Combine(artifactDir, "isotope_details_dialog_cs131.png")))
+                    {
+                        encoder.Save(stream);
+                    }
+                }
+            }
+
+            // Capture K-40 Dialog
+            var windowK40 = new Sources.Views.IsotopeDetailsWindow(k40, service);
+            if (windowK40.Content is FrameworkElement rootK40)
+            {
+                rootK40.DataContext = windowK40;
+                rootK40.Measure(new System.Windows.Size(880, 660));
+                rootK40.Arrange(new System.Windows.Rect(0, 0, 880, 660));
+                rootK40.UpdateLayout();
+
+                if (System.IO.Directory.Exists(artifactDir))
+                {
+                    var rtbK40 = new System.Windows.Media.Imaging.RenderTargetBitmap(880, 660, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+                    rtbK40.Render(rootK40);
+                    var encoderK40 = new System.Windows.Media.Imaging.PngBitmapEncoder();
+                    encoderK40.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(rtbK40));
+                    using (var stream = System.IO.File.Create(System.IO.Path.Combine(artifactDir, "isotope_details_dialog_k40.png")))
+                    {
+                        encoderK40.Save(stream);
+                    }
+                }
+            }
+        });
+    }
+
     private static System.Collections.Generic.IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
     {
         if (depObj == null) yield break;

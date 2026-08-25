@@ -15,6 +15,7 @@
     <system:String x:Key="MenuReports">التقارير</system:String>
     <system:String x:Key="MenuUsers">المستخدمين</system:String>
     <system:String x:Key="MenuSettings">الإعدادات</system:String>
+    <system:String x:Key="MenuIsotopeLibrary">مكتبة النظائر</system:String>
     <system:String x:Key="MenuToggleTheme">تبديل المظهر</system:String>
     <system:String x:Key="MenuAbout">حول المنظومة</system:String>
     <system:String x:Key="MenuLogout">خروج</system:String>
@@ -798,6 +799,13 @@
     <system:String x:Key="HelpRadioisotopesStep3Title">المصادر متعددة النظائر (Multi-isotope Rule)</system:String>
     <system:String x:Key="HelpRadioisotopesStep3Desc">في حال احتواء المصدر على أكثر من نظير، يعتمد محرك التنبيهات على "أسرع نظير تحللاً" (النظير صاحب أقصر نصف عمر) لتحديد زمن التنبيه لضمان أقصى درجات اليقظة والأمان.</system:String>
     <system:String x:Key="HelpRadioisotopesWarning1">⚠ تنبيه هام: لا يمكن حذف نظير مشع إذا كان مرتبطاً بمصادر مسجلة في الجرد؛ يجب تعديل أو نقل المصادر المرتبطة أولاً.</system:String>
+    <system:String x:Key="HelpSectionGammaReferenceTitle">المرجع القياسي لثوابت غاما (ORNL/RSIC-45/R1)</system:String>
+    <system:String x:Key="HelpGammaRefDescription">تعتمد المنظومة في حسابات معدل الجرعة الإشعاعية وثوابت غاما على التقرير العلمي الرسمي الصادر عن مختبر أوك ريدج الوطني (Oak Ridge National Laboratory - ORNL) بالتعاون مع مركز معلومات تدريع الإشعاع (RSIC).</system:String>
+    <system:String x:Key="HelpGammaRefAuthorsTitle">بيانات التقرير والمؤلفون</system:String>
+    <system:String x:Key="HelpGammaRefAuthorsDesc">التقرير بعنوان: Specific Gamma-Ray Dose Constants for Radionuclides at 1 Meter in Water, Air, Concrete, etc. (ORNL/RSIC-45/R1)، من إعداد الباحثين: L.M. Unger و D.K. Trubey، نُشر في مايو 1982.</system:String>
+    <system:String x:Key="HelpGammaRefUnitsTitle">الوحدات القياسية ومعامل التحويل الوحيد المعتمد</system:String>
+    <system:String x:Key="HelpGammaRefUnitsDesc">تُعطى البيانات بالوحدة الدولية (mSv/h)/MBq عند 1 متر. وتنص حاشية الصفحة 4 صراحة على أن معامل التحويل الوحيد الموثق إلى الوحدة التقليدية (mrem/h)/µCi هو الضرب في المعامل 3.7.</system:String>
+    <system:String x:Key="HelpGammaRefTip">💡 يمكنك تصفح واستعراض كافة النظائر المرجعية وثوابت غاما وسُمك الرصاص عبر شاشة 'مكتبة النظائر'، أو فتح التقرير المرجعي الكامل PDF بنقرة واحدة.</system:String>
 
     <!-- 4. Sources -->
     <system:String x:Key="HelpTopicSourcesTitle">4. جرد المصادر وسيناريوهات الاستلام</system:String>
@@ -1071,6 +1079,66 @@
     <system:String x:Key="DescLeakTestInterval">الفترة الزمنية بين كل فحص تسرب والذي يليه (افتراضياً: 6 أشهر)</system:String>
     <system:String x:Key="LabelLeakTestWarningDays">مهلة التنبيه باقتراب استحقاق فحص التسرب (أيام)</system:String>
     <system:String x:Key="DescLeakTestWarningDays">عدد الأيام المتبقية لبدء ظهور تنبيه استحقاق الفحص (افتراضياً: 30 يوماً)</system:String>
+
+    <!-- حساب معدل الجرعة الإشعاعية عند 1 متر -->
+    <system:String x:Key="FieldGammaConstant">ثابت غاما النوعي (Γ)</system:String>
+    <system:String x:Key="ColGammaConstant">ثابت غاما (Γ)</system:String>
+    <system:String x:Key="MsgErrGammaConstantPositive">يجب أن تكون قيمة ثابت غاما رقماً موجباً أكبر من الصفر</system:String>
+    <system:String x:Key="DoseRateEstimatedTitle">معدل الجرعة التقديري عند 1 متر</system:String>
+    <system:String x:Key="LabelTotalDoseRate">القيمة الإجمالية</system:String>
+    <system:String x:Key="LabelEquivalentUnits">بالوحدات المكافئة</system:String>
+    <system:String x:Key="DoseRateNonGamma">غير مؤثر عند هذه المسافة (أشعة ألفا/بيتا فقط ممتصة)</system:String>
+    <system:String x:Key="DoseRateMissingData">بيانات ثابت غاما غير مسجلة للنظير</system:String>
+
+    <!-- ─── مكتبة النظائر المرجعية (Isotope Reference Library) ─── -->
+    <system:String x:Key="IsotopeLibraryTitle">مكتبة النظائر المرجعية</system:String>
+    <system:String x:Key="IsotopeLibrarySubtitle">دليل ثوابت جرعة أشعة غاما وخصائص التدريع المعتمدة (ORNL/RSIC-45/R1)&#x200F;</system:String>
+    <system:String x:Key="IsotopeLibraryCredibilityBanner">البيانات الواردة في هذه المكتبة موثّقة عبر مراجع علمية دولية معتمدة، منها نظام المعلومات النووية للوكالة الدولية للطاقة الذرية (IAEA-INIS)، ومنشورات اللجنة الدولية للوقاية من الإشعاع (ICRP).</system:String>
+    <system:String x:Key="IsotopeLibrarySearchHint">ابحث برمز النظير (مثال: Cs-131, Co-60, H-3, Sr-90, I-131)...</system:String>
+    <system:String x:Key="IsotopeLibraryBtnOpenPdf">فتح مرجع (ORNL PDF)&#x200F;</system:String>
+    <system:String x:Key="IsotopeLibraryBtnOpenIcrpPdf">فتح مرجع (ICRP 107 PDF)&#x200F;</system:String>
+    <system:String x:Key="IsotopeLibraryBtnOpenPdfManual">فتح مرجع ORNL للبحث اليدوي&#x200F;</system:String>
+    <system:String x:Key="IsotopeLibraryNotFoundTitle">النظير غير مسجل في الفهرس المباشر</system:String>
+    <system:String x:Key="IsotopeLibraryNotFoundMsg">هذا النظير غير مسجل في فهرسي ORNL و ICRP 107 المباشرين، يمكنك مراجعته يدوياً في الملفات المرجعية الأصلية أدناه.</system:String>
+    <system:String x:Key="IsotopeLibraryIcrpWarning">لا يتوفر ثابت غاما محدد لهذا النظير في مرجع ORNL — البيانات المعروضة من ICRP Publication 107 لأغراض مرجعية عامة فقط، ولا تُستخدم لحساب معدل الجرعة.</system:String>
+    <system:String x:Key="LabelTotalIsotopes">إجمالي النظائر:</system:String>
+    <system:String x:Key="LabelOrnlCount">بثابت غاما معتمد:</system:String>
+    <system:String x:Key="LabelIcrpCount">بيانات عامة (ICRP):</system:String>
+    <system:String x:Key="LabelSearchResultsCount">نتائج البحث:</system:String>
+    <system:String x:Key="LabelHalfLifePrefix">نصف العمر:</system:String>
+    <system:String x:Key="LabelGammaConstantSI">ثابت غاما (الوحدة الدولية SI)&#x200F;</system:String>
+    <system:String x:Key="LabelGammaConstantTrad">ثابت غاما (الوحدة المرجعية)&#x200F;</system:String>
+    <system:String x:Key="LabelLeadThickness95">سُمك درع الرصاص لتوهين 95% (T95%)&#x200F;</system:String>
+    <system:String x:Key="LabelLeadThicknessDesc">سُمك طبقة الرصاص المطلوبة لتوهين 95% من أشعة غاما</system:String>
+    <system:String x:Key="LabelLinearAttenuation">معامل التوهين الخطي المتوسط (µ)&#x200F;</system:String>
+    <system:String x:Key="LabelLinearAttenuationDesc">معامل التوهين الخطي لأشعة غاما في درع الرصاص</system:String>
+    <system:String x:Key="LabelPhotonLinesCount">عدد خطوط الانبعاث الفوتونية:</system:String>
+    <system:String x:Key="LabelDecayMode">نمط الانحلال الإشعاعي (Decay Mode):</system:String>
+    <system:String x:Key="LabelAlphaEnergy">طاقة ألفا (Alpha):</system:String>
+    <system:String x:Key="LabelElectronEnergy">طاقة الإلكترونات (Electron):</system:String>
+    <system:String x:Key="LabelPhotonEnergy">طاقة الفوتونات (Photon):</system:String>
+    <system:String x:Key="LabelTotalEnergy">إجمالي الطاقة المنبعثة:</system:String>
+    <system:String x:Key="MsgErrOpenRefPdf">تعذر فتح ملف المرجع الأصلي. تأكد من وجود ملف 14724519.pdf وتوفر برنامج لقراءة ملفات PDF على جهازك.</system:String>
+    <system:String x:Key="MsgErrOpenIcrpPdf">تعذر فتح ملف مرجع ICRP 107. تأكد من وجود ملف ANIB_38_3.pdf وتوفر برنامج لقراءة ملفات PDF على جهازك.</system:String>
+    <system:String x:Key="TitleReferencePdf">الملف المرجعي ORNL</system:String>
+    <system:String x:Key="TitleIcrpPdf">مرجع ICRP 107</system:String>
+    <system:String x:Key="MsgCopyDetailsSuccess">تم نسخ كافة بيانات النظير إلى الحافظة بنجاح.</system:String>
+    <system:String x:Key="MsgCopyValueSuccess">تم نسخ القيمة إلى الحافظة بنجاح.</system:String>
+    <system:String x:Key="TooltipCopyValue">نسخ هذه القيمة</system:String>
+    <system:String x:Key="TitleCopySuccess">تم النسخ</system:String>
+    <system:String x:Key="BtnCopyDetails">نسخ كل التفاصيل</system:String>
+    <system:String x:Key="BtnViewFullDetails">تفاصيل موسّعة</system:String>
+    <system:String x:Key="TooltipOpenPdfPage">فتح المرجع عند الصفحة المحددة للنظير (تعتمد ميزة الانتقال المباشر للصفحة على برنامج قراءة PDF الافتراضي المُستخدم على جهازك)&#x200F;</system:String>
+    <system:String x:Key="TitleIsotopeDetails">تفاصيل النظير المرجعية الموسّعة</system:String>
+
+    <!-- مساعدة مكتبة النظائر المرجعية -->
+    <system:String x:Key="HelpTopicIsotopeLibraryTitle">مكتبة النظائر المرجعية وثوابت الإشعاع</system:String>
+    <system:String x:Key="HelpTopicIsotopeLibrarySubtitle">دليل استخدام الفهارس المعتمدة (ORNL و ICRP 107) لحسابات الجرعة والتدريع</system:String>
+    <system:String x:Key="HelpIsotopeLibraryLead">تتضمن المنظومة مكتبة مرجعية شاملة تربط بين مرجعين علميين دوليين معتمدين: دليل مختبر أوك ريدج الوطني (ORNL/RSIC-45/R1) لثوابت الجرعة والتدريع، ومنشور اللجنة الدولية للوقاية من الإشعاع (ICRP Publication 107) لبيانات الانحلال الإشعاعي.</system:String>
+    <system:String x:Key="HelpIsotopeLibrarySectionOrnl">1. مرجع ثوابت غاما والتدريع (ORNL/RSIC-45/R1)</system:String>
+    <system:String x:Key="HelpIsotopeLibrarySectionOrnlDesc">يحتوي على 322 نظيراً مشعاً معتمداً مع قيم ثابت غاما النوعي (Γ) بالوحدات الدولية (mSv·h⁻¹·MBq⁻¹) والوحدات التقليدية (mrem·h⁻¹·µCi⁻¹)، بالإضافة إلى سُمك درع الرصاص لتوهين 95% ومعامل التوهين الخطي المتوسط (µ). تُستخدم هذه البيانات حصراً في الحسابات التقديرية لمعدل الجرعة عند مسافة 1 متر.</system:String>
+    <system:String x:Key="HelpIsotopeLibrarySectionIcrp">2. مرجع بيانات الانحلال الإشعاعي (ICRP Publication 107)</system:String>
+    <system:String x:Key="HelpIsotopeLibrarySectionIcrpDesc">يغطي 1252 نظيراً مشعاً كمصدر احتياطي للبيانات الفيزيائية العامة (نصف العمر، نمط الانحلال B-/Alpha/EC، والطاقات المنبعثة). تنبيه: لا يتضمن هذا المرجع ثوابت غاما نوعية لحساب الجرعة، وتُعرض بياناته لأغراض الاسترشاد العلمي فقط.</system:String>
 
 </ResourceDictionary>
 

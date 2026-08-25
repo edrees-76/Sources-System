@@ -105,6 +105,7 @@ public partial class App : Application
         services.AddTransient<Sources.Views.LocationDetailsWindow>();
         services.AddTransient<Sources.Views.AlertsView>();
         services.AddTransient<Sources.Views.LeakTestsView>();
+        services.AddTransient<Sources.Views.IsotopeLibraryView>();
         services.AddTransient<MainWindow>();
 
         // Services
@@ -116,6 +117,7 @@ public partial class App : Application
         services.AddSingleton<IBackupService, BackupService>();
         services.AddSingleton<IAutoBackupService, AutoBackupService>();
         services.AddSingleton<IReportingService, ReportingService>();
+        services.AddSingleton<IIsotopeLibraryService, IsotopeLibraryService>();
         services.AddTransient<ISourceService, SourceService>();
         services.AddTransient<IRadioisotopeService, RadioisotopeService>();
         services.AddTransient<ILocationService, LocationService>();
@@ -138,6 +140,7 @@ public partial class App : Application
         services.AddTransient<UsersViewModel>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<ActivityCalculatorViewModel>();
+        services.AddTransient<IsotopeLibraryViewModel>();
         services.AddTransient<HelpViewModel>();
         services.AddTransient<AboutSystemViewModel>();
     }

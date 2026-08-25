@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Sources.Helpers;
 using Sources.Models;
+using Sources.Services;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
@@ -76,6 +77,20 @@ public partial class HelpViewModel : ObservableObject
         if (string.IsNullOrWhiteSpace(viewName)) return;
         var mainVm = App.ServiceProvider.GetService(typeof(MainViewModel)) as MainViewModel;
         mainVm?.NavigateTo(viewName);
+    }
+
+    [RelayCommand]
+    public void OpenReferencePdf()
+    {
+        var libraryService = App.ServiceProvider.GetService(typeof(IIsotopeLibraryService)) as IIsotopeLibraryService;
+        var success = libraryService?.OpenReferencePdf() ?? false;
+        if (!success)
+        {
+            DialogHelper.ShowWarning(
+                TranslationHelper.GetString("MsgErrOpenRefPdf"),
+                TranslationHelper.GetString("TitleReferencePdf")
+            );
+        }
     }
 
     [RelayCommand]
@@ -269,6 +284,18 @@ public partial class HelpViewModel : ObservableObject
                             new HelpStepBlock { StepNumber = "2", TitleKey = "HelpRadioisotopesStep2Title", DescriptionKey = "HelpRadioisotopesStep2Desc" },
                             new HelpStepBlock { StepNumber = "3", TitleKey = "HelpRadioisotopesStep3Title", DescriptionKey = "HelpRadioisotopesStep3Desc" },
                             new HelpWarningBlock { TextKey = "HelpRadioisotopesWarning1" }
+                        }
+                    },
+                    new HelpSection
+                    {
+                        TitleKey = "HelpSectionGammaReferenceTitle",
+                        IconKind = "BookOpenPageVariantOutline",
+                        Blocks = new()
+                        {
+                            new HelpParagraphBlock { TextKey = "HelpGammaRefDescription" },
+                            new HelpStepBlock { StepNumber = "1", TitleKey = "HelpGammaRefAuthorsTitle", DescriptionKey = "HelpGammaRefAuthorsDesc" },
+                            new HelpStepBlock { StepNumber = "2", TitleKey = "HelpGammaRefUnitsTitle", DescriptionKey = "HelpGammaRefUnitsDesc" },
+                            new HelpTipBlock { TextKey = "HelpGammaRefTip" }
                         }
                     }
                 }
@@ -580,6 +607,47 @@ public partial class HelpViewModel : ObservableObject
                             new HelpWhatsNewBlock { VersionBadge = "v2.4", TagType = "Feature", TitleKey = "HelpWhatsNew2Title", DescriptionKey = "HelpWhatsNew2Desc" },
                             new HelpWhatsNewBlock { VersionBadge = "v2.3", TagType = "Security", TitleKey = "HelpWhatsNew3Title", DescriptionKey = "HelpWhatsNew3Desc" },
                             new HelpWhatsNewBlock { VersionBadge = "v2.2", TagType = "UI", TitleKey = "HelpWhatsNew4Title", DescriptionKey = "HelpWhatsNew4Desc" }
+                        }
+                    }
+                }
+            },
+
+            // ════════════════════════════════════════════════════════
+            // 12. مكتبة النظائر المرجعية وثوابت الإشعاع
+            // ════════════════════════════════════════════════════════
+            new HelpTopic
+            {
+                Id = "IsotopeLibrary",
+                TitleKey = "HelpTopicIsotopeLibraryTitle",
+                SubtitleKey = "HelpTopicIsotopeLibrarySubtitle",
+                IconKind = "BookOpenPageVariantOutline",
+                Roles = new() { HelpRoles.All, HelpRoles.SafetyOfficer },
+                Keywords = "مكتبة نظائر مرجع ثوابت غاما تدريع رصاص icrp ornl gamma constants shielding",
+                Sections = new()
+                {
+                    new HelpSection
+                    {
+                        Blocks = new()
+                        {
+                            new HelpParagraphBlock { TextKey = "HelpIsotopeLibraryLead", IsLead = true }
+                        }
+                    },
+                    new HelpSection
+                    {
+                        TitleKey = "HelpIsotopeLibrarySectionOrnl",
+                        IconKind = "ShieldCheckOutline",
+                        Blocks = new()
+                        {
+                            new HelpParagraphBlock { TextKey = "HelpIsotopeLibrarySectionOrnlDesc" }
+                        }
+                    },
+                    new HelpSection
+                    {
+                        TitleKey = "HelpIsotopeLibrarySectionIcrp",
+                        IconKind = "BookInformationVariant",
+                        Blocks = new()
+                        {
+                            new HelpParagraphBlock { TextKey = "HelpIsotopeLibrarySectionIcrpDesc" }
                         }
                     }
                 }

@@ -38,6 +38,11 @@ public class Radioisotope
     public int Category { get; set; } // Regulatory Category (1-5)
     public double? ExemptionLimit { get; set; } // Bq or appropriate unit
 
+    public double? GammaConstant { get; set; } // Specific Gamma Constant in µSv·m²/(MBq·h) at 1 meter
+
+    [NotMapped]
+    public bool IsGammaEmitter => !string.IsNullOrWhiteSpace(RadiationType) && RadiationType.Contains("Gamma", StringComparison.OrdinalIgnoreCase);
+
     public string? Notes { get; set; }
     public string? EnglishNotes { get; set; }
     public bool IsDeleted { get; set; } = false;
@@ -335,6 +340,85 @@ public class Source
     [NotMapped]
     public string DisplaySourceCode => IsDeleted ? $"{SourceCode} (محذوف)" : SourceCode;
 
+    private DoseRateResult? _currentDoseRateResult;
+
+    /// <summary>نتيجة حساب معدل الجرعة الإشعاعية التقديري عند 1 متر</summary>
+    [NotMapped]
+    public DoseRateResult? CurrentDoseRateResult
+    {
+        get => _currentDoseRateResult ?? ComputeLazyDoseRate();
+        set => _currentDoseRateResult = value;
+    }
+
+    /// <summary>معدل الجرعة الإشعاعية التقديري عند 1 متر للعرض في الجداول والبطاقات</summary>
+    [NotMapped]
+    public string DisplayDoseRate => CurrentDoseRateResult?.FormattedSummary ?? "-";
+
+    /// <summary>تفاصيل معدل الجرعة للتلميح (Tooltip)</summary>
+    [NotMapped]
+    public string DoseRateTooltip => CurrentDoseRateResult?.TooltipText ?? string.Empty;
+
+    private DoseRateResult ComputeLazyDoseRate()
+    {
+        var result = new DoseRateResult();
+        var list = new List<(Radioisotope Isotope, double ActivityMBq)>();
+
+        if (HasDetailedIsotopes && SourceIsotopes != null && SourceIsotopes.Any())
+        {
+            foreach (var si in SourceIsotopes)
+            {
+                if (si.Radioisotope == null) continue;
+                double conv = si.ActivityUnit?.ConversionToBq ?? InitialActivityUnit?.ConversionToBq ?? 1;
+                double actBq = (si.CurrentActivityValue ?? 0) * conv;
+                list.Add((si.Radioisotope, actBq / 1e6));
+            }
+        }
+        else if (Radioisotope != null)
+        {
+            double conv = CurrentActivityUnit?.ConversionToBq ?? InitialActivityUnit?.ConversionToBq ?? 1;
+            double actBq = CurrentActivityValue * conv;
+            list.Add((Radioisotope, actBq / 1e6));
+        }
+
+        if (list.Count == 0) return result;
+
+        double totalDoseRate = 0;
+        foreach (var (isotope, activityMBq) in list)
+        {
+            var contribution = new DoseRateIsotopeContribution
+            {
+                Isotope = isotope,
+                ActivityMBq = activityMBq,
+                GammaConstant = isotope.GammaConstant
+            };
+
+            if (!isotope.IsGammaEmitter)
+            {
+                contribution.Status = DoseRateContributionStatus.NonGammaEmitter;
+                contribution.ContributionMicroSvPerHour = 0;
+                contribution.StatusText = "غير مساهم عند هذه المسافة";
+            }
+            else if (!isotope.GammaConstant.HasValue || isotope.GammaConstant.Value <= 0)
+            {
+                contribution.Status = DoseRateContributionStatus.MissingGammaConstant;
+                contribution.ContributionMicroSvPerHour = 0;
+                contribution.StatusText = "بيانات ثابت غاما غير مسجلة";
+            }
+            else
+            {
+                contribution.Status = DoseRateContributionStatus.Contributing;
+                double dose = activityMBq * isotope.GammaConstant.Value;
+                contribution.ContributionMicroSvPerHour = dose;
+                contribution.StatusText = $"{dose:0.####} µSv/h";
+                totalDoseRate += dose;
+            }
+            result.Contributions.Add(contribution);
+        }
+
+        result.TotalDoseRateMicroSvPerHour = totalDoseRate;
+        return result;
+    }
+
     private string FormatActivity(double value, string? unitSymbol)
     {
         // عرض القيمة فقط بدون الرمز لتجنب التكرار في الجدول
@@ -346,6 +430,115 @@ public class Source
 
         // إذا كان الرقم صحيحاً لا نعرض اصفار، وإذا كان عشرياً نعرض رقمين
         return (value % 1 == 0) ? value.ToString("#,##0") : value.ToString("#,##0.00");
+    }
+}
+
+// ─── نماذج حساب معدل الجرعة الإشعاعية عند 1 متر ───
+public enum DoseRateContributionStatus
+{
+    Contributing,           // نظير باعث لجاما ولديه ثابت جاما مسجل
+    NonGammaEmitter,        // نظير باعث لألفا أو بيتا فقط (غير مساهم عند 1م)
+    MissingGammaConstant    // نظير باعث لجاما لكن ثابت جاما غير مسجل
+}
+
+public class DoseRateIsotopeContribution
+{
+    public Radioisotope Isotope { get; set; } = null!;
+    public double ActivityMBq { get; set; }
+    public double? GammaConstant { get; set; }
+    public double ContributionMicroSvPerHour { get; set; }
+    public DoseRateContributionStatus Status { get; set; }
+    public string StatusText { get; set; } = string.Empty;
+}
+
+public class DoseRateResult
+{
+    /// <summary>إجمالي معدل الجرعة بوحدة µSv/h</summary>
+    public double TotalDoseRateMicroSvPerHour { get; set; }
+
+    /// <summary>إجمالي معدل الجرعة المكافئ بوحدة mR/h (1 µSv/h ≈ 0.115 mR/h)</summary>
+    public double TotalDoseRatemRPerHour => TotalDoseRateMicroSvPerHour * 0.115;
+
+    /// <summary>إجمالي معدل الجرعة المكافئ بوحدة mrem/h (1 µSv/h = 0.1 mrem/h)</summary>
+    public double TotalDoseRatemremPerHour => TotalDoseRateMicroSvPerHour * 0.1;
+
+    /// <summary>تفصيل مساهمة كل نظير</summary>
+    public List<DoseRateIsotopeContribution> Contributions { get; set; } = new();
+
+    public bool HasContributingIsotopes => Contributions.Any(c => c.Status == DoseRateContributionStatus.Contributing);
+    public bool HasMissingData => Contributions.Any(c => c.Status == DoseRateContributionStatus.MissingGammaConstant);
+    public bool IsAllNonGamma => Contributions.Count > 0 && Contributions.All(c => c.Status == DoseRateContributionStatus.NonGammaEmitter);
+
+    public string FormattedTotalMicroSv => TotalDoseRateMicroSvPerHour == 0 
+        ? "0 µSv/h" 
+        : TotalDoseRateMicroSvPerHour >= 1000 
+            ? $"{(TotalDoseRateMicroSvPerHour / 1000):0.##} mSv/h" 
+            : $"{TotalDoseRateMicroSvPerHour:0.##} µSv/h";
+
+    public string FormattedSummary
+    {
+        get
+        {
+            if (Contributions.Count == 0) return "-";
+            if (HasContributingIsotopes)
+            {
+                string baseText = TotalDoseRateMicroSvPerHour >= 1000 
+                    ? $"{(TotalDoseRateMicroSvPerHour / 1000):0.##} mSv/h @ 1m" 
+                    : $"{TotalDoseRateMicroSvPerHour:0.##} µSv/h @ 1m";
+                if (HasMissingData)
+                    return $"{baseText} (*)";
+                return baseText;
+            }
+            if (IsAllNonGamma)
+                return "N/A (α/β)";
+            if (HasMissingData)
+                return "N/A (بيانات غير مسجلة)";
+            return "0 µSv/h @ 1m";
+        }
+    }
+
+    public string TooltipText
+    {
+        get
+        {
+            if (Contributions.Count == 0) return "لا توجد بيانات للنظائر";
+            var lines = new List<string>();
+            lines.Add("معدل الجرعة التقديري عند 1 متر في الهواء:");
+            if (HasContributingIsotopes)
+            {
+                lines.Add($"• الإجمالي: {TotalDoseRateMicroSvPerHour:0.####} µSv/h ({TotalDoseRatemRPerHour:0.####} mR/h | {TotalDoseRatemremPerHour:0.####} mrem/h)");
+            }
+            else if (IsAllNonGamma)
+            {
+                lines.Add("• غير مؤثر عند 1 متر (أشعة ألفا/بيتا فقط ممتصة بغلاف المصدر والهواء)");
+            }
+            else if (HasMissingData)
+            {
+                lines.Add("• بيانات ثابت غاما غير مسجلة للنظير");
+            }
+
+            if (Contributions.Count > 1 || (Contributions.Count == 1 && HasContributingIsotopes))
+            {
+                lines.Add("تفصيل النظائر:");
+                foreach (var c in Contributions)
+                {
+                    string sym = c.Isotope?.Symbol ?? "نظير";
+                    if (c.Status == DoseRateContributionStatus.Contributing)
+                    {
+                        lines.Add($"  - {sym}: {c.ContributionMicroSvPerHour:0.####} µSv/h (Γ = {c.GammaConstant:0.####})");
+                    }
+                    else if (c.Status == DoseRateContributionStatus.NonGammaEmitter)
+                    {
+                        lines.Add($"  - {sym}: غير مساهم عند 1م (أشعة {c.Isotope?.RadiationType ?? "ألفا/بيتا"} فقط)");
+                    }
+                    else if (c.Status == DoseRateContributionStatus.MissingGammaConstant)
+                    {
+                        lines.Add($"  - {sym}: بيانات ثابت غاما غير مسجلة");
+                    }
+                }
+            }
+            return string.Join("\n", lines);
+        }
     }
 }
 

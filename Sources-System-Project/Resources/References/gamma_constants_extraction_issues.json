@@ -1,0 +1,845 @@
+[
+  {
+    "page_number": 6,
+    "column": 1,
+    "nuclide_symbol": "15O",
+    "half_life": "2.0m",
+    "raw_lines": [
+      "15O               2.0m 511.0 1.9980 1.911--4 1.768 1.695"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 7,
+    "column": 1,
+    "nuclide_symbol": "52Mn",
+    "half_life": "5.6d",
+    "raw_lines": [
+      "52Mn \"t 5.6d                             346.",
+      "399.6 0.0018",
+      "502.0 0.0021",
+      "600.2 0.0039",
+      "647.4 0.0040",
+      "744.2 ,0.9000",
+      "848 1   0.0332",
+      "935.5 0.9450                             \\",
+      "1246 0 0.0421",
+      "1248.0 0.0038",
+      "1334.0 0.0507",
+      "1434.0 1.0000"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 8,
+    "column": 2,
+    "nuclide_symbol": "57Ni",
+    "half_life": "1.5d",
+    "raw_lines": [
+      "57Ni              1.5d 127.2 0.1293 2.887--t 4.399 0.681",
+      "1046 0 0.0012",
+      "1378 0 0.7790",
+      "1757 0 0.0709",
+      "1919.0 0.1472",
+      "2804.0 0.0013",
+      "1193.0 0.0050",
+      "511.0 0.8016"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 12,
+    "column": 2,
+    "nuclide_symbol": "85Br",
+    "half_life": "2.9m",
+    "raw_lines": [
+      "85Br 2.9m'                       794.8, 0.0010   1.057-              -5 3.590 % 0.834",
+      "802 4      0.0256",
+      "861 8      0.0023",
+      "865 2      0.0018",
+      "513 3      0.0013",
+      "919.1   <0.0065",
+      "924 6      0.0163",
+      "1038 0       0.0010",
+      "1727.0       0.0038",
+      "o o."
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 13,
+    "column": 1,
+    "nuclide_symbol": "81K",
+    "half_life": "5y",
+    "raw_lines": [
+      "81K.r 2 l+5y                                                    1 172-",
+      "11.9 0.2885",
+      "13.3 00713",
+      "276 0 0.0360"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 13,
+    "column": 1,
+    "nuclide_symbol": "85mKr",
+    "half_life": "4.5h",
+    "raw_lines": [
+      "85mKr 4.5h",
+      "12.7 0.0216",
+      "14.1 0.0055",
+      "304.9 0.1399",
+      "13.3 0.0061",
+      "13.4 00118",
+      "15.0 0.0031",
+      "129.8 0.0030",
+      "151.2 0.7528 •",
+      "581.3 0.0002"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 16,
+    "column": 1,
+    "nuclide_symbol": "82Rb",
+    "half_life": "1.2m",
+    "raw_lines": [
+      "82Rb 1.2m",
+      "12.7     0.0146",
+      "14.1     0.0037"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 18,
+    "column": 1,
+    "nuclide_symbol": "87mSr",
+    "half_life": "8h",
+    "raw_lines": [
+      "2443 0 0.0027 87mSr 2 8h 14 1 0.02",
+      "2497 0 0.0074 14.2 0.0563 \"",
+      "2538.0 0.0018 „ 15.8 0.0151",
+      "2544.0 0.0057 388 4- 0.8225",
+      "2592.0 0.0066 ' 13 3*00005",
+      "2618.0 0.0063 13 4 0.0010",
+      "2724.0 0.0051 ' 15 0 0.0003",
+      "2741.0 0.0015",
+      "2753.0 0.1184 89St 50 6d 909.1 0 0",
+      "2834.0 0.0190"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 18,
+    "column": 1,
+    "nuclide_symbol": "82Sr",
+    "half_life": "25.0d",
+    "raw_lines": [
+      "82Sr 25.0d 13.3 0.1676 I 065-4 0.004 842 8 >\""
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 18,
+    "column": 1,
+    "nuclide_symbol": "92Sr",
+    "half_life": "2.7h",
+    "raw_lines": [
+      "13.4 0.3243 92Sr 2.7h 241 5",
+      "15.0 0.0851 ' 430 6 ' 0.0333"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 21,
+    "column": 1,
+    "nuclide_symbol": "90mY",
+    "half_life": "2h",
+    "raw_lines": [
+      "90mY                 3 2h            14.9      0.0205           316",
+      "15.0      0.0395",
+      "16.7      0.0109",
+      "202.5        0.9663",
+      "479.5        0.9099",
+      "' 682.0         0.0032"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 21,
+    "column": 1,
+    "nuclide_symbol": "93Y",
+    "half_life": "93Y",
+    "raw_lines": [
+      "93Y 10. Ih                        15.7       0.0003        1.388",
+      "15.8 lib   0.0006",
+      "0.0002",
+      "266.9        0.0685",
+      "680.2        0.0061",
+      "947.1        0.0195",
+      "1203.0         0.0010",
+      "1425 0         0.0024",
+      "1450.0         0.0034"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 23,
+    "column": 1,
+    "nuclide_symbol": "97mNb",
+    "half_life": "60.0s",
+    "raw_lines": [
+      "97mNb 60.0s                                                    1.259",
+      "\" 16.57                       4 2",
+      "16 6 0.0072",
+      "18.6 0.0021",
+      "743 4 0.9796"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 25,
+    "column": 1,
+    "nuclide_symbol": "96mTc",
+    "half_life": "51.5m",
+    "raw_lines": [
+      "96mTc 51.5m 18.2                                   0.0975 4.429-",
+      "r4         0.1863",
+      "18.",
+      "20.6       0.0559",
+      "34.4       0.0003",
+      "17.4       0.0039",
+      "17.5       0.0075",
+      "19.6       0.0022",
+      "480.7        0.0034",
+      "719.6        0.0030",
+      "778.2        0.0187",
+      "(          >0",
+      "847.7        0.0012",
+      "849.9         0.0028",
+      "1200.0         0.0107;-",
+      "1498.0         0.0012",
+      "887.6        0.0056"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 28,
+    "column": 1,
+    "nuclide_symbol": "115Cd",
+    "half_life": "2.2d",
+    "raw_lines": [
+      "115Cd            2.2d         24.0     0.0100 4.C28-5            1.750 1",
+      "24.2     00189",
+      "27 3     0.0063",
+      "35.5     0.0045",
+      "231.4      0.0078",
+      "260.9      0.0206",
+      "492.3      0.0851",
+      "527.9      0.2915",
+      "296 9      0.0011"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 41,
+    "column": 1,
+    "nuclide_symbol": "33mXe",
+    "half_life": "2.2d",
+    "raw_lines": [
+      "!33mXe                2.2d          29 5      0.1601 3 034-           5 0.1",
+      "29 8      0.2970",
+      "33 6      0.1056",
+      "233.2       0.1030"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 46,
+    "column": 1,
+    "nuclide_symbol": "140La",
+    "half_life": "1.7d",
+    "raw_lines": [
+      "140La                     1.7d                       34.3        0.004",
+      "34.7        0.008",
+      "39.3        0.003",
+      "109.4         0.0019",
+      "131.1         0.0055",
+      "173.6         0.001",
+      "242.0          0.004",
+      "266.6          0.004",
+      "328.8          0.205",
+      "432.5          0.p29",
+      "487.0          0.455",
+      "751.8          0.044",
+      "815.9          0.234",
+      "867.8          0.056",
+      "919.6          0.028",
+      "925 2         0.0708",
+      "950 9         0.0053",
+      "1597 0          0.9549",
+      "2349       0   0.0085",
+      "2522.0           0.0346",
+      "2547.0            0.001",
+      "1208.0           0.004"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 46,
+    "column": 1,
+    "nuclide_symbol": "141La",
+    "half_life": "3.9h",
+    "raw_lines": [
+      "141La                         3.9h             1354.0           0.026",
+      "1693.0           0.001",
+      "1674 0          0.0031"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 46,
+    "column": 1,
+    "nuclide_symbol": "142La",
+    "half_life": "1.6h",
+    "raw_lines": [
+      "142La                          1.6h                  n.3       0.0006",
+      "34.7        0.00",
+      "39.3        0.00",
+      "106.1         0.00",
+      "174.1          0.0",
+      "367.3          0.00",
+      "393 7         0.001",
+      "420 8         0.002",
+      "433 3         0.004",
+      "514.7          0.00",
+      "532.0,           0.",
+      "578.1          0.01",
+      "619.5          0.00",
+      "641.2          0.52",
+      "861.6          0.01",
+      "878 2        0.0021",
+      "894.9          0.09",
+      "946.5          0.00",
+      "962.2          0.00",
+      "991.2   0.0011",
+      "1007.0           0.00",
+      "1011.0            0.0",
+      "1039.0            0.0",
+      "1044.0           0.03",
+      "1062     0,     0.001",
+      "1070.0            0.0"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 47,
+    "column": 2,
+    "nuclide_symbol": "824I",
+    "half_life": "13.6d",
+    "raw_lines": [
+      "l43Pr 13.6d 742.0 0.00001.52+-12 2.824I 061"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 49,
+    "column": 1,
+    "nuclide_symbol": "147Pm",
+    "half_life": "2.6y",
+    "raw_lines": [
+      "147Pm 2.6y                             121.3         0.00007.23+-10 0.08"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 54,
+    "column": 2,
+    "nuclide_symbol": "182Ta",
+    "half_life": "114.7d",
+    "raw_lines": [
+      "182Ta 114.7d                        31.7       0.0080 2.084                   3.987 0.751",
+      "42.7        0.0025                 kJ , i",
+      "58.0        0.1041",
+      "59.3        0.1810",
+      "65.7       0.0280                  W n i/",
+      "67 2       0.0770",
+      "67 7       0.4235",
+      "84 7       0.0274",
+      "100 1        0.1407",
+      "113.7        0.0190",
+      "1164         0.0044'",
+      "<152 4         0.0717",
+      "1564         0.0272",
+      "J79 4         00319",
+      "\"l 98 4       00151",
+      "222 1        0.0756",
+      "229 3        0.0364",
+      "l\"*v y1',                    264.1        0.0364",
+      "928.0        0.0062",
+      "959.7        00035",
+      "j 002 0        0.0209",
+      "1044 0         0.0024",
+      "1113 0         0.0044",
+      "1121.0         0.3500",
+      "1157.0         0.0063",
+      "1158 0         0.0035",
+      "1189.0         0.1631",
+      "1221.0          0.2705",
+      "1224 0          0.0021",
+      "1231.0         0.1151",
+      "1257.0          0.0149              0",
+      "1274.0          0.0065",
+      "1289 0         0.0135",
+      "1343.0         0.0025",
+      "1374 0         0.0022",
+      "943.0         0.0040",
+      "ft."
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 55,
+    "column": 1,
+    "nuclide_symbol": "187W",
+    "half_life": "23.8h",
+    "raw_lines": [
+      "187W              23.8h          59.7      0.0760 8.853-         •5 2.21",
+      "61.1      0.1317",
+      "69.3      0.0563",
+      "72 1      0.1191",
+      "134 2       0.0946",
+      "206.3       0.0015",
+      "246.2       0.0013",
+      "479.5       0.2335",
+      "511.8       0.0069",
+      "551 5       0.0544",
+      "5-9.1       0.0013",
+      "618.4       0.0671'",
+      "625.5       0.0116",
+      "685 8       0.2917",
+      "745 2       0.0032",
+      "772 9       0.0440",
+      "864 5       0.0036",
+      "879.4       00015",
+      "276.2       0.0042"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 57,
+    "column": 1,
+    "nuclide_symbol": "184mRe",
+    "half_life": "169.0d",
+    "raw_lines": [
+      "184mRe 169.0d                       59.7      0.1407 7.671-         -5 2.47",
+      "61.1      0.2438",
+      "69 3      0.1042",
+      "104    7   0.1328",
+      "87.3      0.0001",
+      "55.3      0.0236",
+      "58.0      0.0851",
+      "59.3      0.1480",
+      "63 7      0.0038",
+      "67.2      0.0629",
+      "87.5      0.0024",
+      "91.3      0.0026",
+      "111 2      0.0592",
+      "124 1      0.0015",
+      "161.3      0.0664",
+      "215.3       0.0284",
+      "216.5       0.0963",
+      "226 8       00151",
+      "252 8       0.1091",
+      "3180        0.0588",
+      "384.2       0.0320",
+      "536 7       0.0337",
+      "641.9       0.0035",
+      "769.8       0.0024",
+      "792.1       0.0377",
+      "857.2       0.0017",
+      "894.8       0.0281",
+      "903 3       0.0382",
+      "920.9       0.0831",
+      "1023.0       0.0018",
+      "1110.0       0.0060",
+      "1174 0       0.0124",
+      "647 4       0.0027"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 61,
+    "column": 1,
+    "nuclide_symbol": "97mHg",
+    "half_life": "23.8h",
+    "raw_lines": [
+      "!97mHg 23.8h                                                         2 059",
+      "70.8 0.1661",
+      "80.3 0.0731",
+      "133.9 0.3404",
+      "165.0 0.0027",
+      "67.0 0.0191",
+      "68.8 0.0326",
+      "78.0 0.0143",
+      "130.4 0.0023",
+      "279.0 0.0498",
+      "194.6 0.0010"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 64,
+    "column": 1,
+    "nuclide_symbol": "213Bi",
+    "half_life": "45.6m",
+    "raw_lines": [
+      "213Bi 45.6m 323.8                                       0.0013 3",
+      "11 1     0.0183",
+      "76 9       0.0125",
+      "79 3        0.0210",
+      "89 8       0.0094",
+      "292.9          0.0074",
+      "440 4          0.2797",
+      "659.8           0.0015",
+      "807 4         0.0044",
+      "11000            0.0048"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 65,
+    "column": 1,
+    "nuclide_symbol": "219Rn",
+    "half_life": "4.0s",
+    "raw_lines": [
+      "219Rn 4.0s                                11  (l 0.0104 1            419",
+      "76.9 0.0053",
+      "79 .'3 0.0088",
+      "89.8 0.0039",
+      "130.6 0.0012",
+      "271.2 0.1060",
+      "401 8 0.0650",
+      "388.5 0.0020"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 70,
+    "column": 2,
+    "nuclide_symbol": "230U",
+    "half_life": "20.8d",
+    "raw_lines": [
+      "230U             20.8d            13 0     0.1223 2.463-          -5 0.004 683 5",
+      "72.2      0.0060",
+      "154 2      0.0013",
+      "230 4       0.0012",
+      "169 9      0.0008"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 71,
+    "column": 1,
+    "nuclide_symbol": "237U",
+    "half_life": "7d",
+    "raw_lines": [
+      "237U                 6 7d 13.8                    0.0010         1 589-",
+      "13.9       0.7114",
+      "26 3        0.0228",
+      "33.2        0.0011",
+      "51  0       0.0021",
+      "59 5        0.3402",
+      "64 8        0.0118",
+      "97.1        0.1629",
+      "101 1         0.2632",
+      "1140          0.1231",
+      "1646          0.0186",
+      "208 0         0.2202",
+      "267.5         0.0072",
+      "332 4         0.0122",
+      "370 9         0.0011",
+      "262.9         0.0025"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 72,
+    "column": 1,
+    "nuclide_symbol": "239Np",
+    "half_life": "4d",
+    "raw_lines": [
+      "239Np                     2 4d 14.3  0.6179      .386-4 0.154 19.449",
+      "49.4     0.0010",
+      "57 3     0.0015",
+      "61 5     0.0096",
+      "99.6     0.1471",
+      "103.8     0.2365",
+      "106.1     0.2270",
+      "117.0     0.1113",
+      "181.7     0.0011",
+      "209.7     0.0324",
+      "226.4     0.0034",
+      "228.2     0.1072",
+      "254.4     0.0010",
+      "277.6     0.1410",
+      "285.4     0.0078",
+      "315.9     0.0159",
+      "334.3     0.0203",
+      "151 5     0.0039"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 73,
+    "column": 1,
+    "nuclide_symbol": "236Pu",
+    "half_life": "9y",
+    "raw_lines": [
+      "236Pu 2      9y                                              13.6 0.13",
+      "60 9 0.00"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 73,
+    "column": 1,
+    "nuclide_symbol": "237Pu",
+    "half_life": "45.3d",
+    "raw_lines": [
+      "237Pu  45.3d                                                 13.9 0.5",
+      "26.3 0.00",
+      "59.5 0.03",
+      "97.1 0.12",
+      "101.1 02064",
+      "114.0 0.0966",
+      "33.2 0.00"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 73,
+    "column": 1,
+    "nuclide_symbol": "238Pu",
+    "half_life": "87.8y",
+    "raw_lines": [
+      "238Pu 87.8y                                                  13.6 0.11",
+      "55 3 0.00"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 73,
+    "column": 1,
+    "nuclide_symbol": "239Pu",
+    "half_life": "2.41+4y",
+    "raw_lines": [
+      "239Pu 2.41+4y                                                 13.6 0.0",
+      "112 9 0.0005"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 73,
+    "column": 1,
+    "nuclide_symbol": "240Pu",
+    "half_life": "6569y",
+    "raw_lines": [
+      "240Pu 6569y                                                   13 6 0 1",
+      "54.3 0.00"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 73,
+    "column": 1,
+    "nuclide_symbol": "242Pu",
+    "half_life": "3.76+5y",
+    "raw_lines": [
+      "242Pu 3.76+5y                                                 13.6 0.0",
+      "56.4 0.00",
+      "243Pu 5.Oh                                                  14.6 0.1",
+      "41.8 0.00",
+      "67.0 0.00",
+      "84.0 0.23",
+      "102.1 0.0009",
+      "106.5 0.001",
+      "109 3 0.001",
+      "120 0 00007",
+      "356.4 0.0013",
+      "381 7 0.0055",
+      "137 2 0.0018"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 73,
+    "column": 1,
+    "nuclide_symbol": "244Pu",
+    "half_life": "8.3+7y",
+    "raw_lines": [
+      "244Pu 8.3+7y                                                 13  6 0",
+      "44.0 0.00"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 73,
+    "column": 1,
+    "nuclide_symbol": "245Pu",
+    "half_life": "10.6h",
+    "raw_lines": [
+      "245Pu 10.6h                                                  14.6 0.",
+      "28 0 0.00",
+      "102.1 0.075",
+      "106.5 0.120",
+      "120.0 0.057"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 74,
+    "column": 1,
+    "nuclide_symbol": "242mAm",
+    "half_life": "152y",
+    "raw_lines": [
+      "242mAm                       152y             14.6    0.2993 4 950-",
+      "48.6       0.0000",
+      "13.9       0.0038",
+      "49.4       0.0020",
+      "108.3        0.0016"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 75,
+    "column": 2,
+    "nuclide_symbol": "250Bk",
+    "half_life": "3.2h",
+    "raw_lines": [
+      "250Bk                3.2h              15.7   0.3118         I 834-4 3 474 0.862",
+      "98.2      0.0012",
+      "109.9       0.0026",
+      "115.1   , c 0.0041",
+      "129.0       0.0020",
+      "890.0        0.0164",
+      "929.3       0.0137",
+      "989.0       0.4510",
+      "1029.0        0.0439",
+      "1032.0        0.3510",
+      "42.2      0.0004"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 76,
+    "column": 1,
+    "nuclide_symbol": "252Cf",
+    "half_life": "2.6y",
+    "raw_lines": [
+      "252Cf 2.6y                                            15.0 0.0728 I 13",
+      "68.2 0.0003"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 76,
+    "column": 1,
+    "nuclide_symbol": "253Cf",
+    "half_life": "17.8d",
+    "raw_lines": [
+      "253Cf 17.8d                                           15.0 0.0013 2 08",
+      "60.8 0.0000"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 76,
+    "column": 1,
+    "nuclide_symbol": "254Cf",
+    "half_life": "5d",
+    "raw_lines": [
+      "254Cf 60 5d                                          43.0 0.00001 311-"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 76,
+    "column": 1,
+    "nuclide_symbol": "253Es",
+    "half_life": "5d",
+    "raw_lines": [
+      "253Es 20 5d                                          15.3 0.0457 6.92",
+      "203 0 0.0014",
+      "15.3 0.9885 1.49",
+      "42.6 0.0014"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 76,
+    "column": 1,
+    "nuclide_symbol": "254Es",
+    "half_life": "275.7d",
+    "raw_lines": [
+      "254Es 275.7d                                          63.0 0.0200",
+      "316.0 0.0015",
+      "221.8 0.0044",
+      "159.4 0.0023 1.514",
+      "16.4 0.4021"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 76,
+    "column": 1,
+    "nuclide_symbol": "254mEs",
+    "half_life": "1.6d",
+    "raw_lines": [
+      "254mEs 1.6d                                             104.4 0.0021",
+      "115.3 0.0060",
+      "121 1 '0.0095",
+      "136 0 0.0046",
+      "544 5 0.0107",
+      "584 3 0.0344",
+      "648 8 0.3437",
+      "688.7 0.1481",
+      "693 8 0.2939",
+      "45 0 0.0006"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 76,
+    "column": 1,
+    "nuclide_symbol": "255Es",
+    "half_life": "39.8d",
+    "raw_lines": [
+      "255Es 39.8d                                          15.3 0.0057 8.5",
+      "42 4 0.0000"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  },
+  {
+    "page_number": 76,
+    "column": 1,
+    "nuclide_symbol": "254Fm",
+    "half_life": "3.2h",
+    "raw_lines": [
+      "254Fm 3.2h                                               15.7 0.0781I 1",
+      "84.9 0.0005",
+      "255Fm  20.         lh                                   15 7 0.6032 8 7",
+      "23 0 ,0.0015",
+      "24 8 0.0020",
+      "57 9 0.0011",
+      "58 5 0.0067",
+      "60 0 0.0012",
+      "v",
+      "80.9 0.0027 ,",
+      "81.5 0.0081",
+      "142.8 0.0015",
+      "o"
+    ],
+    "reason": "Specific gamma constant Γ could not be extracted with full confidence from block"
+  }
+]

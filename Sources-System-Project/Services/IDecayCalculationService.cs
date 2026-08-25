@@ -19,4 +19,10 @@ public interface IDecayCalculationService
     List<(DateTime Time, double Activity)> GenerateDecayCurve(double initialActivityBq, double halfLife, string halfLifeUnit, DateTime calibrationDate, int dataPoints = 50);
     List<(DateTime Time, double Activity)> GenerateUnifiedDecayCurve(double initialActivityBq, double halfLife, string halfLifeUnit, DateTime calibrationDate, DateTime startDate, DateTime endDate, int dataPoints = 50);
     List<(DateTime Time, double ActivityBq)> GetSourceCompositeDecayCurve(Source source, int points = 60);
+
+    // ─── حساب معدل الجرعة الإشعاعية عند 1 متر ───
+    DoseRateResult CalculateDoseRateAtOneMeter(IEnumerable<(Radioisotope Isotope, double ActivityMBq)> isotopeActivities);
+    DoseRateResult CalculateDoseRateAtOneMeterForSource(Source source);
+    double ConvertDoseRateMicroSvTomR(double microSvPerHour);
+    double ConvertDoseRateMicroSvTomrem(double microSvPerHour);
 }

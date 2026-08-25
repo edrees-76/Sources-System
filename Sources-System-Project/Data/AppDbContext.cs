@@ -197,6 +197,7 @@ public class AppDbContext : DbContext
         try { cmd.CommandText = "ALTER TABLE Radioisotopes ADD COLUMN IsDeleted INTEGER NOT NULL DEFAULT 0;"; cmd.ExecuteNonQuery(); } catch { }
         
         try { cmd.CommandText = "ALTER TABLE Radioisotopes ADD COLUMN EnglishNotes TEXT;"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "ALTER TABLE Radioisotopes ADD COLUMN GammaConstant REAL;"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "ALTER TABLE Sources ADD COLUMN AddedBy TEXT;"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "ALTER TABLE Sources ADD COLUMN DeletedAt TEXT;"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "ALTER TABLE Sources ADD COLUMN DeletedBy TEXT;"; cmd.ExecuteNonQuery(); } catch { }

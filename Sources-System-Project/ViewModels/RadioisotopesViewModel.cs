@@ -42,6 +42,8 @@ public partial class RadioisotopesViewModel : ObservableObject, IEditableViewMod
     [ObservableProperty] private string _editYieldText = string.Empty;
     [ObservableProperty] private string _editNotes = string.Empty;
     [ObservableProperty] private string _editEnglishNotes = string.Empty;
+    [ObservableProperty] private double? _editGammaConstant;
+    [ObservableProperty] private string _editGammaConstantText = string.Empty;
 
     partial void OnEditHalfLifeTextChanged(string value)
     {
@@ -60,6 +62,18 @@ public partial class RadioisotopesViewModel : ObservableObject, IEditableViewMod
         if (double.TryParse(clean, out double result))
         {
             EditYield = value.Contains("%") ? result / 100 : result;
+        }
+    }
+
+    partial void OnEditGammaConstantTextChanged(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            EditGammaConstant = null;
+        }
+        else if (double.TryParse(value, out double result) && result > 0)
+        {
+            EditGammaConstant = result;
         }
     }
     private Guid? _editingId;
@@ -151,6 +165,8 @@ public partial class RadioisotopesViewModel : ObservableObject, IEditableViewMod
         EditEnergyText = Selected.Energy.ToString();
         EditYield = Selected.Yield ?? 0;
         EditYieldText = (Selected.Yield ?? 0).ToString();
+        EditGammaConstant = Selected.GammaConstant;
+        EditGammaConstantText = Selected.GammaConstant.HasValue ? Selected.GammaConstant.Value.ToString() : string.Empty;
         EditNotes = Selected.Notes ?? "";
         EditEnglishNotes = Selected.EnglishNotes ?? "";
         CurrentStep = 1;
@@ -164,12 +180,28 @@ public partial class RadioisotopesViewModel : ObservableObject, IEditableViewMod
         {
             ShowMsg(Helpers.TranslationHelper.GetString("MsgErrFillRequired")); return;
         }
+
+        if (!string.IsNullOrWhiteSpace(EditGammaConstantText))
+        {
+            if (!double.TryParse(EditGammaConstantText, out double gc) || gc <= 0)
+            {
+                ShowMsg(Helpers.TranslationHelper.GetString("MsgErrGammaConstantPositive") ?? "يجب أن تكون قيمة ثابت غاما رقماً موجباً أكبر من الصفر");
+                return;
+            }
+            EditGammaConstant = gc;
+        }
+        else
+        {
+            EditGammaConstant = null;
+        }
+
         var item = new Radioisotope
         {
-            Id = IsNew ? Guid.NewGuid() : _editingId!.Value,
+            Id = (IsNew || !_editingId.HasValue) ? Guid.NewGuid() : _editingId.Value,
             Name = EditName, ArabicName = EditArabicName, Symbol = EditSymbol, RadiationType = EditRadiationType,
             HalfLife = EditHalfLife, HalfLifeUnit = EditHalfLifeUnit,
-            Energy = EditEnergy, Yield = EditYield, 
+            Energy = EditEnergy, Yield = EditYield,
+            GammaConstant = EditGammaConstant,
             Notes = EditNotes, EnglishNotes = EditEnglishNotes
         };
         var r = IsNew ? _service.Create(item) : _service.Update(item);
@@ -205,7 +237,8 @@ public partial class RadioisotopesViewModel : ObservableObject, IEditableViewMod
     {
         EditName = EditArabicName = EditSymbol = EditRadiationType = EditNotes = EditEnglishNotes = string.Empty;
         EditHalfLife = EditEnergy = EditYield = 0;
-        EditHalfLifeText = EditEnergyText = EditYieldText = string.Empty;
+        EditHalfLifeText = EditEnergyText = EditYieldText = EditGammaConstantText = string.Empty;
+        EditGammaConstant = null;
         EditHalfLifeUnit = "years";
     }
 

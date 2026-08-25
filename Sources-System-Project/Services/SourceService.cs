@@ -311,6 +311,7 @@ public class SourceService : ISourceService
         {
             double totalCurrentBq = 0;
             double totalInitialBq = 0;
+            var isotopeActivities = new List<(Radioisotope Isotope, double ActivityMBq)>();
 
             foreach (var si in source.SourceIsotopes)
             {
@@ -329,6 +330,7 @@ public class SourceService : ISourceService
                 si.CurrentActivityValue = _decayService.ConvertFromBq(curBq, siUnit.ConversionToBq);
                 
                 totalCurrentBq += curBq;
+                isotopeActivities.Add((siIsotope, curBq / 1e6));
             }
             
             var initialUnit = source.InitialActivityUnit ?? (unitsDict.TryGetValue(source.InitialActivityUnitId, out var iu) ? iu : null);
@@ -336,6 +338,7 @@ public class SourceService : ISourceService
 
             source.InitialActivityValue = _decayService.ConvertFromBq(totalInitialBq, initConvFactor);
             source.CurrentActivityValue = _decayService.ConvertFromBq(totalCurrentBq, curConvFactor);
+            source.CurrentDoseRateResult = _decayService.CalculateDoseRateAtOneMeter(isotopeActivities);
         }
         else
         {
@@ -347,6 +350,7 @@ public class SourceService : ISourceService
 
             var currentBq = _decayService.CalculateCurrentActivityForSource(source, isotope, initialUnit);
             source.CurrentActivityValue = _decayService.ConvertFromBq(currentBq, currentUnit.ConversionToBq);
+            source.CurrentDoseRateResult = _decayService.CalculateDoseRateAtOneMeter(new[] { (isotope, currentBq / 1e6) });
         }
     }
 

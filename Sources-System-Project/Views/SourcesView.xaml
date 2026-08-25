@@ -436,7 +436,7 @@
                                                         </ItemsControl.ItemTemplate>
                                                     </ItemsControl>
 
-                                                    <!-- ── عمود 5: النشاط الحالي ── -->
+                                                    <!-- ── عمود 5: النشاط الحالي ومعدل الجرعة ── -->
                                                     <StackPanel Grid.Column="5"
                                                                 VerticalAlignment="Center"
                                                                 HorizontalAlignment="Center">
@@ -458,7 +458,16 @@
                                                                    Foreground="{DynamicResource TextSecondary}"
                                                                    TextAlignment="Center"
                                                                    FlowDirection="LeftToRight"
-                                                                   Margin="0,2,0,0"/>
+                                                                   Margin="0,1,0,0"/>
+                                                        <Border Background="#141F5A66" CornerRadius="4" Padding="5,1" Margin="0,2,0,0"
+                                                                HorizontalAlignment="Center" ToolTip="{Binding DoseRateTooltip}">
+                                                            <TextBlock Text="{Binding DisplayDoseRate}"
+                                                                       FontSize="9.5" FontWeight="SemiBold"
+                                                                       FontFamily="Segoe UI"
+                                                                       Foreground="{DynamicResource PrimaryBrush}"
+                                                                       TextAlignment="Center"
+                                                                       FlowDirection="LeftToRight"/>
+                                                        </Border>
                                                     </StackPanel>
 
                                                     <!-- ── عمود 6: الموقع ── -->
