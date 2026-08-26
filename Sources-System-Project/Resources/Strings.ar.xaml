@@ -804,7 +804,7 @@
     <system:String x:Key="HelpGammaRefAuthorsTitle">بيانات التقرير والمؤلفون</system:String>
     <system:String x:Key="HelpGammaRefAuthorsDesc">التقرير بعنوان: Specific Gamma-Ray Dose Constants for Radionuclides at 1 Meter in Water, Air, Concrete, etc. (ORNL/RSIC-45/R1)، من إعداد الباحثين: L.M. Unger و D.K. Trubey، نُشر في مايو 1982.</system:String>
     <system:String x:Key="HelpGammaRefUnitsTitle">الوحدات القياسية ومعامل التحويل الوحيد المعتمد</system:String>
-    <system:String x:Key="HelpGammaRefUnitsDesc">تُعطى البيانات بالوحدة الدولية (mSv/h)/MBq عند 1 متر. وتنص حاشية الصفحة 4 صراحة على أن معامل التحويل الوحيد الموثق إلى الوحدة التقليدية (mrem/h)/µCi هو الضرب في المعامل 3.7.</system:String>
+    <system:String x:Key="HelpGammaRefUnitsDesc">تُعطى البيانات بالوحدة الدولية µSv·m²/(MBq·h) عند 1 متر. وتنص حاشية الصفحة 4 صراحة على أن معامل التحويل الوحيد الموثق إلى الوحدة التقليدية (mrem/h)/µCi هو الضرب في المعامل 3.7.</system:String>
     <system:String x:Key="HelpGammaRefTip">💡 يمكنك تصفح واستعراض كافة النظائر المرجعية وثوابت غاما وسُمك الرصاص عبر شاشة 'مكتبة النظائر'، أو فتح التقرير المرجعي الكامل PDF بنقرة واحدة.</system:String>
 
     <!-- 4. Sources -->
@@ -943,7 +943,7 @@
     <system:String x:Key="CalcFieldDistance">المسافة (متر)</system:String>
     <system:String x:Key="CalcHintDistance">1.0</system:String>
     <system:String x:Key="CalcFieldGammaConstant">ثابت غاما (Γ) — اختياري</system:String>
-    <system:String x:Key="CalcHintGammaManual">يمكنك البحث عن هذه القيمة في مكتبة النظائر المرجعية</system:String>
+    <system:String x:Key="CalcHintGammaManual">الوحدة المطلوبة: µSv·m²/(MBq·h) فقط — يمكن استيرادها من مكتبة النظائر</system:String>
     <system:String x:Key="CalcGammaFromDb">ثابت غاما المسجل للنظير (Γ)</system:String>
     <system:String x:Key="CalcGammaNotAvailable">غير متوفر — لم يُسجَّل ثابت غاما لهذا النظير</system:String>
     <system:String x:Key="CalcBtnCalculate">حساب النشاط والجرعة</system:String>
@@ -1154,7 +1154,7 @@
     <system:String x:Key="HelpTopicIsotopeLibrarySubtitle">دليل استخدام الفهارس المعتمدة (ORNL و ICRP 107) لحسابات الجرعة والتدريع</system:String>
     <system:String x:Key="HelpIsotopeLibraryLead">تتضمن المنظومة مكتبة مرجعية شاملة تربط بين مرجعين علميين دوليين معتمدين: دليل مختبر أوك ريدج الوطني (ORNL/RSIC-45/R1) لثوابت الجرعة والتدريع، ومنشور اللجنة الدولية للوقاية من الإشعاع (ICRP Publication 107) لبيانات الانحلال الإشعاعي.</system:String>
     <system:String x:Key="HelpIsotopeLibrarySectionOrnl">1. مرجع ثوابت غاما والتدريع (ORNL/RSIC-45/R1)</system:String>
-    <system:String x:Key="HelpIsotopeLibrarySectionOrnlDesc">يحتوي على 322 نظيراً مشعاً معتمداً مع قيم ثابت غاما النوعي (Γ) بالوحدات الدولية (mSv·h⁻¹·MBq⁻¹) والوحدات التقليدية (mrem·h⁻¹·µCi⁻¹)، بالإضافة إلى سُمك درع الرصاص لتوهين 95% ومعامل التوهين الخطي المتوسط (µ). تُستخدم هذه البيانات حصراً في الحسابات التقديرية لمعدل الجرعة عند مسافة 1 متر.</system:String>
+    <system:String x:Key="HelpIsotopeLibrarySectionOrnlDesc">يحتوي على نظائر مشعة معتمدة مع قيم ثابت غاما النوعي (Γ) بالوحدة الدولية (µSv·m²/(MBq·h)) والوحدة التقليدية (mrem·h⁻¹·µCi⁻¹)، بالإضافة إلى سُمك درع الرصاص لتوهين 95% ومعامل التوهين الخطي المتوسط (µ). تُستخدم هذه البيانات حصراً في الحسابات التقديرية لمعدل الجرعة عند مسافة 1 متر.</system:String>
     <system:String x:Key="HelpIsotopeLibrarySectionIcrp">2. مرجع بيانات الانحلال الإشعاعي (ICRP Publication 107)</system:String>
     <system:String x:Key="HelpIsotopeLibrarySectionIcrpDesc">يغطي 1252 نظيراً مشعاً كمصدر احتياطي للبيانات الفيزيائية العامة (نصف العمر، نمط الانحلال B-/Alpha/EC، والطاقات المنبعثة). تنبيه: لا يتضمن هذا المرجع ثوابت غاما نوعية لحساب الجرعة، وتُعرض بياناته لأغراض الاسترشاد العلمي فقط.</system:String>
 

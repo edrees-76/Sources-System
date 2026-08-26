@@ -154,6 +154,62 @@ KNOWN_CORRECTIONS = {
         'val_gamma': 4.575e-4,
         't95': 4.057,
         'mu': 0.738
+    },
+    ('249Cm', 75): {
+        'half_life': '1.1h',
+        'raw_gamma': '3.982-6',
+        'fmt_gamma': '3.9820E-06',
+        'val_gamma': 3.982e-6,
+        't95': 2.02,
+        'mu': None
+    },
+    ('248Cf', 75): {
+        'half_life': '333.5d',
+        'raw_gamma': '1.229-5',
+        'fmt_gamma': '1.2290E-05',
+        'val_gamma': 1.229e-5,
+        't95': 0.002,
+        'mu': 1271.0
+    },
+    ('246Cm', 75): {
+        'half_life': '4750.0y',
+        'raw_gamma': '1.551-5',
+        'fmt_gamma': '1.5510E-05',
+        'val_gamma': 1.551e-5,
+        't95': 0.003,
+        'mu': 1054.0
+    },
+    ('134mCs', 42): {
+        'half_life': '2.9h',
+        'raw_gamma': '9.040-5',
+        'fmt_gamma': '9.0400E-05',
+        'val_gamma': 9.040e-5,
+        't95': 0.039,
+        'mu': 75.989
+    },
+    ('159Gd', 51): {
+        'half_life': '18.6h',
+        'raw_gamma': '1.059-5',
+        'fmt_gamma': '1.0590E-05',
+        'val_gamma': 1.059e-5,
+        't95': 0.827,
+        'mu': 3.622
+    },
+    ('169Er', 53): {
+        'half_life': '9.4d',
+        'raw_gamma': '3.406-10',
+        'fmt_gamma': '3.4060E-10',
+        'val_gamma': 3.406e-10,
+        't95': 0.065,
+        'mu': 46.160
+    },
+    ('197mPt', 59): {
+        'half_life': '1.6h',
+        'raw_gamma': '1.931-5',
+        'fmt_gamma': '1.9310E-05',
+        'val_gamma': 1.931e-5,
+        't95': 0.654,
+        'mu': 4.581
     }
 }
 
@@ -165,7 +221,11 @@ def normalize_text_line(raw_line):
     # 1. Normalize Thallium OCR errors (T1 or TI attached to mass numbers like 200T1, 201TI -> 200Tl, 201Tl)
     line = re.sub(r'\b([0-9]{1,3}m?[1-2]?)T[1I]\b', r'\g<1>Tl', line)
     
-    # 2. Replace obvious OCR characters in digit context (safeguard Ir and In)
+    # 2. Normalize leading exclamation mark in mass numbers (e.g. !09Cd -> 109Cd, !29Te -> 129Te, !34mCs -> 134mCs, !33mXe -> 133mXe, !97mHg -> 197mHg)
+    line = re.sub(r'!([0-9]{2,3}m?[1-2]?[a-zA-Z])', r'1\g<1>', line)
+    line = line.replace('!29Te', '129Te').replace('!09Cd', '109Cd').replace('!33mXe', '133mXe')
+    
+    # 3. Replace obvious OCR characters in digit context (safeguard Ir and In)
     line = re.sub(r'\bI([0-9])', r'1\g<1>', line)
     line = re.sub(r'([0-9])I(?![rn]\b|[0-9])', r'\g<1>1', line)
     line = re.sub(r'([0-9]+)\.Id\b', r'\g<1>.1d', line)
@@ -246,6 +306,11 @@ def clean_nuclide_name(sym):
     if sym.endswith('N;'): sym = sym[:-2] + 'Ni'
     if sym == 'lie': sym = '11C'
     if sym in ('150;', '150'): sym = '15O'
+    if sym == '09Cd': sym = '109Cd'
+    if sym == '29Te': sym = '129Te'
+    if sym == '33mXe': sym = '133mXe'
+    if sym == '97mHg': sym = '197mHg'
+    if sym == '95mPt': sym = '195mPt'
     if 'mlr' in sym: sym = sym.replace('mlr', 'mIr')
     if 'mln' in sym: sym = sym.replace('mln', 'mIn')
     if 'lr' in sym and not sym.endswith('Clr'): sym = sym.replace('lr', 'Ir')
@@ -343,8 +408,10 @@ def run_extraction():
                 # Extract individual photon lines (Energy in keV, Probability)
                 photons = []
                 for bl in block_lines:
-                    pairs = re.findall(r'([0-9]+(?:\.[0-9]+)?)\s+([0-9]+\.[0-9]{3,4})', bl)
-                    for e_str, p_str in pairs:
+                    for match in re.finditer(r'([0-9]+(?:\.[0-9]+)?)\s+([0-9]+\.[0-9]{3,4})', bl):
+                        if match.start() and bl[match.start() - 1] == '-':
+                            continue
+                        e_str, p_str = match.groups()
                         try:
                             e_f = float(e_str)
                             p_f = float(p_str)
@@ -385,6 +452,20 @@ def run_extraction():
                     raw_gamma = g_m.group(1)
                     orig_g, fmt_g, val_g = parse_gamma_val(raw_gamma)
                     
+                    # Reject suspicious leading zero formats or merged column prefixes (e.g. 0791.xxxx or 0xxx)
+                    if re.match(r'^0[0-9]+', raw_gamma) or re.match(r'^[0-9]{2,}\.[0-9]+[\-]', raw_gamma):
+                        issues.append({
+                            "page_number": page_num,
+                            "column": col_idx + 1,
+                            "nuclide_symbol": nuclide_sym,
+                            "half_life": hl_val,
+                            "raw_lines": block_lines,
+                            "extracted_gamma_raw": raw_gamma,
+                            "extracted_gamma_value": val_g,
+                            "reason": "قيمة مشبوهة تبدأ بصفر بادئ أو أرقام مدمجة من أعمدة مجاورة - تتطلب مراجعة يدوية"
+                        })
+                        continue
+
                     # Strict Physical Sanity Check: 1e-12 <= val_g <= 1e-2
                     if val_g is None or val_g < 1.0e-12 or val_g > 1.0e-2:
                         issues.append({

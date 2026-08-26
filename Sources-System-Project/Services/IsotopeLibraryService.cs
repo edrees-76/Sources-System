@@ -264,6 +264,41 @@ public class IsotopeLibraryService : IIsotopeLibraryService
         return symbol.Replace("-", "").Replace(" ", "").Trim().ToLowerInvariant();
     }
 
+    public static string? GetReversedNuclideKey(string compactKey)
+    {
+        if (string.IsNullOrWhiteSpace(compactKey)) return null;
+
+        // 1. Metastable starting with digits + m (e.g. "99mtc", "133mba", "134m1cs")
+        var matchMetaPrefix = System.Text.RegularExpressions.Regex.Match(compactKey, @"^(\d+)(m\d?)([a-z]+)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        if (matchMetaPrefix.Success)
+        {
+            return $"{matchMetaPrefix.Groups[3].Value}{matchMetaPrefix.Groups[1].Value}{matchMetaPrefix.Groups[2].Value}";
+        }
+
+        // 2. Metastable with mass + element + m (e.g. "99tcm", "133bam")
+        var matchMetaSuffix = System.Text.RegularExpressions.Regex.Match(compactKey, @"^(\d+)([a-z]+)(m\d?)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        if (matchMetaSuffix.Success)
+        {
+            return $"{matchMetaSuffix.Groups[2].Value}{matchMetaSuffix.Groups[1].Value}{matchMetaSuffix.Groups[3].Value}";
+        }
+
+        // 3. Element first (e.g. "tc99m", "co60", "cs137", "ba133m")
+        var matchElemMass = System.Text.RegularExpressions.Regex.Match(compactKey, @"^([a-z]+?)(\d+(?:m\d?)?)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        if (matchElemMass.Success)
+        {
+            return $"{matchElemMass.Groups[2].Value}{matchElemMass.Groups[1].Value}";
+        }
+
+        // 4. Standard Mass first (e.g. "60co", "137cs")
+        var matchMassElem = System.Text.RegularExpressions.Regex.Match(compactKey, @"^(\d+)([a-z]+)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        if (matchMassElem.Success)
+        {
+            return matchMassElem.Groups[2].Value + matchMassElem.Groups[1].Value;
+        }
+
+        return null;
+    }
+
     public async Task<IReadOnlyList<IsotopeReferenceEntry>> SearchAsync(string query)
     {
         var all = await GetAllEntriesAsync();
@@ -312,21 +347,8 @@ public class IsotopeLibraryService : IIsotopeLibraryService
             }
         }
 
-        // استخراج الأنماط المعكوسة (مثال: co60 <-> 60co, cs137 <-> 137cs)
-        string? reversedQuery = null;
-        var matchElemMass = System.Text.RegularExpressions.Regex.Match(compactQuery, @"^([a-z]+)(\d+[a-z]*)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-        if (matchElemMass.Success)
-        {
-            reversedQuery = matchElemMass.Groups[2].Value + matchElemMass.Groups[1].Value;
-        }
-        else
-        {
-            var matchMassElem = System.Text.RegularExpressions.Regex.Match(compactQuery, @"^(\d+[a-z]*)([a-z]+)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-            if (matchMassElem.Success)
-            {
-                reversedQuery = matchMassElem.Groups[2].Value + matchMassElem.Groups[1].Value;
-            }
-        }
+        // استخراج الأنماط المعكوسة (مثال: co60 <-> 60co, cs137 <-> 137cs, 99mtc <-> tc99m)
+        string? reversedQuery = GetReversedNuclideKey(compactQuery);
 
         var results = all.Where(entry =>
         {

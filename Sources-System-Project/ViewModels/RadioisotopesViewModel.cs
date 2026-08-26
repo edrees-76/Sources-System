@@ -173,21 +173,7 @@ public partial class RadioisotopesViewModel : ObservableObject, IEditableViewMod
         return symbol.Replace("-", "").Replace(" ", "").Trim().ToLowerInvariant();
     }
 
-    private static string? GetReversedKey(string compactKey)
-    {
-        if (string.IsNullOrWhiteSpace(compactKey)) return null;
-        var matchElemMass = System.Text.RegularExpressions.Regex.Match(compactKey, @"^([a-z]+)(\d+[a-z]*)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-        if (matchElemMass.Success)
-        {
-            return matchElemMass.Groups[2].Value + matchElemMass.Groups[1].Value;
-        }
-        var matchMassElem = System.Text.RegularExpressions.Regex.Match(compactKey, @"^(\d+)([a-z]+)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-        if (matchMassElem.Success)
-        {
-            return matchMassElem.Groups[2].Value + matchMassElem.Groups[1].Value;
-        }
-        return null;
-    }
+    private static string? GetReversedKey(string compactKey) => IsotopeLibraryService.GetReversedNuclideKey(compactKey);
 
     public void SelectRadioisotopeById(Guid isotopeId)
     {

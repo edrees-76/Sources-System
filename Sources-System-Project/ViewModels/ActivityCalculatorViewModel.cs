@@ -251,7 +251,7 @@ public partial class ActivityCalculatorViewModel : ObservableObject
 
         // ─── 1. التحقق من النشاط الأولي A₀ ───
         if (!double.TryParse(InitialActivityText, System.Globalization.NumberStyles.Float,
-            System.Globalization.CultureInfo.InvariantCulture, out double A0) || A0 <= 0)
+            System.Globalization.CultureInfo.InvariantCulture, out double A0) || double.IsNaN(A0) || double.IsInfinity(A0) || A0 <= 0)
         {
             HasError = true;
             HasInitialActivityError = true;
@@ -261,7 +261,7 @@ public partial class ActivityCalculatorViewModel : ObservableObject
 
         // ─── 2. التحقق من نصف العمر T½ ───
         if (!double.TryParse(HalfLifeValueText, System.Globalization.NumberStyles.Float,
-            System.Globalization.CultureInfo.InvariantCulture, out double halfLife) || halfLife <= 0)
+            System.Globalization.CultureInfo.InvariantCulture, out double halfLife) || double.IsNaN(halfLife) || double.IsInfinity(halfLife) || halfLife <= 0)
         {
             HasError = true;
             HasHalfLifeError = true;
@@ -318,7 +318,7 @@ public partial class ActivityCalculatorViewModel : ObservableObject
         {
             // ─── وضع حساب الزمن لنشاط مستهدف ───
             if (!double.TryParse(TargetActivityText, System.Globalization.NumberStyles.Float,
-                System.Globalization.CultureInfo.InvariantCulture, out double targetActivity) || targetActivity <= 0)
+                System.Globalization.CultureInfo.InvariantCulture, out double targetActivity) || double.IsNaN(targetActivity) || double.IsInfinity(targetActivity) || targetActivity <= 0)
             {
                 HasError = true;
                 HasTargetActivityError = true;
@@ -384,17 +384,17 @@ public partial class ActivityCalculatorViewModel : ObservableObject
         else if (IsManualInput)
         {
             if (double.TryParse(ManualGammaConstantText, System.Globalization.NumberStyles.Float,
-                System.Globalization.CultureInfo.InvariantCulture, out double g) && g > 0)
+                System.Globalization.CultureInfo.InvariantCulture, out double g) && !double.IsNaN(g) && !double.IsInfinity(g) && g > 0)
             {
                 gamma = g;
             }
         }
 
-        if (!gamma.HasValue || gamma.Value <= 0) return;
+        if (!gamma.HasValue || double.IsNaN(gamma.Value) || double.IsInfinity(gamma.Value) || gamma.Value <= 0) return;
 
         // 2. التحقق من المسافة (متر)
         if (!double.TryParse(DistanceText, System.Globalization.NumberStyles.Float,
-            System.Globalization.CultureInfo.InvariantCulture, out double distance) || distance <= 0)
+            System.Globalization.CultureInfo.InvariantCulture, out double distance) || double.IsNaN(distance) || double.IsInfinity(distance) || distance <= 0)
         {
             return;
         }
@@ -614,6 +614,7 @@ public partial class ActivityCalculatorViewModel : ObservableObject
 
     private static string FormatScientific(double value)
     {
+        if (double.IsNaN(value) || double.IsInfinity(value)) return "—";
         if (value == 0) return "0";
         if (Math.Abs(value) >= 1e6 || Math.Abs(value) < 0.0001)
         {
