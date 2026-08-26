@@ -506,7 +506,7 @@
     <system:String x:Key="PermReports">التقارير</system:String>
     <system:String x:Key="PermUsers">إدارة المستخدمين</system:String>
     <system:String x:Key="PermSettings">الإعدادات</system:String>
-    <system:String x:Key="PermCalculator">حاسبة النشاط</system:String>
+    <system:String x:Key="PermCalculator">الحاسبة الإشعاعية</system:String>
 
     <!-- Locations Page -->
     <system:String x:Key="LocationsManagementTitle">إدارة خارطة المواقع</system:String>
@@ -736,8 +736,8 @@
     <system:String x:Key="TitleDismissAlert">إخفاء التنبيه</system:String>
     <system:String x:Key="MsgConfirmDismissAlert">هل أنت متأكد من رغبتك في إخفاء هذا التنبيه؟</system:String>
 
-    <!-- Activity Calculator -->
-    <system:String x:Key="MenuActivityCalculator">حاسبة النشاط</system:String>
+    <!-- Radiological Calculator -->
+    <system:String x:Key="MenuActivityCalculator">الحاسبة الإشعاعية</system:String>
     <system:String x:Key="MenuHelp">المساعدة والدليل</system:String>
     
     <!-- Help View Strings -->
@@ -853,11 +853,11 @@
     <system:String x:Key="HelpBorrowingStep4Desc">عند انتهاء الاستخدام، يعاد المصدر للمستودع ويؤكد المسؤول استلامه فتتحول الحالة إلى "مُرتجع" (Returned) ويعود المصدر لجرد المخزن المتاح.</system:String>
     <system:String x:Key="HelpBorrowingWarning1">⚠ متابعة التأخير: إذا تجاوز المستعير تاريخ الإرجاع المتوقع دون إعادة المصدر، يدرج الطلب تلقائياً في التنبيهات العاجلة ويظهر باللون الأحمر في لوحة القيادة وجرس التنبيهات.</system:String>
 
-    <!-- 7. Activity Calculator -->
-    <system:String x:Key="HelpTopicCalculatorTitle">7. حاسبة النشاط وتتبع الاضمحلال</system:String>
-    <system:String x:Key="HelpTopicCalculatorSubtitle">أداة فيزيائية متطورة لحساب النشاط الحالي والمستقبلي وزمن الوصول للنشاط المستهدف</system:String>
-    <system:String x:Key="HelpBtnGoToCalculator">الانتقال إلى حاسبة النشاط</system:String>
-    <system:String x:Key="HelpCalculatorLeadText">حاسبة النشاط الإشعاعي هي أداة علمية مدمجة تتيح لك إجراء الحسابات النووية الفورية دون الحاجة إلى جداول حسابية يدوية خارجية مع دعم كافة الوحدات العالمية.</system:String>
+    <!-- 7. Radiological Calculator -->
+    <system:String x:Key="HelpTopicCalculatorTitle">7. الحاسبة الإشعاعية وتتبع الاضمحلال</system:String>
+    <system:String x:Key="HelpTopicCalculatorSubtitle">أداة فيزيائية متطورة لحساب النشاط والجرعة الإشعاعية وزمن الوصول للنشاط المستهدف</system:String>
+    <system:String x:Key="HelpBtnGoToCalculator">الانتقال إلى الحاسبة الإشعاعية</system:String>
+    <system:String x:Key="HelpCalculatorLeadText">الحاسبة الإشعاعية هي أداة علمية مدمجة تتيح لك إجراء الحسابات النووية وتقدير الجرعة الإشعاعية فورياً دون الحاجة إلى جداول حسابية يدوية خارجية مع دعم كافة الوحدات العالمية.</system:String>
     <system:String x:Key="HelpCalculatorSectionFeatures">وظائف الحاسبة الرئيسية</system:String>
     <system:String x:Key="HelpCalculatorStep1Title">1. حساب النشاط في أي تاريخ (الحالي أو المستقبلي)</system:String>
     <system:String x:Key="HelpCalculatorStep1Desc">أدخل النشاط الابتدائي ونصف العمر وتاريخ المعايرة وتاريخ الهدف؛ لتحسب لك المنظومة النشاط بدقة بالغة مع دعم كافة الوحدات (Bq, kBq, MBq, GBq, Ci, mCi, µCi).</system:String>
@@ -919,16 +919,16 @@
     <system:String x:Key="HelpWhatsNewSectionRecent">أبرز الإضافات في الإصدار الحالي</system:String>
     <system:String x:Key="HelpWhatsNew1Title">خدمة النسخ الاحتياطي التلقائي في الخلفية</system:String>
     <system:String x:Key="HelpWhatsNew1Desc">نظام نسخ احتياطي حقيقي يعمل في الخلفية وفق جدول زمني مخصص مع إدارة تلقائية لمساحة التخزين وتدوير النسخ القديمة لضمان عدم فقدان أي بيانات.</system:String>
-    <system:String x:Key="HelpWhatsNew2Title">حاسبة النشاط الإشعاعي المتطورة</system:String>
-    <system:String x:Key="HelpWhatsNew2Desc">أداة فيزيائية تفاعلية متصلة بمحرك الاضمحلال المركزي لحساب النشاط المستقبلي وزمن الوصول للنشاط المستهدف والتحويل بين كافة الوحدات النووية.</system:String>
+    <system:String x:Key="HelpWhatsNew2Title">الحاسبة الإشعاعية المتطورة</system:String>
+    <system:String x:Key="HelpWhatsNew2Desc">أداة فيزيائية تفاعلية متصلة بمحرك الاضمحلال المركزي لحساب النشاط المستقبلي وزمن الوصول للنشاط المستهدف ومعدل الجرعة الإشعاعية والتحويل بين كافة الوحدات النووية.</system:String>
     <system:String x:Key="HelpWhatsNew3Title">إعادة تصميم شاملة لشاشة المستخدمين وإدارة الصلاحيات</system:String>
     <system:String x:Key="HelpWhatsNew3Desc">واجهة مستخدم عصرية توفر تحكماً دقيقاً بصلاحيات الوصول لكل قسم مع بطاقات أمان ومراقبة محاولات تسجيل الدخول غير المصرح بها.</system:String>
     <system:String x:Key="HelpWhatsNew4Title">دعم كامل ومتزامن للمظهرين الداكن والفاتح</system:String>
     <system:String x:Key="HelpWhatsNew4Desc">تناغم بصري كامل لجميع الشاشات والجداول والبطاقات لراحة العين مع تبديل فوري وحفظ للتفضيلات عبر جلسات العمل.</system:String>
 
 
-    <system:String x:Key="CalcTitle">حاسبة النشاط الإشعاعي</system:String>
-    <system:String x:Key="CalcSubtitle">حساب النشاط وتتبع الاضمحلال وفق قوانين الفيزياء النووية</system:String>
+    <system:String x:Key="CalcTitle">الحاسبة الإشعاعية</system:String>
+    <system:String x:Key="CalcSubtitle">حساب النشاط وتتبع الاضمحلال ومعدل الجرعة الإشعاعية وفق قوانين الفيزياء النووية</system:String>
     <system:String x:Key="CalcTabCurrentActivity">حساب النشاط الحالي / المستقبلي</system:String>
     <system:String x:Key="CalcTabTimeToTarget">حساب الزمن للنشاط المستهدف</system:String>
     <system:String x:Key="CalcFieldIsotope">اختر النظير المشع (اختياري)</system:String>
@@ -940,7 +940,13 @@
     <system:String x:Key="CalcFieldCalibrationDate">تاريخ الصنع/المعايرة *</system:String>
     <system:String x:Key="CalcFieldCalculationDate">تاريخ الحساب *</system:String>
     <system:String x:Key="CalcFieldOutputUnit">وحدة الخرج</system:String>
-    <system:String x:Key="CalcBtnCalculate">حساب النشاط</system:String>
+    <system:String x:Key="CalcFieldDistance">المسافة (متر)</system:String>
+    <system:String x:Key="CalcHintDistance">1.0</system:String>
+    <system:String x:Key="CalcFieldGammaConstant">ثابت غاما (Γ) — اختياري</system:String>
+    <system:String x:Key="CalcHintGammaManual">يمكنك البحث عن هذه القيمة في مكتبة النظائر المرجعية</system:String>
+    <system:String x:Key="CalcGammaFromDb">ثابت غاما المسجل للنظير (Γ)</system:String>
+    <system:String x:Key="CalcGammaNotAvailable">غير متوفر — لم يُسجَّل ثابت غاما لهذا النظير</system:String>
+    <system:String x:Key="CalcBtnCalculate">حساب النشاط والجرعة</system:String>
     <system:String x:Key="CalcBtnCalculateTime">حساب الزمن اللازم</system:String>
     <system:String x:Key="CalcBtnReset">مسح الحقول</system:String>
     <system:String x:Key="CalcBtnCopy">نسخ النتيجة</system:String>
@@ -952,21 +958,33 @@
     <system:String x:Key="CalcResultRequiredTime">الزمن اللازم للوصول</system:String>
     <system:String x:Key="CalcResultTargetDate">التاريخ المتوقع</system:String>
     <system:String x:Key="CalcHalfLivesElapsed">فترات نصف العمر</system:String>
+    <system:String x:Key="CalcResultDoseRate">معدل الجرعة الإشعاعية</system:String>
+    <system:String x:Key="CalcResultDoseRateMrem">معدل الجرعة المكافئ</system:String>
     <system:String x:Key="CalcChartTitle">منحنى الاضمحلال الإشعاعي عبر الزمن</system:String>
     <system:String x:Key="CalcChartLegendCurve">منحنى الاضمحلال</system:String>
     <system:String x:Key="CalcChartLegendCurrent">النقطة المحسوبة</system:String>
     <system:String x:Key="CalcFormulaTitle">المعادلات المرجعية</system:String>
+    <system:String x:Key="CalcFormulaStep1Title">الخطوة 1 — ثابت التحلل</system:String>
+    <system:String x:Key="CalcFormulaStep2Title">الخطوة 2 — قانون الاضمحلال الإشعاعي</system:String>
+    <system:String x:Key="CalcFormulaStep3Title">الخطوة 3 — قانون التربيع العكسي ومعدل الجرعة</system:String>
     <system:String x:Key="CalcErrInvalidInput">يرجى إدخال قيم رقمية صحيحة وموجبة.</system:String>
     <system:String x:Key="CalcErrInitialActivity">يرجى إدخال نشاط ابتدائي رقمي موجب صحيح.</system:String>
     <system:String x:Key="CalcErrHalfLife">يرجى إدخال نصف عمر رقمي موجب صحيح.</system:String>
     <system:String x:Key="CalcErrTargetActivity">يرجى إدخال نشاط مستهدف رقمي موجب صحيح.</system:String>
     <system:String x:Key="CalcErrTargetGreater">النشاط المستهدف يجب أن يكون أقل من النشاط الابتدائي.</system:String>
     <system:String x:Key="CalcErrDateOrder">تاريخ الحساب يجب أن يكون بعد تاريخ المعايرة.</system:String>
+    <system:String x:Key="CalcErrDistance">يرجى إدخال مسافة رقمية موجبة أكبر من الصفر.</system:String>
     <system:String x:Key="CalcHintActivity">مثال: 100</system:String>
     <system:String x:Key="CalcHintTargetActivity">مثال: 25</system:String>
     <system:String x:Key="CalcHintHalfLife">مثال: 30.17</system:String>
     <system:String x:Key="CalcRadioFromDB">اختيار نظير من المخزون</system:String>
     <system:String x:Key="CalcRadioManual">إدخال بيانات مخصصة</system:String>
+
+    <!-- ORNL Gamma Constant Suggestion Keys -->
+    <system:String x:Key="BtnSuggestFromOrnl">اقتراح من ORNL</system:String>
+    <system:String x:Key="MsgOrnlSuggestSuccess">تم الاقتراح من مرجع ORNL/RSIC-45/R1 (صفحة {0})</system:String>
+    <system:String x:Key="MsgOrnlNotFound">لم يُعثر على هذا النظير في مرجع ORNL — يمكنك إدخال القيمة يدوياً أو البحث في مكتبة النظائر المرجعية إن كانت متوفرة من مصدر آخر (مثل ICRP)</system:String>
+    <system:String x:Key="MsgErrSymbolRequiredFirst">أدخل رمز النظير أولاً في خطوة الهوية</system:String>
 
     <!-- Borrowing View Missing Keys -->
     <system:String x:Key="BorrowingManagementTitle">إدارة الاستعارة</system:String>
@@ -984,7 +1002,7 @@
     <system:String x:Key="Actions">إجراءات</system:String>
     <system:String x:Key="OpenActionDialog">إجراءات</system:String>
     <system:String x:Key="NavBorrowing">استعارة المصادر</system:String>
-    <system:String x:Key="NavActivityCalculator">حاسبة النشاط</system:String>
+    <system:String x:Key="NavActivityCalculator">الحاسبة الإشعاعية</system:String>
     <system:String x:Key="NavHelp">المساعدة والدليل</system:String>
     <system:String x:Key="NavAbout">حول المنظومة</system:String>
     <system:String x:Key="NavAboutSystem">حول المنظومة</system:String>

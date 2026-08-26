@@ -509,7 +509,7 @@
     <system:String x:Key="PermReports">Reports</system:String>
     <system:String x:Key="PermUsers">Users Management</system:String>
     <system:String x:Key="PermSettings">Settings</system:String>
-    <system:String x:Key="PermCalculator">Activity Calculator</system:String>
+    <system:String x:Key="PermCalculator">Radiological Calculator</system:String>
 
     <!-- Locations Page -->
     <system:String x:Key="LocationsManagementTitle">Locations Map Management</system:String>
@@ -739,7 +739,8 @@
     <system:String x:Key="TitleDismissAlert">Dismiss Alert</system:String>
     <system:String x:Key="MsgConfirmDismissAlert">Are you sure you want to dismiss this alert?</system:String>
 
-    <system:String x:Key="MenuActivityCalculator">Activity Calculator</system:String>
+    <!-- Radiological Calculator -->
+    <system:String x:Key="MenuActivityCalculator">Radiological Calculator</system:String>
     <system:String x:Key="MenuHelp">Help &amp; Guide</system:String>
     
     <!-- Help View Strings -->
@@ -855,11 +856,11 @@
     <system:String x:Key="HelpBorrowingStep4Desc">Upon return, the officer confirms receipt, returning the source to available inventory status.</system:String>
     <system:String x:Key="HelpBorrowingWarning1">⚠ Overdue Warning: Unreturned sources past expected return date automatically trigger urgent red alerts on Dashboard and top notification bell.</system:String>
 
-    <!-- 7. Activity Calculator -->
-    <system:String x:Key="HelpTopicCalculatorTitle">7. Activity &amp; Decay Calculator</system:String>
-    <system:String x:Key="HelpTopicCalculatorSubtitle">Advanced nuclear physics decay calculator and future activity projections</system:String>
-    <system:String x:Key="HelpBtnGoToCalculator">Go to Calculator</system:String>
-    <system:String x:Key="HelpCalculatorLeadText">The Activity Calculator provides instant decay and target-activity computations following nuclear physics laws with universal radiation unit support.</system:String>
+    <!-- 7. Radiological Calculator -->
+    <system:String x:Key="HelpTopicCalculatorTitle">7. Radiological Calculator &amp; Decay</system:String>
+    <system:String x:Key="HelpTopicCalculatorSubtitle">Advanced nuclear physics decay and radiation dose rate projections</system:String>
+    <system:String x:Key="HelpBtnGoToCalculator">Go to Radiological Calculator</system:String>
+    <system:String x:Key="HelpCalculatorLeadText">The Radiological Calculator provides instant decay, target-activity, and radiation dose rate computations following nuclear physics laws with universal radiation unit support.</system:String>
     <system:String x:Key="HelpCalculatorSectionFeatures">Core Calculator Capabilities</system:String>
     <system:String x:Key="HelpCalculatorStep1Title">1. Calculate Activity at Any Date</system:String>
     <system:String x:Key="HelpCalculatorStep1Desc">Input initial activity, half-life, calibration date, and target date for precise activity output in all standard units (Bq, kBq, MBq, GBq, Ci, mCi, µCi).</system:String>
@@ -921,16 +922,16 @@
     <system:String x:Key="HelpWhatsNewSectionRecent">Key Features in the Current Release</system:String>
     <system:String x:Key="HelpWhatsNew1Title">Automated Background Backup Engine</system:String>
     <system:String x:Key="HelpWhatsNew1Desc">True background scheduled backup service with automated storage retention to safeguard all records against data loss.</system:String>
-    <system:String x:Key="HelpWhatsNew2Title">Integrated Nuclear Activity Calculator</system:String>
-    <system:String x:Key="HelpWhatsNew2Desc">Interactive decay computation tool connected to the central decay engine with full unit conversions and forward/backward calculations.</system:String>
+    <system:String x:Key="HelpWhatsNew2Title">Integrated Radiological Calculator</system:String>
+    <system:String x:Key="HelpWhatsNew2Desc">Interactive decay and radiation dose rate computation tool connected to the central decay engine with full unit conversions and forward/backward calculations.</system:String>
     <system:String x:Key="HelpWhatsNew3Title">Refreshed User &amp; Permission Management UI</system:String>
     <system:String x:Key="HelpWhatsNew3Desc">Modern user management interface with granular section permissions, security cards, and failed-login monitors.</system:String>
     <system:String x:Key="HelpWhatsNew4Title">Seamless Dark &amp; Light Theme Synchronization</system:String>
     <system:String x:Key="HelpWhatsNew4Desc">Instant theme switching across all views and cards with eye comfort and persistent user preferences.</system:String>
 
 
-    <system:String x:Key="CalcTitle">Radioactivity Activity Calculator</system:String>
-    <system:String x:Key="CalcSubtitle">Calculate activity and track decay following nuclear physics laws</system:String>
+    <system:String x:Key="CalcTitle">Radiological Calculator</system:String>
+    <system:String x:Key="CalcSubtitle">Calculate activity, decay, and radiation dose rate following nuclear physics laws</system:String>
     <system:String x:Key="CalcTabCurrentActivity">Calculate Activity</system:String>
     <system:String x:Key="CalcTabTimeToTarget">Time to Target Activity</system:String>
     <system:String x:Key="CalcFieldIsotope">Select Radioisotope (optional)</system:String>
@@ -942,7 +943,13 @@
     <system:String x:Key="CalcFieldCalibrationDate">Calibration/Manufacture Date *</system:String>
     <system:String x:Key="CalcFieldCalculationDate">Calculation Date *</system:String>
     <system:String x:Key="CalcFieldOutputUnit">Output Unit</system:String>
-    <system:String x:Key="CalcBtnCalculate">Calculate Activity</system:String>
+    <system:String x:Key="CalcFieldDistance">Distance (meters)</system:String>
+    <system:String x:Key="CalcHintDistance">1.0</system:String>
+    <system:String x:Key="CalcFieldGammaConstant">Gamma Constant (Γ) — Optional</system:String>
+    <system:String x:Key="CalcHintGammaManual">You can look up this value in the Reference Isotope Library</system:String>
+    <system:String x:Key="CalcGammaFromDb">Recorded Gamma Constant (Γ)</system:String>
+    <system:String x:Key="CalcGammaNotAvailable">Not available — Gamma constant is not recorded for this isotope</system:String>
+    <system:String x:Key="CalcBtnCalculate">Calculate Activity &amp; Dose</system:String>
     <system:String x:Key="CalcBtnCalculateTime">Calculate Time</system:String>
     <system:String x:Key="CalcBtnReset">Reset Fields</system:String>
     <system:String x:Key="CalcBtnCopy">Copy Result</system:String>
@@ -954,21 +961,33 @@
     <system:String x:Key="CalcResultRequiredTime">Required Time</system:String>
     <system:String x:Key="CalcResultTargetDate">Estimated Date</system:String>
     <system:String x:Key="CalcHalfLivesElapsed">Half-lives Elapsed</system:String>
+    <system:String x:Key="CalcResultDoseRate">Radiation Dose Rate</system:String>
+    <system:String x:Key="CalcResultDoseRateMrem">Equivalent Dose Rate</system:String>
     <system:String x:Key="CalcChartTitle">Radioactive Decay Curve</system:String>
     <system:String x:Key="CalcChartLegendCurve">Decay Curve</system:String>
     <system:String x:Key="CalcChartLegendCurrent">Calculated Point</system:String>
     <system:String x:Key="CalcFormulaTitle">Reference Formulas</system:String>
+    <system:String x:Key="CalcFormulaStep1Title">Step 1 — Decay Constant</system:String>
+    <system:String x:Key="CalcFormulaStep2Title">Step 2 — Radioactive Decay Law</system:String>
+    <system:String x:Key="CalcFormulaStep3Title">Step 3 — Inverse Square Law &amp; Dose Rate</system:String>
     <system:String x:Key="CalcErrInvalidInput">Please enter valid positive numeric values.</system:String>
     <system:String x:Key="CalcErrInitialActivity">Please enter a valid positive numeric initial activity.</system:String>
     <system:String x:Key="CalcErrHalfLife">Please enter a valid positive numeric half-life.</system:String>
     <system:String x:Key="CalcErrTargetActivity">Please enter a valid positive numeric target activity.</system:String>
     <system:String x:Key="CalcErrTargetGreater">Target activity must be less than initial activity.</system:String>
     <system:String x:Key="CalcErrDateOrder">Calculation date must be after calibration date.</system:String>
+    <system:String x:Key="CalcErrDistance">Please enter a valid positive distance greater than zero.</system:String>
     <system:String x:Key="CalcHintActivity">Example: 100</system:String>
     <system:String x:Key="CalcHintTargetActivity">Example: 25</system:String>
     <system:String x:Key="CalcHintHalfLife">Example: 30.17</system:String>
     <system:String x:Key="CalcRadioFromDB">Select Stored Isotope</system:String>
     <system:String x:Key="CalcRadioManual">Custom Parameters</system:String>
+
+    <!-- ORNL Gamma Constant Suggestion Keys -->
+    <system:String x:Key="BtnSuggestFromOrnl">Suggest from ORNL</system:String>
+    <system:String x:Key="MsgOrnlSuggestSuccess">Suggested from ORNL/RSIC-45/R1 (Page {0})</system:String>
+    <system:String x:Key="MsgOrnlNotFound">Isotope not found in ORNL reference — you can enter the value manually or search the Reference Library (e.g. ICRP)</system:String>
+    <system:String x:Key="MsgErrSymbolRequiredFirst">Please enter the isotope symbol first in the Identity step</system:String>
 
     <!-- Borrowing View Missing Keys -->
     <system:String x:Key="BorrowingManagementTitle">Borrowing Management</system:String>
@@ -986,7 +1005,7 @@
     <system:String x:Key="Actions">Actions</system:String>
     <system:String x:Key="OpenActionDialog">Actions</system:String>
     <system:String x:Key="NavBorrowing">Source Borrowing</system:String>
-    <system:String x:Key="NavActivityCalculator">Activity Calculator</system:String>
+    <system:String x:Key="NavActivityCalculator">Radiological Calculator</system:String>
     <system:String x:Key="NavHelp">Help &amp; Guide</system:String>
     <system:String x:Key="NavAboutSystem">About System</system:String>
     <system:String x:Key="SelectSource">Select Source</system:String>

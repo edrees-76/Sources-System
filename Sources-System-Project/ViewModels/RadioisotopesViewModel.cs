@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using MaterialDesignThemes.Wpf;
 using Sources.Models;
 using Sources.Services;
 using Sources.Interfaces;
@@ -13,6 +14,9 @@ namespace Sources.ViewModels;
 public partial class RadioisotopesViewModel : ObservableObject, IEditableViewModel
 {
     private readonly IRadioisotopeService _service;
+    private readonly IIsotopeLibraryService _libraryService;
+
+    public ISnackbarMessageQueue? MessageQueue { get; }
 
     [ObservableProperty] private ObservableCollection<Radioisotope> _radioisotopes = new();
     [ObservableProperty] 
@@ -78,9 +82,27 @@ public partial class RadioisotopesViewModel : ObservableObject, IEditableViewMod
     }
     private Guid? _editingId;
 
-    public RadioisotopesViewModel(IRadioisotopeService service)
+    public RadioisotopesViewModel(IRadioisotopeService service, IIsotopeLibraryService? libraryService = null)
     {
         _service = service;
+        _libraryService = libraryService ?? new IsotopeLibraryService();
+
+        if (System.Windows.Application.Current?.Dispatcher != null)
+        {
+            MessageQueue = new SnackbarMessageQueue(TimeSpan.FromSeconds(3), System.Windows.Application.Current.Dispatcher);
+        }
+        else
+        {
+            try
+            {
+                MessageQueue = new SnackbarMessageQueue(TimeSpan.FromSeconds(3), System.Windows.Threading.Dispatcher.CurrentDispatcher);
+            }
+            catch
+            {
+                MessageQueue = null;
+            }
+        }
+
         LoadData();
 
         CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Register<Sources.Messages.NavigateToSearchResultMessage>(this, (r, m) =>
@@ -90,6 +112,81 @@ public partial class RadioisotopesViewModel : ObservableObject, IEditableViewMod
                 SelectRadioisotopeById(m.EntityId);
             }
         });
+    }
+
+    [RelayCommand]
+    private async Task SuggestGammaConstant()
+    {
+        if (string.IsNullOrWhiteSpace(EditSymbol))
+        {
+            ShowMsg(GetString("MsgErrSymbolRequiredFirst", "أدخل رمز النظير أولاً في خطوة الهوية"));
+            return;
+        }
+
+        try
+        {
+            var entries = await _libraryService.GetAllEntriesAsync();
+            var searchKey = NormalizeKey(EditSymbol);
+            var reversedKey = GetReversedKey(searchKey);
+
+            var entry = entries.FirstOrDefault(e =>
+                e.SourceType == ReferenceSourceType.ORNL_RSIC_45_R1 &&
+                e.SpecificGammaConstantValue.HasValue &&
+                (NormalizeKey(e.DisplaySymbol) == searchKey ||
+                 NormalizeKey(e.NuclideSymbol) == searchKey ||
+                 (reversedKey != null && (NormalizeKey(e.DisplaySymbol) == reversedKey || NormalizeKey(e.NuclideSymbol) == reversedKey))));
+
+            if (entry != null && entry.SpecificGammaConstantValue.HasValue)
+            {
+                // تحويل القيمة من (mSv/h)/MBq (وحدة ORNL) إلى µSv·m²/(MBq·h) (الوحدة التشغيلية) عبر الضرب في 1000
+                double operationalVal = entry.SpecificGammaConstantValue.Value * 1000.0;
+                EditGammaConstant = operationalVal;
+                EditGammaConstantText = operationalVal.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
+
+                string pageStr = entry.PageNumber > 0 ? entry.PageNumber.ToString() : "-";
+                string msgTemplate = GetString("MsgOrnlSuggestSuccess", "تم الاقتراح من مرجع ORNL/RSIC-45/R1 (صفحة {0})");
+                ShowMsg(string.Format(msgTemplate, pageStr));
+            }
+            else
+            {
+                ShowMsg(GetString("MsgOrnlNotFound", "لم يُعثر على هذا النظير في مرجع ORNL — يمكنك إدخال القيمة يدوياً أو البحث في مكتبة النظائر المرجعية إن كانت متوفرة من مصدر آخر (مثل ICRP)"));
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowMsg(ex.Message);
+        }
+    }
+
+    private static string GetString(string key, string fallback)
+    {
+        if (System.Windows.Application.Current != null && System.Windows.Application.Current.Resources.Contains(key))
+        {
+            return System.Windows.Application.Current.FindResource(key) as string ?? fallback;
+        }
+        return fallback;
+    }
+
+    private static string NormalizeKey(string? symbol)
+    {
+        if (string.IsNullOrWhiteSpace(symbol)) return string.Empty;
+        return symbol.Replace("-", "").Replace(" ", "").Trim().ToLowerInvariant();
+    }
+
+    private static string? GetReversedKey(string compactKey)
+    {
+        if (string.IsNullOrWhiteSpace(compactKey)) return null;
+        var matchElemMass = System.Text.RegularExpressions.Regex.Match(compactKey, @"^([a-z]+)(\d+[a-z]*)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        if (matchElemMass.Success)
+        {
+            return matchElemMass.Groups[2].Value + matchElemMass.Groups[1].Value;
+        }
+        var matchMassElem = System.Text.RegularExpressions.Regex.Match(compactKey, @"^(\d+)([a-z]+)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        if (matchMassElem.Success)
+        {
+            return matchMassElem.Groups[2].Value + matchMassElem.Groups[1].Value;
+        }
+        return null;
     }
 
     public void SelectRadioisotopeById(Guid isotopeId)
@@ -205,8 +302,16 @@ public partial class RadioisotopesViewModel : ObservableObject, IEditableViewMod
             Notes = EditNotes, EnglishNotes = EditEnglishNotes
         };
         var r = IsNew ? _service.Create(item) : _service.Update(item);
-        ShowMsg(r.Message);
-        if (r.Success) { IsEditing = false; LoadData(); }
+        if (r.Success)
+        {
+            IsEditing = false;
+            LoadData();
+            ShowMsg(r.Message);
+        }
+        else
+        {
+            ShowMsg(r.Message);
+        }
     }
 
     [RelayCommand]
@@ -214,8 +319,8 @@ public partial class RadioisotopesViewModel : ObservableObject, IEditableViewMod
     {
         if (Selected == null) return;
         var r = _service.Delete(Selected.Id);
-        ShowMsg(r.Message);
         if (r.Success) LoadData();
+        ShowMsg(r.Message);
     }
 
     [RelayCommand]
@@ -233,6 +338,13 @@ public partial class RadioisotopesViewModel : ObservableObject, IEditableViewMod
         if (CurrentStep > 1) CurrentStep--;
     }
 
+    [RelayCommand]
+    private void DismissMessage()
+    {
+        _msgCts?.Cancel();
+        HasMessage = false;
+    }
+
     private void ClearForm()
     {
         EditName = EditArabicName = EditSymbol = EditRadiationType = EditNotes = EditEnglishNotes = string.Empty;
@@ -240,9 +352,44 @@ public partial class RadioisotopesViewModel : ObservableObject, IEditableViewMod
         EditHalfLifeText = EditEnergyText = EditYieldText = EditGammaConstantText = string.Empty;
         EditGammaConstant = null;
         EditHalfLifeUnit = "years";
+        _msgCts?.Cancel();
+        HasMessage = false;
+        Message = string.Empty;
     }
 
-    private void ShowMsg(string m) { Message = m; HasMessage = true; }
+    private System.Threading.CancellationTokenSource? _msgCts;
+
+    private void ShowMsg(string m)
+    {
+        _msgCts?.Cancel();
+        Message = m;
+        HasMessage = !string.IsNullOrWhiteSpace(m);
+        if (!string.IsNullOrWhiteSpace(m))
+        {
+            MessageQueue?.Enqueue(m);
+        }
+
+        var cts = new System.Threading.CancellationTokenSource();
+        _msgCts = cts;
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(5000, cts.Token);
+                if (!cts.Token.IsCancellationRequested)
+                {
+                    System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+                    {
+                        if (_msgCts == cts)
+                        {
+                            HasMessage = false;
+                        }
+                    });
+                }
+            }
+            catch { }
+        });
+    }
 
     private bool CanEdit() => Selected != null;
 }

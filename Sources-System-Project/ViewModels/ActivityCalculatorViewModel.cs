@@ -43,6 +43,12 @@ public partial class ActivityCalculatorViewModel : ObservableObject
     [ObservableProperty] private DateTime _calibrationDate = DateTime.Today.AddYears(-1);
     [ObservableProperty] private DateTime _calculationDate = DateTime.Today;
     [ObservableProperty] private string _selectedOutputUnit = "MBq";
+    [ObservableProperty] private string _distanceText = "1";
+
+    // ─── ثابت غاما (للمخزون والإدخال اليدوي) ───
+    [ObservableProperty] private string _manualGammaConstantText = string.Empty;
+    [ObservableProperty] private string _databaseGammaConstantText = string.Empty;
+    [ObservableProperty] private bool _isGammaConstantAvailable;
 
     // ─── مدخلات وضع النشاط المستهدف ───
     [ObservableProperty] private string _targetActivityText = string.Empty;
@@ -65,6 +71,13 @@ public partial class ActivityCalculatorViewModel : ObservableObject
     [ObservableProperty] private string _halfLivesElapsedText = string.Empty;
     [ObservableProperty] private string _decayConstantText = string.Empty;
     [ObservableProperty] private string _elapsedTimeText = string.Empty;
+
+    // ─── نتائج معدل الجرعة الإشعاعية (قانون التربيع العكسي) ───
+    [ObservableProperty] private bool _hasDoseRateResult;
+    [ObservableProperty] private double _doseRateMicroSvPerHour;
+    [ObservableProperty] private string _doseRateAtDistanceMSvText = string.Empty;
+    [ObservableProperty] private string _doseRateAtDistanceMremText = string.Empty;
+    [ObservableProperty] private string _doseRateDistanceText = string.Empty;
 
     // ─── نتائج وضع الزمن المستهدف ───
     [ObservableProperty] private string _requiredTimeText = string.Empty;
@@ -155,6 +168,22 @@ public partial class ActivityCalculatorViewModel : ObservableObject
             HalfLifeValueText = value.HalfLife.ToString("G");
             HalfLifeUnit = value.HalfLifeUnit;
             HasHalfLifeError = false;
+
+            if (value.GammaConstant.HasValue && value.GammaConstant.Value > 0)
+            {
+                DatabaseGammaConstantText = $"{value.GammaConstant.Value:0.####} µSv·m²/(MBq·h)";
+                IsGammaConstantAvailable = true;
+            }
+            else
+            {
+                DatabaseGammaConstantText = GetString("CalcGammaNotAvailable", "غير متوفر — لم يُسجَّل ثابت غاما لهذا النظير");
+                IsGammaConstantAvailable = false;
+            }
+        }
+        else
+        {
+            DatabaseGammaConstantText = string.Empty;
+            IsGammaConstantAvailable = false;
         }
     }
 
@@ -165,12 +194,28 @@ public partial class ActivityCalculatorViewModel : ObservableObject
         {
             SelectedIsotope = null;
             HalfLifeValueText = string.Empty;
+            DatabaseGammaConstantText = string.Empty;
+            IsGammaConstantAvailable = false;
+        }
+        else
+        {
+            ManualGammaConstantText = string.Empty;
         }
     }
 
     partial void OnIsManualInputChanged(bool value)
     {
         if (IsFromDatabase == value) IsFromDatabase = !value;
+        if (value)
+        {
+            SelectedIsotope = null;
+            DatabaseGammaConstantText = string.Empty;
+            IsGammaConstantAvailable = false;
+        }
+        else
+        {
+            ManualGammaConstantText = string.Empty;
+        }
     }
 
     partial void OnSelectedOutputUnitChanged(string value)
@@ -198,6 +243,11 @@ public partial class ActivityCalculatorViewModel : ObservableObject
         ClearErrors();
         HasResult = false;
         HasChartData = false;
+        HasDoseRateResult = false;
+        DoseRateAtDistanceMSvText = string.Empty;
+        DoseRateAtDistanceMremText = string.Empty;
+        DoseRateDistanceText = string.Empty;
+        DoseRateMicroSvPerHour = 0;
 
         // ─── 1. التحقق من النشاط الأولي A₀ ───
         if (!double.TryParse(InitialActivityText, System.Globalization.NumberStyles.Float,
@@ -257,6 +307,9 @@ public partial class ActivityCalculatorViewModel : ObservableObject
             DecayConstantText = FormatScientific(lambda) + " s⁻¹";
             ElapsedTimeText = FormatElapsedTime(elapsed);
 
+            // حساب معدل الجرعة الإشعاعية عند المسافة المحددة
+            CalculateDoseRate(activityBq);
+
             // توليد وتحديث الرسم البياني
             BuildDecayChart(A0_Bq, halfLife, HalfLifeUnit, CalibrationDate, CalculationDate, activityBq);
             HasResult = true;
@@ -300,10 +353,68 @@ public partial class ActivityCalculatorViewModel : ObservableObject
             TargetHalfLivesText = $"{targetHalfLives:F2} T½";
             DecayConstantText = FormatScientific(lambda) + " s⁻¹";
 
+            // حساب معدل الجرعة الإشعاعية عند النشاط المستهدف
+            CalculateDoseRate(targetBq);
+
             // توليد الرسم البياني محدد عليه نقطة النشاط المستهدف
             BuildDecayChart(A0_Bq, halfLife, HalfLifeUnit, CalibrationDate, targetEstimatedDate, targetBq);
             HasResult = true;
         }
+    }
+
+    private void CalculateDoseRate(double activityBq)
+    {
+        HasDoseRateResult = false;
+        DoseRateAtDistanceMSvText = string.Empty;
+        DoseRateAtDistanceMremText = string.Empty;
+        DoseRateDistanceText = string.Empty;
+        DoseRateMicroSvPerHour = 0;
+
+        if (activityBq <= 0) return;
+
+        // 1. تحديد قيمة ثابت غاما
+        double? gamma = null;
+        if (IsFromDatabase)
+        {
+            if (SelectedIsotope != null && SelectedIsotope.GammaConstant.HasValue && SelectedIsotope.GammaConstant.Value > 0)
+            {
+                gamma = SelectedIsotope.GammaConstant.Value;
+            }
+        }
+        else if (IsManualInput)
+        {
+            if (double.TryParse(ManualGammaConstantText, System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture, out double g) && g > 0)
+            {
+                gamma = g;
+            }
+        }
+
+        if (!gamma.HasValue || gamma.Value <= 0) return;
+
+        // 2. التحقق من المسافة (متر)
+        if (!double.TryParse(DistanceText, System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture, out double distance) || distance <= 0)
+        {
+            return;
+        }
+
+        // 3. حساب معدل الجرعة عند 1 متر: Activity (MBq) × Gamma [µSv·m²/(MBq·h)]
+        double activityMBq = activityBq / 1_000_000.0;
+        double doseAtOneMeterMicroSv = activityMBq * gamma.Value;
+
+        // 4. تطبيق قانون التربيع العكسي: Dose(d) = Dose(1m) / d²
+        double doseAtDistanceMicroSv = doseAtOneMeterMicroSv / (distance * distance);
+        DoseRateMicroSvPerHour = doseAtDistanceMicroSv;
+
+        // 5. التحويل للوحدات المطلوبة (mSv/h و mrem/h)
+        double doseMSv = doseAtDistanceMicroSv / 1000.0;
+        double doseMrem = doseAtDistanceMicroSv * 0.1;
+
+        DoseRateAtDistanceMSvText = $"{FormatScientific(doseMSv)} mSv/h";
+        DoseRateAtDistanceMremText = $"{FormatScientific(doseMrem)} mrem/h";
+        DoseRateDistanceText = $"@ {distance:0.##} m";
+        HasDoseRateResult = true;
     }
 
     [RelayCommand]
@@ -319,6 +430,10 @@ public partial class ActivityCalculatorViewModel : ObservableObject
         TargetActivityText = string.Empty;
         TargetActivityUnit = "MBq";
         SelectedOutputUnit = "MBq";
+        DistanceText = "1";
+        ManualGammaConstantText = string.Empty;
+        DatabaseGammaConstantText = string.Empty;
+        IsGammaConstantAvailable = false;
         ResultActivityBq = 0;
         ResultActivityText = string.Empty;
         RemainingPercentText = string.Empty;
@@ -329,6 +444,11 @@ public partial class ActivityCalculatorViewModel : ObservableObject
         RequiredTimeText = string.Empty;
         TargetEstimatedDateText = string.Empty;
         TargetHalfLivesText = string.Empty;
+        HasDoseRateResult = false;
+        DoseRateMicroSvPerHour = 0;
+        DoseRateAtDistanceMSvText = string.Empty;
+        DoseRateAtDistanceMremText = string.Empty;
+        DoseRateDistanceText = string.Empty;
         HasResult = false;
         HasChartData = false;
         DecaySeries = Array.Empty<ISeries>();
@@ -346,6 +466,12 @@ public partial class ActivityCalculatorViewModel : ObservableObject
                 string copyData = IsActivityMode
                     ? $"{TranslationHelper.GetString("CalcResultActivity")}: {ResultActivityText}\n{TranslationHelper.GetString("CalcResultRemainingPercent")}: {RemainingPercentText}\n{TranslationHelper.GetString("CalcResultElapsed")}: {ElapsedTimeText}"
                     : $"{TranslationHelper.GetString("CalcResultRequiredTime")}: {RequiredTimeText}\n{TranslationHelper.GetString("CalcResultTargetDate")}: {TargetEstimatedDateText}\n{TranslationHelper.GetString("CalcResultRemainingPercent")}: {RemainingPercentText}";
+
+                if (HasDoseRateResult)
+                {
+                    copyData += $"\n{TranslationHelper.GetString("CalcResultDoseRate")}: {DoseRateAtDistanceMSvText} | {DoseRateAtDistanceMremText} ({DoseRateDistanceText})";
+                }
+
                 System.Windows.Clipboard.SetText(copyData);
             }
             catch { }
@@ -489,20 +615,20 @@ public partial class ActivityCalculatorViewModel : ObservableObject
     private static string FormatScientific(double value)
     {
         if (value == 0) return "0";
-        if (Math.Abs(value) >= 1e6 || Math.Abs(value) < 0.01)
+        if (Math.Abs(value) >= 1e6 || Math.Abs(value) < 0.0001)
         {
-            string sci = value.ToString("E4");
+            string sci = value.ToString("E4", System.Globalization.CultureInfo.InvariantCulture);
             var parts = sci.Split('E');
             if (parts.Length == 2)
             {
-                string baseNum = double.Parse(parts[0]).ToString("0.####");
-                string exp = parts[1].Replace("+", "").TrimStart('0');
-                if (string.IsNullOrEmpty(exp)) exp = "0";
+                string baseNum = double.Parse(parts[0], System.Globalization.CultureInfo.InvariantCulture).ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
                 bool negative = parts[1].Contains('-');
-                return $"{baseNum} × 10{(negative ? "⁻" : "")}{ToSuperscript(exp.Replace("-", ""))}";
+                string exp = parts[1].TrimStart('+', '-').TrimStart('0');
+                if (string.IsNullOrEmpty(exp)) exp = "0";
+                return $"{baseNum} × 10{(negative ? "⁻" : "")}{ToSuperscript(exp)}";
             }
         }
-        return value.ToString("0.####");
+        return value.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
     }
 
     private static string ToSuperscript(string number)
@@ -513,5 +639,14 @@ public partial class ActivityCalculatorViewModel : ObservableObject
             {'5', '⁵'}, {'6', '⁶'}, {'7', '⁷'}, {'8', '⁸'}, {'9', '⁹'}
         };
         return new string(number.Select(c => map.ContainsKey(c) ? map[c] : c).ToArray());
+    }
+
+    private static string GetString(string key, string fallback)
+    {
+        if (System.Windows.Application.Current != null && System.Windows.Application.Current.Resources.Contains(key))
+        {
+            return System.Windows.Application.Current.FindResource(key) as string ?? fallback;
+        }
+        return fallback;
     }
 }

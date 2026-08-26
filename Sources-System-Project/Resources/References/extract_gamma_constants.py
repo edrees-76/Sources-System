@@ -1,4 +1,4 @@
-import pypdf, sys, re, json, os
+import pypdf, sys, re, json, os, subprocess
 
 sys.stdout.reconfigure(encoding='utf-8')
 
@@ -21,22 +21,151 @@ ELEMENTS = [
 ]
 elem_pat = '|'.join(sorted(ELEMENTS, key=lambda x: -len(x)))
 
-# Pattern for nuclide symbol (Case-sensitive for element symbols to prevent 'h', 'm', 's', 'd' confusion):
 NUC_RE = re.compile(rf'\b([0-9]{{1,3}}m?[1-2]?(?:{elem_pat})m?[1-2]?)\b')
-
-# Pattern for half-life: e.g. 53.4d, 5.3y, 2.6h, 15.0m, 7.1s, 1.28+9y, 7.2+5y, 312.7d, 1600y
 HL_RE = re.compile(r'\b([0-9]+(?:\.[0-9]+)?(?:[eE\+\-][0-9]+)?\s*[ydhms]|[\d\.]+\+[0-9]+[ydhms])\b', re.IGNORECASE)
-
-# Specific Gamma Constant Γ in (mSv/h)/MBq at 1m: scientific notation with negative exponent between -1 and -15
-# e.g. 9.292-6, 3.697-4, 7.671-5, 1.017-4, 8.07-12, 1.597-4
 GAMMA_RE = re.compile(r'([0-9]+\.[0-9]{2,4}[\-][0-9]{1,2}|[0-9]{4}[\-][0-9]{1,2})')
+
+# Verified manual corrections for known OCR split/character anomalies in ORNL/RSIC-45/R1 Table 2
+KNOWN_CORRECTIONS = {
+    ('133Ba', 44): {
+        'half_life': '10.5y',
+        'raw_gamma': '1.231-4',
+        'fmt_gamma': '1.2310E-04',
+        'val_gamma': 1.231e-4,
+        't95': 0.715,
+        'mu': 4.188
+    },
+    ('133mBa', 44): {
+        'half_life': '1.6d',
+        'raw_gamma': '3.372-5',
+        'fmt_gamma': '3.3720E-05',
+        'val_gamma': 3.372e-5,
+        't95': 0.341,
+        'mu': 8.792
+    },
+    ('125Sb', 31): {
+        'half_life': '2.8y',
+        'raw_gamma': '1.025-4',
+        'fmt_gamma': '1.0250E-04',
+        'val_gamma': 1.025e-4,
+        't95': 1.696,
+        'mu': 1.767
+    },
+    ('241Am', 74): {
+        'half_life': '432.2y',
+        'raw_gamma': '8.479-5',
+        'fmt_gamma': '8.4790E-05',
+        'val_gamma': 8.479e-5,
+        't95': 0.011,
+        'mu': 260.7
+    },
+    ('91Sr', 18): {
+        'half_life': '9.5h',
+        'raw_gamma': '1.116-4',
+        'fmt_gamma': '1.1160E-04',
+        'val_gamma': 1.116e-4,
+        't95': 3.465,
+        'mu': 0.865
+    },
+    ('91Mo', 23): {
+        'half_life': '15.5m',
+        'raw_gamma': '1.870-4',
+        'fmt_gamma': '1.8700E-04',
+        'val_gamma': 1.870e-4,
+        't95': 1.804,
+        'mu': 1.661
+    },
+    ('230Th', 67): {
+        'half_life': '7.7+4y',
+        'raw_gamma': '1.861-5',
+        'fmt_gamma': '1.8610E-05',
+        'val_gamma': 1.861e-5,
+        't95': 0.004,
+        'mu': 815.2
+    },
+    ('238U', 71): {
+        'half_life': '4.47+9y',
+        'raw_gamma': '1.763-5',
+        'fmt_gamma': '1.7630E-05',
+        'val_gamma': 1.763e-5,
+        't95': 0.004,
+        'mu': 722.5
+    },
+    ('200Tl', 61): {
+        'half_life': '1.1d',
+        'raw_gamma': '2.249-4',
+        'fmt_gamma': '2.2490E-04',
+        'val_gamma': 2.249e-4,
+        't95': 3.380,
+        'mu': 0.886
+    },
+    ('201Tl', 61): {
+        'half_life': '3.0d',
+        'raw_gamma': '2.372-5',
+        'fmt_gamma': '2.3720E-05',
+        'val_gamma': 2.372e-5,
+        't95': 0.114,
+        'mu': 26.211
+    },
+    ('202Tl', 62): {
+        'half_life': '12.2d',
+        'raw_gamma': '9.437-5',
+        'fmt_gamma': '9.4370E-05',
+        'val_gamma': 9.437e-5,
+        't95': 1.319,
+        'mu': 2.272
+    },
+    ('204Tl', 62): {
+        'half_life': '3.8y',
+        'raw_gamma': '3.014-7',
+        'fmt_gamma': '3.0140E-07',
+        'val_gamma': 3.014e-7,
+        't95': 0.100,
+        'mu': 30.056
+    },
+    ('207Tl', 62): {
+        'half_life': '4.8m',
+        'raw_gamma': '3.523-7',
+        'fmt_gamma': '3.5230E-07',
+        'val_gamma': 3.523e-7,
+        't95': 3.442,
+        'mu': 0.870
+    },
+    ('208Tl', 62): {
+        'half_life': '3.1m',
+        'raw_gamma': '4.497-4',
+        'fmt_gamma': '4.4970E-04',
+        'val_gamma': 4.497e-4,
+        't95': 5.397,
+        'mu': 0.555
+    },
+    ('209Tl', 62): {
+        'half_life': '2.2m',
+        'raw_gamma': '3.482-4',
+        'fmt_gamma': '3.4820E-04',
+        'val_gamma': 3.482e-4,
+        't95': 4.248,
+        'mu': 0.705
+    },
+    ('210Tl', 62): {
+        'half_life': '1.3m',
+        'raw_gamma': '4.575-4',
+        'fmt_gamma': '4.5750E-04',
+        'val_gamma': 4.575e-4,
+        't95': 4.057,
+        'mu': 0.738
+    }
+}
 
 def normalize_text_line(raw_line):
     line = raw_line.strip()
     if not line:
         return ""
     
-    # 1. Replace obvious OCR characters in digit context (safeguard Ir and In)
+    # 1. Normalize Thallium OCR errors (T1 or TI attached to mass numbers like 200T1, 201TI -> 200Tl, 201Tl)
+    line = re.sub(r'\b([0-9]{1,3}m?[1-2]?)T[1I]\b', r'\g<1>Tl', line)
+    
+    # 2. Replace obvious OCR characters in digit context (safeguard Ir and In)
     line = re.sub(r'\bI([0-9])', r'1\g<1>', line)
     line = re.sub(r'([0-9])I(?![rn]\b|[0-9])', r'\g<1>1', line)
     line = re.sub(r'([0-9]+)\.Id\b', r'\g<1>.1d', line)
@@ -58,6 +187,8 @@ def normalize_text_line(raw_line):
     # Letter 'O' inside half life numbers (e.g. 74 Od -> 74.0d)
     line = line.replace('74 Od', '74.0d').replace('15 Od', '15.0d').replace('25 Od', '25.0d')
     line = line.replace('74 0d', '74.0d').replace('15 0d', '15.0d').replace('25 0d', '25.0d')
+    line = line.replace('3 Od', '3.0d').replace('3 0d', '3.0d')
+    line = line.replace('I.Id', '1.1d').replace('l.ld', '1.1d').replace('l.lh', '1.1h')
     
     # Specific known OCR corruptions from 1982 printout
     line = line.replace('lie,', '11C').replace('lie ', '11C ').replace('150;', '15O').replace('150 ', '15O ')
@@ -95,6 +226,11 @@ def normalize_text_line(raw_line):
     line = line.replace('1653-5', '1.653-5')
     line = line.replace('8 145-6', '8.145-6').replace('8145-6', '8.145-6')
     line = line.replace('3 274-6', '3.274-6')
+    line = line.replace('2.249-1', '2.249-4').replace('2.249^1', '2.249-4')
+    line = line.replace('9.437- •5', '9.437-5').replace('9.437- 5', '9.437-5')
+    line = line.replace('8.479- 5', '8.479-5').replace('8.479- •5', '8.479-5')
+    line = line.replace('2.142- 5', '2.142-5').replace('4 950- •5', '4.950-5').replace('4.950- 5', '4.950-5')
+    line = line.replace('1861-5', '1.861-5')
     
     return line
 
@@ -102,6 +238,8 @@ def clean_nuclide_name(sym):
     sym = sym.strip()
     sym = re.sub(r'^[^\w0-9]+', '', sym)
     sym = re.sub(r'[^\w0-9]+$', '', sym)
+    # T1 / TI to Tl
+    sym = re.sub(r'^([0-9]{1,3}m?[1-2]?)T[1I]$', r'\g<1>Tl', sym)
     if sym.startswith(('5I', '7I', '9I', '1I', '13I')) and not sym.startswith(('1In', '1Ir')):
         sym = sym.replace('I', '1', 1)
     if sym.endswith('C1'): sym = sym[:-2] + 'Cl'
@@ -134,7 +272,7 @@ def parse_gamma_val(raw_g):
     except:
         return s, s, None
 
-def run():
+def run_extraction():
     reader = pypdf.PdfReader(PDF_PATH)
     extracted = []
     issues = []
@@ -146,7 +284,7 @@ def run():
         layout = page.extract_text(extraction_mode="layout")
         lines = layout.split('\n')
         
-        # Two columns split at character column 75
+        # RESTORE THE ORIGINAL FIXED COLUMN SPLIT AT 75
         col1 = [l[:75] if len(l) > 75 else l for l in lines]
         col2 = [l[75:] if len(l) > 75 else "" for l in lines]
         
@@ -172,11 +310,9 @@ def run():
                     n_m_nxt = NUC_RE.search(nxt_l)
                     hl_m_nxt = HL_RE.search(nxt_l)
                     if not n_m_cur and hl_m_cur and n_m_nxt and not hl_m_nxt:
-                        # e.g. line 28: 15.0h 1368.0 ... line 29: 24Na ...
                         cur_l = n_m_nxt.group(1) + " " + cur_l
                         norm_lines[k+1] = ""
                     elif n_m_cur and not hl_m_cur and hl_m_nxt:
-                        # e.g. line N: 27Mg ... line N+1: 9.5m ...
                         cur_l = cur_l + " " + nxt_l
                         norm_lines[k+1] = ""
                         
@@ -204,6 +340,41 @@ def run():
                         special_note = bl[bl.find('from '):].strip()
                         break
                         
+                # Extract individual photon lines (Energy in keV, Probability)
+                photons = []
+                for bl in block_lines:
+                    pairs = re.findall(r'([0-9]+(?:\.[0-9]+)?)\s+([0-9]+\.[0-9]{3,4})', bl)
+                    for e_str, p_str in pairs:
+                        try:
+                            e_f = float(e_str)
+                            p_f = float(p_str)
+                            if 1.0 <= e_f <= 15000.0 and 0.0 <= p_f <= 2.5:
+                                photons.append({"energy_kev": e_f, "probability": p_f})
+                        except:
+                            pass
+
+                # Check known overrides first
+                key = (nuclide_sym, page_num)
+                if key in KNOWN_CORRECTIONS:
+                    ov = KNOWN_CORRECTIONS[key]
+                    record = {
+                        "nuclide_symbol": nuclide_sym,
+                        "half_life": ov['half_life'],
+                        "specific_gamma_constant_raw": ov['raw_gamma'],
+                        "specific_gamma_constant_formatted": ov['fmt_gamma'],
+                        "specific_gamma_constant_value": ov['val_gamma'],
+                        "unit": "(mSv/h)/MBq at 1 meter",
+                        "lead_thickness_95_percent_cm": ov['t95'],
+                        "linear_attenuation_coeff_cm_minus_1": ov['mu'],
+                        "photon_emissions_count": len(photons),
+                        "page_number": page_num,
+                        "notes": special_note,
+                        "source_reference": "ORNL/RSIC-45/R1 (Table 2, May 1982)",
+                        "raw_lines": block_lines
+                    }
+                    extracted.append(record)
+                    continue
+
                 block_text = ' '.join(block_lines)
                 
                 # Search for specific gamma constant Γ
@@ -214,6 +385,20 @@ def run():
                     raw_gamma = g_m.group(1)
                     orig_g, fmt_g, val_g = parse_gamma_val(raw_gamma)
                     
+                    # Strict Physical Sanity Check: 1e-12 <= val_g <= 1e-2
+                    if val_g is None or val_g < 1.0e-12 or val_g > 1.0e-2:
+                        issues.append({
+                            "page_number": page_num,
+                            "column": col_idx + 1,
+                            "nuclide_symbol": nuclide_sym,
+                            "half_life": hl_val,
+                            "raw_lines": block_lines,
+                            "extracted_gamma_raw": raw_gamma,
+                            "extracted_gamma_value": val_g,
+                            "reason": "قيمة خارج النطاق الفيزيائي المنطقي - يُشتبه بانكسار سطر"
+                        })
+                        continue
+
                     # Extract T_95% and mu
                     t95 = None
                     mu = None
@@ -227,19 +412,6 @@ def run():
                             if len(after) >= 2:
                                 try: mu = float(after[1].replace(',', '.'))
                                 except: pass
-                                
-                    # Extract individual photon lines (Energy in keV, Probability)
-                    photons = []
-                    for bl in block_lines:
-                        pairs = re.findall(r'([0-9]+(?:\.[0-9]+)?)\s+([0-9]+\.[0-9]{3,4})', bl)
-                        for e_str, p_str in pairs:
-                            try:
-                                e_f = float(e_str)
-                                p_f = float(p_str)
-                                if 1.0 <= e_f <= 15000.0 and 0.0 <= p_f <= 2.5:
-                                    photons.append({"energy_kev": e_f, "probability": p_f})
-                            except:
-                                pass
                                 
                     record = {
                         "nuclide_symbol": nuclide_sym,
@@ -285,11 +457,9 @@ def run():
     with open(ISSUES_JSON, 'w', encoding='utf-8') as f:
         json.dump(issues, f, indent=2, ensure_ascii=False)
         
-    print(f"Extraction Completed:")
+    print(f"Extraction Completed Successfully:")
     print(f"  Successfully extracted nuclides: {len(dedup)}")
     print(f"  Cases routed to issues file: {len(issues)}")
-    print(f"  JSON output file: {OUTPUT_JSON}")
-    print(f"  Issues file: {ISSUES_JSON}")
 
 if __name__ == '__main__':
-    run()
+    run_extraction()

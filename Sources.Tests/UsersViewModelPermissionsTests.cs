@@ -200,7 +200,7 @@ public class UsersViewModelPermissionsTests
 
         // الجديد يجب أن يوضح الصلاحيات المضافة (+) والمحذوفة (-)
         Assert.Contains("+ المواقع", permDiff.NewValue);
-        Assert.Contains("+ حاسبة النشاط", permDiff.NewValue);
+        Assert.Contains("+ الحاسبة الإشعاعية", permDiff.NewValue);
         Assert.Contains("- التقارير", permDiff.NewValue);
     }
 

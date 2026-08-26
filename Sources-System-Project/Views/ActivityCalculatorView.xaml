@@ -7,6 +7,7 @@
     <UserControl.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVis"/>
         <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVis"/>
+        <converters:NullToVisibilityConverter x:Key="NullToVis"/>
     </UserControl.Resources>
 
     <Grid Margin="24">
@@ -95,6 +96,37 @@
                                     </DataTemplate>
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
+
+                            <!-- بطاقة عرض ثابت غاما للنظير المسجل في المخزون -->
+                            <Border Margin="0,8,0,0" Padding="12,8" CornerRadius="8"
+                                    Background="{DynamicResource InputBackground}"
+                                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
+                                    Visibility="{Binding SelectedIsotope, Converter={StaticResource NullToVis}}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <materialDesign:PackIcon Kind="RadioactiveCircle" Width="18" Height="18"
+                                                             Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="{DynamicResource CalcGammaFromDb}" FontSize="12" Foreground="{DynamicResource TextSecondary}" FontWeight="SemiBold" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text=":" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding DatabaseGammaConstantText}" FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- حقل ثابت غاما الاختياري عند الإدخال اليدوي -->
+                        <StackPanel Margin="0,0,0,16" Visibility="{Binding IsManualInput, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="{DynamicResource CalcFieldGammaConstant}" FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                            <TextBox Text="{Binding ManualGammaConstantText, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource FormTextBox}"
+                                     materialDesign:HintAssist.Hint="µSv·m²/(MBq·h)"/>
+                            <TextBlock Text="{DynamicResource CalcHintGammaManual}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
                         </StackPanel>
 
                         <!-- الحقول الرقمية: النشاط الأولي والوحدة -->
@@ -203,13 +235,31 @@
                             </StackPanel>
                         </Grid>
 
-                        <!-- وحدة الخرج في وضع النشاط -->
-                        <StackPanel Margin="0,0,0,16" Visibility="{Binding IsActivityMode, Converter={StaticResource BoolToVis}}">
-                            <TextBlock Text="{DynamicResource CalcFieldOutputUnit}" FontSize="12" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
-                            <ComboBox ItemsSource="{Binding ActivityUnits}" SelectedItem="{Binding SelectedOutputUnit}"
-                                      Style="{StaticResource FormComboBox}"/>
-                        </StackPanel>
+                        <!-- المسافة ووحدة الخرج في وضع النشاط -->
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- حقل المسافة (متر) -->
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{DynamicResource CalcFieldDistance}" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                <TextBox Text="{Binding DistanceText, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource FormTextBox}"
+                                         materialDesign:HintAssist.Hint="{DynamicResource CalcHintDistance}"/>
+                            </StackPanel>
+
+                            <!-- وحدة الخرج في وضع النشاط -->
+                            <StackPanel Grid.Column="2" Visibility="{Binding IsActivityMode, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Text="{DynamicResource CalcFieldOutputUnit}" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                <ComboBox ItemsSource="{Binding ActivityUnits}" SelectedItem="{Binding SelectedOutputUnit}"
+                                          Style="{StaticResource FormComboBox}"/>
+                            </StackPanel>
+                        </Grid>
 
                         <!-- رسائل الخطأ الدقيقة -->
                         <Border Visibility="{Binding HasError, Converter={StaticResource BoolToVis}}"
@@ -225,20 +275,20 @@
                         <!-- أزرار الإجراءات -->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <Button Content="{DynamicResource CalcBtnCalculate}" Style="{DynamicResource PrimaryButton}"
-                                    Command="{Binding CalculateCommand}" Width="170" Height="44" Margin="0,0,16,0"
+                                    Command="{Binding CalculateCommand}" MinWidth="210" Width="Auto" Height="44" Padding="20,0" Margin="0,0,16,0"
                                     Visibility="{Binding IsActivityMode, Converter={StaticResource BoolToVis}}"/>
                             <Button Content="{DynamicResource CalcBtnCalculateTime}" Style="{DynamicResource PrimaryButton}"
-                                    Command="{Binding CalculateCommand}" Width="170" Height="44" Margin="0,0,16,0"
+                                    Command="{Binding CalculateCommand}" MinWidth="210" Width="Auto" Height="44" Padding="20,0" Margin="0,0,16,0"
                                     Visibility="{Binding IsTimeToTargetMode, Converter={StaticResource BoolToVis}}"/>
                             <Button Content="{DynamicResource CalcBtnReset}" Style="{DynamicResource SecondaryButton}"
-                                    Command="{Binding ResetCommand}" Width="130" Height="44"/>
+                                    Command="{Binding ResetCommand}" MinWidth="130" Width="Auto" Height="44" Padding="20,0"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
 
                 <!-- بطاقة النتائج والرسم البياني -->
                 <StackPanel Grid.Row="2" Visibility="{Binding HasResult, Converter={StaticResource BoolToVis}}" Margin="0,0,0,16">
-                    <!-- بطاقات المؤشرات الرقمية (KPI Cards) -->
+                    <!-- بطاقات المؤشرات الرقمية للنشاط والزمن (KPI Cards) -->
                     <Grid Margin="0,0,0,16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -285,6 +335,45 @@
 
                                 <TextBlock Text="{Binding HalfLivesElapsedText}" Visibility="{Binding IsActivityMode, Converter={StaticResource BoolToVis}}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,6,0,0" FlowDirection="LeftToRight"/>
                                 <TextBlock Text="{Binding TargetEstimatedDateText}" Visibility="{Binding IsTimeToTargetMode, Converter={StaticResource BoolToVis}}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,6,0,0" FlowDirection="LeftToRight"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- بطاقات المؤشرات الرقمية لمعدل الجرعة الإشعاعية (Dose Rate KPIs) -->
+                    <Grid Margin="0,0,0,16" Visibility="{Binding HasDoseRateResult, Converter={StaticResource BoolToVis}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- KPI الجرعة بوحدة mSv/h -->
+                        <Border Grid.Column="0" Background="{DynamicResource CardBackground}" CornerRadius="12" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Padding="16,14">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{DynamicResource CalcResultDoseRate}" FontSize="12" Foreground="{DynamicResource TextSecondary}" FontWeight="SemiBold"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding DoseRateDistanceText}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                </Grid>
+                                <TextBlock Text="{Binding DoseRateAtDistanceMSvText}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="0,6,0,0" FlowDirection="LeftToRight"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- KPI الجرعة المكافئة بوحدة mrem/h -->
+                        <Border Grid.Column="2" Background="{DynamicResource CardBackground}" CornerRadius="12" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Padding="16,14">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{DynamicResource CalcResultDoseRateMrem}" FontSize="12" Foreground="{DynamicResource TextSecondary}" FontWeight="SemiBold"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding DoseRateDistanceText}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                </Grid>
+                                <TextBlock Text="{Binding DoseRateAtDistanceMremText}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="0,6,0,0" FlowDirection="LeftToRight"/>
                             </StackPanel>
                         </Border>
                     </Grid>
@@ -357,21 +446,30 @@
                                        Foreground="{DynamicResource TextPrimary}"/>
                         </StackPanel>
 
-                        <UniformGrid Columns="2">
-                            <Border Background="{DynamicResource InputBackground}" CornerRadius="8" Padding="14,10" Margin="0,0,8,0" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                        <UniformGrid Columns="3">
+                            <Border Background="{DynamicResource InputBackground}" CornerRadius="8" Padding="14,10" Margin="0,0,6,0" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
                                 <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock Text="Step 1 — Decay Constant" FontSize="11" Foreground="{DynamicResource TextSecondary}"
+                                    <TextBlock Text="{DynamicResource CalcFormulaStep1Title}" FontSize="11" Foreground="{DynamicResource TextSecondary}"
                                                HorizontalAlignment="Center" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                                    <TextBlock Text="λ = ln(2) / T½" FontSize="15" FontWeight="Bold"
+                                    <TextBlock Text="λ = ln(2) / T½" FontSize="14" FontWeight="Bold"
                                                Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center"
                                                FlowDirection="LeftToRight"/>
                                 </StackPanel>
                             </Border>
-                            <Border Background="{DynamicResource InputBackground}" CornerRadius="8" Padding="14,10" Margin="8,0,0,0" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                            <Border Background="{DynamicResource InputBackground}" CornerRadius="8" Padding="14,10" Margin="3,0,3,0" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
                                 <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock Text="Step 2 — Radioactive Decay Law" FontSize="11" Foreground="{DynamicResource TextSecondary}"
+                                    <TextBlock Text="{DynamicResource CalcFormulaStep2Title}" FontSize="11" Foreground="{DynamicResource TextSecondary}"
                                                HorizontalAlignment="Center" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                                    <TextBlock Text="A(t) = A₀ × (0.5)^(t / T½)" FontSize="15" FontWeight="Bold"
+                                    <TextBlock Text="A(t) = A₀ × (0.5)^(t / T½)" FontSize="14" FontWeight="Bold"
+                                               Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center"
+                                               FlowDirection="LeftToRight"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Background="{DynamicResource InputBackground}" CornerRadius="8" Padding="14,10" Margin="6,0,0,0" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <TextBlock Text="{DynamicResource CalcFormulaStep3Title}" FontSize="11" Foreground="{DynamicResource TextSecondary}"
+                                               HorizontalAlignment="Center" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                    <TextBlock Text="Ḋ(d) = Ḋ(1m) / d²" FontSize="14" FontWeight="Bold"
                                                Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center"
                                                FlowDirection="LeftToRight"/>
                                 </StackPanel>

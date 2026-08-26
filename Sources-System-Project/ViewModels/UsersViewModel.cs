@@ -445,7 +445,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
             "Reports" => "التقارير",
             "Users" => "إدارة المستخدمين",
             "Settings" => "الإعدادات",
-            "ActivityCalculator" or "Calculator" => "حاسبة النشاط",
+            "ActivityCalculator" or "Calculator" => "الحاسبة الإشعاعية",
             "All" => "كافة الصلاحيات",
             _ => perm
         };

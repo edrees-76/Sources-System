@@ -8,19 +8,13 @@
         <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVis"/>
     </UserControl.Resources>
     <Grid Margin="24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+        <!-- المشهد 1: صفحة قائمة النظائر والبحث (يختفي عند التحرير) -->
+        <Grid Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVis}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-        <Grid Grid.Row="1">
-            <!-- المشهد 1: صفحة قائمة النظائر والبحث (يختفي عند التحرير) -->
-            <Grid Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVis}}">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                
                 <!-- ─── شريط البحث والأزرار العلوية ─── -->
                 <Grid Grid.Row="0" Margin="0,0,0,20">
                     <Grid.ColumnDefinitions>
@@ -504,8 +498,7 @@
 
                         <!-- ─── محتوى خطوات النموذج ─── -->
                         <Border Grid.Row="2" Padding="24,14,24,16">
-                            <Grid MaxWidth="760" VerticalAlignment="Top">
-                                
+                            <StackPanel MaxWidth="760" VerticalAlignment="Top">
                                 <!-- ─── الخطوة 1: الهوية والاسم ─── -->
                                 <StackPanel Visibility="{Binding CurrentStep, Converter={StaticResource EqualityToVis}, ConverterParameter=1}">
                                     
@@ -650,11 +643,30 @@
 
                                                 <!-- صف ثابت غاما النوعي (Γ) -->
                                                 <StackPanel Margin="0,12,0,0">
-                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                                        <materialDesign:PackIcon Kind="SineWave" Width="15" Height="15" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                                        <TextBlock Text="{DynamicResource FieldGammaConstant}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
-                                                        <materialDesign:PackIcon Kind="InformationOutline" Width="14" Height="14" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="6,0,0,0" ToolTip="الوحدة الدولية المعتمدة: µSv·m²/(MBq·h) — اختياري للنظائر الباعثة لأشعة غاما"/>
-                                                    </StackPanel>
+                                                    <Grid Margin="0,0,0,6">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                                            <materialDesign:PackIcon Kind="SineWave" Width="15" Height="15" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                            <TextBlock Text="{DynamicResource FieldGammaConstant}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                            <materialDesign:PackIcon Kind="InformationOutline" Width="14" Height="14" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="6,0,0,0" ToolTip="الوحدة الدولية المعتمدة: µSv·m²/(MBq·h) — اختياري للنظائر الباعثة لأشعة غاما"/>
+                                                        </StackPanel>
+
+                                                        <!-- زر اقتراح القيمة من فهرس ORNL -->
+                                                        <Button Grid.Column="1" Command="{Binding SuggestGammaConstantCommand}"
+                                                                Style="{StaticResource SecondaryButton}"
+                                                                Height="28" Padding="10,0" FontSize="11" FontWeight="SemiBold"
+                                                                VerticalAlignment="Center">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <materialDesign:PackIcon Kind="AutoFix" Width="14" Height="14" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                                <TextBlock Text="{DynamicResource BtnSuggestFromOrnl}" VerticalAlignment="Center"/>
+                                                            </StackPanel>
+                                                        </Button>
+                                                    </Grid>
+
                                                     <TextBox Text="{Binding EditGammaConstantText, UpdateSourceTrigger=LostFocus}" TabIndex="9"
                                                              Style="{StaticResource FormTextBox}"
                                                              materialDesign:HintAssist.Hint="مثال: 0.0772 (µSv·m²/(MBq·h))"
@@ -705,7 +717,7 @@
                                         </StackPanel>
                                     </Border>
                                 </StackPanel>
-                            </Grid>
+                            </StackPanel>
                         </Border>
 
                         <!-- ─── شريط الأزرار السفلي (Steps Footer) ─── -->
@@ -772,6 +784,10 @@
                     </Grid>
                 </Border>
             </ScrollViewer>
-        </Grid>
+
+        <!-- ═══════ مكوّن رسائل التنبيه العائم (Snackbar) ═══════ -->
+        <materialDesign:Snackbar MessageQueue="{Binding MessageQueue}" 
+                                 HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                                 Margin="0,0,0,16" Panel.ZIndex="100"/>
     </Grid>
 </UserControl>

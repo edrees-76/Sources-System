@@ -28,7 +28,7 @@ public class IsotopeLibraryServiceTests
         int ornlCount = entries.Count(e => e.IsOrnlSource);
         int icrpCount = entries.Count(e => e.IsIcrpSource);
 
-        Assert.Equal(322, ornlCount);
+        Assert.Equal(320, ornlCount);
         Assert.True(icrpCount > 800, $"ICRP distinct fallback entries should be > 800, got {icrpCount}");
     }
 

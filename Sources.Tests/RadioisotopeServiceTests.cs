@@ -832,4 +832,114 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
     }
 
     #endregion
+
+    #region Update Tests
+
+    [Fact]
+    public void Update_WhenGammaConstantIsUpdated_PersistsNewGammaConstantValueToDatabase()
+    {
+        // Arrange: إنشاء نظير في قاعدة البيانات بدون ثابت غاما (أو بقيمة سابقة)
+        var isotopeId = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.Radioisotopes.Add(new Radioisotope
+            {
+                Id = isotopeId,
+                Symbol = "Cs-137",
+                Name = "Cesium-137",
+                ArabicName = "سيزيوم-137",
+                RadiationType = "Gamma (γ)",
+                HalfLife = 30.08,
+                HalfLifeUnit = "years",
+                Energy = 661.7,
+                Yield = 0.85,
+                GammaConstant = null
+            });
+            db.SaveChanges();
+        }
+
+        // Act: تحديث قيمة ثابت غاما إلى 0.0772 (قيمة ORNL المحولة)
+        var updatedItem = new Radioisotope
+        {
+            Id = isotopeId,
+            Symbol = "Cs-137",
+            Name = "Cesium-137",
+            ArabicName = "سيزيوم-137",
+            RadiationType = "Gamma (γ)",
+            HalfLife = 30.08,
+            HalfLifeUnit = "years",
+            Energy = 661.7,
+            Yield = 0.85,
+            GammaConstant = 0.0772,
+            Notes = "Updated with ORNL gamma constant"
+        };
+
+        var (success, message) = _sut.Update(updatedItem);
+
+        // Assert: التحقق من نجاح العملية ومن القيمة الفعلية في قاعدة البيانات
+        Assert.True(success);
+        Assert.Equal("تم تحديث النظير", message);
+
+        using (var db = _fixture.CreateContext())
+        {
+            var savedInDb = db.Radioisotopes.Find(isotopeId);
+            Assert.NotNull(savedInDb);
+            Assert.NotNull(savedInDb.GammaConstant);
+            Assert.Equal(0.0772, savedInDb.GammaConstant.Value, precision: 6);
+            Assert.Equal("Updated with ORNL gamma constant", savedInDb.Notes);
+        }
+    }
+
+    [Fact]
+    public void Update_WhenChangingExistingGammaConstant_OverwritesWithNewValue()
+    {
+        // Arrange: نظير بقيمة غاما سابقة 0.3050 (Co-60)
+        var isotopeId = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.Radioisotopes.Add(new Radioisotope
+            {
+                Id = isotopeId,
+                Symbol = "Co-60",
+                Name = "Cobalt-60",
+                ArabicName = "كوبالت-60",
+                RadiationType = "Gamma (γ)",
+                HalfLife = 5.27,
+                HalfLifeUnit = "years",
+                Energy = 1173.2,
+                Yield = 0.99,
+                GammaConstant = 0.3050
+            });
+            db.SaveChanges();
+        }
+
+        // Act: تعديل القيمة يدوياً إلى 0.3120
+        var updatedItem = new Radioisotope
+        {
+            Id = isotopeId,
+            Symbol = "Co-60",
+            Name = "Cobalt-60",
+            ArabicName = "كوبالت-60",
+            RadiationType = "Gamma (γ)",
+            HalfLife = 5.27,
+            HalfLifeUnit = "years",
+            Energy = 1173.2,
+            Yield = 0.99,
+            GammaConstant = 0.3120
+        };
+
+        var (success, message) = _sut.Update(updatedItem);
+
+        // Assert
+        Assert.True(success);
+        using (var db = _fixture.CreateContext())
+        {
+            var savedInDb = db.Radioisotopes.Find(isotopeId);
+            Assert.NotNull(savedInDb);
+            Assert.NotNull(savedInDb.GammaConstant);
+            Assert.Equal(0.3120, savedInDb.GammaConstant.Value, precision: 6);
+        }
+    }
+
+    #endregion
 }

@@ -222,7 +222,7 @@
                                 </StackPanel>
                             </Button>
 
-                            <!-- حاسبة النشاط -->
+                            <!-- الحاسبة الإشعاعية -->
                             <Button Style="{StaticResource BottomNavItem}"
                                     Command="{Binding NavigateToCommand}" CommandParameter="ActivityCalculator"
                                     Visibility="{Binding CanSeeCalculator, Converter={StaticResource BoolToVis}}">

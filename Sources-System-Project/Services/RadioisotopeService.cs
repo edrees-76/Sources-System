@@ -76,6 +76,7 @@ public class RadioisotopeService : IRadioisotopeService
         existing.Yield = item.Yield;
         existing.Category = item.Category;
         existing.ExemptionLimit = item.ExemptionLimit;
+        existing.GammaConstant = item.GammaConstant;
         existing.Notes = item.Notes;
         existing.EnglishNotes = item.EnglishNotes;
         db.SaveChanges();
