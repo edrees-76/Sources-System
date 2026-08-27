@@ -852,6 +852,22 @@
 
                                     <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityDisplay}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColActivityUnit}" Binding="{Binding ActivityUnitSymbol}" Width="Auto" MinWidth="75" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTemplateColumn Header="{DynamicResource ColDoseRate}" Width="Auto" MinWidth="110">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border Background="#141F5A66" CornerRadius="4" Padding="6,3" Margin="4,2"
+                                                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                        ToolTip="{Binding DoseRateTooltip}">
+                                                    <TextBlock Text="{Binding DisplayDoseRate}"
+                                                               FontSize="10.5" FontWeight="SemiBold"
+                                                               FontFamily="Segoe UI"
+                                                               Foreground="{DynamicResource PrimaryBrush}"
+                                                               TextAlignment="Center"
+                                                               FlowDirection="LeftToRight"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Border>
@@ -1371,6 +1387,22 @@
                         </DataGridTemplateColumn>
                         <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityDisplay}" Width="Auto" MinWidth="85" ElementStyle="{StaticResource CenterAligned}"/>
                         <DataGridTextColumn Header="{DynamicResource ColActivityUnit}" Binding="{Binding ActivityUnitSymbol}" Width="Auto" MinWidth="60" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTemplateColumn Header="{DynamicResource ColDoseRate}" Width="Auto" MinWidth="75">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="#141F5A66" CornerRadius="4" Padding="4,1" Margin="2,1"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            ToolTip="{Binding DoseRateTooltip}">
+                                        <TextBlock Text="{Binding DisplayDoseRate}"
+                                                   FontSize="9" FontWeight="SemiBold"
+                                                   FontFamily="Segoe UI"
+                                                   Foreground="{DynamicResource PrimaryBrush}"
+                                                   TextAlignment="Center"
+                                                   FlowDirection="LeftToRight"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                     </DataGrid.Columns>
                 </DataGrid>
 

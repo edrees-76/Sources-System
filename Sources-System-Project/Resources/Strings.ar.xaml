@@ -1101,6 +1101,7 @@
     <!-- حساب معدل الجرعة الإشعاعية عند 1 متر -->
     <system:String x:Key="FieldGammaConstant">ثابت غاما النوعي (Γ)</system:String>
     <system:String x:Key="ColGammaConstant">ثابت غاما (Γ)</system:String>
+    <system:String x:Key="ColDoseRate">معدل الجرعة (1م)</system:String>
     <system:String x:Key="MsgErrGammaConstantPositive">يجب أن تكون قيمة ثابت غاما رقماً موجباً أكبر من الصفر</system:String>
     <system:String x:Key="DoseRateEstimatedTitle">معدل الجرعة التقديري عند 1 متر</system:String>
     <system:String x:Key="LabelTotalDoseRate">القيمة الإجمالية</system:String>

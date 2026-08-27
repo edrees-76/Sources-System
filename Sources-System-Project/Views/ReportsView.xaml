@@ -200,6 +200,22 @@
                                     <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColInitialActivity}" Binding="{Binding InitialActivityWithUnit}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTemplateColumn Header="{DynamicResource ColDoseRate}" Width="Auto" MinWidth="110">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border Background="#141F5A66" CornerRadius="4" Padding="6,3" Margin="4,2"
+                                                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                        ToolTip="{Binding DoseRateTooltip}">
+                                                    <TextBlock Text="{Binding DisplayDoseRate}"
+                                                               FontSize="10.5" FontWeight="SemiBold"
+                                                               FontFamily="Segoe UI"
+                                                               Foreground="{DynamicResource PrimaryBrush}"
+                                                               TextAlignment="Center"
+                                                               FlowDirection="LeftToRight"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
                                     <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding Status, Converter={StaticResource StatusToArabic}}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
                                 </DataGrid.Columns>
@@ -244,6 +260,22 @@
                                     <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource BoldCenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTemplateColumn Header="{DynamicResource ColDoseRate}" Width="Auto" MinWidth="110">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border Background="#141F5A66" CornerRadius="4" Padding="6,3" Margin="4,2"
+                                                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                        ToolTip="{Binding DoseRateTooltip}">
+                                                    <TextBlock Text="{Binding DisplayDoseRate}"
+                                                               FontSize="10.5" FontWeight="SemiBold"
+                                                               FontFamily="Segoe UI"
+                                                               Foreground="{DynamicResource PrimaryBrush}"
+                                                               TextAlignment="Center"
+                                                               FlowDirection="LeftToRight"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
                                     <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
                                 </DataGrid.Columns>
                             </DataGrid>
@@ -296,6 +328,22 @@
                             <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColInitialActivity}" Binding="{Binding InitialActivityWithUnit}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTemplateColumn Header="{DynamicResource ColDoseRate}" Width="Auto" MinWidth="110">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#141F5A66" CornerRadius="4" Padding="6,3" Margin="4,2"
+                                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                ToolTip="{Binding DoseRateTooltip}">
+                                            <TextBlock Text="{Binding DisplayDoseRate}"
+                                                       FontSize="10.5" FontWeight="SemiBold"
+                                                       FontFamily="Segoe UI"
+                                                       Foreground="{DynamicResource PrimaryBrush}"
+                                                       TextAlignment="Center"
+                                                       FlowDirection="LeftToRight"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding Status, Converter={StaticResource StatusToArabic}}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
                         </DataGrid.Columns>
@@ -339,6 +387,22 @@
                             <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColInitialActivity}" Binding="{Binding InitialActivityWithUnit}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTemplateColumn Header="{DynamicResource ColDoseRate}" Width="Auto" MinWidth="110">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#141F5A66" CornerRadius="4" Padding="6,3" Margin="4,2"
+                                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                ToolTip="{Binding DoseRateTooltip}">
+                                            <TextBlock Text="{Binding DisplayDoseRate}"
+                                                       FontSize="10.5" FontWeight="SemiBold"
+                                                       FontFamily="Segoe UI"
+                                                       Foreground="{DynamicResource PrimaryBrush}"
+                                                       TextAlignment="Center"
+                                                       FlowDirection="LeftToRight"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTextColumn Header="{DynamicResource ColCalibration}" Binding="{Binding CalibrationDate, StringFormat=d}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
                         </DataGrid.Columns>
                     </DataGrid>
@@ -359,6 +423,22 @@
                             <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource BoldCenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTemplateColumn Header="{DynamicResource ColDoseRate}" Width="Auto" MinWidth="110">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#141F5A66" CornerRadius="4" Padding="6,3" Margin="4,2"
+                                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                ToolTip="{Binding DoseRateTooltip}">
+                                            <TextBlock Text="{Binding DisplayDoseRate}"
+                                                       FontSize="10.5" FontWeight="SemiBold"
+                                                       FontFamily="Segoe UI"
+                                                       Foreground="{DynamicResource PrimaryBrush}"
+                                                       TextAlignment="Center"
+                                                       FlowDirection="LeftToRight"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
                         </DataGrid.Columns>
                     </DataGrid>
@@ -391,6 +471,22 @@
                             <DataGridTextColumn Header="{DynamicResource ColCalibration}" Binding="{Binding CalibrationDate, StringFormat=d}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTemplateColumn Header="{DynamicResource ColDoseRate}" Width="Auto" MinWidth="110">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#141F5A66" CornerRadius="4" Padding="6,3" Margin="4,2"
+                                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                ToolTip="{Binding DoseRateTooltip}">
+                                            <TextBlock Text="{Binding DisplayDoseRate}"
+                                                       FontSize="10.5" FontWeight="SemiBold"
+                                                       FontFamily="Segoe UI"
+                                                       Foreground="{DynamicResource PrimaryBrush}"
+                                                       TextAlignment="Center"
+                                                       FlowDirection="LeftToRight"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
                     <Border Visibility="{Binding LowActivityAlertData.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}"

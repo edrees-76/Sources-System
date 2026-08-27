@@ -43,6 +43,8 @@ public class LocationSourceRow
     public string SourceCode => Source.DisplaySourceCode;
     public string DisplayIsotopes => Source.DisplayIsotopes;
     public string CurrentActivityWithUnit => Source.CurrentActivityWithUnit;
+    public string DisplayDoseRate => Source.DisplayDoseRate;
+    public string DoseRateTooltip => Source.DoseRateTooltip;
     public string ArabicStatus => Source.ArabicStatus;
     public DateTime CalibrationDate => Source.CalibrationDate;
     public string? SerialNumber => Source.SerialNumber;

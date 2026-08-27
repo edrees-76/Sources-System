@@ -43,6 +43,8 @@ public class DashboardSourceRow
     public string LocationName => Source.Location?.LocationName ?? "—";
     public string CurrentActivityDisplay => Source.CurrentActivityDisplay;
     public string ActivityUnitSymbol => Source.CurrentActivityUnit?.UnitSymbol ?? "—";
+    public string DisplayDoseRate => Source.DisplayDoseRate;
+    public string DoseRateTooltip => Source.DoseRateTooltip;
 
     /// <summary>أسوأ (أخطر) فئة رقابية من بين نظائر المصدر — القيمة الأصغر هي الأخطر</summary>
     public int WorstCategory

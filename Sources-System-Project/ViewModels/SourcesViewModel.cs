@@ -57,6 +57,8 @@ public class DeletedSourceRow
     public string SourceCode => Source.SourceCode;
     public string DisplayIsotopes => Source.DisplayIsotopes;
     public string CurrentActivityWithUnit => Source.CurrentActivityWithUnit;
+    public string DisplayDoseRate => Source.DisplayDoseRate;
+    public string DoseRateTooltip => Source.DoseRateTooltip;
     public Location? Location => Source.Location;
     public string ArabicStatus => Source.ArabicStatus;
     public DateTime? DeletedAt => Source.DeletedAt;

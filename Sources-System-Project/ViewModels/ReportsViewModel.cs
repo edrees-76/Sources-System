@@ -22,6 +22,8 @@ public class ReportInventoryRow
     public string DisplayIsotopes => Source.DisplayIsotopes;
     public string InitialActivityWithUnit => Source.InitialActivityWithUnit;
     public string CurrentActivityWithUnit => Source.CurrentActivityWithUnit;
+    public string DisplayDoseRate => Source.DisplayDoseRate;
+    public string DoseRateTooltip => Source.DoseRateTooltip;
     public Location? Location => Source.Location;
     public string Status => Source.Status;
 }
@@ -46,6 +48,8 @@ public class ReportActivityRow
     public string DisplayIsotopes => Source.DisplayIsotopes;
     public string InitialActivityWithUnit => Source.InitialActivityWithUnit;
     public string CurrentActivityWithUnit => Source.CurrentActivityWithUnit;
+    public string DisplayDoseRate => Source.DisplayDoseRate;
+    public string DoseRateTooltip => Source.DoseRateTooltip;
     public DateTime CalibrationDate => Source.CalibrationDate;
 }
 
@@ -56,6 +60,8 @@ public class ReportLowActivityRow
     public string SourceCode => Source.SourceCode;
     public string DisplayIsotopes => Source.DisplayIsotopes;
     public string CurrentActivityWithUnit => Source.CurrentActivityWithUnit;
+    public string DisplayDoseRate => Source.DisplayDoseRate;
+    public string DoseRateTooltip => Source.DoseRateTooltip;
     public Location? Location => Source.Location;
 }
 
@@ -70,6 +76,8 @@ public class ReportLowActivityAlertRow
     public DateTime CalibrationDate => Source.CalibrationDate;
     public string ArabicStatus => Source.ArabicStatus;
     public string CurrentActivityWithUnit => Source.CurrentActivityWithUnit;
+    public string DisplayDoseRate => Source.DisplayDoseRate;
+    public string DoseRateTooltip => Source.DoseRateTooltip;
 }
 
 public partial class ReportsViewModel : ObservableObject

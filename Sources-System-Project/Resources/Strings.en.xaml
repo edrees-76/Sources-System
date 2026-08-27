@@ -1104,6 +1104,7 @@
     <!-- Estimated Dose Rate at 1m -->
     <system:String x:Key="FieldGammaConstant">Specific Gamma Constant (Γ)</system:String>
     <system:String x:Key="ColGammaConstant">Gamma Constant (Γ)</system:String>
+    <system:String x:Key="ColDoseRate">Dose Rate (1m)</system:String>
     <system:String x:Key="MsgErrGammaConstantPositive">Gamma Constant must be a positive number greater than zero</system:String>
     <system:String x:Key="DoseRateEstimatedTitle">Estimated Dose Rate at 1m</system:String>
     <system:String x:Key="LabelTotalDoseRate">Total Dose Rate</system:String>
