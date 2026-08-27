@@ -197,7 +197,31 @@
                             <!-- 2. كود المصدر -->
                             <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding DisplaySourceCode}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource BoldCenterAligned}"/>
 
-                            <!-- 3. المستعير -->
+                            <!-- 3. النظير -->
+                            <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterAligned}"/>
+
+                            <!-- 4. النشاط الحالي -->
+                            <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
+
+                            <!-- 5. معدل الجرعة (1م) -->
+                            <DataGridTemplateColumn Header="{DynamicResource ColDoseRate}" Width="Auto" MinWidth="110">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#141F5A66" CornerRadius="4" Padding="6,3" Margin="4,2"
+                                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                ToolTip="{Binding DoseRateTooltip}">
+                                            <TextBlock Text="{Binding DisplayDoseRate}"
+                                                       FontSize="10.5" FontWeight="SemiBold"
+                                                       FontFamily="Segoe UI"
+                                                       Foreground="{DynamicResource PrimaryBrush}"
+                                                       TextAlignment="Center"
+                                                       FlowDirection="LeftToRight"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- 6. المستعير -->
                             <DataGridTextColumn Header="{DynamicResource ColBorrower}" Binding="{Binding DisplayBorrowerName}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource CenterAligned}"/>
 
                             <!-- 4. تاريخ الاستعارة -->

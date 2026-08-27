@@ -26,6 +26,10 @@ public class BorrowRequestRow
     public Guid Id => Request.Id;
     public Source? Source => Request.Source;
     public string DisplaySourceCode => Request.DisplaySourceCode;
+    public string DisplayIsotopes => Source?.DisplayIsotopes ?? "-";
+    public string CurrentActivityWithUnit => Source?.CurrentActivityWithUnit ?? "-";
+    public string DisplayDoseRate => Source?.DisplayDoseRate ?? "-";
+    public string DoseRateTooltip => Source?.DoseRateTooltip ?? string.Empty;
     public string BorrowerName => Request.BorrowerName;
     public string DisplayBorrowerName => Request.DisplayBorrowerName;
     public DateTime RequestDate => Request.RequestDate;

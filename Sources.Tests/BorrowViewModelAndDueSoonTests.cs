@@ -557,5 +557,61 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         Assert.Contains(vm.AvailableSources, s => s.SourceCode == "SRC-NEW-STORAGE");
     }
 
+    [Fact]
+    public void BorrowRequestRow_WithLoadedSourceRelations_DisplaysAccurateIsotopeActivityAndDoseRate()
+    {
+        // Arrange
+        using var db = _fixture.CreateContext();
+        var cs137 = TestDataBuilder.CreateRadioisotope("Cs-137", "Cesium-137", radiationType: "Beta/Gamma");
+        cs137.GammaConstant = 0.0772;
+        var mbqUnit = TestDataBuilder.CreateActivityUnit("MBq", "MBq", conversionToBq: 1e6);
+        var loc = TestDataBuilder.CreateLocation("المختبر الرئيسي");
+        db.Radioisotopes.Add(cs137);
+        db.ActivityUnits.Add(mbqUnit);
+        db.Locations.Add(loc);
+        db.SaveChanges();
+
+        // 100 MBq of Cs-137 -> DoseRate = 100 * 0.0772 = 7.72 µSv/h @ 1m
+        var source = TestDataBuilder.CreateSource(cs137, mbqUnit, loc, "SRC-BORROW-TEST", 100.0, DateTime.Today.AddDays(-10), "InUse");
+        db.Sources.Add(source);
+        db.SaveChanges();
+
+        var borrowReq = new BorrowRequest
+        {
+            Id = Guid.NewGuid(),
+            SourceId = source.Id,
+            BorrowerName = "د. أحمد علي",
+            Purpose = "أبحاث علمية",
+            RequestDate = DateTime.Today.AddDays(-5),
+            ExpectedReturnDate = DateTime.Today.AddDays(5),
+            Status = "Delivered"
+        };
+        db.BorrowRequests.Add(borrowReq);
+        db.SaveChanges();
+
+        // Act: استرجاع الطلبات عبر BorrowService.GetAll()
+        var allRequests = _borrowService.GetAll();
+        Assert.Single(allRequests);
+
+        var loadedRequest = allRequests[0];
+        Assert.NotNull(loadedRequest.Source);
+        Assert.NotNull(loadedRequest.Source.Radioisotope);
+        Assert.NotNull(loadedRequest.Source.InitialActivityUnit);
+
+        // إنشاء صف العرض BorrowRequestRow
+        var row = new BorrowRequestRow
+        {
+            RowNumber = 1,
+            Request = loadedRequest
+        };
+
+        // Assert: التحقق من صحة الخصائص المعروضة
+        Assert.Equal("SRC-BORROW-TEST", row.DisplaySourceCode);
+        Assert.Contains("Cs-137", row.DisplayIsotopes);
+        Assert.Equal("100 MBq", row.CurrentActivityWithUnit);
+        Assert.Equal("7.72 µSv/h @ 1m", row.DisplayDoseRate);
+        Assert.Contains("7.72 µSv/h", row.DoseRateTooltip);
+    }
+
     #endregion
 }
