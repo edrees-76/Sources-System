@@ -469,11 +469,18 @@ public class DoseRateResult
     public bool HasMissingData => Contributions.Any(c => c.Status == DoseRateContributionStatus.MissingGammaConstant);
     public bool IsAllNonGamma => Contributions.Count > 0 && Contributions.All(c => c.Status == DoseRateContributionStatus.NonGammaEmitter);
 
-    public string FormattedTotalMicroSv => TotalDoseRateMicroSvPerHour == 0 
-        ? "0 µSv/h" 
-        : TotalDoseRateMicroSvPerHour >= 1000 
-            ? $"{(TotalDoseRateMicroSvPerHour / 1000):0.##} mSv/h" 
-            : $"{TotalDoseRateMicroSvPerHour:0.##} µSv/h";
+    public string FormattedTotalMicroSv
+    {
+        get
+        {
+            if (TotalDoseRateMicroSvPerHour == 0) return "0 µSv/h";
+            if (TotalDoseRateMicroSvPerHour >= 1000)
+                return $"{(TotalDoseRateMicroSvPerHour / 1000):0.##} mSv/h";
+            if (TotalDoseRateMicroSvPerHour >= 0.1)
+                return $"{TotalDoseRateMicroSvPerHour:0.##} µSv/h";
+            return $"{TotalDoseRateMicroSvPerHour:0.####} µSv/h";
+        }
+    }
 
     public string FormattedSummary
     {
@@ -482,9 +489,16 @@ public class DoseRateResult
             if (Contributions.Count == 0) return "-";
             if (HasContributingIsotopes)
             {
-                string baseText = TotalDoseRateMicroSvPerHour >= 1000 
-                    ? $"{(TotalDoseRateMicroSvPerHour / 1000):0.##} mSv/h @ 1m" 
-                    : $"{TotalDoseRateMicroSvPerHour:0.##} µSv/h @ 1m";
+                string baseText;
+                if (TotalDoseRateMicroSvPerHour == 0)
+                    baseText = "0 µSv/h @ 1m";
+                else if (TotalDoseRateMicroSvPerHour >= 1000)
+                    baseText = $"{(TotalDoseRateMicroSvPerHour / 1000):0.##} mSv/h @ 1m";
+                else if (TotalDoseRateMicroSvPerHour >= 0.1)
+                    baseText = $"{TotalDoseRateMicroSvPerHour:0.##} µSv/h @ 1m";
+                else
+                    baseText = $"{TotalDoseRateMicroSvPerHour:0.####} µSv/h @ 1m";
+
                 if (HasMissingData)
                     return $"{baseText} (*)";
                 return baseText;

@@ -250,4 +250,78 @@ public class DoseRateCalculationTests
         Assert.NotNull(created);
         Assert.Null(created!.GammaConstant);
     }
+
+    [Fact]
+    public void DoseRateResult_LowDoseRate_FormatsWithFourDecimals_NotZero()
+    {
+        // edr-1976: Cs-137, Activity = 2612.58 Bq = 0.00261258 MBq, Gamma = 0.0772
+        // Dose = 0.00261258 * 0.0772 = 0.00020169 µSv/h (should format as 0.0002 µSv/h @ 1m, NOT 0 µSv/h @ 1m)
+        var cs137 = new Radioisotope
+        {
+            Id = Guid.NewGuid(),
+            Name = "Cesium-137",
+            Symbol = "Cs-137",
+            RadiationType = "Beta/Gamma",
+            GammaConstant = 0.0772
+        };
+
+        double activityBq = 2612.58;
+        double activityMBq = activityBq / 1e6;
+
+        var result = _decayService.CalculateDoseRateAtOneMeter(new[] { (cs137, activityMBq) });
+
+        Assert.True(result.TotalDoseRateMicroSvPerHour > 0);
+        Assert.True(result.TotalDoseRateMicroSvPerHour < 0.1);
+        Assert.Equal(0.0002, result.TotalDoseRateMicroSvPerHour, precision: 4);
+
+        // Verify FormattedSummary displays "0.0002 µSv/h @ 1m" instead of "0 µSv/h @ 1m"
+        Assert.Equal("0.0002 µSv/h @ 1m", result.FormattedSummary);
+        Assert.NotEqual("0 µSv/h @ 1m", result.FormattedSummary);
+
+        // Verify FormattedTotalMicroSv
+        Assert.Equal("0.0002 µSv/h", result.FormattedTotalMicroSv);
+        Assert.NotEqual("0 µSv/h", result.FormattedTotalMicroSv);
+    }
+
+    [Fact]
+    public void DoseRateResult_ZeroActivity_FormatsAsZeroCorrectly()
+    {
+        var cs137 = new Radioisotope
+        {
+            Id = Guid.NewGuid(),
+            Name = "Cesium-137",
+            Symbol = "Cs-137",
+            RadiationType = "Beta/Gamma",
+            GammaConstant = 0.0772
+        };
+
+        var result = _decayService.CalculateDoseRateAtOneMeter(new[] { (cs137, 0.0) });
+
+        Assert.Equal(0, result.TotalDoseRateMicroSvPerHour);
+        Assert.Equal("0 µSv/h @ 1m", result.FormattedSummary);
+        Assert.Equal("0 µSv/h", result.FormattedTotalMicroSv);
+    }
+
+    [Fact]
+    public void DoseRateResult_MediumAndHighDoseRates_FormatCorrectly()
+    {
+        var cs137 = new Radioisotope
+        {
+            Id = Guid.NewGuid(),
+            Name = "Cesium-137",
+            Symbol = "Cs-137",
+            RadiationType = "Beta/Gamma",
+            GammaConstant = 0.0772
+        };
+
+        // 1. Medium: 100 MBq -> 7.72 µSv/h
+        var medResult = _decayService.CalculateDoseRateAtOneMeter(new[] { (cs137, 100.0) });
+        Assert.Equal("7.72 µSv/h @ 1m", medResult.FormattedSummary);
+        Assert.Equal("7.72 µSv/h", medResult.FormattedTotalMicroSv);
+
+        // 2. High: 20,000 MBq -> 1544 µSv/h -> 1.54 mSv/h
+        var highResult = _decayService.CalculateDoseRateAtOneMeter(new[] { (cs137, 20000.0) });
+        Assert.Equal("1.54 mSv/h @ 1m", highResult.FormattedSummary);
+        Assert.Equal("1.54 mSv/h", highResult.FormattedTotalMicroSv);
+    }
 }
