@@ -345,4 +345,10 @@ public partial class ReportsViewModel : ObservableObject
             "years" or "year" or "yr" or "y" => value * 365.25 * 86400,
             _ => value * 365.25 * 86400
         };
+
+    [RelayCommand]
+    private void ViewSourceDetails(object? parameter)
+    {
+        SourceNavigationHelper.OpenSourceDetails(parameter);
+    }
 }

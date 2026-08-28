@@ -19,6 +19,15 @@ public static class SourceNavigationHelper
             DeletedSourceRow dsr => dsr.Source,
             DashboardSourceRow dsr => dsr.Source,
             AlertRow ar => ar.Source ?? (ar.SourceId.HasValue ? GetSourceById(ar.SourceId.Value) : null),
+            LocationSourceRow lsr => lsr.Source,
+            BorrowRequestRow brr => brr.Source ?? (brr.Request.SourceId != Guid.Empty ? GetSourceById(brr.Request.SourceId) : null),
+            LeakTestRecord ltr => ltr.Source ?? (ltr.SourceId != Guid.Empty ? GetSourceById(ltr.SourceId) : null),
+            ReportInventoryRow rir => rir.Source,
+            ReportBorrowingRow rbr => rbr.Source ?? (rbr.Request.SourceId != Guid.Empty ? GetSourceById(rbr.Request.SourceId) : null),
+            ReportActivityRow rar => rar.Source,
+            ReportLowActivityRow rlar => rlar.Source,
+            ReportLowActivityAlertRow rlaar => rlaar.Source,
+            string code => GetSourceByCode(code),
             Guid id => GetSourceById(id),
             _ => sourceId.HasValue ? GetSourceById(sourceId.Value) : null
         };
@@ -91,6 +100,21 @@ public static class SourceNavigationHelper
         catch (Exception ex)
         {
             LoggerService.LogError("SourceNavigationHelper: Failed to get source by ID", ex);
+            return null;
+        }
+    }
+
+    private static Source? GetSourceByCode(string code)
+    {
+        if (string.IsNullOrWhiteSpace(code)) return null;
+        try
+        {
+            var service = App.ServiceProvider?.GetService(typeof(ISourceService)) as ISourceService;
+            return service?.GetAllSources().FirstOrDefault(s => s.SourceCode.Equals(code.Trim(), StringComparison.OrdinalIgnoreCase));
+        }
+        catch (Exception ex)
+        {
+            LoggerService.LogError("SourceNavigationHelper: Failed to get source by code", ex);
             return null;
         }
     }

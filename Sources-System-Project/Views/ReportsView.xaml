@@ -196,7 +196,27 @@
                             <DataGrid ItemsSource="{Binding InventoryData}" Style="{StaticResource ModernDataGrid}" MaxHeight="350" MinHeight="100">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                                    <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource BoldCenterAligned}"/>
+                                    <DataGridTemplateColumn Header="{DynamicResource ColCode}" Width="Auto" MinWidth="100">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding SourceCode}"
+                                                           FontWeight="Bold"
+                                                           TextAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Center"
+                                                           Cursor="Hand"
+                                                           Foreground="{DynamicResource PrimaryBrush}"
+                                                           TextDecorations="Underline"
+                                                           ToolTip="{DynamicResource ToolTipViewDetails}">
+                                                    <TextBlock.InputBindings>
+                                                        <MouseBinding Gesture="LeftClick"
+                                                                      Command="{Binding DataContext.ViewSourceDetailsCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                                                      CommandParameter="{Binding Source}"/>
+                                                    </TextBlock.InputBindings>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
                                     <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColInitialActivity}" Binding="{Binding InitialActivityWithUnit}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
@@ -235,7 +255,27 @@
                             <DataGrid ItemsSource="{Binding BorrowingData}" Style="{StaticResource ModernDataGrid}" MaxHeight="350" MinHeight="100">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                                    <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding Source.SourceCode}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource BoldCenterAligned}"/>
+                                    <DataGridTemplateColumn Header="{DynamicResource ColSourceCode}" Width="Auto" MinWidth="100">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding SourceCode}"
+                                                           FontWeight="Bold"
+                                                           TextAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Center"
+                                                           Cursor="Hand"
+                                                           Foreground="{DynamicResource PrimaryBrush}"
+                                                           TextDecorations="Underline"
+                                                           ToolTip="{DynamicResource ToolTipViewDetails}">
+                                                    <TextBlock.InputBindings>
+                                                        <MouseBinding Gesture="LeftClick"
+                                                                      Command="{Binding DataContext.ViewSourceDetailsCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                                                      CommandParameter="{Binding Source}"/>
+                                                    </TextBlock.InputBindings>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
                                     <DataGridTextColumn Header="{DynamicResource ColBorrowerName}" Binding="{Binding DisplayBorrowerName}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColRequestDate}" Binding="{Binding RequestDate, StringFormat=d}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColExpectedReturn}" Binding="{Binding ExpectedReturnDate, StringFormat=d}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
@@ -257,7 +297,27 @@
                             <DataGrid ItemsSource="{Binding LowActivityData}" Style="{StaticResource ModernDataGrid}" MaxHeight="350" MinHeight="100">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                                    <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource BoldCenterAligned}"/>
+                                    <DataGridTemplateColumn Header="{DynamicResource ColCode}" Width="Auto" MinWidth="100">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding SourceCode}"
+                                                           FontWeight="Bold"
+                                                           TextAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Center"
+                                                           Cursor="Hand"
+                                                           Foreground="{DynamicResource PrimaryBrush}"
+                                                           TextDecorations="Underline"
+                                                           ToolTip="{DynamicResource ToolTipViewDetails}">
+                                                    <TextBlock.InputBindings>
+                                                        <MouseBinding Gesture="LeftClick"
+                                                                      Command="{Binding DataContext.ViewSourceDetailsCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                                                      CommandParameter="{Binding Source}"/>
+                                                    </TextBlock.InputBindings>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
                                     <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTemplateColumn Header="{DynamicResource ColDoseRate}" Width="Auto" MinWidth="110">
@@ -294,7 +354,27 @@
                             <DataGrid ItemsSource="{Binding LowActivityAlertData}" Style="{StaticResource ModernDataGrid}" MaxHeight="350" MinHeight="100">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                                    <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource BoldCenterAligned}"/>
+                                    <DataGridTemplateColumn Header="{DynamicResource ColCode}" Width="Auto" MinWidth="100">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding SourceCode}"
+                                                           FontWeight="Bold"
+                                                           TextAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Center"
+                                                           Cursor="Hand"
+                                                           Foreground="{DynamicResource PrimaryBrush}"
+                                                           TextDecorations="Underline"
+                                                           ToolTip="{DynamicResource ToolTipViewDetails}">
+                                                    <TextBlock.InputBindings>
+                                                        <MouseBinding Gesture="LeftClick"
+                                                                      Command="{Binding DataContext.ViewSourceDetailsCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                                                      CommandParameter="{Binding Source}"/>
+                                                    </TextBlock.InputBindings>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
                                     <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding AlertWorstIsotope}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTemplateColumn Header="{DynamicResource ColSeverityBadge}" Width="Auto" MinWidth="100">
                                         <DataGridTemplateColumn.CellTemplate>
@@ -324,7 +404,27 @@
                     <DataGrid ItemsSource="{Binding InventoryData}" Style="{StaticResource ModernDataGrid}" MinHeight="100">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                            <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource BoldCenterAligned}"/>
+                            <DataGridTemplateColumn Header="{DynamicResource ColCode}" Width="Auto" MinWidth="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding SourceCode}"
+                                                   FontWeight="Bold"
+                                                   TextAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"
+                                                   Cursor="Hand"
+                                                   Foreground="{DynamicResource PrimaryBrush}"
+                                                   TextDecorations="Underline"
+                                                   ToolTip="{DynamicResource ToolTipViewDetails}">
+                                            <TextBlock.InputBindings>
+                                                <MouseBinding Gesture="LeftClick"
+                                                              Command="{Binding DataContext.ViewSourceDetailsCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                                              CommandParameter="{Binding Source}"/>
+                                            </TextBlock.InputBindings>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColInitialActivity}" Binding="{Binding InitialActivityWithUnit}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
@@ -362,7 +462,27 @@
                     <DataGrid ItemsSource="{Binding BorrowingData}" Style="{StaticResource ModernDataGrid}" MinHeight="100">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                            <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding SourceCode}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource BoldCenterAligned}"/>
+                            <DataGridTemplateColumn Header="{DynamicResource ColSourceCode}" Width="Auto" MinWidth="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding SourceCode}"
+                                                   FontWeight="Bold"
+                                                   TextAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"
+                                                   Cursor="Hand"
+                                                   Foreground="{DynamicResource PrimaryBrush}"
+                                                   TextDecorations="Underline"
+                                                   ToolTip="{DynamicResource ToolTipViewDetails}">
+                                            <TextBlock.InputBindings>
+                                                <MouseBinding Gesture="LeftClick"
+                                                              Command="{Binding DataContext.ViewSourceDetailsCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                                              CommandParameter="{Binding Source}"/>
+                                            </TextBlock.InputBindings>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTextColumn Header="{DynamicResource ColBorrowerName}" Binding="{Binding DisplayBorrowerName}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColRequestDate}" Binding="{Binding RequestDate, StringFormat=d}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColExpectedReturn}" Binding="{Binding ExpectedReturnDate, StringFormat=d}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
@@ -383,7 +503,27 @@
                     <DataGrid ItemsSource="{Binding ActivityData}" Style="{StaticResource ModernDataGrid}" MinHeight="100">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                            <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource BoldCenterAligned}"/>
+                            <DataGridTemplateColumn Header="{DynamicResource ColCode}" Width="Auto" MinWidth="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding SourceCode}"
+                                                   FontWeight="Bold"
+                                                   TextAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"
+                                                   Cursor="Hand"
+                                                   Foreground="{DynamicResource PrimaryBrush}"
+                                                   TextDecorations="Underline"
+                                                   ToolTip="{DynamicResource ToolTipViewDetails}">
+                                            <TextBlock.InputBindings>
+                                                <MouseBinding Gesture="LeftClick"
+                                                              Command="{Binding DataContext.ViewSourceDetailsCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                                              CommandParameter="{Binding Source}"/>
+                                            </TextBlock.InputBindings>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColInitialActivity}" Binding="{Binding InitialActivityWithUnit}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
@@ -420,7 +560,27 @@
                     <DataGrid ItemsSource="{Binding LowActivityData}" Style="{StaticResource ModernDataGrid}" MinHeight="100">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                            <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource BoldCenterAligned}"/>
+                            <DataGridTemplateColumn Header="{DynamicResource ColCode}" Width="Auto" MinWidth="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding SourceCode}"
+                                                   FontWeight="Bold"
+                                                   TextAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"
+                                                   Cursor="Hand"
+                                                   Foreground="{DynamicResource PrimaryBrush}"
+                                                   TextDecorations="Underline"
+                                                   ToolTip="{DynamicResource ToolTipViewDetails}">
+                                            <TextBlock.InputBindings>
+                                                <MouseBinding Gesture="LeftClick"
+                                                              Command="{Binding DataContext.ViewSourceDetailsCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                                              CommandParameter="{Binding Source}"/>
+                                            </TextBlock.InputBindings>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTemplateColumn Header="{DynamicResource ColDoseRate}" Width="Auto" MinWidth="110">
@@ -456,7 +616,27 @@
                     <DataGrid ItemsSource="{Binding LowActivityAlertData}" Style="{StaticResource ModernDataGrid}" MinHeight="100">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                            <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource BoldCenterAligned}"/>
+                            <DataGridTemplateColumn Header="{DynamicResource ColCode}" Width="Auto" MinWidth="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding SourceCode}"
+                                                   FontWeight="Bold"
+                                                   TextAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"
+                                                   Cursor="Hand"
+                                                   Foreground="{DynamicResource PrimaryBrush}"
+                                                   TextDecorations="Underline"
+                                                   ToolTip="{DynamicResource ToolTipViewDetails}">
+                                            <TextBlock.InputBindings>
+                                                <MouseBinding Gesture="LeftClick"
+                                                              Command="{Binding DataContext.ViewSourceDetailsCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                                              CommandParameter="{Binding Source}"/>
+                                            </TextBlock.InputBindings>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding AlertWorstIsotope}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTemplateColumn Header="{DynamicResource ColSeverityBadge}" Width="Auto" MinWidth="100">
                                 <DataGridTemplateColumn.CellTemplate>

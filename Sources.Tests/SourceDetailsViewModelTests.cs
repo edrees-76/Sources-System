@@ -245,6 +245,54 @@ public class SourceDetailsViewModelTests
             var ar = new AlertRow { Alert = new AlertNotification { Source = source } };
             SourceNavigationHelper.OpenSourceDetails(ar);
             Assert.Same(source, interceptedSource);
+
+            // Act: Using LocationSourceRow
+            interceptedSource = null;
+            var lsr = new LocationSourceRow { Source = source };
+            SourceNavigationHelper.OpenSourceDetails(lsr);
+            Assert.Same(source, interceptedSource);
+
+            // Act: Using BorrowRequestRow
+            interceptedSource = null;
+            var brr = new BorrowRequestRow { Request = new BorrowRequest { Source = source } };
+            SourceNavigationHelper.OpenSourceDetails(brr);
+            Assert.Same(source, interceptedSource);
+
+            // Act: Using LeakTestRecord
+            interceptedSource = null;
+            var ltr = new LeakTestRecord { Source = source };
+            SourceNavigationHelper.OpenSourceDetails(ltr);
+            Assert.Same(source, interceptedSource);
+
+            // Act: Using ReportInventoryRow
+            interceptedSource = null;
+            var rir = new ReportInventoryRow { Source = source };
+            SourceNavigationHelper.OpenSourceDetails(rir);
+            Assert.Same(source, interceptedSource);
+
+            // Act: Using ReportBorrowingRow
+            interceptedSource = null;
+            var rbr = new ReportBorrowingRow { Request = new BorrowRequest { Source = source } };
+            SourceNavigationHelper.OpenSourceDetails(rbr);
+            Assert.Same(source, interceptedSource);
+
+            // Act: Using ReportActivityRow
+            interceptedSource = null;
+            var rar = new ReportActivityRow { Source = source };
+            SourceNavigationHelper.OpenSourceDetails(rar);
+            Assert.Same(source, interceptedSource);
+
+            // Act: Using ReportLowActivityRow
+            interceptedSource = null;
+            var rlar = new ReportLowActivityRow { Source = source };
+            SourceNavigationHelper.OpenSourceDetails(rlar);
+            Assert.Same(source, interceptedSource);
+
+            // Act: Using ReportLowActivityAlertRow
+            interceptedSource = null;
+            var rlaar = new ReportLowActivityAlertRow { Source = source };
+            SourceNavigationHelper.OpenSourceDetails(rlaar);
+            Assert.Same(source, interceptedSource);
         }
         finally
         {

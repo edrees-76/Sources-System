@@ -252,4 +252,10 @@ public partial class LocationDetailsViewModel : ObservableObject
             }
         }
     }
+
+    [RelayCommand]
+    private void ViewSourceDetails(object? parameter)
+    {
+        SourceNavigationHelper.OpenSourceDetails(parameter);
+    }
 }

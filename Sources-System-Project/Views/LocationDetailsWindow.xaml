@@ -204,7 +204,27 @@
                 <DataGrid ItemsSource="{Binding FilteredSources}" Style="{StaticResource ModernDataGrid}" AutoGenerateColumns="False" IsReadOnly="True">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                        <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding DisplaySourceCode}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource BoldCenterAligned}"/>
+                        <DataGridTemplateColumn Header="{DynamicResource ColSourceCode}" Width="Auto" MinWidth="130">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplaySourceCode}"
+                                               FontWeight="Bold"
+                                               TextAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Center"
+                                               Cursor="Hand"
+                                               Foreground="{DynamicResource PrimaryBrush}"
+                                               TextDecorations="Underline"
+                                               ToolTip="{DynamicResource ToolTipViewDetails}">
+                                        <TextBlock.InputBindings>
+                                            <MouseBinding Gesture="LeftClick"
+                                                          Command="{Binding DataContext.ViewSourceDetailsCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                          CommandParameter="{Binding Source}"/>
+                                        </TextBlock.InputBindings>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                         <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
                         <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="Auto" MinWidth="150" ElementStyle="{StaticResource CenterAligned}"/>
                         <DataGridTemplateColumn Header="{DynamicResource ColDoseRate}" Width="Auto" MinWidth="110">

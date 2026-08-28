@@ -445,4 +445,10 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
             }
         }
     }
+
+    [RelayCommand]
+    private void ViewSourceDetails(object? parameter)
+    {
+        SourceNavigationHelper.OpenSourceDetails(parameter);
+    }
 }

@@ -562,4 +562,10 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
             });
         }
     }
+
+    [RelayCommand]
+    private void ViewSourceDetails(object? parameter)
+    {
+        SourceNavigationHelper.OpenSourceDetails(parameter);
+    }
 }

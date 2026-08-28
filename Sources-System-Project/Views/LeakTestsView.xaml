@@ -177,7 +177,27 @@
 
 
                             <!-- كود المصدر -->
-                            <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding Source.SourceCode}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource BoldCenterAligned}"/>
+                            <DataGridTemplateColumn Header="{DynamicResource ColSourceCode}" Width="Auto" MinWidth="130">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Source.SourceCode}"
+                                                   FontWeight="Bold"
+                                                   TextAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"
+                                                   Cursor="Hand"
+                                                   Foreground="{DynamicResource PrimaryBrush}"
+                                                   TextDecorations="Underline"
+                                                   ToolTip="{DynamicResource ToolTipViewDetails}">
+                                            <TextBlock.InputBindings>
+                                                <MouseBinding Gesture="LeftClick"
+                                                              Command="{Binding DataContext.ViewSourceDetailsCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                                              CommandParameter="{Binding Source}"/>
+                                            </TextBlock.InputBindings>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
 
                             <!-- النظائر -->
                             <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding Source.DisplayIsotopes}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
