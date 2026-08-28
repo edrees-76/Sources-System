@@ -103,6 +103,7 @@ public partial class App : Application
         services.AddTransient<Sources.Views.LoginWindow>();
         services.AddTransient<Sources.Views.ScreensaverWindow>();
         services.AddTransient<Sources.Views.LocationDetailsWindow>();
+        services.AddTransient<Sources.Views.SourceDetailsWindow>();
         services.AddTransient<Sources.Views.AlertsView>();
         services.AddTransient<Sources.Views.LeakTestsView>();
         services.AddTransient<Sources.Views.IsotopeLibraryView>();

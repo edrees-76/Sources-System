@@ -575,7 +575,7 @@
                                                                 CommandParameter="{Binding}"
                                                                 Style="{StaticResource MaterialDesignToolForegroundButton}"
                                                                 Padding="4" Height="30" Width="30"
-                                                                Foreground="{DynamicResource GoldBrush}"
+                                                                Foreground="{DynamicResource PrimaryBrush}"
                                                                 ToolTip="{DynamicResource ToolTipViewDetails}">
                                                             <materialDesign:PackIcon Kind="Eye" Width="18" Height="18"/>
                                                         </Button>

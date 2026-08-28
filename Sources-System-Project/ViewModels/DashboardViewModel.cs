@@ -1863,44 +1863,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void ViewSourceDetails(object? parameter)
     {
-        Source? source = parameter switch
-        {
-            DashboardSourceRow row => row.Source,
-            Source s => s,
-            _ => null
-        };
-        if (source == null) return;
-        string lre = "\u202A";
-        string pdf = "\u202C";
-
-        string details = $"{TranslationHelper.GetString("LabelSourceCode")} {lre}{source.SourceCode}{pdf}\n" +
-                         $"{TranslationHelper.GetString("LabelIsotope")} {lre}{source.DisplayIsotopes}{pdf}\n";
-
-        if (source.HasDetailedIsotopes && source.SourceIsotopes != null && source.SourceIsotopes.Any())
-        {
-            details += $"{TranslationHelper.GetString("LabelActivityDetails")}\n";
-            foreach (var si in source.SourceIsotopes)
-            {
-                string unitSymbol = si.ActivityUnit?.UnitSymbol
-                                 ?? source.InitialActivityUnit?.UnitSymbol
-                                 ?? "Bq";
-
-                details += $"  - {lre}{si.Radioisotope?.Symbol ?? TranslationHelper.GetString("LabelIsotopeSymbol")}: {si.CurrentActivityValue:N4} {unitSymbol}{pdf}\n";
-            }
-        }
-        else
-        {
-            details += $"{TranslationHelper.GetString("LabelCurrentActivity")} {lre}{source.CurrentActivityValue:N4} {source.CurrentActivityUnit?.UnitSymbol}{pdf}\n";
-        }
-
-        details += $"{TranslationHelper.GetString("LabelSerialNumber")} {lre}{source.SerialNumber ?? "N/A"}{pdf}\n" +
-                  $"{TranslationHelper.GetString("LabelLocation")} {lre}{source.Location?.LocationName ?? "N/A"}{pdf}\n" +
-                  $"{TranslationHelper.GetString("LabelCalibrationDate")} {lre}{source.CalibrationDate:yyyy-MM-dd}{pdf}\n" +
-                  $"{TranslationHelper.GetString("LabelStatus")} {source.ArabicStatus}\n" +
-                  $"{TranslationHelper.GetString("LabelManufacturer")} {lre}{source.Manufacturer ?? "N/A"}{pdf}\n" +
-                  $"{TranslationHelper.GetString("LabelNotes")} {source.Notes ?? "N/A"}";
-
-        DialogHelper.ShowInfo(details, TranslationHelper.GetString("TitleSourceDetails"), source.ImagePath);
+        SourceNavigationHelper.OpenSourceDetails(parameter);
     }
 
     // ─── منطق البحث الموحّد (Global Search Logic - Phase B) ───

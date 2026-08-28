@@ -65,6 +65,26 @@ public class ViewInstantiationTests
     }
 
     [Fact]
+    public void SourceDetailsWindow_InstantiatesSuccessfully()
+    {
+        RunInSta(() =>
+        {
+            var source = new Sources.Models.Source
+            {
+                Id = Guid.NewGuid(),
+                SourceCode = "SRC-INST-01",
+                Status = "InUse",
+                CalibrationDate = DateTime.Now,
+                Radioisotope = new Sources.Models.Radioisotope { Symbol = "Co-60" }
+            };
+            var vm = new Sources.ViewModels.SourceDetailsViewModel(source);
+            var window = new Sources.Views.SourceDetailsWindow(vm);
+            Assert.NotNull(window);
+            Assert.Equal(vm, window.DataContext);
+        });
+    }
+
+    [Fact]
     public void BorrowView_InstantiatesSuccessfully()
     {
         RunInSta(() =>
