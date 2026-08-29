@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Windows;
+using Moq;
 using Sources.Views;
 using Xunit;
 

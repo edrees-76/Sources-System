@@ -22,6 +22,9 @@
     <converters:RowIndexConverter x:Key="RowIndexConverter"/>
     <converters:LocationTypeToDisplayConverter x:Key="LocationTypeToDisplay"/>
     <converters:StringToResourceConverter x:Key="StringToResource"/>
+    <converters:EqualityToBoolConverter x:Key="EqualityToBool"/>
+    <converters:AddOneConverter x:Key="AddOneConverter"/>
     
 </ResourceDictionary>
+
 

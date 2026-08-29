@@ -107,6 +107,7 @@ public partial class App : Application
         services.AddTransient<Sources.Views.AlertsView>();
         services.AddTransient<Sources.Views.LeakTestsView>();
         services.AddTransient<Sources.Views.IsotopeLibraryView>();
+        services.AddTransient<Sources.Views.DeletionsView>();
         services.AddTransient<MainWindow>();
 
         // Services
@@ -144,6 +145,7 @@ public partial class App : Application
         services.AddTransient<IsotopeLibraryViewModel>();
         services.AddTransient<HelpViewModel>();
         services.AddTransient<AboutSystemViewModel>();
+        services.AddTransient<DeletionsViewModel>();
     }
 
 

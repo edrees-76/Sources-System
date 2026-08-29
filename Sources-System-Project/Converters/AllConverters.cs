@@ -195,6 +195,7 @@ public class ViewNameToTitleConverter : IValueConverter
             "Help" => "NavHelp",
             "AboutSystem" => "NavAboutSystem",
             "Settings" => "NavSettings",
+            "Deletions" => "NavDeletions",
             _ => null
         };
 
@@ -407,4 +408,36 @@ public class StringToResourceConverter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         => throw new NotImplementedException();
 }
+
+// ─── محول المساواة إلى قيمة منطقية (Equality to Boolean) ───
+public class EqualityToBoolConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value == null || parameter == null) return false;
+        return string.Equals(value.ToString(), parameter.ToString(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is bool b && b && parameter != null)
+            return parameter.ToString()!;
+        return Binding.DoNothing;
+    }
+}
+
+// ─── محول زيادة الفهرس بمقدار واحد (+1) ───
+public class AddOneConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is int i) return (i + 1).ToString();
+        if (int.TryParse(value?.ToString(), out int parsed)) return (parsed + 1).ToString();
+        return "1";
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}
+
 

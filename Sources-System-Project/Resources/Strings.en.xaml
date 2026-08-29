@@ -1165,6 +1165,36 @@
     <system:String x:Key="HelpIsotopeLibrarySectionOrnlDesc">Contains certified radionuclides with specific gamma-ray dose constants (Γ) in SI units (µSv·m²/(MBq·h)) and legacy units ((mrem/h)/µCi), along with 95% lead attenuation thickness and linear attenuation coefficient (µ). This data is strictly used for 1-meter estimated dose rate calculations.</system:String>
     <system:String x:Key="HelpIsotopeLibrarySectionIcrp">2. Radionuclide Decay Database (ICRP Publication 107)</system:String>
     <system:String x:Key="HelpIsotopeLibrarySectionIcrpDesc">Covers 1,252 radionuclides as a secondary reference for general physical decay properties (half-life, decay modes, and emission energies). Notice: This reference does not contain gamma dose constants and is provided solely for scientific reference.</system:String>
-
+    <!-- Deletions & Admin Password Prompt (Round 81) -->
+    <system:String x:Key="MenuDeletions">Deletions</system:String>
+    <system:String x:Key="NavDeletions">Administrative Deletions Log</system:String>
+    <system:String x:Key="TitleDeletions">Unified Deletions Log</system:String>
+    <system:String x:Key="SubtitleDeletions">View and manage all deleted records across the four entities (Sources, Locations, Users, Radioisotopes)</system:String>
+    <system:String x:Key="TitleAdminPasswordRequired">Admin Identity Verification</system:String>
+    <system:String x:Key="PromptAdminPasswordRequired">Please enter administrator password to proceed:</system:String>
+    <system:String x:Key="PromptAdminPasswordForDeletions">Please enter administrator password to open the administrative deletions view:</system:String>
+    <system:String x:Key="MsgErrAdminOnly">Unauthorized: This operation is restricted to system administrators only</system:String>
+    <system:String x:Key="MsgErrNoCurrentUser">No user is currently logged in</system:String>
+    <system:String x:Key="HeaderEntityType">Entity Type</system:String>
+    <system:String x:Key="HeaderIdentifier">Name / Identifier</system:String>
+    <system:String x:Key="HeaderDeletedBy">Deleted By</system:String>
+    <system:String x:Key="HeaderDeletedAt">Deleted At</system:String>
+    <system:String x:Key="HeaderRestore">Restore</system:String>
+    <system:String x:Key="TextRestoreComingSoon">Coming in next round</system:String>
+    <system:String x:Key="CardTotalDeletions">Total Deletions</system:String>
+    <system:String x:Key="CardDeletedSources">Deleted Sources</system:String>
+    <system:String x:Key="CardDeletedLocations">Deleted Locations</system:String>
+    <system:String x:Key="CardDeletedUsers">Deleted Users</system:String>
+    <system:String x:Key="CardDeletedIsotopes">Deleted Radioisotopes</system:String>
+    <system:String x:Key="FilterSources">Sources</system:String>
+    <system:String x:Key="FilterLocations">Locations</system:String>
+    <system:String x:Key="FilterUsers">Users</system:String>
+    <system:String x:Key="FilterRadioisotopes">Radioisotopes</system:String>
+    <system:String x:Key="EntityTypeSource">Radioactive Source</system:String>
+    <system:String x:Key="EntityTypeLocation">Location</system:String>
+    <system:String x:Key="EntityTypeUser">User Account</system:String>
+    <system:String x:Key="EntityTypeRadioisotope">Radioisotope</system:String>
+    <system:String x:Key="BtnConfirm">Confirm</system:String>
 </ResourceDictionary>
+
 

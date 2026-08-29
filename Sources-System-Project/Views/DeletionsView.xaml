@@ -1,0 +1,356 @@
+<UserControl x:Class="Sources.Views.DeletionsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:converters="clr-namespace:Sources.Converters"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <Style x:Key="FilterRadioChip" TargetType="RadioButton">
+            <Setter Property="Background" Value="#F1F5F9"/>
+            <Setter Property="Foreground" Value="#64748B"/>
+            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="14,6"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="20" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#E2E8F0"/>
+                                <Setter Property="Foreground" Value="#002D40"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#002D40"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#002D40"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- 0: Page Header -->
+            <RowDefinition Height="Auto"/>  <!-- 1: Stat Summary Cards -->
+            <RowDefinition Height="Auto"/>  <!-- 2: Filter & Search Bar -->
+            <RowDefinition Height="*"/>     <!-- 3: Unified DataGrid -->
+        </Grid.RowDefinitions>
+
+        <!-- ══ 0: ترويسة الصفحة والزر العلوي ══ -->
+        <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,16">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                <materialDesign:PackIcon Kind="TrashCanOutline" Width="36" Height="36" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                <StackPanel Margin="12,0,0,0">
+                    <TextBlock Text="{DynamicResource TitleDeletions}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="{DynamicResource SubtitleDeletions}" FontSize="13" Foreground="{DynamicResource TextSecondary}"/>
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- زر تحديث السجل -->
+                <Button Command="{Binding RefreshCommand}" Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Foreground="{DynamicResource PrimaryBrush}" BorderBrush="{DynamicResource PrimaryBrush}" Height="40">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="Refresh" Margin="-4,0,6,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource BtnRefresh}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- ══ 1: بطاقات الإحصائيات السريعة (KPIs) ══ -->
+        <Grid Grid.Row="1" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- إجمالي المحذوفات -->
+            <Border Grid.Column="0" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="14,12"
+                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{DynamicResource CardTotalDeletions}" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding TotalCount}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <Border Grid.Column="1" Background="#151F5A66" CornerRadius="10" Width="38" Height="38" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="DeleteSweepOutline" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- المصادر المحذوفة -->
+            <Border Grid.Column="2" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="14,12"
+                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{DynamicResource CardDeletedSources}" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding SourcesCount}" FontSize="22" FontWeight="Bold" Foreground="#0284C7" Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <Border Grid.Column="1" Background="#1A0284C7" CornerRadius="10" Width="38" Height="38" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="Radioactive" Width="20" Height="20" Foreground="#0284C7" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- المواقع المحذوفة -->
+            <Border Grid.Column="4" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="14,12"
+                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{DynamicResource CardDeletedLocations}" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding LocationsCount}" FontSize="22" FontWeight="Bold" Foreground="#10B981" Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <Border Grid.Column="1" Background="#1A10B981" CornerRadius="10" Width="38" Height="38" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="MapMarkerOutline" Width="20" Height="20" Foreground="#10B981" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- المستخدمين المحذوفين -->
+            <Border Grid.Column="6" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="14,12"
+                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{DynamicResource CardDeletedUsers}" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding UsersCount}" FontSize="22" FontWeight="Bold" Foreground="#8B5CF6" Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <Border Grid.Column="1" Background="#1A8B5CF6" CornerRadius="10" Width="38" Height="38" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="AccountOutline" Width="20" Height="20" Foreground="#8B5CF6" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- النظائر المحذوفة -->
+            <Border Grid.Column="8" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="14,12"
+                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{DynamicResource CardDeletedIsotopes}" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding RadioisotopesCount}" FontSize="22" FontWeight="Bold" Foreground="#F59E0B" Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <Border Grid.Column="1" Background="#1AF59E0B" CornerRadius="10" Width="38" Height="38" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="Atom" Width="20" Height="20" Foreground="#F59E0B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ══ 2: شريط التصفية والبحث ══ -->
+        <Border Grid.Row="2" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="16,12"
+                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Margin="0,0,0,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- أزرار تصفية الكيانات -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- الكل -->
+                    <RadioButton Content="{DynamicResource FilterAll}" Margin="0,0,8,0"
+                                 IsChecked="{Binding SelectedFilter, Converter={StaticResource EqualityToBool}, ConverterParameter=All}"
+                                 Command="{Binding SetFilterCommand}" CommandParameter="All"
+                                 Style="{StaticResource FilterRadioChip}"/>
+
+                    <!-- المصادر -->
+                    <RadioButton Content="{DynamicResource FilterSources}" Margin="0,0,8,0"
+                                 IsChecked="{Binding SelectedFilter, Converter={StaticResource EqualityToBool}, ConverterParameter=Sources}"
+                                 Command="{Binding SetFilterCommand}" CommandParameter="Sources"
+                                 Style="{StaticResource FilterRadioChip}"/>
+
+                    <!-- المواقع -->
+                    <RadioButton Content="{DynamicResource FilterLocations}" Margin="0,0,8,0"
+                                 IsChecked="{Binding SelectedFilter, Converter={StaticResource EqualityToBool}, ConverterParameter=Locations}"
+                                 Command="{Binding SetFilterCommand}" CommandParameter="Locations"
+                                 Style="{StaticResource FilterRadioChip}"/>
+
+                    <!-- المستخدمين -->
+                    <RadioButton Content="{DynamicResource FilterUsers}" Margin="0,0,8,0"
+                                 IsChecked="{Binding SelectedFilter, Converter={StaticResource EqualityToBool}, ConverterParameter=Users}"
+                                 Command="{Binding SetFilterCommand}" CommandParameter="Users"
+                                 Style="{StaticResource FilterRadioChip}"/>
+
+                    <!-- النظائر -->
+                    <RadioButton Content="{DynamicResource FilterRadioisotopes}" Margin="0,0,8,0"
+                                 IsChecked="{Binding SelectedFilter, Converter={StaticResource EqualityToBool}, ConverterParameter=Radioisotopes}"
+                                 Command="{Binding SetFilterCommand}" CommandParameter="Radioisotopes"
+                                 Style="{StaticResource FilterRadioChip}"/>
+                </StackPanel>
+
+                <!-- حقل البحث السريع -->
+                <Border Grid.Column="1" Background="{DynamicResource MainBackground}" CornerRadius="8"
+                        BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Width="280" Height="38" Padding="10,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <materialDesign:PackIcon Kind="Magnify" Width="18" Height="18" Foreground="{DynamicResource TextSecondary}"
+                                                VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                 materialDesign:HintAssist.Hint="{DynamicResource SearchPlaceholder}"
+                                 BorderThickness="0" Background="Transparent" Foreground="{DynamicResource TextPrimary}"
+                                 VerticalAlignment="Center" FontSize="13"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- ══ 3: جدول المحذوفات الموحّد ══ -->
+        <Border Grid.Row="3" Background="{DynamicResource CardBackground}" CornerRadius="12"
+                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" ClipToBounds="True">
+            <Grid>
+                <!-- الجدول -->
+                <DataGrid ItemsSource="{Binding FilteredItems}"
+                          Style="{StaticResource ModernDataGrid}"
+                          IsReadOnly="True" AutoGenerateColumns="False"
+                          AlternationCount="1000">
+                    <DataGrid.Columns>
+                        <!-- الترقيم التسلسلي -->
+                        <DataGridTemplateColumn Header="#" Width="50">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding (ItemsControl.AlternationIndex), RelativeSource={RelativeSource AncestorType=DataGridRow}, Converter={StaticResource AddOneConverter}}"
+                                               Style="{StaticResource CenterAligned}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- نوع الكيان (Entity Type) -->
+                        <DataGridTemplateColumn Header="{DynamicResource HeaderEntityType}" Width="150">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="{Binding BadgeBackgroundHex}" CornerRadius="6" Padding="8,4" HorizontalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <materialDesign:PackIcon Kind="{Binding IconKind}" Width="15" Height="15" Foreground="{Binding BadgeForegroundHex}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                            <TextBlock Text="{Binding EntityTypeDisplayName}" Foreground="{Binding BadgeForegroundHex}" FontSize="11.5" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- الاسم أو الكود المعرّف (Identifier) -->
+                        <DataGridTemplateColumn Header="{DynamicResource HeaderIdentifier}" Width="*" MinWidth="180">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
+                                        <TextBlock Text="{Binding Identifier}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource TextPrimary}"/>
+                                        <TextBlock Text="{Binding SecondaryIdentifier}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- حُذف بواسطة (Deleted By) -->
+                        <DataGridTemplateColumn Header="{DynamicResource HeaderDeletedBy}" Width="180">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <materialDesign:PackIcon Kind="AccountCheckOutline" Width="16" Height="16" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding DeletedByName}" FontSize="12.5" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- تاريخ الحذف (Deleted At) -->
+                        <DataGridTemplateColumn Header="{DynamicResource HeaderDeletedAt}" Width="160">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <materialDesign:PackIcon Kind="CalendarClockOutline" Width="15" Height="15" Foreground="{DynamicResource TextSecondary}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding DeletedAtFormatted}" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- مشاهدة التفاصيل (View Details) -->
+                        <DataGridTemplateColumn Header="{DynamicResource HeaderActions}" Width="90">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Style="{StaticResource MaterialDesignIconButton}"
+                                            ToolTip="{DynamicResource ToolTipViewDetails}"
+                                            Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}"
+                                            Width="32" Height="32" Padding="0"
+                                            Foreground="{DynamicResource PrimaryBrush}">
+                                        <materialDesign:PackIcon Kind="EyeOutline" Width="19" Height="19"/>
+                                    </Button>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- عمود الاسترجاع Placeholder (Restore) -->
+                        <DataGridTemplateColumn Header="{DynamicResource HeaderRestore}" Width="170">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="#10888888" BorderBrush="#30888888" BorderThickness="1"
+                                            CornerRadius="6" Padding="8,4" HorizontalAlignment="Center" Opacity="0.65"
+                                            ToolTip="{DynamicResource TextRestoreComingSoon}">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <materialDesign:PackIcon Kind="History" Width="14" Height="14" Foreground="{DynamicResource TextSecondary}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{DynamicResource TextRestoreComingSoon}" FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- حالة عدم وجود بيانات (Empty State) -->
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="32"
+                            Visibility="{Binding FilteredItems.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}">
+                    <materialDesign:PackIcon Kind="TrashCanOutline" Width="64" Height="64" Foreground="{DynamicResource TextSecondary}" Opacity="0.35" HorizontalAlignment="Center"/>
+                    <TextBlock Text="لا توجد عناصر محذوفة حالياً" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" Margin="0,12,0,4" HorizontalAlignment="Center"/>
+                    <TextBlock Text="سجل المحذوفات فارغ أو لا توجد نتائج مطابقة لشروط البحث" FontSize="12.5" Foreground="{DynamicResource TextSecondary}" Opacity="0.75" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

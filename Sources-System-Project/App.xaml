@@ -82,6 +82,10 @@
             <DataTemplate DataType="{x:Type vm:AboutSystemViewModel}">
                 <views:AboutSystemView/>
             </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:DeletionsViewModel}">
+                <views:DeletionsView/>
+            </DataTemplate>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
+

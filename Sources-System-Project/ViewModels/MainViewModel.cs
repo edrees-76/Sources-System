@@ -5,6 +5,7 @@ using Sources.Helpers;
 using Sources.Services;
 using Sources.Interfaces;
 using Sources.Models;
+using Sources.Views;
 using System;
 using System.Linq;
 using System.Windows;
@@ -97,6 +98,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private bool _canSeeIsotopeLibrary = true;
     [ObservableProperty] private bool _canSeeAlerts = true;
     [ObservableProperty] private bool _canSeeHelp = true;
+    [ObservableProperty] private bool _canSeeDeletions = true;
 
     private void RefreshSidebarPermissions()
     {
@@ -113,6 +115,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         CanSeeCalculator = user.HasSectionPermission("ActivityCalculator");
         CanSeeIsotopeLibrary = true;
         CanSeeAlerts = user.HasSectionPermission("Alerts");
+        CanSeeDeletions = user.IsAdmin || user.HasSectionPermission("Deletions") || user.HasSectionPermission("Settings") || user.HasSectionPermission("Users");
     }
 
 
@@ -265,6 +268,19 @@ public partial class MainViewModel : ObservableObject, IDisposable
             return;
         }
 
+        // حماية شاشة المحذوفات الإدارية بطلب كلمة مرور مدير النظام
+        if (viewName == "Deletions")
+        {
+            bool granted = PasswordPromptDialog.RequestAdminAccess(
+                TranslationHelper.GetString("TitleAdminPasswordRequired") ?? "التحقق من هوية مدير النظام",
+                TranslationHelper.GetString("PromptAdminPasswordForDeletions") ?? "يرجى إدخال كلمة مرور مدير النظام لفتح شاشة المحذوفات الإدارية:");
+            
+            if (!granted)
+            {
+                return;
+            }
+        }
+
         CurrentViewName = viewName;
         CurrentView = viewName switch
         {
@@ -282,6 +298,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             "IsotopeLibrary" => App.ServiceProvider?.GetService(typeof(IsotopeLibraryViewModel)) as ObservableObject,
             "Help" => App.ServiceProvider?.GetService(typeof(HelpViewModel)) as ObservableObject,
             "AboutSystem" => App.ServiceProvider?.GetService(typeof(AboutSystemViewModel)) as ObservableObject,
+            "Deletions" => App.ServiceProvider?.GetService(typeof(DeletionsViewModel)) as ObservableObject,
             _ => CurrentView
         };
 
@@ -289,7 +306,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
         {
             _ = leakTestsVm.InitializeAsync();
         }
+        else if (CurrentView is DeletionsViewModel deletionsVm)
+        {
+            _ = deletionsVm.LoadDeletedItemsAsync();
+        }
     }
+
 
 
     [RelayCommand]

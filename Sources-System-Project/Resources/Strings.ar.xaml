@@ -1162,6 +1162,36 @@
     <system:String x:Key="HelpIsotopeLibrarySectionOrnlDesc">يحتوي على نظائر مشعة معتمدة مع قيم ثابت غاما النوعي (Γ) بالوحدة الدولية (µSv·m²/(MBq·h)) والوحدة التقليدية (mrem·h⁻¹·µCi⁻¹)، بالإضافة إلى سُمك درع الرصاص لتوهين 95% ومعامل التوهين الخطي المتوسط (µ). تُستخدم هذه البيانات حصراً في الحسابات التقديرية لمعدل الجرعة عند مسافة 1 متر.</system:String>
     <system:String x:Key="HelpIsotopeLibrarySectionIcrp">2. مرجع بيانات الانحلال الإشعاعي (ICRP Publication 107)</system:String>
     <system:String x:Key="HelpIsotopeLibrarySectionIcrpDesc">يغطي 1252 نظيراً مشعاً كمصدر احتياطي للبيانات الفيزيائية العامة (نصف العمر، نمط الانحلال B-/Alpha/EC، والطاقات المنبعثة). تنبيه: لا يتضمن هذا المرجع ثوابت غاما نوعية لحساب الجرعة، وتُعرض بياناته لأغراض الاسترشاد العلمي فقط.</system:String>
-
+    <!-- Deletions & Admin Password Prompt (Round 81) -->
+    <system:String x:Key="MenuDeletions">المحذوفات</system:String>
+    <system:String x:Key="NavDeletions">سجل المحذوفات الإداري</system:String>
+    <system:String x:Key="TitleDeletions">سجل المحذوفات الموحّد</system:String>
+    <system:String x:Key="SubtitleDeletions">عرض وإدارة كافة العناصر المحذوفة من الكيانات الأربعة (المصادر، المواقع، المستخدمين، النظائر)</system:String>
+    <system:String x:Key="TitleAdminPasswordRequired">التحقق من هوية مدير النظام</system:String>
+    <system:String x:Key="PromptAdminPasswordRequired">يرجى إدخال كلمة مرور مدير النظام للمتابعة</system:String>
+    <system:String x:Key="PromptAdminPasswordForDeletions">يرجى إدخال كلمة مرور مدير النظام للوصول إلى شاشة المحذوفات الإدارية</system:String>
+    <system:String x:Key="MsgErrAdminOnly">غير مصرح: هذه العملية مخصصة لمدير النظام فقط</system:String>
+    <system:String x:Key="MsgErrNoCurrentUser">لا يوجد مستخدم مسجل حالياً في الجلسة</system:String>
+    <system:String x:Key="HeaderEntityType">نوع الكيان</system:String>
+    <system:String x:Key="HeaderIdentifier">الاسم / المعرّف</system:String>
+    <system:String x:Key="HeaderDeletedBy">حُذف بواسطة</system:String>
+    <system:String x:Key="HeaderDeletedAt">تاريخ الحذف</system:String>
+    <system:String x:Key="HeaderRestore">استرجاع</system:String>
+    <system:String x:Key="TextRestoreComingSoon">قريباً في الجولة القادمة</system:String>
+    <system:String x:Key="CardTotalDeletions">إجمالي المحذوفات</system:String>
+    <system:String x:Key="CardDeletedSources">المصادر المحذوفة</system:String>
+    <system:String x:Key="CardDeletedLocations">المواقع المحذوفة</system:String>
+    <system:String x:Key="CardDeletedUsers">المستخدمين المحذوفين</system:String>
+    <system:String x:Key="CardDeletedIsotopes">النظائر المحذوفة</system:String>
+    <system:String x:Key="FilterSources">المصادر المشعة</system:String>
+    <system:String x:Key="FilterLocations">المواقع والمخازن</system:String>
+    <system:String x:Key="FilterUsers">حسابات المستخدمين</system:String>
+    <system:String x:Key="FilterRadioisotopes">النظائر المشعة</system:String>
+    <system:String x:Key="EntityTypeSource">مصدر مشع</system:String>
+    <system:String x:Key="EntityTypeLocation">موقع / مخزن</system:String>
+    <system:String x:Key="EntityTypeUser">مستخدم</system:String>
+    <system:String x:Key="EntityTypeRadioisotope">نظير مشع</system:String>
+    <system:String x:Key="BtnConfirm">تأكيد</system:String>
 </ResourceDictionary>
+
 
