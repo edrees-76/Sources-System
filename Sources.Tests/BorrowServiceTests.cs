@@ -923,4 +923,146 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
     }
 
     #endregion
+
+    #region Leak Test Validation Tests (Round 79)
+
+    [Fact]
+    public void CreateRequest_WhenLatestLeakTestIsFail_ShouldRejectRequestWithExactErrorMessage()
+    {
+        // Arrange
+        var source = CreateAndSaveSource("SRC-LEAK-FAIL", status: "Storage");
+        using (var db = _fixture.CreateContext())
+        {
+            var leakTest = new LeakTestRecord
+            {
+                SourceId = source.Id,
+                TestDate = DateTime.Today.AddDays(-2),
+                Result = "Fail",
+                NextDueDate = DateTime.Today.AddMonths(6),
+                Notes = "تسرب إشعاعي مكتشف في الفحص"
+            };
+            db.LeakTestRecords.Add(leakTest);
+            db.SaveChanges();
+        }
+
+        var request = new BorrowRequest
+        {
+            SourceId = source.Id,
+            BorrowerName = "م. خالد سعيد",
+            Purpose = "استخدام في المختبر",
+            ExpectedReturnDate = DateTime.Now.AddDays(5)
+        };
+
+        // Act
+        var result = _sut.CreateRequest(request);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("لا يمكن استعارة هذا المصدر لأن نتيجة آخر فحص تسرب له كانت راسبة (تسرب إشعاعي مكتشف). يجب إجراء فحص جديد بنتيجة ناجحة أولاً.", result.Message);
+
+        using var verifyDb = _fixture.CreateContext();
+        var unchangedSource = verifyDb.Sources.Find(source.Id);
+        Assert.NotNull(unchangedSource);
+        Assert.Equal("Storage", unchangedSource.Status);
+    }
+
+    [Fact]
+    public void CreateRequest_WhenLatestLeakTestIsPass_ShouldSucceed()
+    {
+        // Arrange
+        var source = CreateAndSaveSource("SRC-LEAK-PASS", status: "Storage");
+        using (var db = _fixture.CreateContext())
+        {
+            var leakTest = new LeakTestRecord
+            {
+                SourceId = source.Id,
+                TestDate = DateTime.Today.AddDays(-5),
+                Result = "Pass",
+                NextDueDate = DateTime.Today.AddMonths(6)
+            };
+            db.LeakTestRecords.Add(leakTest);
+            db.SaveChanges();
+        }
+
+        var request = new BorrowRequest
+        {
+            SourceId = source.Id,
+            BorrowerName = "م. سالم أحمد",
+            Purpose = "استخدام في المعايرة",
+            ExpectedReturnDate = DateTime.Now.AddDays(5)
+        };
+
+        // Act
+        var result = _sut.CreateRequest(request);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.Contains("تم تسجيل الاستعارة بنجاح", result.Message);
+    }
+
+    [Fact]
+    public void CreateRequest_WhenNoLeakTestExists_ShouldSucceedWithoutBlocking()
+    {
+        // Arrange
+        var source = CreateAndSaveSource("SRC-NO-LEAK", status: "Storage");
+        var request = new BorrowRequest
+        {
+            SourceId = source.Id,
+            BorrowerName = "د. أنور حسن",
+            Purpose = "استخدام في التدريس",
+            ExpectedReturnDate = DateTime.Now.AddDays(3)
+        };
+
+        // Act
+        var result = _sut.CreateRequest(request);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.Contains("تم تسجيل الاستعارة بنجاح", result.Message);
+    }
+
+    [Fact]
+    public void CreateRequest_WhenPreviousTestFailed_ButLatestTestPassed_ShouldSucceed()
+    {
+        // Arrange
+        var source = CreateAndSaveSource("SRC-LEAK-RECOVERED", status: "Storage");
+        using (var db = _fixture.CreateContext())
+        {
+            // Old test: Fail
+            var oldTest = new LeakTestRecord
+            {
+                SourceId = source.Id,
+                TestDate = DateTime.Today.AddDays(-30),
+                Result = "Fail",
+                NextDueDate = DateTime.Today.AddMonths(6)
+            };
+            // Latest test: Pass
+            var newTest = new LeakTestRecord
+            {
+                SourceId = source.Id,
+                TestDate = DateTime.Today.AddDays(-2),
+                Result = "Pass",
+                NextDueDate = DateTime.Today.AddMonths(6)
+            };
+            db.LeakTestRecords.AddRange(oldTest, newTest);
+            db.SaveChanges();
+        }
+
+        var request = new BorrowRequest
+        {
+            SourceId = source.Id,
+            BorrowerName = "م. علي حسن",
+            Purpose = "استخدام بعد إعادة الفحص",
+            ExpectedReturnDate = DateTime.Now.AddDays(7)
+        };
+
+        // Act
+        var result = _sut.CreateRequest(request);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.Contains("تم تسجيل الاستعارة بنجاح", result.Message);
+    }
+
+    #endregion
 }

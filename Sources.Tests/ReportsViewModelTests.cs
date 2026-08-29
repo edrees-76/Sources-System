@@ -280,5 +280,76 @@ public class ReportsViewModelTests
         Assert.Equal(2, vm.LowActivityData[1].RowNumber);
     }
 
+    [Fact]
+    public void LoadReport_FailedLeakTestsReport_PopulatesOnlyActiveSourcesWithLatestFailResult()
+    {
+        // Arrange
+        var srcPass = new Source
+        {
+            Id = Guid.NewGuid(),
+            SourceCode = "SRC-PASS",
+            Status = "Storage",
+            IsDeleted = false,
+            LeakTestRecords = new List<LeakTestRecord>
+            {
+                new LeakTestRecord { Result = "Pass", TestDate = DateTime.Today.AddDays(-5) }
+            }
+        };
+
+        var srcFail = new Source
+        {
+            Id = Guid.NewGuid(),
+            SourceCode = "SRC-FAIL",
+            Status = "InUse",
+            IsDeleted = false,
+            LeakTestRecords = new List<LeakTestRecord>
+            {
+                new LeakTestRecord { Result = "Fail", TestDate = DateTime.Today.AddDays(-2), Notes = "ملاحظات تسرب" }
+            }
+        };
+
+        var srcRecovered = new Source
+        {
+            Id = Guid.NewGuid(),
+            SourceCode = "SRC-REC",
+            Status = "Storage",
+            IsDeleted = false,
+            LeakTestRecords = new List<LeakTestRecord>
+            {
+                new LeakTestRecord { Result = "Fail", TestDate = DateTime.Today.AddDays(-30) },
+                new LeakTestRecord { Result = "Pass", TestDate = DateTime.Today.AddDays(-1) }
+            }
+        };
+
+        var srcDeletedFail = new Source
+        {
+            Id = Guid.NewGuid(),
+            SourceCode = "SRC-DEL-FAIL",
+            Status = "Storage",
+            IsDeleted = true,
+            LeakTestRecords = new List<LeakTestRecord>
+            {
+                new LeakTestRecord { Result = "Fail", TestDate = DateTime.Today.AddDays(-2) }
+            }
+        };
+
+        var allSources = new List<Source> { srcPass, srcFail, srcRecovered, srcDeletedFail };
+        _mockSourceService.Setup(s => s.GetAllSources()).Returns(allSources);
+
+        var vm = new ReportsViewModel(_mockSourceService.Object, _mockBorrowService.Object, _mockReportingService.Object, _mockSettingsService.Object);
+
+        // Act
+        vm.SelectReportCommand.Execute("FailedLeakTestsReport");
+
+        // Assert
+        Assert.Single(vm.FailedLeakTestsData);
+        var row = vm.FailedLeakTestsData[0];
+        Assert.Equal(1, row.RowNumber);
+        Assert.Equal("SRC-FAIL", row.SourceCode);
+        Assert.Equal("InUse", row.Status);
+        Assert.Equal("ملاحظات تسرب", row.TestNotes);
+        Assert.Equal(DateTime.Today.AddDays(-2), row.FailedTestDate);
+    }
+
     #endregion
 }

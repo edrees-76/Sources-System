@@ -538,6 +538,10 @@
     <system:String x:Key="BtnActivityReport">☢ تقرير النشاط</system:String>
     <system:String x:Key="BtnLowActivityReport">⚠ المصادر المنخفضة</system:String>
     <system:String x:Key="BtnCalibrationReport">📅 تنبيهات انخفاض النشاط</system:String>
+    <system:String x:Key="BtnFailedLeakTestsReport">☣ فحوصات التسرب الفاشلة</system:String>
+    <system:String x:Key="ReportFailedLeakTestsTitle">تقرير المصادر الفاشلة في فحص التسرب</system:String>
+    <system:String x:Key="ColFailedTestDate">تاريخ الفحص الفاشل</system:String>
+    <system:String x:Key="ColTestNotes">ملاحظات الفحص</system:String>
     <system:String x:Key="GeneralReportSectionInventory">1. تقرير جرد المصادر والمواد المشعة</system:String>
     <system:String x:Key="GeneralReportSectionBorrowing">2. سجل الاستعارات</system:String>
     <system:String x:Key="GeneralReportSectionLowActivity">3. تقرير المصادر منخفضة النشاط الإشعاعي</system:String>

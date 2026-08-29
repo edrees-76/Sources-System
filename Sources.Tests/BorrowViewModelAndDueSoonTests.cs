@@ -614,4 +614,88 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
     }
 
     #endregion
+
+    #region 7. فحص استبعاد المصادر الفاشلة في فحص التسرب من قائمة الاستعارة المتاحة
+
+    [Fact]
+    public void LoadAvailableSources_ShouldExcludeSourcesWithFailedLatestLeakTest()
+    {
+        // Arrange
+        using var db = _fixture.CreateContext();
+        var iso = TestDataBuilder.CreateRadioisotope("Cs-137", "Cesium-137");
+        var unit = TestDataBuilder.CreateActivityUnit("MBq", "MBq");
+        var loc = TestDataBuilder.CreateLocation("مخزن رئيسي");
+        db.Radioisotopes.Add(iso);
+        db.ActivityUnits.Add(unit);
+        db.Locations.Add(loc);
+        db.SaveChanges();
+
+        // 1. مصدر صالح بدون فحص تسرب (مخزن)
+        var srcValid1 = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-VALID-NO-TEST", 50.0, DateTime.Today, "Storage");
+        // 2. مصدر صالح بآخر فحص ناجح (مخزن)
+        var srcValid2 = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-VALID-PASSED", 50.0, DateTime.Today, "Storage");
+        // 3. مصدر فاشل بآخر فحص راسب (مخزن)
+        var srcFailed = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-FAILED-LEAK", 50.0, DateTime.Today, "Storage");
+        // 4. مصدر كان فاشلاً سابقاً ولكن أحدث فحص له ناجح (مخزن)
+        var srcRecovered = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-RECOVERED", 50.0, DateTime.Today, "Storage");
+
+        db.Sources.AddRange(srcValid1, srcValid2, srcFailed, srcRecovered);
+        db.SaveChanges();
+
+        // سجلات الفحص
+        var testPass = new LeakTestRecord
+        {
+            SourceId = srcValid2.Id,
+            TestDate = DateTime.Today.AddDays(-5),
+            Result = "Pass",
+            NextDueDate = DateTime.Today.AddMonths(6)
+        };
+        var testFail = new LeakTestRecord
+        {
+            SourceId = srcFailed.Id,
+            TestDate = DateTime.Today.AddDays(-2),
+            Result = "Fail",
+            NextDueDate = DateTime.Today.AddMonths(6)
+        };
+        var oldTestFail = new LeakTestRecord
+        {
+            SourceId = srcRecovered.Id,
+            TestDate = DateTime.Today.AddDays(-20),
+            Result = "Fail",
+            NextDueDate = DateTime.Today.AddMonths(6)
+        };
+        var newTestPass = new LeakTestRecord
+        {
+            SourceId = srcRecovered.Id,
+            TestDate = DateTime.Today.AddDays(-1),
+            Result = "Pass",
+            NextDueDate = DateTime.Today.AddMonths(6)
+        };
+
+        db.LeakTestRecords.AddRange(testPass, testFail, oldTestFail, newTestPass);
+        db.SaveChanges();
+
+        var mockSourceService = new Mock<ISourceService>();
+        var mockReportingService = new Mock<IReportingService>();
+
+        var vm = new BorrowViewModel(
+            _borrowService,
+            mockSourceService.Object,
+            _fakeUserService,
+            mockReportingService.Object,
+            _fixture.ContextFactory);
+
+        // Act
+        vm.LoadAvailableSources();
+
+        // Assert
+        var availableCodes = vm.AvailableSources.Select(s => s.SourceCode).ToList();
+
+        Assert.Contains("SRC-VALID-NO-TEST", availableCodes);
+        Assert.Contains("SRC-VALID-PASSED", availableCodes);
+        Assert.Contains("SRC-RECOVERED", availableCodes);
+        Assert.DoesNotContain("SRC-FAILED-LEAK", availableCodes);
+    }
+
+    #endregion
 }

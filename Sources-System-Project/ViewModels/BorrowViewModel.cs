@@ -299,7 +299,7 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
     {
         if (_dbFactory == null) return;
         using var db = _dbFactory.CreateDbContext();
-        var sources = db.Sources
+        var candidateSources = db.Sources
             .AsNoTracking()
             .Include(s => s.SourceIsotopes)
                 .ThenInclude(si => si.Radioisotope)
@@ -311,6 +311,21 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
             .Where(s => !s.IsDeleted && s.Status == "Storage")
             .OrderBy(s => s.SourceCode)
             .ToList();
+
+        var sourceIds = candidateSources.Select(s => s.Id).ToList();
+        var allTests = db.LeakTestRecords
+            .AsNoTracking()
+            .Where(r => sourceIds.Contains(r.SourceId))
+            .ToList();
+
+        var failedSourceIds = allTests
+            .GroupBy(r => r.SourceId)
+            .Select(g => g.OrderByDescending(r => r.TestDate).ThenByDescending(r => r.CreatedAt).FirstOrDefault())
+            .Where(r => r != null && r.Result == "Fail")
+            .Select(r => r!.SourceId)
+            .ToHashSet();
+
+        var sources = candidateSources.Where(s => !failedSourceIds.Contains(s.Id)).ToList();
 
         AvailableSources.Clear();
         foreach (var s in sources) AvailableSources.Add(s);

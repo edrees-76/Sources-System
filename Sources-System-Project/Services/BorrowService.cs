@@ -116,6 +116,18 @@ public class BorrowService : IBorrowService
             if (source == null) return (false, "المصدر غير موجود.");
             if (source.Status != "Storage") return (false, "المصدر غير متاح للاستعارة حالياً. يجب أن يكون في المخزن.");
             
+            // التحقق من نتيجة آخر فحص تسرب للمصدر
+            var latestLeakTest = db.LeakTestRecords
+                .Where(r => r.SourceId == request.SourceId)
+                .OrderByDescending(r => r.TestDate)
+                .ThenByDescending(r => r.CreatedAt)
+                .FirstOrDefault();
+
+            if (latestLeakTest != null && latestLeakTest.Result == "Fail")
+            {
+                return (false, "لا يمكن استعارة هذا المصدر لأن نتيجة آخر فحص تسرب له كانت راسبة (تسرب إشعاعي مكتشف). يجب إجراء فحص جديد بنتيجة ناجحة أولاً.");
+            }
+
             // التحقق من عدم وجود استعارة نشطة لنفس المصدر
             var existingActive = db.BorrowRequests.Any(b => b.SourceId == request.SourceId && 
                 (b.Status == "Delivered" || b.Status == "Overdue"));

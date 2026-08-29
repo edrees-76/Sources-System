@@ -193,7 +193,7 @@
                             </Button>
                             
                             <!-- تصفية الحالة -->
-                            <ComboBox SelectedValue="{Binding StatusFilter}" Width="160" Margin="0,0,16,0"
+                            <ComboBox SelectedValue="{Binding StatusFilter}" SelectedValuePath="Tag" Width="160" Margin="0,0,16,0"
                                       Style="{DynamicResource FormComboBox}"
                                       materialDesign:HintAssist.Hint="{DynamicResource FilterAllStatuses}" DockPanel.Dock="Right">
                                 <ComboBoxItem Content="{DynamicResource FilterAllStatuses}" Tag="All" IsSelected="True"/>

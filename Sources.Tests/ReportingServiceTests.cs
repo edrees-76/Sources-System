@@ -763,5 +763,75 @@ public class ReportingServiceTests : IDisposable
         Assert.True(ws.Name.Length <= 31);
     }
 
+    [Fact]
+    public async Task GenerateFailedLeakTestsReportExcelAsync_GeneratesValidExcelFile()
+    {
+        // Arrange
+        var source = new Source
+        {
+            SourceCode = "SRC-FAIL-01",
+            Status = "InUse",
+            Radioisotope = new Radioisotope { Symbol = "Cs-137" },
+            Location = new Location { LocationName = "مستودع 1" }
+        };
+        var records = new List<LeakTestRecord>
+        {
+            new()
+            {
+                Source = source,
+                TestDate = DateTime.Today.AddDays(-3),
+                Result = "Fail",
+                Notes = "تسرب إشعاعي ملحوظ"
+            }
+        };
+        var filePath = GetTempFilePath("xlsx");
+
+        // Act
+        await _sut.GenerateFailedLeakTestsReportExcelAsync(records, filePath);
+
+        // Assert
+        Assert.True(File.Exists(filePath));
+        var fileInfo = new FileInfo(filePath);
+        Assert.True(fileInfo.Length > 0);
+
+        using var wb = new XLWorkbook(filePath);
+        Assert.Single(wb.Worksheets);
+        var ws = wb.Worksheets.First();
+        Assert.Equal("SRC-FAIL-01", ws.Cell(5, 2).GetString());
+        Assert.Equal("تسرب إشعاعي ملحوظ", ws.Cell(5, 7).GetString());
+    }
+
+    [Fact]
+    public async Task GenerateFailedLeakTestsReportPdfAsync_GeneratesValidPdfFile()
+    {
+        // Arrange
+        var source = new Source
+        {
+            SourceCode = "SRC-FAIL-02",
+            Status = "Storage",
+            Radioisotope = new Radioisotope { Symbol = "Co-60" },
+            Location = new Location { LocationName = "مخزن 2" }
+        };
+        var records = new List<LeakTestRecord>
+        {
+            new()
+            {
+                Source = source,
+                TestDate = DateTime.Today.AddDays(-1),
+                Result = "Fail",
+                Notes = "فحص دوري فاشل"
+            }
+        };
+        var filePath = GetTempFilePath("pdf");
+
+        // Act
+        await _sut.GenerateFailedLeakTestsReportPdfAsync(records, filePath);
+
+        // Assert
+        Assert.True(File.Exists(filePath));
+        var fileInfo = new FileInfo(filePath);
+        Assert.True(fileInfo.Length > 0);
+    }
+
     #endregion
 }

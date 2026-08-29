@@ -1221,6 +1221,145 @@ namespace Sources.Services
                 }).GeneratePdf(filePath);
             });
         }
+
+        public async Task GenerateFailedLeakTestsReportExcelAsync(IEnumerable<LeakTestRecord> records, string filePath, string? reportTitle = null)
+        {
+            await Task.Run(() =>
+            {
+                using var workbook = new XLWorkbook();
+                var title = string.IsNullOrWhiteSpace(reportTitle) ? "المصادر الفاشلة في فحص التسرب" : reportTitle;
+                var sheetName = SanitizeSheetName(title, "فحوصات فاشلة");
+                var ws = workbook.Worksheets.Add(sheetName);
+                ws.RightToLeft = true;
+
+                // العنوان الرئيسي للتقرير
+                ws.Cell(1, 1).Value = "منظومة مصادر — " + (string.IsNullOrWhiteSpace(reportTitle) ? "تقرير المصادر الفاشلة في فحص التسرب" : reportTitle);
+                ws.Range(1, 1, 1, 7).Merge().Style
+                    .Font.SetBold().Font.SetFontSize(14).Font.SetFontColor(XLColor.FromHtml("#DC2626"))
+                    .Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+
+                ws.Cell(2, 1).Value = $"تاريخ التصدير: {DateTime.Now:yyyy/MM/dd HH:mm}";
+                ws.Range(2, 1, 2, 7).Merge().Style
+                    .Font.SetFontSize(10).Font.SetFontColor(XLColor.Gray)
+                    .Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+
+                string[] headers = { "#", "كود المصدر", "النظير", "الموقع", "تاريخ الفحص الفاشل", "حالة المصدر", "ملاحظات الفحص" };
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    var cell = ws.Cell(4, i + 1);
+                    cell.Value = headers[i];
+                    cell.Style.Font.SetBold().Font.SetFontColor(XLColor.White);
+                    cell.Style.Fill.SetBackgroundColor(XLColor.FromHtml("#DC2626"));
+                    cell.Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+                }
+
+                int row = 5;
+                int index = 1;
+                foreach (var r in records ?? Enumerable.Empty<LeakTestRecord>())
+                {
+                    ws.Cell(row, 1).Value = index++;
+                    ws.Cell(row, 2).Value = r.Source?.SourceCode ?? "-";
+                    ws.Cell(row, 3).Value = r.Source?.DisplayIsotopes ?? "-";
+                    ws.Cell(row, 4).Value = r.Source?.Location?.LocationName ?? "-";
+                    ws.Cell(row, 5).Value = r.TestDate.ToString("yyyy/MM/dd");
+                    ws.Cell(row, 6).Value = r.Source?.ArabicStatus ?? "-";
+                    ws.Cell(row, 7).Value = r.Notes ?? "-";
+
+                    for (int c = 1; c <= 7; c++)
+                    {
+                        ws.Cell(row, c).Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+                        ws.Cell(row, c).Style.Border.SetOutsideBorder(XLBorderStyleValues.Thin).Border.SetOutsideBorderColor(XLColor.LightGray);
+                        if (row % 2 == 0)
+                        {
+                            ws.Cell(row, c).Style.Fill.SetBackgroundColor(XLColor.FromHtml("#FEF2F2"));
+                        }
+                    }
+                    row++;
+                }
+
+                ws.Columns().AdjustToContents();
+                workbook.SaveAs(filePath);
+            });
+        }
+
+        public async Task GenerateFailedLeakTestsReportPdfAsync(IEnumerable<LeakTestRecord> records, string filePath, string? reportTitle = null)
+        {
+            await Task.Run(() =>
+            {
+                var list = records?.ToList() ?? new List<LeakTestRecord>();
+                var noDataText = GetNoDataText();
+                var title = string.IsNullOrWhiteSpace(reportTitle) ? "تقرير المصادر الفاشلة في فحص التسرب" : reportTitle;
+
+                Document.Create(container =>
+                {
+                    container.Page(page =>
+                    {
+                        page.Size(PageSizes.A4.Landscape());
+                        page.Margin(1.5f, Unit.Centimetre);
+                        page.PageColor(Colors.White);
+                        page.DefaultTextStyle(x => x.FontFamily("Segoe UI").FontSize(9.5f));
+                        page.ContentFromRightToLeft();
+
+                        page.Header().Element(c => ComposeHeader(c, title));
+
+                        page.Content().PaddingVertical(0.8f, Unit.Centimetre).Column(column =>
+                        {
+                            column.Item().Table(table =>
+                            {
+                                table.ColumnsDefinition(columns =>
+                                {
+                                    columns.RelativeColumn(0.7f);  // #
+                                    columns.RelativeColumn(2.0f);  // Source Code
+                                    columns.RelativeColumn(1.8f);  // Isotope
+                                    columns.RelativeColumn(2.5f);  // Location
+                                    columns.RelativeColumn(2.2f);  // Failed Test Date
+                                    columns.RelativeColumn(1.8f);  // Source Status
+                                    columns.RelativeColumn(3.5f);  // Notes
+                                });
+
+                                table.Header(header =>
+                                {
+                                    header.Cell().Element(HeaderStyle).Text("#");
+                                    header.Cell().Element(HeaderStyle).Text("كود المصدر");
+                                    header.Cell().Element(HeaderStyle).Text("النظير");
+                                    header.Cell().Element(HeaderStyle).Text("الموقع");
+                                    header.Cell().Element(HeaderStyle).Text("تاريخ الفحص الفاشل");
+                                    header.Cell().Element(HeaderStyle).Text("حالة المصدر");
+                                    header.Cell().Element(HeaderStyle).Text("ملاحظات الفحص");
+
+                                    static IContainer HeaderStyle(IContainer c) => c.Background(Colors.Red.Medium).PaddingVertical(6).AlignCenter().DefaultTextStyle(x => x.SemiBold().FontColor(Colors.White));
+                                });
+
+                                if (!list.Any())
+                                {
+                                    table.Cell().ColumnSpan(7).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(noDataText).FontSize(11).FontColor(Colors.Grey.Darken1);
+                                }
+                                else
+                                {
+                                    int i = 1;
+                                    foreach (var r in list)
+                                    {
+                                        var bg = i % 2 == 0 ? Colors.White : Colors.Red.Lighten5;
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(i.ToString());
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(r.Source?.SourceCode ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(r.Source?.DisplayIsotopes ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(r.Source?.Location?.LocationName ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(r.TestDate.ToString("yyyy/MM/dd"));
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(r.Source?.ArabicStatus ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(r.Notes ?? "-");
+                                        i++;
+                                    }
+                                }
+
+                                static IContainer CellStyle(IContainer c, string bg) => c.Background(bg).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(4).AlignCenter();
+                            });
+                        });
+
+                        page.Footer().Element(ComposeFooter);
+                    });
+                }).GeneratePdf(filePath);
+            });
+        }
     }
 }
 

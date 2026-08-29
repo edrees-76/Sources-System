@@ -1,5 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.EntityFrameworkCore;
+using Sources.Data;
 using Sources.Models;
 using Sources.Services;
 using Sources.Helpers;
@@ -80,12 +82,29 @@ public class ReportLowActivityAlertRow
     public string DoseRateTooltip => Source.DoseRateTooltip;
 }
 
+public class ReportFailedLeakTestRow
+{
+    public int RowNumber { get; set; }
+    public Source Source { get; set; } = null!;
+    public LeakTestRecord LeakTestRecord { get; set; } = null!;
+    public string SourceCode => Source.SourceCode;
+    public string DisplayIsotopes => Source.DisplayIsotopes;
+    public Location? Location => Source.Location;
+    public DateTime FailedTestDate => LeakTestRecord.TestDate;
+    public string ArabicStatus => Source.ArabicStatus;
+    public string Status => Source.Status;
+    public string? TestNotes => LeakTestRecord.Notes;
+    public string DisplayDoseRate => Source.DisplayDoseRate;
+    public string DoseRateTooltip => Source.DoseRateTooltip;
+}
+
 public partial class ReportsViewModel : ObservableObject
 {
     private readonly ISourceService _sourceService;
     private readonly IBorrowService _borrowService;
     private readonly IReportingService _reportingService;
     private readonly ISystemSettingsService _settingsService;
+    private readonly IDbContextFactory<AppDbContext>? _dbFactory;
 
     [ObservableProperty] private string _selectedReport = "InventoryReport";
     [ObservableProperty] private ObservableCollection<ReportInventoryRow> _inventoryData = new();
@@ -94,17 +113,20 @@ public partial class ReportsViewModel : ObservableObject
     [ObservableProperty] private ObservableCollection<ReportLowActivityRow> _lowActivityData = new();
     [ObservableProperty] private double _lowActivityThreshold = 10;
     [ObservableProperty] private ObservableCollection<ReportLowActivityAlertRow> _lowActivityAlertData = new();
+    [ObservableProperty] private ObservableCollection<ReportFailedLeakTestRow> _failedLeakTestsData = new();
 
     public ReportsViewModel(
         ISourceService sourceService, 
         IBorrowService borrowService, 
         IReportingService reportingService,
-        ISystemSettingsService settingsService)
+        ISystemSettingsService settingsService,
+        IDbContextFactory<AppDbContext>? dbFactory = null)
     {
         _sourceService = sourceService;
         _borrowService = borrowService;
         _reportingService = reportingService;
         _settingsService = settingsService;
+        _dbFactory = dbFactory;
         
         // جلب عتبة النشاط المنخفض من الإعدادات
         LowActivityThreshold = _settingsService.GetSetting("LowActivityThresholdPercent", 10.0);
@@ -146,6 +168,9 @@ public partial class ReportsViewModel : ObservableObject
                 LowActivityAlertData = new ObservableCollection<ReportLowActivityAlertRow>(
                     alertSources.Select((s, index) => new ReportLowActivityAlertRow { RowNumber = index + 1, Source = s }));
                 break;
+            case "FailedLeakTestsReport":
+                FailedLeakTestsData = new ObservableCollection<ReportFailedLeakTestRow>(GetFailedLeakTestsRows());
+                break;
             case "GeneralReport":
                 InventoryData = new ObservableCollection<ReportInventoryRow>(
                     allSources.OrderBy(s => s.SourceCode).Select((s, index) => new ReportInventoryRow { RowNumber = index + 1, Source = s }));
@@ -157,8 +182,82 @@ public partial class ReportsViewModel : ObservableObject
                     (_sourceService.GetLowActivitySources(LowActivityThreshold) ?? new List<Source>()).Select((s, index) => new ReportLowActivityRow { RowNumber = index + 1, Source = s }));
                 LowActivityAlertData = new ObservableCollection<ReportLowActivityAlertRow>(
                     GetLowActivityAlertSources(allSources).Select((s, index) => new ReportLowActivityAlertRow { RowNumber = index + 1, Source = s }));
+                FailedLeakTestsData = new ObservableCollection<ReportFailedLeakTestRow>(GetFailedLeakTestsRows());
                 break;
         }
+    }
+
+    private List<ReportFailedLeakTestRow> GetFailedLeakTestsRows()
+    {
+        if (_dbFactory != null)
+        {
+            using var db = _dbFactory.CreateDbContext();
+            var activeSources = db.Sources
+                .AsNoTracking()
+                .Include(s => s.Location)
+                .Include(s => s.Radioisotope)
+                .Include(s => s.SourceIsotopes).ThenInclude(si => si.Radioisotope)
+                .Include(s => s.SourceIsotopes).ThenInclude(si => si.ActivityUnit)
+                .Include(s => s.InitialActivityUnit)
+                .Include(s => s.CurrentActivityUnit)
+                .Where(s => !s.IsDeleted)
+                .OrderBy(s => s.SourceCode)
+                .ToList();
+
+            var sourceIds = activeSources.Select(s => s.Id).ToList();
+            var allTests = db.LeakTestRecords
+                .AsNoTracking()
+                .Where(r => sourceIds.Contains(r.SourceId))
+                .ToList();
+
+            var latestTestsBySource = allTests
+                .GroupBy(r => r.SourceId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.OrderByDescending(r => r.TestDate).ThenByDescending(r => r.CreatedAt).FirstOrDefault()
+                );
+
+            var rows = new List<ReportFailedLeakTestRow>();
+            int index = 1;
+            foreach (var s in activeSources)
+            {
+                if (latestTestsBySource.TryGetValue(s.Id, out var latest) && latest != null && latest.Result == "Fail")
+                {
+                    latest.Source = s;
+                    rows.Add(new ReportFailedLeakTestRow
+                    {
+                        RowNumber = index++,
+                        Source = s,
+                        LeakTestRecord = latest
+                    });
+                }
+            }
+            return rows;
+        }
+
+        // Fallback using _sourceService when dbFactory is unavailable (e.g. mocked unit tests)
+        var allSourcesFallback = _sourceService.GetAllSources() ?? new List<Source>();
+        var activeSourcesFallback = allSourcesFallback.Where(s => !s.IsDeleted).OrderBy(s => s.SourceCode).ToList();
+        var fallbackRows = new List<ReportFailedLeakTestRow>();
+        int fallbackIndex = 1;
+        foreach (var s in activeSourcesFallback)
+        {
+            var latest = s.LeakTestRecords?
+                .OrderByDescending(r => r.TestDate)
+                .ThenByDescending(r => r.CreatedAt)
+                .FirstOrDefault();
+            if (latest != null && latest.Result == "Fail")
+            {
+                latest.Source = s;
+                fallbackRows.Add(new ReportFailedLeakTestRow
+                {
+                    RowNumber = fallbackIndex++,
+                    Source = s,
+                    LeakTestRecord = latest
+                });
+            }
+        }
+        return fallbackRows;
     }
 
     private static List<Source> GetLowActivityAlertSources(List<Source> allSources)
@@ -198,6 +297,10 @@ public partial class ReportsViewModel : ObservableObject
                 if (SelectedReport == "LowActivityAlertReport")
                 {
                     await _reportingService.GenerateLowActivityAlertReportPdfAsync(LowActivityAlertData.Select(r => r.Source), sfd.FileName);
+                }
+                else if (SelectedReport == "FailedLeakTestsReport")
+                {
+                    await _reportingService.GenerateFailedLeakTestsReportPdfAsync(FailedLeakTestsData.Select(r => r.LeakTestRecord), sfd.FileName);
                 }
                 else if (SelectedReport == "GeneralReport")
                 {
@@ -250,6 +353,10 @@ public partial class ReportsViewModel : ObservableObject
                 if (SelectedReport == "LowActivityAlertReport")
                 {
                     await _reportingService.GenerateLowActivityAlertReportExcelAsync(LowActivityAlertData.Select(r => r.Source), sfd.FileName);
+                }
+                else if (SelectedReport == "FailedLeakTestsReport")
+                {
+                    await _reportingService.GenerateFailedLeakTestsReportExcelAsync(FailedLeakTestsData.Select(r => r.LeakTestRecord), sfd.FileName);
                 }
                 else if (SelectedReport == "GeneralReport")
                 {

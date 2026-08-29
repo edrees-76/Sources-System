@@ -141,6 +141,23 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+
+        <Style x:Key="FailedLeakTestsReportTabBtn" TargetType="Button" BasedOn="{StaticResource ReportTabButtonBase}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SelectedReport}" Value="FailedLeakTestsReport">
+                    <Setter Property="Background" Value="{DynamicResource DataGridRowSelected}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource DangerBrush}"/>
+                    <Setter Property="BorderThickness" Value="1.5"/>
+                    <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.12" Color="{StaticResource DangerColor}"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
 
     <Grid Margin="24">
@@ -165,6 +182,8 @@
                             Command="{Binding SelectReportCommand}" CommandParameter="LowActivityReport"/>
                     <Button Content="{DynamicResource BtnCalibrationReport}" Style="{StaticResource LowActivityAlertReportTabBtn}"
                             Command="{Binding SelectReportCommand}" CommandParameter="LowActivityAlertReport"/>
+                    <Button Content="{DynamicResource BtnFailedLeakTestsReport}" Style="{StaticResource FailedLeakTestsReportTabBtn}"
+                            Command="{Binding SelectReportCommand}" CommandParameter="FailedLeakTestsReport"/>
                 </WrapPanel>
             </StackPanel>
             
@@ -670,6 +689,48 @@
                         </DataGrid.Columns>
                     </DataGrid>
                     <Border Visibility="{Binding LowActivityAlertData.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}"
+                            Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,36,0,0" IsHitTestVisible="False">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="InformationOutline" Width="18" Height="18" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="{DynamicResource LabelNoDataAvailable}" FontSize="13" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- تقرير فحوصات التسرب الفاشلة -->
+                <Grid Visibility="{Binding SelectedReport, Converter={StaticResource EqualityToVis}, ConverterParameter=FailedLeakTestsReport}">
+                    <DataGrid ItemsSource="{Binding FailedLeakTestsData}" Style="{StaticResource ModernDataGrid}" MinHeight="100">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTemplateColumn Header="{DynamicResource ColCode}" Width="Auto" MinWidth="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding SourceCode}"
+                                                   FontWeight="Bold"
+                                                   TextAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"
+                                                   Cursor="Hand"
+                                                   Foreground="{DynamicResource PrimaryBrush}"
+                                                   TextDecorations="Underline"
+                                                   ToolTip="{DynamicResource ToolTipViewDetails}">
+                                            <TextBlock.InputBindings>
+                                                <MouseBinding Gesture="LeftClick"
+                                                              Command="{Binding DataContext.ViewSourceDetailsCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                                              CommandParameter="{Binding Source}"/>
+                                            </TextBlock.InputBindings>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColFailedTestDate}" Binding="{Binding FailedTestDate, StringFormat=d}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="Auto" MinWidth="95" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColTestNotes}" Binding="{Binding TestNotes}" Width="*" MinWidth="150" ElementStyle="{StaticResource CenterAligned}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Border Visibility="{Binding FailedLeakTestsData.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}"
                             Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,36,0,0" IsHitTestVisible="False">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="InformationOutline" Width="18" Height="18" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
