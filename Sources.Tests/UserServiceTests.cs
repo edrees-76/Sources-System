@@ -528,10 +528,14 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     }
 
     [Fact]
-    public void DeleteUser_OnNormalUser_PerformsSoftDeleteSuccessfully()
+    public void DeleteUser_OnNormalUser_PerformsSoftDeleteSuccessfully_AndRecordsAuditLog()
     {
         // Arrange
+        var admin = CreateTestUser(username: "admin_actor", password: "AdminPassword123");
         var user = CreateTestUser(username: "to_delete", password: "Pass");
+
+        // Login as admin
+        _userService.Login("admin_actor", "AdminPassword123");
 
         // Act
         var (success, message) = _userService.DeleteUser(user.Id);
@@ -545,11 +549,19 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
         var normalDbUser = context.Users.Find(user.Id);
         Assert.Null(normalDbUser);
 
-        // وباستخدام IgnoreQueryFilters يظهر مع IsDeleted = true و IsActive = false
+        // وباستخدام IgnoreQueryFilters يظهر مع IsDeleted = true و IsActive = false و DeletedAt و DeletedBy
         var dbUser = context.Users.IgnoreQueryFilters().FirstOrDefault(u => u.Id == user.Id)!;
         Assert.NotNull(dbUser);
         Assert.True(dbUser.IsDeleted);
         Assert.False(dbUser.IsActive);
+        Assert.NotNull(dbUser.DeletedAt);
+        Assert.Equal(admin.Id, dbUser.DeletedBy);
+
+        // التحقق من تسجيل العملية في سجل التدقيق
+        var auditLog = context.AuditLogs.FirstOrDefault(a => a.TableName == "Users" && a.RecordId == user.Id && a.Action == "Delete");
+        Assert.NotNull(auditLog);
+        Assert.Equal(admin.Id, auditLog!.UserId);
+        Assert.Contains(user.Username, auditLog.Details);
     }
 
     [Fact]

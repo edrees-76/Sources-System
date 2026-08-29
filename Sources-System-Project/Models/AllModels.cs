@@ -46,6 +46,10 @@ public class Radioisotope
     public string? Notes { get; set; }
     public string? EnglishNotes { get; set; }
     public bool IsDeleted { get; set; } = false;
+    public DateTime? DeletedAt { get; set; }
+    public Guid? DeletedBy { get; set; }
+    [ForeignKey(nameof(DeletedBy))]
+    public User? DeletedByUser { get; set; }
     public string? AddedBy { get; set; }
 
     [NotMapped]
@@ -577,6 +581,10 @@ public class Location
     [MaxLength(100)]
     public string? ResponsiblePerson { get; set; }
     public bool IsDeleted { get; set; } = false;
+    public DateTime? DeletedAt { get; set; }
+    public Guid? DeletedBy { get; set; }
+    [ForeignKey(nameof(DeletedBy))]
+    public User? DeletedByUser { get; set; }
     public string? AddedBy { get; set; }
 
     /// <summary>عدد المصادر المرتبطة حالياً بهذا الموقع</summary>
@@ -706,6 +714,10 @@ public class User
 
     public bool IsActive { get; set; } = true;
     public bool IsDeleted { get; set; } = false;
+    public DateTime? DeletedAt { get; set; }
+    public Guid? DeletedBy { get; set; }
+    [ForeignKey(nameof(DeletedBy))]
+    public User? DeletedByUser { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 

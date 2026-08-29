@@ -201,6 +201,12 @@ public class AppDbContext : DbContext
         try { cmd.CommandText = "ALTER TABLE Sources ADD COLUMN AddedBy TEXT;"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "ALTER TABLE Sources ADD COLUMN DeletedAt TEXT;"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "ALTER TABLE Sources ADD COLUMN DeletedBy TEXT;"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "ALTER TABLE Locations ADD COLUMN DeletedAt TEXT;"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "ALTER TABLE Locations ADD COLUMN DeletedBy TEXT;"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "ALTER TABLE Users ADD COLUMN DeletedAt TEXT;"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "ALTER TABLE Users ADD COLUMN DeletedBy TEXT;"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "ALTER TABLE Radioisotopes ADD COLUMN DeletedAt TEXT;"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "ALTER TABLE Radioisotopes ADD COLUMN DeletedBy TEXT;"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "ALTER TABLE Radioisotopes ADD COLUMN AddedBy TEXT;"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "ALTER TABLE Locations ADD COLUMN AddedBy TEXT;"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "ALTER TABLE BorrowRequests ADD COLUMN AddedBy TEXT;"; cmd.ExecuteNonQuery(); } catch { }
@@ -490,9 +496,25 @@ public class AppDbContext : DbContext
         // ─── Location relationships & Unique Index ───
         modelBuilder.Entity<Location>(entity =>
         {
+            entity.HasOne(l => l.DeletedByUser)
+                .WithMany()
+                .HasForeignKey(l => l.DeletedBy)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
             entity.HasIndex(l => l.LocationName)
                 .HasFilter("IsDeleted = 0")
                 .IsUnique();
+        });
+
+        // ─── Radioisotope relationships ───
+        modelBuilder.Entity<Radioisotope>(entity =>
+        {
+            entity.HasOne(r => r.DeletedByUser)
+                .WithMany()
+                .HasForeignKey(r => r.DeletedBy)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // ─── BorrowRequest relationships ───
@@ -534,6 +556,12 @@ public class AppDbContext : DbContext
                 .WithMany(r => r.Users)
                 .HasForeignKey(u => u.RoleId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(u => u.DeletedByUser)
+                .WithMany()
+                .HasForeignKey(u => u.DeletedBy)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
 
             entity.HasIndex(u => u.Username).IsUnique();
         });

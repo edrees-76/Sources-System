@@ -688,8 +688,12 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
     {
         // Arrange
         var id = Guid.NewGuid();
+        var role = TestDataBuilder.CreateRole();
+        var user = TestDataBuilder.CreateUser(username: "deleter_iso", roleId: role.Id);
         using (var db = _fixture.CreateContext())
         {
+            db.Roles.Add(role);
+            db.Users.Add(user);
             db.Radioisotopes.Add(new Radioisotope
             {
                 Id = id,
@@ -699,6 +703,8 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
             });
             db.SaveChanges();
         }
+
+        _fakeUserService.CurrentUser = user;
 
         // Act
         var (success, message) = _sut.Delete(id);
@@ -713,6 +719,8 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
             var rawItem = db.Radioisotopes.IgnoreQueryFilters().FirstOrDefault(r => r.Id == id);
             Assert.NotNull(rawItem);
             Assert.True(rawItem.IsDeleted);
+            Assert.NotNull(rawItem.DeletedAt);
+            Assert.Equal(user.Id, rawItem.DeletedBy);
 
             // Normal query should not find it
             var normalItem = db.Radioisotopes.FirstOrDefault(r => r.Id == id);

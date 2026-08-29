@@ -230,7 +230,21 @@ public class UserService : IUserService
 
         user.IsDeleted = true;
         user.IsActive = false;
+        user.DeletedAt = DateTime.Now;
+        var currentUserId = CurrentUser?.Id;
+        if (currentUserId.HasValue && db.Users.Any(u => u.Id == currentUserId.Value))
+        {
+            user.DeletedBy = currentUserId.Value;
+        }
+        else
+        {
+            user.DeletedBy = null;
+        }
         db.SaveChanges();
+
+        var auditService = _auditService ?? new AuditService(_dbFactory, this);
+        auditService.Log("Delete", "Users", userId, $"حذف مستخدم: {user.FullName} ({user.Username})");
+
         return (true, "تم حذف المستخدم بنجاح");
     }
 

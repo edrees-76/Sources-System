@@ -112,4 +112,33 @@ public static class TestDataBuilder
             CalibrationDate = calibrationDate ?? source.CalibrationDate
         };
     }
+
+    public static Role CreateRole(string roleName = "مدير النظام")
+    {
+        return new Role
+        {
+            Id = Guid.NewGuid(),
+            RoleName = roleName,
+            Description = "دور اختباري",
+            Permissions = "All"
+        };
+    }
+
+    public static User CreateUser(
+        string username = "testuser",
+        string fullName = "مستخدم تجريبي",
+        Guid? roleId = null,
+        bool isActive = true)
+    {
+        return new User
+        {
+            Id = Guid.NewGuid(),
+            Username = username,
+            FullName = fullName,
+            PasswordHash = "hash123",
+            RoleId = roleId ?? Guid.NewGuid(),
+            IsActive = isActive,
+            CreatedAt = DateTime.Now
+        };
+    }
 }

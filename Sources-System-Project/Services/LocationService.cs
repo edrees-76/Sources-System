@@ -101,6 +101,16 @@ public class LocationService : ILocationService
         if (item == null) return (false, "الموقع غير موجود");
         if (item.Sources.Any()) return (false, $"لا يمكن حذف الموقع \"{item.LocationName}\" لاحتوائه على مصادر مرتبطة به");
         item.IsDeleted = true;
+        item.DeletedAt = DateTime.Now;
+        var currentUserId = _userService.CurrentUser?.Id;
+        if (currentUserId.HasValue && db.Users.Any(u => u.Id == currentUserId.Value))
+        {
+            item.DeletedBy = currentUserId.Value;
+        }
+        else
+        {
+            item.DeletedBy = null;
+        }
         db.SaveChanges();
         _auditService.Log("Delete", "Locations", id, $"حذف موقع: {item.LocationName}");
         return (true, "تم حذف الموقع");

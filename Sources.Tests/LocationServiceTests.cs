@@ -846,4 +846,89 @@ public class LocationServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
     }
 
     #endregion
+
+    #region Delete Tests
+
+    [Fact]
+    public void Delete_WhenValidAndNoSources_PerformsSoftDelete_AndSetsDeletedAtAndDeletedBy()
+    {
+        // Arrange
+        var role = TestDataBuilder.CreateRole();
+        var user = TestDataBuilder.CreateUser(username: "deleter_loc", roleId: role.Id);
+        var loc = TestDataBuilder.CreateLocation(name: "موقع للحذف");
+
+        using (var db = _fixture.CreateContext())
+        {
+            db.Roles.Add(role);
+            db.Users.Add(user);
+            db.Locations.Add(loc);
+            db.SaveChanges();
+        }
+
+        _fakeUserService.CurrentUser = user;
+
+        // Act
+        var (success, message) = _sut.Delete(loc.Id);
+
+        // Assert
+        Assert.True(success);
+        Assert.Equal("تم حذف الموقع", message);
+
+        using (var db = _fixture.CreateContext())
+        {
+            var rawLoc = db.Locations.IgnoreQueryFilters().FirstOrDefault(l => l.Id == loc.Id);
+            Assert.NotNull(rawLoc);
+            Assert.True(rawLoc.IsDeleted);
+            Assert.NotNull(rawLoc.DeletedAt);
+            Assert.Equal(user.Id, rawLoc.DeletedBy);
+
+            // Verify normal query returns null due to Global Query Filter
+            var normalLoc = db.Locations.FirstOrDefault(l => l.Id == loc.Id);
+            Assert.Null(normalLoc);
+        }
+
+        Assert.Single(_fakeAuditService.LoggedEntries);
+        var audit = _fakeAuditService.LoggedEntries[0];
+        Assert.Equal("Delete", audit.Action);
+        Assert.Equal("Locations", audit.TableName);
+        Assert.Equal(loc.Id, audit.RecordId);
+        Assert.Contains(loc.LocationName, audit.Details);
+    }
+
+    [Fact]
+    public void Delete_WhenLocationHasLinkedSources_ReturnsFailure_AndDoesNotDelete()
+    {
+        // Arrange
+        var loc = TestDataBuilder.CreateLocation(name: "موقع مرتبط بمصدر");
+        var iso = TestDataBuilder.CreateRadioisotope("Co-60", "Cobalt-60");
+        var unit = TestDataBuilder.CreateActivityUnit();
+        var source = TestDataBuilder.CreateSource(iso, unit, loc);
+
+        using (var db = _fixture.CreateContext())
+        {
+            db.Locations.Add(loc);
+            db.Radioisotopes.Add(iso);
+            db.ActivityUnits.Add(unit);
+            db.Sources.Add(source);
+            db.SaveChanges();
+        }
+
+        // Act
+        var (success, message) = _sut.Delete(loc.Id);
+
+        // Assert
+        Assert.False(success);
+        Assert.Contains("لا يمكن حذف الموقع", message);
+
+        using (var db = _fixture.CreateContext())
+        {
+            var rawLoc = db.Locations.Find(loc.Id);
+            Assert.NotNull(rawLoc);
+            Assert.False(rawLoc.IsDeleted);
+            Assert.Null(rawLoc.DeletedAt);
+            Assert.Null(rawLoc.DeletedBy);
+        }
+    }
+
+    #endregion
 }

@@ -90,4 +90,93 @@ public class DatabaseWalTests : IDisposable
             Assert.Equal("wal", journalMode?.ToLower());
         }
     }
+
+    [Fact]
+    public void RealProductionDatabase_SchemaMigration_Succeeds()
+    {
+        using var db = new AppDbContext();
+        db.InitializeDatabase();
+
+        var conn = db.Database.GetDbConnection();
+        conn.Open();
+
+        var tables = new[] { "Sources", "Locations", "Users", "Radioisotopes" };
+        foreach (var table in tables)
+        {
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = $"PRAGMA table_info({table});";
+            using var reader = cmd.ExecuteReader();
+            var columns = new List<string>();
+            while (reader.Read())
+            {
+                columns.Add(reader.GetString(1));
+            }
+
+            Assert.Contains("IsDeleted", columns);
+            Assert.Contains("DeletedAt", columns);
+            Assert.Contains("DeletedBy", columns);
+        }
+
+        // Check __EFMigrationsHistory table if it exists
+        using (var cmdHist = conn.CreateCommand())
+        {
+            cmdHist.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name='__EFMigrationsHistory';";
+            var historyTableExists = cmdHist.ExecuteScalar() != null;
+            if (historyTableExists)
+            {
+                using var cmdEntries = conn.CreateCommand();
+                cmdEntries.CommandText = "SELECT MigrationId FROM __EFMigrationsHistory;";
+                using var reader = cmdEntries.ExecuteReader();
+                var list = new List<string>();
+                while (reader.Read()) list.Add(reader.GetString(0));
+            }
+        }
+
+        conn.Close();
+    }
+
+    [Fact]
+    public void InitializeDatabase_CreatesSoftDeleteColumnsOnAllEntities()
+    {
+        // Arrange
+        var connStr = new SqliteConnectionStringBuilder
+        {
+            DataSource = _tempDbPath,
+            Mode = SqliteOpenMode.ReadWriteCreate,
+            DefaultTimeout = 5
+        }.ToString();
+
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite(connStr)
+            .Options;
+
+        using (var db = new AppDbContext(options))
+        {
+            // Act
+            db.InitializeDatabase();
+
+            // Assert
+            var conn = db.Database.GetDbConnection();
+            conn.Open();
+
+            var tables = new[] { "Sources", "Locations", "Users", "Radioisotopes" };
+            foreach (var table in tables)
+            {
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = $"PRAGMA table_info({table});";
+                using var reader = cmd.ExecuteReader();
+                var columns = new List<string>();
+                while (reader.Read())
+                {
+                    columns.Add(reader.GetString(1));
+                }
+
+                Assert.Contains("IsDeleted", columns);
+                Assert.Contains("DeletedAt", columns);
+                Assert.Contains("DeletedBy", columns);
+            }
+
+            conn.Close();
+        }
+    }
 }
