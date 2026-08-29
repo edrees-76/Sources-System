@@ -267,6 +267,54 @@ public class SourceService : ISourceService
             .ToList();
     }
 
+    public (bool Success, string Message) RestoreSource(Guid id)
+    {
+        using var db = _dbFactory.CreateDbContext();
+        var source = db.Sources
+            .IgnoreQueryFilters()
+            .Include(s => s.Radioisotope)
+            .Include(s => s.Location)
+            .Include(s => s.CurrentActivityUnit)
+            .Include(s => s.SourceIsotopes).ThenInclude(si => si.Radioisotope)
+            .FirstOrDefault(s => s.Id == id);
+
+        if (source == null) return (false, "المصدر غير موجود");
+        if (!source.IsDeleted) return (false, "المصدر غير محذوف أصلاً");
+
+        // فحص الموقع: إذا كان للمصدر موقع أصلي، تحقق هل الموقع محذوف
+        if (source.LocationId.HasValue)
+        {
+            var loc = db.Locations.IgnoreQueryFilters().FirstOrDefault(l => l.Id == source.LocationId.Value);
+            if (loc != null && loc.IsDeleted)
+            {
+                return (false, $"لا يمكن استرجاع المصدر لأن موقعه الأصلي \"{loc.LocationName}\" محذوف حالياً. يرجى استرجاع الموقع أولاً من سجل المحذوفات ثم إعادة المحاولة.");
+            }
+        }
+
+        source.IsDeleted = false;
+        source.DeletedAt = null;
+        source.DeletedBy = null;
+        db.SaveChanges();
+
+        var locationName = source.Location?.LocationName ?? "غير محدد";
+        var statusDisplay = source.ArabicStatus;
+        var msg = $"تم استرجاع المصدر {source.SourceCode} إلى موقع {locationName} بحالة {statusDisplay}";
+
+        var newValuesObj = new
+        {
+            source.SourceCode,
+            Status = source.Status,
+            ArabicStatus = source.ArabicStatus,
+            Location = locationName,
+            Isotopes = source.DisplayIsotopes,
+            CurrentActivity = source.CurrentActivityWithUnit
+        };
+        string newValuesJson = System.Text.Json.JsonSerializer.Serialize(newValuesObj);
+
+        _auditService.LogWithChanges("Restore", "Sources", id, $"استرجاع مصدر: {source.SourceCode} إلى موقع {locationName} (الحالة: {statusDisplay})", null, newValuesJson);
+        return (true, msg);
+    }
+
     /// <summary>
     /// تحديث النشاط الحالي لجميع المصادر في قاعدة البيانات
     /// </summary>

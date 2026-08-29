@@ -1180,6 +1180,7 @@
     <system:String x:Key="HeaderDeletedBy">Deleted By</system:String>
     <system:String x:Key="HeaderDeletedAt">Deleted At</system:String>
     <system:String x:Key="HeaderRestore">Restore</system:String>
+    <system:String x:Key="ToolTipRestoreItem">Restore this item back to the system</system:String>
     <system:String x:Key="TextRestoreComingSoon">Coming in next round</system:String>
     <system:String x:Key="CardTotalDeletions">Total Deletions</system:String>
     <system:String x:Key="CardDeletedSources">Deleted Sources</system:String>

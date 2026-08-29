@@ -248,6 +248,30 @@ public class UserService : IUserService
         return (true, "تم حذف المستخدم بنجاح");
     }
 
+    public (bool Success, string Message) RestoreUser(Guid userId)
+    {
+        using var db = _dbFactory.CreateDbContext();
+        var user = db.Users.IgnoreQueryFilters().Include(u => u.Role).FirstOrDefault(u => u.Id == userId);
+        if (user == null) return (false, "المستخدم غير موجود");
+        if (!user.IsDeleted) return (false, "المستخدم غير محذوف أصلاً");
+
+        // التحقق من فرادة اسم المستخدم بين الحسابات النشطة
+        var lowerUsername = user.Username.Trim().ToLower();
+        if (db.Users.Any(u => !u.IsDeleted && u.Id != userId && u.Username.ToLower() == lowerUsername))
+            return (false, $"لا يمكن استرجاع المستخدم لوجود حساب نشط آخر بنفس اسم المستخدم (@{user.Username})");
+
+        user.IsDeleted = false;
+        user.IsActive = true;
+        user.DeletedAt = null;
+        user.DeletedBy = null;
+        db.SaveChanges();
+
+        var auditService = _auditService ?? new AuditService(_dbFactory, this);
+        auditService.Log("Restore", "Users", userId, $"استرجاع مستخدم: {user.FullName} (@{user.Username})");
+
+        return (true, $"تم استرجاع حساب المستخدم {user.FullName}");
+    }
+
     /// <summary>تجميد أو تنشيط حساب مستخدم</summary>
     public (bool Success, string Message) ToggleUserFreeze(Guid userId)
     {

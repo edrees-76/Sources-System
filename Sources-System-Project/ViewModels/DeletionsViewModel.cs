@@ -33,6 +33,10 @@ namespace Sources.ViewModels
     public partial class DeletionsViewModel : ObservableObject
     {
         private readonly IDbContextFactory<AppDbContext> _dbFactory;
+        private readonly ISourceService _sourceService;
+        private readonly ILocationService _locationService;
+        private readonly IUserService _userService;
+        private readonly IRadioisotopeService _radioisotopeService;
 
         [ObservableProperty] private ObservableCollection<DeletedItemRow> _allItems = new();
         [ObservableProperty] private ObservableCollection<DeletedItemRow> _filteredItems = new();
@@ -47,9 +51,22 @@ namespace Sources.ViewModels
         [ObservableProperty] private int _usersCount;
         [ObservableProperty] private int _radioisotopesCount;
 
-        public DeletionsViewModel(IDbContextFactory<AppDbContext> dbFactory)
+        public DeletionsViewModel(
+            IDbContextFactory<AppDbContext> dbFactory,
+            ISourceService? sourceService = null,
+            ILocationService? locationService = null,
+            IUserService? userService = null,
+            IRadioisotopeService? radioisotopeService = null)
         {
             _dbFactory = dbFactory;
+            var defaultUserSvc = userService ?? new UserService(dbFactory);
+            var defaultAuditSvc = new AuditService(dbFactory, defaultUserSvc);
+
+            _userService = defaultUserSvc;
+            _sourceService = sourceService ?? new SourceService(dbFactory, new DecayCalculationService(), defaultAuditSvc, defaultUserSvc);
+            _locationService = locationService ?? new LocationService(dbFactory, defaultAuditSvc, defaultUserSvc);
+            _radioisotopeService = radioisotopeService ?? new RadioisotopeService(dbFactory, defaultAuditSvc, defaultUserSvc);
+
             _ = LoadDeletedItemsAsync();
         }
 
@@ -279,6 +296,51 @@ namespace Sources.ViewModels
                     break;
             }
         }
+
+        [RelayCommand]
+        public async Task RestoreItem(DeletedItemRow? row)
+        {
+            if (row == null) return;
+
+            string confirmPrompt = $"هل أنت متأكد من استرجاع هذا العنصر؟\n\n• النوع: {row.EntityTypeDisplayName}\n• المعرّف: {row.Identifier} {row.SecondaryIdentifier}";
+            bool confirmed = DialogHelper.ShowConfirmation(confirmPrompt, "تأكيد استرجاع العنصر");
+            if (!confirmed) return;
+
+            (bool Success, string Message) result = (false, string.Empty);
+
+            switch (row.EntityType)
+            {
+                case "Source":
+                    result = _sourceService.RestoreSource(row.Id);
+                    break;
+                case "Location":
+                    result = _locationService.Restore(row.Id);
+                    break;
+                case "User":
+                    result = _userService.RestoreUser(row.Id);
+                    break;
+                case "Radioisotope":
+                    result = _radioisotopeService.Restore(row.Id);
+                    break;
+                default:
+                    result = (false, "نوع الكيان غير معروف");
+                    break;
+            }
+
+            if (result.Success)
+            {
+                DialogHelper.ShowInfo(result.Message, "تم الاسترجاع بنجاح");
+                await LoadDeletedItemsAsync();
+            }
+            else
+            {
+                DialogHelper.ShowWarning(result.Message, "تعذر الاسترجاع");
+            }
+        }
+
+        // اسم بديل للأمر للتوافق
+        [RelayCommand]
+        public Task Restore(DeletedItemRow? row) => RestoreItem(row);
 
         private void ShowLocationDetailsDialog(Location loc, DeletedItemRow row)
         {

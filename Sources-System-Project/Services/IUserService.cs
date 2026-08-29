@@ -18,6 +18,7 @@ public interface IUserService
     (bool Success, string Message) ResetPassword(Guid userId, string newPassword);
     (bool Success, string Message) UnlockAccount(Guid userId);
     (bool Success, string Message) DeleteUser(Guid userId);
+    (bool Success, string Message) RestoreUser(Guid userId);
     (bool Success, string Message) ToggleUserFreeze(Guid userId);
     List<AuditLog> GetAuditLogs(Guid? userId = null, DateTime? from = null, DateTime? to = null);
     List<Role> GetAllRoles();

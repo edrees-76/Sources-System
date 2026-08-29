@@ -116,6 +116,26 @@ public class LocationService : ILocationService
         return (true, "تم حذف الموقع");
     }
 
+    public (bool Success, string Message) Restore(Guid id)
+    {
+        using var db = _dbFactory.CreateDbContext();
+        var item = db.Locations.IgnoreQueryFilters().FirstOrDefault(l => l.Id == id);
+        if (item == null) return (false, "الموقع غير موجود");
+        if (!item.IsDeleted) return (false, "الموقع غير محذوف أصلاً");
+
+        var lowerName = item.LocationName.Trim().ToLower();
+        if (db.Locations.Any(l => !l.IsDeleted && l.Id != id && l.LocationName.ToLower() == lowerName))
+            return (false, $"لا يمكن استرجاع الموقع لوجود موقع نشط آخر بنفس الاسم (\"{item.LocationName}\")");
+
+        item.IsDeleted = false;
+        item.DeletedAt = null;
+        item.DeletedBy = null;
+        db.SaveChanges();
+
+        _auditService.Log("Restore", "Locations", id, $"استرجاع موقع: {item.LocationName}");
+        return (true, $"تم استرجاع الموقع {item.LocationName}");
+    }
+
     public int GetCount()
     {
         using var db = _dbFactory.CreateDbContext();

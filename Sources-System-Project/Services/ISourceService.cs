@@ -16,4 +16,5 @@ public interface ISourceService
     List<Source> GetLowActivitySources(double threshold);
     bool HasActiveBorrow(Guid sourceId);
     List<Source> GetDeletedSources();
+    (bool Success, string Message) RestoreSource(Guid id);
 }

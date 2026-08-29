@@ -11,4 +11,5 @@ public interface IRadioisotopeService
     (bool Success, string Message) Create(Radioisotope item);
     (bool Success, string Message) Update(Radioisotope item);
     (bool Success, string Message) Delete(Guid id);
+    (bool Success, string Message) Restore(Guid id);
 }

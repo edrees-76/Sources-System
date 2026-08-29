@@ -1177,6 +1177,7 @@
     <system:String x:Key="HeaderDeletedBy">حُذف بواسطة</system:String>
     <system:String x:Key="HeaderDeletedAt">تاريخ الحذف</system:String>
     <system:String x:Key="HeaderRestore">استرجاع</system:String>
+    <system:String x:Key="ToolTipRestoreItem">استرجاع هذا العنصر إلى المنظومة</system:String>
     <system:String x:Key="TextRestoreComingSoon">قريباً في الجولة القادمة</system:String>
     <system:String x:Key="CardTotalDeletions">إجمالي المحذوفات</system:String>
     <system:String x:Key="CardDeletedSources">المصادر المحذوفة</system:String>

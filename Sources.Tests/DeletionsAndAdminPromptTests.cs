@@ -24,6 +24,7 @@ namespace Sources.Tests
             _fixture = fixture;
             _fixture.ResetDatabase();
             DialogHelper.IsTestMode = true;
+            DialogHelper.ShowConfirmationResult = null;
             PasswordPromptDialog.CustomPromptResult = null;
         }
 
@@ -31,6 +32,7 @@ namespace Sources.Tests
         {
             _fixture.ResetDatabase();
             DialogHelper.IsTestMode = false;
+            DialogHelper.ShowConfirmationResult = null;
             DialogHelper.LastMessage = null;
             DialogHelper.LastTitle = null;
             PasswordPromptDialog.CustomPromptResult = null;
@@ -504,6 +506,423 @@ namespace Sources.Tests
 
             // Assert: View should remain "Dashboard"
             Assert.Equal("Dashboard", vm.CurrentViewName);
+        }
+
+        #endregion
+
+        #region 4. Round 82 Restoration Logic & Integrity Tests
+
+        [Fact]
+        public void RestoreSource_Succeeds_AndClearsDeletionFlags_AndLogsAudit()
+        {
+            // Arrange
+            var location = new Location { Id = Guid.NewGuid(), LocationName = "مختبر غاما 1", IsDeleted = false };
+            var isotope = new Radioisotope { Id = Guid.NewGuid(), Symbol = "Cs-137", Name = "Cesium-137", HalfLife = 30.17, RadiationType = "Gamma" };
+            var unit = new ActivityUnit { Id = Guid.NewGuid(), UnitName = "MBq", UnitSymbol = "MBq", ConversionToBq = 1e6 };
+            var adminUser = new User { Id = Guid.NewGuid(), Username = "admin_user", FullName = "مدير التدقيق", Role = new Role { RoleName = "مدير" } };
+
+            using (var db = _fixture.ContextFactory.CreateDbContext())
+            {
+                db.Locations.Add(location);
+                db.Radioisotopes.Add(isotope);
+                db.ActivityUnits.Add(unit);
+                db.Users.Add(adminUser);
+
+                var deletedSource = new Source
+                {
+                    Id = Guid.NewGuid(),
+                    SourceCode = "SRC-RESTORE-01",
+                    LocationId = location.Id,
+                    RadioisotopeId = isotope.Id,
+                    InitialActivityValue = 100,
+                    InitialActivityUnitId = unit.Id,
+                    CalibrationDate = DateTime.Now.AddYears(-1),
+                    CurrentActivityValue = 95,
+                    CurrentActivityUnitId = unit.Id,
+                    Status = "InUse",
+                    IsDeleted = true,
+                    DeletedAt = DateTime.Now.AddDays(-2),
+                    DeletedBy = adminUser.Id
+                };
+                db.Sources.Add(deletedSource);
+                db.SaveChanges();
+            }
+
+            var mockUserService = new Mock<IUserService>();
+            mockUserService.Setup(u => u.CurrentUser).Returns(adminUser);
+            var auditService = new AuditService(_fixture.ContextFactory, mockUserService.Object);
+            var sourceService = new SourceService(_fixture.ContextFactory, new DecayCalculationService(), auditService, mockUserService.Object);
+
+            var deletedSourceId = Guid.Empty;
+            using (var db = _fixture.ContextFactory.CreateDbContext())
+            {
+                deletedSourceId = db.Sources.IgnoreQueryFilters().First(s => s.SourceCode == "SRC-RESTORE-01").Id;
+            }
+
+            // Act
+            var (success, message) = sourceService.RestoreSource(deletedSourceId);
+
+            // Assert
+            Assert.True(success);
+            Assert.Contains("SRC-RESTORE-01", message);
+            Assert.Contains("مختبر غاما 1", message);
+
+            using (var db = _fixture.ContextFactory.CreateDbContext())
+            {
+                var restoredSource = db.Sources.FirstOrDefault(s => s.Id == deletedSourceId);
+                Assert.NotNull(restoredSource);
+                Assert.False(restoredSource.IsDeleted);
+                Assert.Null(restoredSource.DeletedAt);
+                Assert.Null(restoredSource.DeletedBy);
+
+                // Verify AuditLog
+                var log = db.AuditLogs.FirstOrDefault(a => a.TableName == "Sources" && a.RecordId == deletedSourceId && a.Action == "Restore");
+                Assert.NotNull(log);
+                Assert.Contains("SRC-RESTORE-01", log.Details);
+            }
+        }
+
+        [Fact]
+        public void RestoreLocation_Succeeds_AndClearsDeletionFlags_AndLogsAudit()
+        {
+            // Arrange
+            var adminUser = new User { Id = Guid.NewGuid(), Username = "admin_loc", FullName = "مسؤول المواقع", Role = new Role { RoleName = "مدير" } };
+            var locationId = Guid.NewGuid();
+
+            using (var db = _fixture.ContextFactory.CreateDbContext())
+            {
+                db.Users.Add(adminUser);
+                db.Locations.Add(new Location
+                {
+                    Id = locationId,
+                    LocationName = "مستودع أجهزة النظائر",
+                    Building = "المبنى 3",
+                    IsDeleted = true,
+                    DeletedAt = DateTime.Now.AddDays(-1),
+                    DeletedBy = adminUser.Id
+                });
+                db.SaveChanges();
+            }
+
+            var mockUserService = new Mock<IUserService>();
+            mockUserService.Setup(u => u.CurrentUser).Returns(adminUser);
+            var auditService = new AuditService(_fixture.ContextFactory, mockUserService.Object);
+            var locationService = new LocationService(_fixture.ContextFactory, auditService, mockUserService.Object);
+
+            // Act
+            var (success, message) = locationService.Restore(locationId);
+
+            // Assert
+            Assert.True(success);
+            Assert.Contains("مستودع أجهزة النظائر", message);
+
+            using (var db = _fixture.ContextFactory.CreateDbContext())
+            {
+                var restored = db.Locations.FirstOrDefault(l => l.Id == locationId);
+                Assert.NotNull(restored);
+                Assert.False(restored.IsDeleted);
+                Assert.Null(restored.DeletedAt);
+                Assert.Null(restored.DeletedBy);
+
+                // Verify AuditLog
+                var log = db.AuditLogs.FirstOrDefault(a => a.TableName == "Locations" && a.RecordId == locationId && a.Action == "Restore");
+                Assert.NotNull(log);
+                Assert.Contains("مستودع أجهزة النظائر", log.Details);
+            }
+        }
+
+        [Fact]
+        public void RestoreUser_Succeeds_AndClearsDeletionFlags_AndLogsAudit()
+        {
+            // Arrange
+            var role = new Role { Id = Guid.NewGuid(), RoleName = "مشغل" };
+            var userId = Guid.NewGuid();
+            var adminUser = new User { Id = Guid.NewGuid(), Username = "admin_usr", FullName = "مدير الحسابات", Role = new Role { RoleName = "مدير" } };
+
+            using (var db = _fixture.ContextFactory.CreateDbContext())
+            {
+                db.Roles.Add(role);
+                db.Users.Add(adminUser);
+                db.Users.Add(new User
+                {
+                    Id = userId,
+                    FullName = "أحمد خالد المشغل",
+                    Username = "ahmed_khalid",
+                    RoleId = role.Id,
+                    IsActive = false,
+                    IsDeleted = true,
+                    DeletedAt = DateTime.Now.AddDays(-5),
+                    DeletedBy = adminUser.Id
+                });
+                db.SaveChanges();
+            }
+
+            var mockUserService = new Mock<IUserService>();
+            mockUserService.Setup(u => u.CurrentUser).Returns(adminUser);
+            var auditService = new AuditService(_fixture.ContextFactory, mockUserService.Object);
+            var userService = new UserService(_fixture.ContextFactory, auditService);
+
+            // Act
+            var (success, message) = userService.RestoreUser(userId);
+
+            // Assert
+            Assert.True(success);
+            Assert.Contains("أحمد خالد المشغل", message);
+
+            using (var db = _fixture.ContextFactory.CreateDbContext())
+            {
+                var restored = db.Users.FirstOrDefault(u => u.Id == userId);
+                Assert.NotNull(restored);
+                Assert.False(restored.IsDeleted);
+                Assert.True(restored.IsActive);
+                Assert.Null(restored.DeletedAt);
+                Assert.Null(restored.DeletedBy);
+
+                // Verify AuditLog
+                var log = db.AuditLogs.FirstOrDefault(a => a.TableName == "Users" && a.RecordId == userId && a.Action == "Restore");
+                Assert.NotNull(log);
+                Assert.Contains("أحمد خالد المشغل", log.Details);
+            }
+        }
+
+        [Fact]
+        public void RestoreRadioisotope_Succeeds_AndClearsDeletionFlags_AndLogsAudit()
+        {
+            // Arrange
+            var isotopeId = Guid.NewGuid();
+            var adminUser = new User { Id = Guid.NewGuid(), Username = "admin_iso", FullName = "مسؤول النظائر", Role = new Role { RoleName = "مدير" } };
+
+            using (var db = _fixture.ContextFactory.CreateDbContext())
+            {
+                db.Users.Add(adminUser);
+                db.Radioisotopes.Add(new Radioisotope
+                {
+                    Id = isotopeId,
+                    Symbol = "Co-60",
+                    Name = "Cobalt-60",
+                    ArabicName = "كوبالت-60",
+                    HalfLife = 5.27,
+                    RadiationType = "Gamma",
+                    IsDeleted = true,
+                    DeletedAt = DateTime.Now.AddDays(-3),
+                    DeletedBy = adminUser.Id
+                });
+                db.SaveChanges();
+            }
+
+            var mockUserService = new Mock<IUserService>();
+            mockUserService.Setup(u => u.CurrentUser).Returns(adminUser);
+            var auditService = new AuditService(_fixture.ContextFactory, mockUserService.Object);
+            var isotopeService = new RadioisotopeService(_fixture.ContextFactory, auditService, mockUserService.Object);
+
+            // Act
+            var (success, message) = isotopeService.Restore(isotopeId);
+
+            // Assert
+            Assert.True(success);
+            Assert.True(message.Contains("Co-60") || message.Contains("Cobalt-60") || message.Contains("كوبالت-60"));
+
+            using (var db = _fixture.ContextFactory.CreateDbContext())
+            {
+                var restored = db.Radioisotopes.FirstOrDefault(r => r.Id == isotopeId);
+                Assert.NotNull(restored);
+                Assert.False(restored.IsDeleted);
+                Assert.Null(restored.DeletedAt);
+                Assert.Null(restored.DeletedBy);
+
+                // Verify AuditLog
+                var log = db.AuditLogs.FirstOrDefault(a => a.TableName == "Radioisotopes" && a.RecordId == isotopeId && a.Action == "Restore");
+                Assert.NotNull(log);
+                Assert.NotNull(log.Details);
+                Assert.True(log.Details.Contains("Co-60") || log.Details.Contains("Cobalt-60") || log.Details.Contains("كوبالت-60"));
+            }
+        }
+
+        [Fact]
+        public void RestoreSource_Fails_WhenAssociatedLocationIsDeleted()
+        {
+            // Arrange
+            var deletedLocation = new Location { Id = Guid.NewGuid(), LocationName = "موقع محذوف سابقاً", IsDeleted = true, DeletedAt = DateTime.Now.AddDays(-10) };
+            var isotope = new Radioisotope { Id = Guid.NewGuid(), Symbol = "Ir-192", Name = "Iridium-192", HalfLife = 73.83, RadiationType = "Gamma" };
+            var unit = new ActivityUnit { Id = Guid.NewGuid(), UnitName = "GBq", UnitSymbol = "GBq", ConversionToBq = 1e9 };
+
+            var sourceId = Guid.NewGuid();
+            using (var db = _fixture.ContextFactory.CreateDbContext())
+            {
+                db.Locations.Add(deletedLocation);
+                db.Radioisotopes.Add(isotope);
+                db.ActivityUnits.Add(unit);
+                db.Sources.Add(new Source
+                {
+                    Id = sourceId,
+                    SourceCode = "SRC-ORPHAN-01",
+                    LocationId = deletedLocation.Id,
+                    RadioisotopeId = isotope.Id,
+                    InitialActivityValue = 50,
+                    InitialActivityUnitId = unit.Id,
+                    CalibrationDate = DateTime.Now.AddYears(-1),
+                    CurrentActivityValue = 40,
+                    CurrentActivityUnitId = unit.Id,
+                    Status = "InUse",
+                    IsDeleted = true,
+                    DeletedAt = DateTime.Now.AddDays(-2)
+                });
+                db.SaveChanges();
+            }
+
+            var mockUserService = new Mock<IUserService>();
+            var auditService = new AuditService(_fixture.ContextFactory, mockUserService.Object);
+            var sourceService = new SourceService(_fixture.ContextFactory, new DecayCalculationService(), auditService, mockUserService.Object);
+
+            // Act
+            var (success, message) = sourceService.RestoreSource(sourceId);
+
+            // Assert
+            Assert.False(success);
+            Assert.Contains("موقعه الأصلي", message);
+            Assert.Contains("محذوف حالياً", message);
+            Assert.Contains("موقع محذوف سابقاً", message);
+
+            // Verify source remains deleted
+            using (var db = _fixture.ContextFactory.CreateDbContext())
+            {
+                var src = db.Sources.IgnoreQueryFilters().First(s => s.Id == sourceId);
+                Assert.True(src.IsDeleted);
+            }
+        }
+
+        [Fact]
+        public void RestoreUser_Fails_WhenUsernameConflictsWithActiveUser()
+        {
+            // Arrange
+            var role = new Role { Id = Guid.NewGuid(), RoleName = "فني" };
+            var deletedUserId = Guid.NewGuid();
+            var activeUserId = Guid.NewGuid();
+
+            using (var db = _fixture.ContextFactory.CreateDbContext())
+            {
+                db.Roles.Add(role);
+
+                // Deleted user with username 'same_user'
+                db.Users.Add(new User
+                {
+                    Id = deletedUserId,
+                    FullName = "مستخدم قديم محذوف",
+                    Username = "same_user",
+                    RoleId = role.Id,
+                    IsDeleted = true,
+                    DeletedAt = DateTime.Now.AddDays(-30)
+                });
+
+                // New active user with same username 'same_user'
+                db.Users.Add(new User
+                {
+                    Id = activeUserId,
+                    FullName = "مستخدم جديد نشط",
+                    Username = "same_user",
+                    RoleId = role.Id,
+                    IsDeleted = false
+                });
+
+                db.SaveChanges();
+            }
+
+            var mockUserService = new Mock<IUserService>();
+            var auditService = new AuditService(_fixture.ContextFactory, mockUserService.Object);
+            var userService = new UserService(_fixture.ContextFactory, auditService);
+
+            // Act
+            var (success, message) = userService.RestoreUser(deletedUserId);
+
+            // Assert
+            Assert.False(success);
+            Assert.Contains("لوجود حساب نشط آخر بنفس اسم المستخدم", message);
+            Assert.Contains("same_user", message);
+
+            // Verify user remains deleted
+            using (var db = _fixture.ContextFactory.CreateDbContext())
+            {
+                var usr = db.Users.IgnoreQueryFilters().First(u => u.Id == deletedUserId);
+                Assert.True(usr.IsDeleted);
+            }
+        }
+
+        [Fact]
+        public async Task DeletionsViewModel_RestoreItemCommand_ExecutesSuccessfullyAndRefreshesList()
+        {
+            // Arrange
+            var loc = new Location { Id = Guid.NewGuid(), LocationName = "موقع للاسترجاع الفوري", IsDeleted = true, DeletedAt = DateTime.Now.AddDays(-1) };
+            using (var db = _fixture.ContextFactory.CreateDbContext())
+            {
+                db.Locations.Add(loc);
+                db.SaveChanges();
+            }
+
+            var vm = new DeletionsViewModel(_fixture.ContextFactory);
+            await vm.LoadDeletedItemsAsync();
+
+            var rowToRestore = vm.AllItems.FirstOrDefault(i => i.Id == loc.Id);
+            Assert.NotNull(rowToRestore);
+
+            DialogHelper.ShowConfirmationResult = true;
+
+            try
+            {
+                // Act
+                await vm.RestoreItemCommand.ExecuteAsync(rowToRestore);
+
+                // Assert
+                Assert.NotNull(DialogHelper.LastMessage);
+                Assert.Contains("موقع للاسترجاع الفوري", DialogHelper.LastMessage);
+
+                // Verify row disappeared from ViewModel lists
+                Assert.DoesNotContain(vm.AllItems, i => i.Id == loc.Id);
+                Assert.DoesNotContain(vm.FilteredItems, i => i.Id == loc.Id);
+            }
+            finally
+            {
+                DialogHelper.ShowConfirmationResult = null;
+            }
+        }
+
+        [Fact]
+        public async Task DeletionsViewModel_RestoreItemCommand_AbortedWhenUserCancelsConfirmation()
+        {
+            // Arrange
+            var loc = new Location { Id = Guid.NewGuid(), LocationName = "موقع للإلغاء", IsDeleted = true, DeletedAt = DateTime.Now.AddDays(-1) };
+            using (var db = _fixture.ContextFactory.CreateDbContext())
+            {
+                db.Locations.Add(loc);
+                db.SaveChanges();
+            }
+
+            var vm = new DeletionsViewModel(_fixture.ContextFactory);
+            await vm.LoadDeletedItemsAsync();
+
+            var rowToRestore = vm.AllItems.FirstOrDefault(i => i.Id == loc.Id);
+            Assert.NotNull(rowToRestore);
+
+            // User clicks "No" on confirmation
+            DialogHelper.ShowConfirmationResult = false;
+
+            try
+            {
+                // Act
+                await vm.RestoreItemCommand.ExecuteAsync(rowToRestore);
+
+                // Assert: Location remains deleted and in the list
+                Assert.Contains(vm.AllItems, i => i.Id == loc.Id);
+
+                using (var db = _fixture.ContextFactory.CreateDbContext())
+                {
+                    var item = db.Locations.IgnoreQueryFilters().First(l => l.Id == loc.Id);
+                    Assert.True(item.IsDeleted);
+                }
+            }
+            finally
+            {
+                DialogHelper.ShowConfirmationResult = null;
+            }
         }
 
         #endregion

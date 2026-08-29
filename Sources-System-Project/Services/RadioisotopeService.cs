@@ -106,4 +106,24 @@ public class RadioisotopeService : IRadioisotopeService
         _auditService.Log("Delete", "Radioisotopes", id, $"حذف نظير: {item.Name}");
         return (true, "تم حذف النظير");
     }
+
+    public (bool Success, string Message) Restore(Guid id)
+    {
+        using var db = _dbFactory.CreateDbContext();
+        var item = db.Radioisotopes.IgnoreQueryFilters().FirstOrDefault(r => r.Id == id);
+        if (item == null) return (false, "النظير غير موجود");
+        if (!item.IsDeleted) return (false, "النظير غير محذوف أصلاً");
+
+        var lowerSymbol = item.Symbol.Trim().ToLower();
+        if (db.Radioisotopes.Any(r => !r.IsDeleted && r.Id != id && r.Symbol.ToLower() == lowerSymbol))
+            return (false, $"لا يمكن استرجاع النظير لوجود نظير نشط آخر بنفس الرمز ({item.Symbol})");
+
+        item.IsDeleted = false;
+        item.DeletedAt = null;
+        item.DeletedBy = null;
+        db.SaveChanges();
+
+        _auditService.Log("Restore", "Radioisotopes", id, $"استرجاع نظير: {item.DisplayName ?? item.Symbol}");
+        return (true, $"تم استرجاع النظير {item.DisplayName ?? item.Symbol}");
+    }
 }

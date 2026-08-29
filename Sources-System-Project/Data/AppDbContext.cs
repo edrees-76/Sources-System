@@ -563,7 +563,9 @@ public class AppDbContext : DbContext
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            entity.HasIndex(u => u.Username).IsUnique();
+            entity.HasIndex(u => u.Username)
+                .HasFilter("IsDeleted = 0")
+                .IsUnique();
         });
 
         // ─── AuditLog relationships ───

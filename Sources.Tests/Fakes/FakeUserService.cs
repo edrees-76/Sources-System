@@ -32,6 +32,7 @@ public class FakeUserService : IUserService
     public (bool Success, string Message) ResetPassword(Guid userId, string newPassword) => (true, "تم إعادة تعيين كلمة المرور");
     public (bool Success, string Message) UnlockAccount(Guid userId) => (true, "تم إلغاء القفل");
     public (bool Success, string Message) DeleteUser(Guid userId) => (true, "تم الحذف");
+    public (bool Success, string Message) RestoreUser(Guid userId) => (true, "تم الاسترجاع");
     public (bool Success, string Message) ToggleUserFreeze(Guid userId) => (true, "تم التعديل");
     public List<AuditLog> GetAuditLogs(Guid? userId = null, DateTime? from = null, DateTime? to = null) => new();
     public List<Role> GetAllRoles() => new();
