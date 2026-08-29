@@ -110,7 +110,8 @@
                                 </Grid>
                                 <TextBlock Text="{Binding Entry.SpecificGammaConstantFormatted}" FontSize="22" FontWeight="Bold" FontFamily="Consolas" Foreground="{DynamicResource PrimaryBrush}" Margin="0,2,0,4"/>
                                 <TextBlock FontSize="12" Foreground="{DynamicResource TextSecondary}">
-                                    <Run Text="(mSv/h)/MBq عند 1 متر" FlowDirection="RightToLeft"/>
+                                    <Run Text="(mSv/h)/MBq" FlowDirection="LeftToRight"/>
+                                    <Run Text=" عند 1 متر"/>
                                 </TextBlock>
                             </StackPanel>
                         </Border>
@@ -139,7 +140,9 @@
                                 </Grid>
                                 <TextBlock Text="{Binding Entry.GammaMremPerUciFormatted}" FontSize="22" FontWeight="Bold" FontFamily="Consolas" Foreground="#2E7D32" Margin="0,2,0,4"/>
                                 <TextBlock FontSize="12" Foreground="{DynamicResource TextSecondary}">
-                                    <Run Text="(mrem/h)/µCi عند 1 متر (× 3.7)&#x200F;" FlowDirection="RightToLeft"/>
+                                    <Run Text="(mrem/h)/µCi" FlowDirection="LeftToRight"/>
+                                    <Run Text=" عند 1 متر "/>
+                                    <Run Text="(× 3.7)" FlowDirection="LeftToRight"/>
                                 </TextBlock>
                             </StackPanel>
                         </Border>

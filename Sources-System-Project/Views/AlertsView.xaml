@@ -262,7 +262,15 @@
                             <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding LocationName}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource SecondaryCenterAligned}"/>
 
                             <!-- عدد فترات نصف العمر المنقضية -->
-                            <DataGridTextColumn Header="{DynamicResource ColHalfLivesElapsed}" Binding="{Binding HalfLivesDisplay}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource BoldCenterAligned}"/>
+                            <DataGridTemplateColumn Header="{DynamicResource ColHalfLivesElapsed}" Width="Auto" MinWidth="110">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding HalfLivesDisplay}"
+                                                   Style="{StaticResource BoldCenterAligned}"
+                                                   FlowDirection="LeftToRight"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
 
                             <!-- مستوى الخطورة -->
                             <DataGridTemplateColumn Header="{DynamicResource ColSeverity}" Width="Auto" MinWidth="100">

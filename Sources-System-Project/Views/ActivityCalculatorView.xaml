@@ -113,7 +113,8 @@
                                         <TextBlock Text="{DynamicResource CalcGammaFromDb}" FontSize="12" Foreground="{DynamicResource TextSecondary}" FontWeight="SemiBold" Margin="0,0,6,0" VerticalAlignment="Center"/>
                                         <TextBlock Text=":" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,0,6,0" VerticalAlignment="Center"/>
                                         <TextBlock Text="{Binding DatabaseGammaConstantText}" FontSize="12" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                                   Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"
+                                                   FlowDirection="LeftToRight"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>

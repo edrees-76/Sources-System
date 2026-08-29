@@ -120,7 +120,7 @@
                             <Border Background="{DynamicResource InputBackground}" CornerRadius="6" Padding="12,6" Margin="4,0"
                                     BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding DisplayValue}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
+                                    <TextBlock Text="{Binding DisplayValue}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" FlowDirection="LeftToRight"/>
                                 </StackPanel>
                             </Border>
                         </DataTemplate>
