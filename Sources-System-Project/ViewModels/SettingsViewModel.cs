@@ -574,7 +574,7 @@ public partial class SettingsViewModel : ObservableObject
             "• سيتم استكمال المواقع إلى 20 موقعاً واقعياً.\n" +
             "• سيتم إضافة 300 مصدراً مشعاً (توزيع واقعي للنشاط والانحلال، مصادر متعددة النظائر، وحالات تحذير وحرجة).\n" +
             "• سيتم إضافة 100 طلب استعارة (مرتجع، قيد الاستعارة، متأخر، معلّق).\n\n" +
-            "ملاحظة: العملية مؤطرة ضمن Transaction لضمان سلامة قاعدة البيانات.",
+            "ملاحظة: العملية مؤطرة ضمن \u2066Transaction\u2069 لضمان سلامة قاعدة البيانات.",
             "تأكيد توليد البيانات التجريبية (DEBUG)"))
         {
             return;
@@ -600,14 +600,14 @@ public partial class SettingsViewModel : ObservableObject
             if (result.Success)
             {
                 string summary = "تمت عملية توليد البيانات التجريبية بنجاح!\n\n" +
-                    $"• المواقع الإجمالية: {result.TotalLocations} موقعاً (تم إضافة {result.AddedLocations})\n" +
-                    $"• المصادر المشعة: {result.TotalSources} مصدراً (منها {result.MultiIsotopeSources} متعددة النظائر)\n" +
-                    $"• مصادر التنبيهات: {result.WarningAlertSources} تحذير + {result.CriticalAlertSources} حرج\n" +
-                    $"• طلبات الاستعارة: {result.TotalBorrowRequests} طلباً:\n" +
-                    $"   - {result.ReturnedBorrows} مسترجع (Returned)\n" +
-                    $"   - {result.DeliveredBorrows} جاري التسليم / نشط (Delivered)\n" +
-                    $"   - {result.OverdueBorrows} متأخر (Overdue)\n" +
-                    $"   - {result.PendingOrApprovedBorrows} معلّق / معتمد (Pending/Approved)";
+                    $"• المواقع الإجمالية: \u2066{result.TotalLocations}\u2069 موقعاً (تم إضافة \u2066{result.AddedLocations}\u2069)\n" +
+                    $"• المصادر المشعة: \u2066{result.TotalSources}\u2069 مصدراً (منها \u2066{result.MultiIsotopeSources}\u2069 متعددة النظائر)\n" +
+                    $"• مصادر التنبيهات: \u2066{result.WarningAlertSources}\u2069 تحذير + \u2066{result.CriticalAlertSources}\u2069 حرج\n" +
+                    $"• طلبات الاستعارة: \u2066{result.TotalBorrowRequests}\u2069 طلباً:\n" +
+                    $"   - \u2066{result.ReturnedBorrows}\u2069 مسترجع (\u2066Returned\u2069)\n" +
+                    $"   - \u2066{result.DeliveredBorrows}\u2069 جاري التسليم / نشط (\u2066Delivered\u2069)\n" +
+                    $"   - \u2066{result.OverdueBorrows}\u2069 متأخر (\u2066Overdue\u2069)\n" +
+                    $"   - \u2066{result.PendingOrApprovedBorrows}\u2069 معلّق / معتمد (\u2066Pending/Approved\u2069)";
 
                 DialogHelper.ShowInfo(summary, "ملخص توليد البيانات التجريبية");
             }

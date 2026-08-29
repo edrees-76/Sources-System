@@ -91,7 +91,7 @@ public class BackupService : IBackupService
             CleanOldBackups(30, targetDir);
 
             LoggerService.LogInfo($"تم إنشاء نسخة احتياطية ذرية: {backupFile}");
-            return (true, $"تم إنشاء النسخة الاحتياطية بنجاح\n{backupFile}", backupFile);
+            return (true, $"تم إنشاء النسخة الاحتياطية بنجاح\n\u2066{backupFile}\u2069", backupFile);
         }
         catch (Exception ex)
         {

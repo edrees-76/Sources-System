@@ -388,7 +388,7 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
             return;
         }
 
-        string confirmMsg = $"سيتم تسليم المصدر ({SelectedSourceForNew.SourceCode}) إلى ({NewBorrowerName}).\nهل أنت متأكد من المتابعة؟";
+        string confirmMsg = $"سيتم تسليم المصدر (\u2066{SelectedSourceForNew.SourceCode}\u2069) إلى (\u2066{NewBorrowerName}\u2069).\nهل أنت متأكد من المتابعة؟";
         if (!DialogHelper.ShowConfirmation(confirmMsg, TranslationHelper.GetString("AddNewBorrowRequestTitle")))
             return;
 

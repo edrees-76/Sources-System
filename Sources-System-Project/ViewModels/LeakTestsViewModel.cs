@@ -354,7 +354,7 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
         if (record == null) return;
 
         bool confirm = DialogHelper.ShowConfirmation(
-            $"هل أنت متأكد من حذف سجل فحص التسرب للمصدر {record.Source?.SourceCode} بتاريخ {record.TestDate:yyyy/MM/dd}؟",
+            $"هل أنت متأكد من حذف سجل فحص التسرب للمصدر \u2066{record.Source?.SourceCode}\u2069 بتاريخ \u2066{record.TestDate:yyyy/MM/dd}\u2069؟",
             "تأكيد الحذف");
 
         if (!confirm) return;
