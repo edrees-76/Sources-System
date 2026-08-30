@@ -9,8 +9,7 @@
         WindowStartupLocation="CenterOwner"
         WindowState="Normal"
         Background="{DynamicResource WindowBackground}"
-        FontFamily="Segoe UI"
-        FlowDirection="RightToLeft">
+        FontFamily="Segoe UI">
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -28,7 +27,7 @@
                     </Border>
                     <StackPanel Margin="12,0,0,0">
                         <TextBlock Text="{DynamicResource TitleNeutronSourceTypes}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="الأنواع المرجعية والخصائص النووية للمصادر النيترونية القياسية" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                        <TextBlock Text="{DynamicResource SubtitleNeutronTypes}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
                     </StackPanel>
                 </StackPanel>
 
@@ -37,7 +36,7 @@
                             Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVis}}">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Plus" Margin="-4,0,4,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="إضافة نوع مرجعي" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource BtnAddNeutronType}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>
@@ -66,7 +65,7 @@
                         <materialDesign:PackIcon Grid.Column="0" Kind="Magnify" Width="20" Height="20" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                                  VerticalAlignment="Center" BorderThickness="0" Background="Transparent"
-                                 materialDesign:HintAssist.Hint="بحث بالكود، الاسم، نوع التفاعل، النظير الأب..."
+                                 materialDesign:HintAssist.Hint="{DynamicResource HintSearchNeutronType}"
                                  materialDesign:TextFieldAssist.DecorationVisibility="Hidden"/>
                     </Grid>
                 </Border>
@@ -75,17 +74,17 @@
                 <DataGrid Grid.Row="1" ItemsSource="{Binding Types}" SelectedItem="{Binding SelectedType}"
                           Style="{StaticResource ModernDataGrid}" AutoGenerateColumns="False" IsReadOnly="True">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="كود النوع" Binding="{Binding Code}" FontWeight="Bold" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
-                        <DataGridTextColumn Header="الاسم بالعربية" Binding="{Binding NameAr}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource CenterAligned}"/>
-                        <DataGridTextColumn Header="الاسم بالإنجليزية" Binding="{Binding NameEn}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource CenterAligned}"/>
-                        <DataGridTextColumn Header="نوع التفاعل" Binding="{Binding ReactionType}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
-                        <DataGridTextColumn Header="مادة الهدف" Binding="{Binding TargetMaterial}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
-                        <DataGridTextColumn Header="عمر النصف" Binding="{Binding HalfLife}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
-                        <DataGridTextColumn Header="الوحدة" Binding="{Binding HalfLifeUnit}" Width="Auto" MinWidth="80" ElementStyle="{StaticResource CenterAligned}"/>
-                        <DataGridTextColumn Header="متوسط الطاقة (MeV)" Binding="{Binding AverageEnergyMev, StringFormat={}{0:N2}}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColTypeCode}" Binding="{Binding Code}" FontWeight="Bold" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColNameAr}" Binding="{Binding NameAr}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColNameEn}" Binding="{Binding NameEn}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColReactionType}" Binding="{Binding ReactionType}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColTargetMaterial}" Binding="{Binding TargetMaterial}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColHalfLife}" Binding="{Binding HalfLife}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColHalfLifeUnit}" Binding="{Binding HalfLifeUnit}" Width="Auto" MinWidth="80" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColAverageEnergyMev}" Binding="{Binding AverageNeutronEnergyMeV, StringFormat={}{0:N2}}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
 
                         <!-- الإجراءات -->
-                        <DataGridTemplateColumn Header="إجراءات" Width="100">
+                        <DataGridTemplateColumn Header="{DynamicResource ColActions}" Width="100">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -117,10 +116,10 @@
                     <TextBlock FontSize="16" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,0,16">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
-                                <Setter Property="Text" Value="تعديل بيانات النوع المرجعي"/>
+                                <Setter Property="Text" Value="{DynamicResource TitleEditNeutronType}"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsNew}" Value="True">
-                                        <Setter Property="Text" Value="إضافة نوع نيتروني مرجعي جديد"/>
+                                        <Setter Property="Text" Value="{DynamicResource TitleAddNeutronType}"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -136,12 +135,12 @@
 
                         <TextBox Grid.Column="0" Text="{Binding EditCode, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                                 materialDesign:HintAssist.Hint="كود النوع (مثل Cf-252, Am-241/Be) *"/>
+                                 materialDesign:HintAssist.Hint="{DynamicResource HintTypeCodeReq}"/>
 
                         <ComboBox Grid.Column="2" ItemsSource="{Binding CommonReactions}"
                                   SelectedItem="{Binding EditReactionType}"
                                   Style="{StaticResource MaterialDesignFloatingHintComboBox}"
-                                  materialDesign:HintAssist.Hint="نوع التفاعل النووي *"/>
+                                  materialDesign:HintAssist.Hint="{DynamicResource HintReactionTypeReq}"/>
                     </Grid>
 
                     <Grid Margin="0,0,0,12">
@@ -153,11 +152,11 @@
 
                         <TextBox Grid.Column="0" Text="{Binding EditNameAr, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                                 materialDesign:HintAssist.Hint="الاسم بالعربية"/>
+                                 materialDesign:HintAssist.Hint="{DynamicResource HintNameAr}"/>
 
                         <TextBox Grid.Column="2" Text="{Binding EditNameEn, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                                 materialDesign:HintAssist.Hint="الاسم بالإنجليزية"/>
+                                 materialDesign:HintAssist.Hint="{DynamicResource HintNameEn}"/>
                     </Grid>
 
                     <Grid Margin="0,0,0,12">
@@ -169,11 +168,11 @@
 
                         <TextBox Grid.Column="0" Text="{Binding EditParentNuclide, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                                 materialDesign:HintAssist.Hint="النظير الأب (Parent Nuclide)"/>
+                                 materialDesign:HintAssist.Hint="{DynamicResource HintParentNuclide}"/>
 
                         <TextBox Grid.Column="2" Text="{Binding EditTargetMaterial, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                                 materialDesign:HintAssist.Hint="مادة الهدف (Be, B, Li, F)"/>
+                                 materialDesign:HintAssist.Hint="{DynamicResource HintTargetMaterial}"/>
                     </Grid>
 
                     <Grid Margin="0,0,0,12">
@@ -185,12 +184,12 @@
 
                         <TextBox Grid.Column="0" Text="{Binding EditHalfLifeText, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                                 materialDesign:HintAssist.Hint="عمر النصف (Half-life) *"/>
+                                 materialDesign:HintAssist.Hint="{DynamicResource HintHalfLifeReq}"/>
 
                         <ComboBox Grid.Column="2" ItemsSource="{Binding CommonUnits}"
                                   SelectedItem="{Binding EditHalfLifeUnit}"
                                   Style="{StaticResource MaterialDesignFloatingHintComboBox}"
-                                  materialDesign:HintAssist.Hint="وحدة عمر النصف *"/>
+                                  materialDesign:HintAssist.Hint="{DynamicResource HintHalfLifeUnitReq}"/>
                     </Grid>
 
                     <Grid Margin="0,0,0,12">
@@ -202,16 +201,16 @@
 
                         <TextBox Grid.Column="0" Text="{Binding EditAverageEnergyText, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                                 materialDesign:HintAssist.Hint="متوسط طاقة النيترونات (MeV)"/>
+                                 materialDesign:HintAssist.Hint="{DynamicResource HintAverageEnergyMev}"/>
 
                         <TextBox Grid.Column="2" Text="{Binding EditNeutronYield, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                                 materialDesign:HintAssist.Hint="المردود النيتروني (Neutron Yield)"/>
+                                 materialDesign:HintAssist.Hint="{DynamicResource HintNeutronYield}"/>
                     </Grid>
 
                     <TextBox Text="{Binding EditNotes, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                             materialDesign:HintAssist.Hint="ملاحظات ومرجع المعايرة"
+                             materialDesign:HintAssist.Hint="{DynamicResource HintNeutronTypeNotes}"
                              Margin="0,0,0,20"/>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">

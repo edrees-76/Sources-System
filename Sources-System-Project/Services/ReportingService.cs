@@ -1389,8 +1389,17 @@ namespace Sources.Services
                     worksheet.Cell(row, 1).Value = index++;
                     worksheet.Cell(row, 2).Value = s.SourceCode;
                     worksheet.Cell(row, 3).Value = s.NeutronSourceType?.Code ?? "-";
-                    worksheet.Cell(row, 4).Value = s.EmissionRate.ToString("N2");
-                    worksheet.Cell(row, 5).Value = s.RelativeExpandedUncertaintyPercent.HasValue ? $"{s.RelativeExpandedUncertaintyPercent:N1}%" : "-";
+                    worksheet.Cell(row, 4).Value = s.EmissionRate;
+                    worksheet.Cell(row, 4).Style.NumberFormat.Format = "#,##0.00";
+                    if (s.RelativeExpandedUncertaintyPercent.HasValue)
+                    {
+                        worksheet.Cell(row, 5).Value = s.RelativeExpandedUncertaintyPercent.Value;
+                        worksheet.Cell(row, 5).Style.NumberFormat.Format = "0.0\"%\"";
+                    }
+                    else
+                    {
+                        worksheet.Cell(row, 5).Value = "-";
+                    }
                     worksheet.Cell(row, 6).Value = s.Location?.LocationName ?? "غير محدد";
                     worksheet.Cell(row, 7).Value = s.ArabicStatus;
                     worksheet.Cell(row, 8).Value = s.CalibrationDate?.ToString("yyyy-MM-dd") ?? "-";

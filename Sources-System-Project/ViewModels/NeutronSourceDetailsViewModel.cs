@@ -1,7 +1,9 @@
 using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Sources.Helpers;
 using Sources.Models;
+using Sources.Services;
 
 namespace Sources.ViewModels;
 
@@ -10,11 +12,14 @@ namespace Sources.ViewModels;
 /// </summary>
 public partial class NeutronSourceDetailsViewModel : ObservableObject
 {
+    private readonly IUserService? _userService;
+
     [ObservableProperty] private NeutronSource _neutronSource;
 
-    public NeutronSourceDetailsViewModel(NeutronSource source)
+    public NeutronSourceDetailsViewModel(NeutronSource source, IUserService? userService = null)
     {
-        _neutronSource = source;
+        _neutronSource = source ?? throw new ArgumentNullException(nameof(source));
+        _userService = userService ?? (App.ServiceProvider?.GetService(typeof(IUserService)) as IUserService);
     }
 
     public string SourceCode => NeutronSource.SourceCode;
@@ -32,11 +37,42 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
     public string EmissionRateFormatted => $"{NeutronSource.EmissionRate:N2} n/s";
     public string UncertaintyFormatted => NeutronSource.RelativeExpandedUncertaintyPercent.HasValue ? $"{NeutronSource.RelativeExpandedUncertaintyPercent.Value:N1}%" : "-";
     public string CalibrationDateFormatted => NeutronSource.CalibrationDate?.ToString("yyyy/MM/dd") ?? "-";
-    public string LocationDisplay => NeutronSource.Location?.LocationName ?? "غير محدد";
-    public string LocationDetails => NeutronSource.Location != null ? $"مبنى: {NeutronSource.Location.Building ?? "-"} | غرفة: {NeutronSource.Location.Room ?? "-"}" : "-";
+    public string LocationDisplay => NeutronSource.Location?.LocationName ?? (TranslationHelper.GetString("TextUnspecified") ?? "غير محدد");
+    public string LocationDetails
+    {
+        get
+        {
+            if (NeutronSource.Location == null) return "-";
+            string bldg = TranslationHelper.GetString("ColBuilding") ?? "مبنى";
+            string rm = TranslationHelper.GetString("ColRoom") ?? "غرفة";
+            return $"{bldg}: {NeutronSource.Location.Building ?? "-"} | {rm}: {NeutronSource.Location.Room ?? "-"}";
+        }
+    }
     public string StatusArabic => NeutronSource.ArabicStatus;
     public string StatusColor => NeutronSource.StatusColor;
     public string Notes => !string.IsNullOrWhiteSpace(NeutronSource.Notes) ? NeutronSource.Notes : "-";
     public string CreatedAtFormatted => NeutronSource.CreatedAt.ToString("yyyy/MM/dd HH:mm");
-    public string AddedBy => NeutronSource.AddedBy.HasValue ? NeutronSource.AddedBy.Value.ToString() : "-";
+    public string UpdatedAtFormatted => "-";
+    
+    public string AddedBy
+    {
+        get
+        {
+            if (!NeutronSource.AddedBy.HasValue) return "-";
+            try
+            {
+                var user = _userService?.GetUserById(NeutronSource.AddedBy.Value);
+                if (user != null && !string.IsNullOrWhiteSpace(user.FullName))
+                {
+                    return user.FullName;
+                }
+                if (user != null && !string.IsNullOrWhiteSpace(user.Username))
+                {
+                    return user.Username;
+                }
+            }
+            catch { }
+            return NeutronSource.AddedBy.Value.ToString();
+        }
+    }
 }

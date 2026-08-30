@@ -406,4 +406,168 @@ public class NeutronSourcesUITests : IDisposable
             if (File.Exists(tempExcel)) File.Delete(tempExcel);
         }
     }
+
+    [Fact]
+    public void NeutronSourceDetailsViewModel_AddedBy_ResolvesUserNameFromUserService()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var mockUserService = new Mock<IUserService>();
+        mockUserService.Setup(u => u.GetUserById(userId)).Returns(new User
+        {
+            Id = userId,
+            Username = "dr_radiation",
+            FullName = "د. أحمد الإشعاعي"
+        });
+
+        var neutron = new NeutronSource
+        {
+            Id = Guid.NewGuid(),
+            SourceCode = "NS-USR-01",
+            EmissionRate = 123456,
+            AddedBy = userId,
+            CreatedAt = DateTime.Now
+        };
+
+        // Act
+        var vm = new NeutronSourceDetailsViewModel(neutron, mockUserService.Object);
+
+        // Assert
+        Assert.Equal("د. أحمد الإشعاعي", vm.AddedBy);
+        Assert.DoesNotContain(userId.ToString(), vm.AddedBy);
+    }
+
+    [Fact]
+    public void NeutronSourceTypesViewModel_OnEditHalfLifeTextChanged_InvalidInputResetsToZero()
+    {
+        // Arrange
+        var mockService = new Mock<INeutronSourceTypeService>();
+        mockService.Setup(s => s.GetAll()).Returns(new List<NeutronSourceType>());
+        var vm = new NeutronSourceTypesViewModel(mockService.Object);
+
+        // Act 1: valid number
+        vm.EditHalfLifeText = "432.2";
+        Assert.Equal(432.2, vm.EditHalfLife);
+
+        // Act 2: invalid string input
+        vm.EditHalfLifeText = "invalid-text";
+        Assert.Equal(0, vm.EditHalfLife);
+    }
+
+    [Fact]
+    public void LocationDetailsViewModel_DisplaysAndFilters_NeutronSources()
+    {
+        // Arrange
+        var loc = new Location { Id = _locationId, LocationName = "Neutron Vault" };
+        var neutronList = new List<NeutronSource>
+        {
+            new NeutronSource
+            {
+                Id = Guid.NewGuid(),
+                SourceCode = "NS-LOC-01",
+                LocationId = _locationId,
+                EmissionRate = 2000000,
+                Status = "Storage",
+                NeutronSourceType = new NeutronSourceType { Code = "Cf-252", NameAr = "كاليفورنيوم" }
+            },
+            new NeutronSource
+            {
+                Id = Guid.NewGuid(),
+                SourceCode = "NS-LOC-02",
+                LocationId = _locationId,
+                EmissionRate = 3500000,
+                Status = "InUse",
+                NeutronSourceType = new NeutronSourceType { Code = "Am-241/Be", NameAr = "أمريسيوم" }
+            }
+        };
+
+        var mockNeutronService = new Mock<INeutronSourceService>();
+        mockNeutronService.Setup(s => s.GetByLocation(_locationId)).Returns(neutronList);
+
+        // Act
+        var vm = new LocationDetailsViewModel(
+            location: loc,
+            sources: new List<Source>(),
+            reportingService: null,
+            neutronSources: neutronList,
+            neutronSourceService: mockNeutronService.Object);
+
+        // Assert initial load
+        Assert.True(vm.HasNeutronSources);
+        Assert.Equal(2, vm.TotalNeutronSourcesCount);
+        Assert.Equal(2, vm.FilteredNeutronSourcesCount);
+
+        // Act - Filter by Status
+        vm.SelectedStatusFilter = "في المخزن";
+        // Assert
+        Assert.Single(vm.FilteredNeutronSources);
+        Assert.Equal("NS-LOC-01", vm.FilteredNeutronSources[0].SourceCode);
+
+        // Act - Search by Code
+        vm.SelectedStatusFilter = "الكل";
+        vm.SearchText = "Am-241";
+        // Assert
+        Assert.Single(vm.FilteredNeutronSources);
+        Assert.Equal("NS-LOC-02", vm.FilteredNeutronSources[0].SourceCode);
+    }
+
+    [Fact]
+    public void Localization_EnglishAndArabic_ContainAllNeutronKeys()
+    {
+        // Arrange - Load resource dictionary files directly from disk
+        var baseDir = AppContext.BaseDirectory;
+        // Search for Sources-System-Project/Resources/Strings.ar.xaml and Strings.en.xaml
+        var arPath = Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\Sources-System-Project\Resources\Strings.ar.xaml"));
+        var enPath = Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\Sources-System-Project\Resources\Strings.en.xaml"));
+
+        Assert.True(File.Exists(arPath), $"Arabic strings file not found at {arPath}");
+        Assert.True(File.Exists(enPath), $"English strings file not found at {enPath}");
+
+        var arContent = File.ReadAllText(arPath);
+        var enContent = File.ReadAllText(enPath);
+
+        var requiredKeys = new[]
+        {
+            "TabNeutronSources",
+            "BtnAddNeutronSource",
+            "BtnManageNeutronTypes",
+            "HintSearchNeutronSource",
+            "HeaderRefType",
+            "HeaderEmissionRate",
+            "HeaderUncertaintyPercent",
+            "MsgNoNeutronSourcesRecorded",
+            "MsgNoNeutronSourcesHint",
+            "MsgNoSearchNeutronSource",
+            "MsgConfirmDeleteNeutronSource",
+            "MsgNeutronSourceNotFound",
+            "TitleNeutronSourceDetails",
+            "LabelSourceCategory",
+            "RadioCategoryStandardSource",
+            "RadioCategoryNeutronSource",
+            "CardNeutronEmissionProps",
+            "FieldNeutronRefTypeReq",
+            "FieldEmissionRateReq",
+            "FieldUncertaintyPercent",
+            "DetailCardNeutronIdentity",
+            "DetailLabelSourceCode",
+            "DetailLabelSerialNumber",
+            "DetailLabelNeutronRefType",
+            "DetailLabelReactionType",
+            "DetailCardNeutronEmissionProps",
+            "DetailLabelEmissionRate",
+            "DetailLabelUncertainty",
+            "DetailCardLocationNotes",
+            "TitleNeutronSourceTypes",
+            "BtnAddNeutronType",
+            "BtnNeutronInventoryReport",
+            "HeaderLocationNeutronSources"
+        };
+
+        foreach (var key in requiredKeys)
+        {
+            Assert.Contains($"x:Key=\"{key}\"", arContent);
+            Assert.Contains($"x:Key=\"{key}\"", enContent);
+        }
+    }
 }
+

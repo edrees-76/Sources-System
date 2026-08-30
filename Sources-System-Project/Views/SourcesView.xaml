@@ -742,7 +742,7 @@
                             <materialDesign:PackIcon Kind="FilterVariant" Width="20" Height="20" Foreground="#0D9488" VerticalAlignment="Center" DockPanel.Dock="Right" Margin="0,0,8,0"/>
 
                             <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Width="320"
-                                     Style="{DynamicResource SearchBox}" materialDesign:HintAssist.Hint="بحث بكود المصدر، النوع، الرقم التسلسلي، الموقع..."
+                                     Style="{DynamicResource SearchBox}" materialDesign:HintAssist.Hint="{DynamicResource HintSearchNeutronSource}"
                                      DockPanel.Dock="Right" BorderThickness="0,0,0,1" BorderBrush="#0D9488">
                                 <TextBox.InputBindings>
                                     <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
@@ -783,10 +783,10 @@
                                       Visibility="{Binding HasNeutronSources, Converter={StaticResource BoolToVis}}">
                                 <DataGrid.Columns>
                                     <!-- كود المصدر -->
-                                    <DataGridTextColumn Header="كود المصدر" Binding="{Binding SourceCode}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource BoldCenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding SourceCode}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource BoldCenterAligned}"/>
 
                                     <!-- النوع المرجعي -->
-                                    <DataGridTemplateColumn Header="النوع المرجعي" Width="Auto" MinWidth="130">
+                                    <DataGridTemplateColumn Header="{DynamicResource HeaderRefType}" Width="Auto" MinWidth="130">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -798,10 +798,10 @@
                                     </DataGridTemplateColumn>
 
                                     <!-- الموقع -->
-                                    <DataGridTextColumn Header="الموقع" Binding="{Binding Location.LocationName, TargetNullValue='—'}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName, TargetNullValue='—'}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
 
                                     <!-- معدل الانبعاث -->
-                                    <DataGridTemplateColumn Header="معدل الانبعاث (n/s)" Width="Auto" MinWidth="140">
+                                    <DataGridTemplateColumn Header="{DynamicResource HeaderEmissionRate}" Width="Auto" MinWidth="140">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <Border Background="#1A0D9488" CornerRadius="4" Padding="6,3" Margin="4,2" HorizontalAlignment="Center">
@@ -812,10 +812,10 @@
                                     </DataGridTemplateColumn>
 
                                     <!-- نسبة عدم اليقين -->
-                                    <DataGridTextColumn Header="عدم اليقين %" Binding="{Binding RelativeUncertaintyPercent, StringFormat={}{0:N1}%, TargetNullValue='—'}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource HeaderUncertaintyPercent}" Binding="{Binding RelativeExpandedUncertaintyPercent, StringFormat={}{0:N1}%, TargetNullValue='—'}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterAligned}"/>
 
                                     <!-- الحالة -->
-                                    <DataGridTemplateColumn Header="الحالة" Width="Auto" MinWidth="100">
+                                    <DataGridTemplateColumn Header="{DynamicResource ColStatus}" Width="Auto" MinWidth="100">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <Border Background="{Binding StatusColor, Converter={StaticResource HexToBrush}}" CornerRadius="6" Padding="8,3" HorizontalAlignment="Center">
@@ -826,10 +826,10 @@
                                     </DataGridTemplateColumn>
 
                                     <!-- تاريخ المعايرة -->
-                                    <DataGridTextColumn Header="تاريخ المعايرة" Binding="{Binding CalibrationDate, StringFormat='yyyy/MM/dd'}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColCalibrationDate}" Binding="{Binding CalibrationDate, StringFormat='yyyy/MM/dd'}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
 
                                     <!-- إجراءات -->
-                                    <DataGridTemplateColumn Header="إجراءات" Width="120">
+                                    <DataGridTemplateColumn Header="{DynamicResource ColActions}" Width="120">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -838,7 +838,7 @@
                                                             CommandParameter="{Binding}"
                                                             Style="{StaticResource MaterialDesignToolForegroundButton}"
                                                             Padding="4" Height="30" Width="30"
-                                                            Foreground="#0D9488" ToolTip="عرض التفاصيل">
+                                                            Foreground="#0D9488" ToolTip="{DynamicResource ToolTipViewDetails}">
                                                         <materialDesign:PackIcon Kind="Eye" Width="18" Height="18"/>
                                                     </Button>
                                                     <!-- تعديل -->
@@ -846,7 +846,7 @@
                                                             CommandParameter="{Binding}"
                                                             Style="{StaticResource MaterialDesignToolForegroundButton}"
                                                             Padding="4" Height="30" Width="30"
-                                                            Foreground="{DynamicResource PrimaryBrush}" ToolTip="تعديل">
+                                                            Foreground="{DynamicResource PrimaryBrush}" ToolTip="{DynamicResource CtxEdit}">
                                                         <materialDesign:PackIcon Kind="Pencil" Width="18" Height="18"/>
                                                     </Button>
                                                     <!-- حذف -->
@@ -854,7 +854,7 @@
                                                             CommandParameter="{Binding}"
                                                             Style="{StaticResource MaterialDesignToolForegroundButton}"
                                                             Padding="4" Height="30" Width="30"
-                                                            Foreground="{DynamicResource DangerBrush}" ToolTip="حذف">
+                                                            Foreground="{DynamicResource DangerBrush}" ToolTip="{DynamicResource CtxDelete}">
                                                         <materialDesign:PackIcon Kind="Delete" Width="18" Height="18"/>
                                                     </Button>
                                                 </StackPanel>
@@ -869,8 +869,8 @@
                                     Visibility="{Binding HasNeutronSources, Converter={StaticResource InverseBoolToVis}}">
                                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                                     <materialDesign:PackIcon Kind="AtomVariant" Width="54" Height="54" Foreground="#0D9488" HorizontalAlignment="Center" Margin="0,0,0,12"/>
-                                    <TextBlock Text="لا توجد مصادر نيترونية مسجلة" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="يمكنك البدء بإضافة مصدر نيتروني جديد من زر الإضافة أعلاه." FontSize="13" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                                    <TextBlock Text="{DynamicResource MsgNoNeutronSourcesRecorded}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource MsgNoNeutronSourcesHint}" FontSize="13" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,6,0,0"/>
                                 </StackPanel>
                             </Border>
                         </Grid>
@@ -882,10 +882,10 @@
                         <DockPanel>
                             <TextBlock Text="{Binding NeutronPageStatusText}" Foreground="{DynamicResource TextSecondary}" FontSize="12" FontFamily="Segoe UI" VerticalAlignment="Center" DockPanel.Dock="Right"/>
                             <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                                <Button Command="{Binding FirstNeutronPageCommand}" Style="{StaticResource MaterialDesignToolButton}" Height="32" Width="32" Padding="4">
+                                <Button Command="{Binding FirstNeutronPageCommand}" Style="{StaticResource MaterialDesignToolButton}" Height="32" Width="32" Padding="4" ToolTip="{DynamicResource BtnFirstPage}">
                                     <materialDesign:PackIcon Kind="ChevronDoubleRight" Width="20" Height="20" Foreground="#0D9488"/>
                                 </Button>
-                                <Button Command="{Binding PreviousNeutronPageCommand}" Style="{StaticResource MaterialDesignToolButton}" Height="32" Width="32" Padding="4">
+                                <Button Command="{Binding PreviousNeutronPageCommand}" Style="{StaticResource MaterialDesignToolButton}" Height="32" Width="32" Padding="4" ToolTip="{DynamicResource BtnPrevious}">
                                     <materialDesign:PackIcon Kind="ChevronRight" Width="20" Height="20" Foreground="#0D9488"/>
                                 </Button>
                                 <Border Background="{DynamicResource InputBackground}" CornerRadius="6" Padding="12,4" Margin="4,0">
@@ -898,10 +898,10 @@
                                         </TextBlock.Text>
                                     </TextBlock>
                                 </Border>
-                                <Button Command="{Binding NextNeutronPageCommand}" Style="{StaticResource MaterialDesignToolButton}" Height="32" Width="32" Padding="4">
+                                <Button Command="{Binding NextNeutronPageCommand}" Style="{StaticResource MaterialDesignToolButton}" Height="32" Width="32" Padding="4" ToolTip="{DynamicResource BtnNext}">
                                     <materialDesign:PackIcon Kind="ChevronLeft" Width="20" Height="20" Foreground="#0D9488"/>
                                 </Button>
-                                <Button Command="{Binding LastNeutronPageCommand}" Style="{StaticResource MaterialDesignToolButton}" Height="32" Width="32" Padding="4">
+                                <Button Command="{Binding LastNeutronPageCommand}" Style="{StaticResource MaterialDesignToolButton}" Height="32" Width="32" Padding="4" ToolTip="{DynamicResource BtnLastPage}">
                                     <materialDesign:PackIcon Kind="ChevronDoubleLeft" Width="20" Height="20" Foreground="#0D9488"/>
                                 </Button>
                             </StackPanel>
@@ -1463,14 +1463,14 @@
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
                                             <materialDesign:PackIcon Kind="ShapePlus" Width="18" Height="18" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                            <TextBlock Text="فئة المصدر:" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{DynamicResource LabelSourceCategory}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                            <RadioButton Content="مصدر مشع عادي (غاما / بيتا / ألفا)"
+                                            <RadioButton Content="{DynamicResource RadioCategoryStandardSource}"
                                                          IsChecked="{Binding IsNeutronForm, Converter={StaticResource InverseBoolConverter}}"
                                                          IsEnabled="{Binding IsNew}"
                                                          Margin="0,0,20,0" FontWeight="SemiBold"/>
-                                            <RadioButton Content="مصدر نيتروني (Neutron Source)"
+                                            <RadioButton Content="{DynamicResource RadioCategoryNeutronSource}"
                                                          IsChecked="{Binding IsNeutronForm}"
                                                          IsEnabled="{Binding IsNew}"
                                                          FontWeight="SemiBold"/>
@@ -1620,7 +1620,7 @@
                                         <Border Background="#120D9488" CornerRadius="8,8,0,0" Padding="16,10" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1">
                                             <StackPanel Orientation="Horizontal">
                                                 <materialDesign:PackIcon Kind="AtomVariant" Width="16" Height="16" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                                <TextBlock Text="الخصائص ومعدل انبعاث النيترونات" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                <TextBlock Text="{DynamicResource CardNeutronEmissionProps}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
                                             </StackPanel>
                                         </Border>
 
@@ -1630,7 +1630,7 @@
                                                 <StackPanel Margin="0,0,12,0">
                                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                                         <materialDesign:PackIcon Kind="ShapePlus" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                                        <TextBlock Text="النوع النيتروني المرجعي *" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                        <TextBlock Text="{DynamicResource FieldNeutronRefTypeReq}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
                                                     </StackPanel>
                                                     <ComboBox ItemsSource="{Binding NeutronSourceTypes}" SelectedValue="{Binding EditNeutronTypeId}" 
                                                               SelectedValuePath="Id" DisplayMemberPath="Code"
@@ -1641,11 +1641,11 @@
                                                 <StackPanel>
                                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                                         <materialDesign:PackIcon Kind="Wave" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                                        <TextBlock Text="معدل انبعاث النيترونات (n/s) *" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                        <TextBlock Text="{DynamicResource FieldEmissionRateReq}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
                                                     </StackPanel>
                                                     <TextBox Text="{Binding EditEmissionRateText, UpdateSourceTrigger=LostFocus}"
                                                              Style="{StaticResource FormTextBox}"
-                                                             materialDesign:HintAssist.Hint="مثال: 2200000"/>
+                                                             materialDesign:HintAssist.Hint="{DynamicResource HintEmissionRateExample}"/>
                                                 </StackPanel>
                                             </UniformGrid>
 
@@ -1654,11 +1654,11 @@
                                                 <StackPanel>
                                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                                         <materialDesign:PackIcon Kind="PercentOutline" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                                        <TextBlock Text="نسبة عدم اليقين الموسعة (k=2) %" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                        <TextBlock Text="{DynamicResource FieldUncertaintyPercent}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
                                                     </StackPanel>
                                                     <TextBox Text="{Binding EditRelativeUncertaintyText, UpdateSourceTrigger=LostFocus}"
                                                              Style="{StaticResource FormTextBox}"
-                                                             materialDesign:HintAssist.Hint="مثال: 3.5"/>
+                                                             materialDesign:HintAssist.Hint="{DynamicResource HintUncertaintyExample}"/>
                                                 </StackPanel>
                                             </StackPanel>
                                         </StackPanel>

@@ -402,7 +402,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
 
         if (NeutronSources.Count == 0 && !string.IsNullOrWhiteSpace(SearchText))
         {
-            DialogHelper.ShowInfo("لم يتم العثور على مصادر نيترونية تطابق معايير البحث.", "نتائج البحث");
+            DialogHelper.ShowInfo(TranslationHelper.GetString("MsgNoSearchNeutronSource") ?? TranslationHelper.GetString("MsgNoSearchSource") ?? "لم يتم العثور على مصادر نيترونية تطابق معايير البحث.", TranslationHelper.GetString("TitleSearchResult") ?? "نتائج البحث");
         }
 
         Locations = new ObservableCollection<Location>(_locationService?.GetAll() ?? new List<Location>());
@@ -694,7 +694,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         string confirmTitle = TranslationHelper.GetString("AlertConfirmation") ?? "تأكيد الحذف";
         if (!DialogHelper.ShowConfirmation(confirmMsg, confirmTitle)) return;
 
-        var result = _neutronSourceService.Delete(target.Id);
+        var result = _neutronSourceService?.Delete(target.Id) ?? (false, "خدمة المصادر النيترونية غير متاحة");
         ShowMessage(result.Message);
         if (!result.Success)
         {
@@ -722,7 +722,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
             window.Owner = System.Windows.Application.Current.MainWindow;
         }
         window.ShowDialog();
-        NeutronSourceTypes = new ObservableCollection<NeutronSourceType>(_neutronSourceTypeService.GetAll());
+        NeutronSourceTypes = new ObservableCollection<NeutronSourceType>(_neutronSourceTypeService?.GetAll() ?? new List<NeutronSourceType>());
     }
 
     [RelayCommand]
@@ -833,14 +833,14 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                 };
 
                 var neutronResult = IsNew 
-                    ? _neutronSourceService.Create(neutronSource) 
-                    : _neutronSourceService.Update(neutronSource);
+                    ? (_neutronSourceService?.Create(neutronSource) ?? (false, "خدمة المصادر النيترونية غير متاحة"))
+                    : (_neutronSourceService?.Update(neutronSource) ?? (false, "خدمة المصادر النيترونية غير متاحة"));
 
                 ShowMessage(neutronResult.Message);
                 if (neutronResult.Success)
                 {
                     IsEditing = false;
-                    DialogHelper.ShowInfo(neutronResult.Message, "نجاح العملية");
+                    DialogHelper.ShowInfo(neutronResult.Message, TranslationHelper.GetString("TitleSuccess") ?? "نجاح العملية");
                     await LoadNeutronDataAsync();
                     WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
                 }

@@ -101,6 +101,7 @@ public static class SourceNavigationHelper
         {
             NeutronSource ns => ns,
             ReportNeutronInventoryRow rnir => rnir.Source,
+            LocationNeutronSourceRow lnsr => lnsr.NeutronSource,
             Guid id => GetNeutronSourceById(id),
             _ => sourceId.HasValue ? GetNeutronSourceById(sourceId.Value) : null
         };
@@ -113,8 +114,8 @@ public static class SourceNavigationHelper
         if (source == null)
         {
             DialogHelper.ShowWarning(
-                "المصدر النيتروني غير موجود أو تم حذفه من المنظومة.",
-                "تفاصيل المصدر النيتروني");
+                TranslationHelper.GetString("MsgNeutronSourceNotFound") ?? "المصدر النيتروني غير موجود أو تم حذفه من المنظومة.",
+                TranslationHelper.GetString("TitleNeutronSourceDetails") ?? "تفاصيل المصدر النيتروني");
             return;
         }
 
@@ -131,7 +132,8 @@ public static class SourceNavigationHelper
 
         try
         {
-            var viewModel = new NeutronSourceDetailsViewModel(source);
+            var userService = App.ServiceProvider?.GetService(typeof(IUserService)) as IUserService;
+            var viewModel = new NeutronSourceDetailsViewModel(source, userService);
             var window = new NeutronSourceDetailsWindow(viewModel);
 
             if (app.MainWindow != null && app.MainWindow.IsVisible && app.MainWindow != window)
@@ -193,4 +195,3 @@ public static class SourceNavigationHelper
         }
     }
 }
-

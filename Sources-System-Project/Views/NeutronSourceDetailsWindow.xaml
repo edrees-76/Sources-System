@@ -9,8 +9,7 @@
         WindowStartupLocation="CenterOwner"
         WindowState="Normal"
         Background="{DynamicResource WindowBackground}"
-        FontFamily="Segoe UI"
-        FlowDirection="RightToLeft">
+        FontFamily="Segoe UI">
 
     <Grid Margin="24">
         <Grid.RowDefinitions>
@@ -59,7 +58,7 @@
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
                             <materialDesign:PackIcon Kind="CardAccountDetailsOutline" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="بيانات المصدر والنوع المرجعي" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource DetailCardNeutronIdentity}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
                         </StackPanel>
 
                         <Grid>
@@ -75,38 +74,38 @@
 
                             <!-- كود المصدر -->
                             <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,10">
-                                <TextBlock Text="كود المصدر:" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                <TextBlock Text="{DynamicResource DetailLabelSourceCode}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                                 <TextBlock Text="{Binding SourceCode}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
                             </StackPanel>
 
                             <!-- الرقم التسلسلي -->
                             <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,10">
-                                <TextBlock Text="الرقم التسلسلي (S/N):" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                <TextBlock Text="{DynamicResource DetailLabelSerialNumber}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                                 <TextBlock Text="{Binding SerialNumber}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
                             </StackPanel>
 
                             <!-- النوع المرجعي -->
                             <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,10">
-                                <TextBlock Text="النوع النيتروني المرجعي:" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                <TextBlock Text="{DynamicResource DetailLabelNeutronRefType}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                                 <TextBlock Text="{Binding TypeCode}" FontSize="14" FontWeight="Bold" Foreground="#0D9488" Margin="0,2,0,0"/>
                                 <TextBlock Text="{Binding TypeNameAr}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
                             </StackPanel>
 
                             <!-- تفاعل التوليد -->
                             <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,0,10">
-                                <TextBlock Text="نوع التفاعل النووي:" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                <TextBlock Text="{DynamicResource DetailLabelReactionType}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                                 <TextBlock Text="{Binding ReactionType}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
                             </StackPanel>
 
                             <!-- مادة الهدف / النظير الأب -->
                             <StackPanel Grid.Row="2" Grid.Column="0">
-                                <TextBlock Text="مادة الهدف / النظير الأب:" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                <TextBlock Text="{DynamicResource DetailLabelTargetMaterialParent}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                                 <TextBlock Text="{Binding TargetMaterial}" FontSize="13" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
                             </StackPanel>
 
                             <!-- عمر النصف -->
                             <StackPanel Grid.Row="2" Grid.Column="1">
-                                <TextBlock Text="عمر النصف للنوع المرجعي:" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                <TextBlock Text="{DynamicResource DetailLabelHalfLife}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                                 <TextBlock Text="{Binding HalfLifeDisplay}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Grid>
@@ -119,7 +118,7 @@
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
                             <materialDesign:PackIcon Kind="Wave" Width="20" Height="20" Foreground="#0D9488" VerticalAlignment="Center"/>
-                            <TextBlock Text="الخصائص الإشعاعية ومعدل الانبعاث" FontSize="15" FontWeight="Bold" Foreground="#0D9488" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource DetailCardNeutronEmissionProps}" FontSize="15" FontWeight="Bold" Foreground="#0D9488" Margin="8,0,0,0" VerticalAlignment="Center"/>
                         </StackPanel>
 
                         <Grid>
@@ -134,25 +133,25 @@
 
                             <!-- معدل الانبعاث -->
                             <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,10">
-                                <TextBlock Text="معدل انبعاث النيترونات:" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                <TextBlock Text="{DynamicResource DetailLabelEmissionRate}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                                 <TextBlock Text="{Binding EmissionRateFormatted}" FontSize="16" FontWeight="Bold" Foreground="#0D9488" Margin="0,2,0,0"/>
                             </StackPanel>
 
                             <!-- نسبة عدم اليقين -->
                             <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,10">
-                                <TextBlock Text="نسبة عدم اليقين الموسعة (k=2):" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                <TextBlock Text="{DynamicResource DetailLabelUncertainty}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                                 <TextBlock Text="{Binding UncertaintyFormatted}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
                             </StackPanel>
 
                             <!-- متوسط الطاقة -->
                             <StackPanel Grid.Row="1" Grid.Column="0">
-                                <TextBlock Text="متوسط طاقة النيترونات (MeV):" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                <TextBlock Text="{DynamicResource DetailLabelAverageNeutronEnergy}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                                 <TextBlock Text="{Binding EnergyDisplay}" FontSize="13" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
                             </StackPanel>
 
                             <!-- تاريخ المعايرة -->
                             <StackPanel Grid.Row="1" Grid.Column="1">
-                                <TextBlock Text="تاريخ المعايرة / القياس المرجعي:" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                <TextBlock Text="{DynamicResource DetailLabelCalibrationDate}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                                 <TextBlock Text="{Binding CalibrationDateFormatted}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Grid>
@@ -165,7 +164,7 @@
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
                             <materialDesign:PackIcon Kind="MapMarkerOutline" Width="20" Height="20" Foreground="#10B981" VerticalAlignment="Center"/>
-                            <TextBlock Text="الموقع والتخزين والملاحظات" FontSize="15" FontWeight="Bold" Foreground="#10B981" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource DetailCardLocationNotes}" FontSize="15" FontWeight="Bold" Foreground="#10B981" Margin="8,0,0,0" VerticalAlignment="Center"/>
                         </StackPanel>
 
                         <Grid>
@@ -175,13 +174,13 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="الموقع الحالي:" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                <TextBlock Text="{DynamicResource DetailLabelCurrentLocation}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                                 <TextBlock Text="{Binding LocationDisplay}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
                                 <TextBlock Text="{Binding LocationDetails}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="1">
-                                <TextBlock Text="الملاحظات:" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                <TextBlock Text="{DynamicResource DetailLabelNotes}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                                 <TextBlock Text="{Binding Notes}" FontSize="13" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Grid>
@@ -199,17 +198,17 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="تاريخ التسجيل:" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock Text="{DynamicResource DetailLabelCreatedAt}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                             <TextBlock Text="{Binding CreatedAtFormatted}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="1">
-                            <TextBlock Text="أُضيف بواسطة:" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock Text="{DynamicResource DetailLabelAddedBy}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                             <TextBlock Text="{Binding AddedBy}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2">
-                            <TextBlock Text="آخر تحديث:" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock Text="{DynamicResource DetailLabelUpdatedAt}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                             <TextBlock Text="{Binding UpdatedAtFormatted}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
                         </StackPanel>
                     </Grid>
