@@ -35,6 +35,19 @@ namespace Sources.Views
 
         private void LoginWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            try
+            {
+                var activeUsers = _userService.GetAllUsers()
+                    .Where(u => u.IsActive && !u.IsDeleted)
+                    .Select(u => u.Username)
+                    .ToList();
+                TxtUsername.ItemsSource = activeUsers;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading active users for login dropdown: {ex.Message}");
+            }
+
             ChkRememberMe.IsChecked = SettingsHelper.RememberMe;
             if (SettingsHelper.RememberMe && !string.IsNullOrWhiteSpace(SettingsHelper.SavedUsername))
             {

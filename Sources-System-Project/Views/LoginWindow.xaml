@@ -113,15 +113,16 @@
 
                     <!-- اسم المستخدم -->
                     <TextBlock Text="{DynamicResource LabelUsername}" FontSize="13" FontWeight="SemiBold" Foreground="#1E293B" Margin="0,0,0,4" />
-                    <TextBox x:Name="TxtUsername" 
-                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                             MinHeight="46"
-                             Padding="12,0,12,0"
-                             FontSize="14"
-                             Foreground="#0F172A"
-                             Margin="0,0,0,10"
-                             KeyDown="TxtUsername_KeyDown"
-                             VerticalContentAlignment="Center" />
+                    <ComboBox x:Name="TxtUsername" 
+                              IsEditable="True"
+                              Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                              MinHeight="46"
+                              Padding="12,0,12,0"
+                              FontSize="14"
+                              Foreground="#0F172A"
+                              Margin="0,0,0,10"
+                              KeyDown="TxtUsername_KeyDown"
+                              VerticalContentAlignment="Center" />
 
                     <!-- كلمة المرور -->
                     <TextBlock Text="{DynamicResource LabelPassword}" FontSize="13" FontWeight="SemiBold" Foreground="#1E293B" Margin="0,0,0,4" />
