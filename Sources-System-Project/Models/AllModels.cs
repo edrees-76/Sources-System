@@ -899,3 +899,105 @@ public class LeakTestRecord
     public string StatusDisplay => (NextDueDate.Date < DateTime.Today) ? "متأخر" : "ساري";
 }
 
+// ─── أنواع المصادر النيترونية المرجعية ───
+public class NeutronSourceType
+{
+    [Key]
+    public Guid Id { get; set; } = Guid.NewGuid();
+
+    [Required, MaxLength(50)]
+    public string Code { get; set; } = string.Empty;
+
+    [Required, MaxLength(100)]
+    public string NameEn { get; set; } = string.Empty;
+
+    [MaxLength(100)]
+    public string NameAr { get; set; } = string.Empty;
+
+    [MaxLength(50)]
+    public string ReactionType { get; set; } = string.Empty; // (α,n), Spontaneous Fission, (γ,n)
+
+    [MaxLength(50)]
+    public string? TargetMaterial { get; set; }
+
+    [MaxLength(50)]
+    public string? ParentNuclide { get; set; }
+
+    public double HalfLife { get; set; }
+
+    [MaxLength(20)]
+    public string HalfLifeUnit { get; set; } = "years";
+
+    public double? AverageNeutronEnergyMeV { get; set; }
+
+    public double? TypicalNeutronYield { get; set; }
+
+    public string? Notes { get; set; }
+
+    public bool IsDeleted { get; set; } = false;
+    public DateTime? DeletedAt { get; set; }
+    public Guid? DeletedBy { get; set; }
+    [ForeignKey(nameof(DeletedBy))]
+    public User? DeletedByUser { get; set; }
+
+    public Guid? AddedBy { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+    public ICollection<NeutronSource> NeutronSources { get; set; } = new List<NeutronSource>();
+}
+
+// ─── المصادر النيترونية ───
+public class NeutronSource
+{
+    [Key]
+    public Guid Id { get; set; } = Guid.NewGuid();
+
+    [Required, MaxLength(50)]
+    public string SourceCode { get; set; } = string.Empty;
+
+    [MaxLength(100)]
+    public string? SerialNumber { get; set; }
+
+    [Required]
+    public Guid NeutronSourceTypeId { get; set; }
+    [ForeignKey(nameof(NeutronSourceTypeId))]
+    public NeutronSourceType? NeutronSourceType { get; set; }
+
+    public Guid? LocationId { get; set; }
+    [ForeignKey(nameof(LocationId))]
+    public Location? Location { get; set; }
+
+    public double EmissionRate { get; set; } // بوحدة n/s
+
+    public double? RelativeExpandedUncertaintyPercent { get; set; }
+
+    public DateTime? CalibrationDate { get; set; }
+
+    [Required, MaxLength(30)]
+    public string Status { get; set; } = "Storage"; // Storage, InUse, Waste, Transfer
+
+    public string? Notes { get; set; }
+
+    public bool IsDeleted { get; set; } = false;
+    public DateTime? DeletedAt { get; set; }
+    public Guid? DeletedBy { get; set; }
+    [ForeignKey(nameof(DeletedBy))]
+    public User? DeletedByUser { get; set; }
+
+    public Guid? AddedBy { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+    [NotMapped]
+    public string ArabicStatus => Status switch
+    {
+        "InUse" => "قيد الاستخدام",
+        "Storage" => "في المخزن",
+        "Waste" => "نفايات",
+        "Transfer" => "نقل",
+        _ => Status
+    };
+
+    [NotMapped]
+    public string DisplaySourceCode => IsDeleted ? $"{SourceCode} (محذوف)" : SourceCode;
+}
+

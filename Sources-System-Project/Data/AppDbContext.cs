@@ -26,6 +26,8 @@ public class AppDbContext : DbContext
     public DbSet<AppSetting> AppSettings { get; set; } = null!;
     public DbSet<SourceLocationHistory> SourceLocationHistories { get; set; } = null!;
     public DbSet<LeakTestRecord> LeakTestRecords { get; set; } = null!;
+    public DbSet<NeutronSourceType> NeutronSourceTypes { get; set; } = null!;
+    public DbSet<NeutronSource> NeutronSources { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
@@ -261,6 +263,61 @@ public class AppDbContext : DbContext
         try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_LeakTestRecords_SourceId ON LeakTestRecords(SourceId);"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_LeakTestRecords_NextDueDate ON LeakTestRecords(NextDueDate);"; cmd.ExecuteNonQuery(); } catch { }
 
+        // ─── مرحلة 9: المصادر النيترونية والأنواع المرجعية (Neutron Sources) ───
+        cmd.CommandText = @"
+            CREATE TABLE IF NOT EXISTS NeutronSourceTypes (
+                Id TEXT PRIMARY KEY NOT NULL,
+                Code TEXT NOT NULL,
+                NameEn TEXT NOT NULL,
+                NameAr TEXT NOT NULL,
+                ReactionType TEXT NOT NULL,
+                TargetMaterial TEXT,
+                ParentNuclide TEXT,
+                HalfLife REAL NOT NULL,
+                HalfLifeUnit TEXT NOT NULL DEFAULT 'years',
+                AverageNeutronEnergyMeV REAL,
+                TypicalNeutronYield REAL,
+                Notes TEXT,
+                IsDeleted INTEGER NOT NULL DEFAULT 0,
+                DeletedAt TEXT,
+                DeletedBy TEXT,
+                AddedBy TEXT,
+                CreatedAt TEXT NOT NULL,
+                FOREIGN KEY (DeletedBy) REFERENCES Users(Id) ON DELETE SET NULL
+            );";
+        cmd.ExecuteNonQuery();
+
+        cmd.CommandText = @"
+            CREATE TABLE IF NOT EXISTS NeutronSources (
+                Id TEXT PRIMARY KEY NOT NULL,
+                SourceCode TEXT NOT NULL,
+                SerialNumber TEXT,
+                NeutronSourceTypeId TEXT NOT NULL,
+                LocationId TEXT,
+                EmissionRate REAL NOT NULL,
+                RelativeExpandedUncertaintyPercent REAL,
+                CalibrationDate TEXT,
+                Status TEXT NOT NULL DEFAULT 'Storage',
+                Notes TEXT,
+                IsDeleted INTEGER NOT NULL DEFAULT 0,
+                DeletedAt TEXT,
+                DeletedBy TEXT,
+                AddedBy TEXT,
+                CreatedAt TEXT NOT NULL,
+                FOREIGN KEY (NeutronSourceTypeId) REFERENCES NeutronSourceTypes(Id) ON DELETE RESTRICT,
+                FOREIGN KEY (LocationId) REFERENCES Locations(Id) ON DELETE SET NULL,
+                FOREIGN KEY (DeletedBy) REFERENCES Users(Id) ON DELETE SET NULL
+            );";
+        cmd.ExecuteNonQuery();
+
+        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_NeutronSourceTypes_IsDeleted ON NeutronSourceTypes(IsDeleted);"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "CREATE UNIQUE INDEX IF NOT EXISTS IX_NeutronSourceTypes_Code ON NeutronSourceTypes(Code) WHERE IsDeleted = 0;"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_NeutronSources_IsDeleted ON NeutronSources(IsDeleted);"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_NeutronSources_NeutronSourceTypeId ON NeutronSources(NeutronSourceTypeId);"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_NeutronSources_LocationId ON NeutronSources(LocationId);"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_NeutronSources_Status ON NeutronSources(Status);"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "CREATE UNIQUE INDEX IF NOT EXISTS IX_NeutronSources_SourceCode ON NeutronSources(SourceCode) WHERE IsDeleted = 0;"; cmd.ExecuteNonQuery(); } catch { }
+
         conn.Close();
     }
 
@@ -357,6 +414,54 @@ public class AppDbContext : DbContext
         if (toRemove.Any())
         {
             Radioisotopes.RemoveRange(toRemove);
+        }
+
+        SaveChanges();
+
+        // ─── أنواع المصادر النيترونية المرجعية (10 أنواع معتمدة) ───
+        var neutronTypeData = new[]
+        {
+            new { Code = "Cf-252", NameEn = "Californium-252", NameAr = "كاليفورنيوم-252", ReactionType = "Spontaneous Fission", TargetMaterial = (string?)null, ParentNuclide = "Cf-252", HalfLife = 2.645, HalfLifeUnit = "years", Notes = "انشطار تلقائي مستمر، طيف طاقة بمتوسط ~2.1 MeV، انبعاث عالي." },
+            new { Code = "Am-241/Be", NameEn = "Americium-241/Beryllium", NameAr = "أمريسيوم-241 / بيريليوم", ReactionType = "(α,n)", TargetMaterial = (string?)"Be", ParentNuclide = "Am-241", HalfLife = 432.2, HalfLifeUnit = "years", Notes = "الأكثر شيوعاً في التطبيقات الصناعية وسبر الآبار، متوسط طاقة ~4.2 MeV." },
+            new { Code = "Pu-239/Be", NameEn = "Plutonium-239/Beryllium", NameAr = "بلوتونيوم-239 / بيريليوم", ReactionType = "(α,n)", TargetMaterial = (string?)"Be", ParentNuclide = "Pu-239", HalfLife = 24110.0, HalfLifeUnit = "years", Notes = "مصدر قياسي مستقر جداً طويل العمر، متوسط طاقة ~4.5 MeV." },
+            new { Code = "Pu-238/Be", NameEn = "Plutonium-238/Beryllium", NameAr = "بلوتونيوم-238 / بيريليوم", ReactionType = "(α,n)", TargetMaterial = (string?)"Be", ParentNuclide = "Pu-238", HalfLife = 87.7, HalfLifeUnit = "years", Notes = "انبعاث نيتروني مرتفع بحجم مدمج، متوسط طاقة ~4.5 MeV." },
+            new { Code = "Am-241/B", NameEn = "Americium-241/Boron", NameAr = "أمريسيوم-241 / بورون", ReactionType = "(α,n)", TargetMaterial = (string?)"B", ParentNuclide = "Am-241", HalfLife = 432.2, HalfLifeUnit = "years", Notes = "طيف طاقة أقل من Am-Be بمتوسط ~2.8 MeV." },
+            new { Code = "Am-241/F", NameEn = "Americium-241/Fluorine", NameAr = "أمريسيوم-241 / فلور", ReactionType = "(α,n)", TargetMaterial = (string?)"F", ParentNuclide = "Am-241", HalfLife = 432.2, HalfLifeUnit = "years", Notes = "طاقة نيترونات متوسطة منخفضة (~1.4 MeV)." },
+            new { Code = "Am-241/Li", NameEn = "Americium-241/Lithium", NameAr = "أمريسيوم-241 / ليثيوم", ReactionType = "(α,n)", TargetMaterial = (string?)"Li", ParentNuclide = "Am-241", HalfLife = 432.2, HalfLifeUnit = "years", Notes = "نيترونات شبه حرارية ومنخفضة الطاقة بمتوسط ~0.5 MeV." },
+            new { Code = "Ra-226/Be", NameEn = "Radium-226/Beryllium (α,n)", NameAr = "راديوم-226 / بيريليوم (ألفا)", ReactionType = "(α,n)", TargetMaterial = (string?)"Be", ParentNuclide = "Ra-226", HalfLife = 1600.0, HalfLifeUnit = "years", Notes = "مصدر تاريخي قياسي ذو طيف معقد ومستوى غاما مرتفع." },
+            new { Code = "Sb-124/Be", NameEn = "Antimony-124/Beryllium", NameAr = "أنتيمون-124 / بيريليوم", ReactionType = "(γ,n)", TargetMaterial = (string?)"Be", ParentNuclide = "Sb-124", HalfLife = 60.2, HalfLifeUnit = "days", Notes = "مصدر نيترونات ضوئية شبه أحادية الطاقة (24 keV)." },
+            new { Code = "NBS-1 (Ra-Be)", NameEn = "NBS-1 Standard Radium-Beryllium", NameAr = "معيار NBS-1 راديوم-بيريليوم", ReactionType = "(γ,n)", TargetMaterial = (string?)"Be", ParentNuclide = "Ra-226", HalfLife = 1600.0, HalfLifeUnit = "years", Notes = "المصدر المعياري القومي للمعايرة والتوثيق المرجعي." }
+        };
+
+        foreach (var item in neutronTypeData)
+        {
+            var existing = NeutronSourceTypes.IgnoreQueryFilters().FirstOrDefault(nt => nt.Code == item.Code);
+            if (existing != null)
+            {
+                existing.NameEn = item.NameEn;
+                existing.NameAr = item.NameAr;
+                existing.ReactionType = item.ReactionType;
+                existing.TargetMaterial = item.TargetMaterial;
+                existing.ParentNuclide = item.ParentNuclide;
+                existing.HalfLife = item.HalfLife;
+                existing.HalfLifeUnit = item.HalfLifeUnit;
+                existing.Notes = item.Notes;
+            }
+            else
+            {
+                NeutronSourceTypes.Add(new NeutronSourceType
+                {
+                    Code = item.Code,
+                    NameEn = item.NameEn,
+                    NameAr = item.NameAr,
+                    ReactionType = item.ReactionType,
+                    TargetMaterial = item.TargetMaterial,
+                    ParentNuclide = item.ParentNuclide,
+                    HalfLife = item.HalfLife,
+                    HalfLifeUnit = item.HalfLifeUnit,
+                    Notes = item.Notes
+                });
+            }
         }
 
         SaveChanges();
@@ -652,10 +757,51 @@ public class AppDbContext : DbContext
             entity.HasIndex(l => l.NextDueDate);
         });
 
+        // ─── NeutronSourceType & NeutronSource relationships & indexing ───
+        modelBuilder.Entity<NeutronSourceType>(entity =>
+        {
+            entity.HasIndex(t => t.Code);
+            entity.HasIndex(t => t.IsDeleted);
+
+            entity.HasOne(t => t.DeletedByUser)
+                .WithMany()
+                .HasForeignKey(t => t.DeletedBy)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<NeutronSource>(entity =>
+        {
+            entity.HasOne(n => n.NeutronSourceType)
+                .WithMany(t => t.NeutronSources)
+                .HasForeignKey(n => n.NeutronSourceTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(n => n.Location)
+                .WithMany()
+                .HasForeignKey(n => n.LocationId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(n => n.DeletedByUser)
+                .WithMany()
+                .HasForeignKey(n => n.DeletedBy)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(n => n.SourceCode);
+            entity.HasIndex(n => n.SerialNumber);
+            entity.HasIndex(n => n.LocationId);
+            entity.HasIndex(n => n.Status);
+            entity.HasIndex(n => n.IsDeleted);
+        });
+
         // ─── Global Query Filters (Soft Delete) ───
         modelBuilder.Entity<Source>().HasQueryFilter(s => !s.IsDeleted);
         modelBuilder.Entity<Location>().HasQueryFilter(l => !l.IsDeleted);
         modelBuilder.Entity<User>().HasQueryFilter(u => !u.IsDeleted);
         modelBuilder.Entity<Radioisotope>().HasQueryFilter(r => !r.IsDeleted);
+        modelBuilder.Entity<NeutronSourceType>().HasQueryFilter(t => !t.IsDeleted);
+        modelBuilder.Entity<NeutronSource>().HasQueryFilter(n => !n.IsDeleted);
     }
 }
