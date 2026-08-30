@@ -1167,7 +1167,7 @@
     <system:String x:Key="MenuDeletions">المحذوفات</system:String>
     <system:String x:Key="NavDeletions">سجل المحذوفات الإداري</system:String>
     <system:String x:Key="TitleDeletions">سجل المحذوفات الموحّد</system:String>
-    <system:String x:Key="SubtitleDeletions">عرض وإدارة كافة العناصر المحذوفة من الكيانات الأربعة (المصادر، المواقع، المستخدمين، النظائر)</system:String>
+    <system:String x:Key="SubtitleDeletions">عرض وإدارة كافة العناصر المحذوفة من الكيانات الخمسة (المصادر المشعة، المصادر النيترونية، المواقع، المستخدمين، النظائر)</system:String>
     <system:String x:Key="TitleAdminPasswordRequired">التحقق من هوية مدير النظام</system:String>
     <system:String x:Key="PromptAdminPasswordRequired">يرجى إدخال كلمة مرور مدير النظام للمتابعة</system:String>
     <system:String x:Key="PromptAdminPasswordForDeletions">يرجى إدخال كلمة مرور مدير النظام للوصول إلى شاشة المحذوفات الإدارية</system:String>

@@ -1170,7 +1170,7 @@
     <system:String x:Key="MenuDeletions">Deletions</system:String>
     <system:String x:Key="NavDeletions">Administrative Deletions Log</system:String>
     <system:String x:Key="TitleDeletions">Unified Deletions Log</system:String>
-    <system:String x:Key="SubtitleDeletions">View and manage all deleted records across the four entities (Sources, Locations, Users, Radioisotopes)</system:String>
+    <system:String x:Key="SubtitleDeletions">View and manage all deleted records across the five entities (Radioactive Sources, Neutron Sources, Locations, Users, Radioisotopes)</system:String>
     <system:String x:Key="TitleAdminPasswordRequired">Admin Identity Verification</system:String>
     <system:String x:Key="PromptAdminPasswordRequired">Please enter administrator password to proceed:</system:String>
     <system:String x:Key="PromptAdminPasswordForDeletions">Please enter administrator password to open the administrative deletions view:</system:String>

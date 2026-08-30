@@ -991,9 +991,9 @@ public class NeutronSource
     public string ArabicStatus => Status switch
     {
         "InUse" => "قيد الاستخدام",
-        "Storage" => "في المخزن",
+        "Storage" => "مخزن",
         "Waste" => "نفايات",
-        "Transfer" => "نقل",
+        "Transfer" => "قيد النقل",
         _ => Status
     };
 

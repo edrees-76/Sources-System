@@ -122,13 +122,32 @@ public partial class LocationDetailsViewModel : ObservableObject
         ApplyFilters();
     }
 
+    private static string? MapFilterToStatusCode(string? filter)
+    {
+        if (string.IsNullOrWhiteSpace(filter) || filter == "الكل" || filter.Equals("All", StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        return filter.Trim() switch
+        {
+            "قيد الاستخدام" or "InUse" => "InUse",
+            "مخزن" or "في المخزن" or "Storage" => "Storage",
+            "نفايات" or "Waste" => "Waste",
+            "قيد النقل" or "نقل" or "Transfer" => "Transfer",
+            _ => filter.Trim()
+        };
+    }
+
     public void ApplyFilters()
     {
+        var targetStatusCode = MapFilterToStatusCode(SelectedStatusFilter);
+
         // 1. تصفية المصادر المشعة العادية
         IEnumerable<LocationSourceRow> query = _allSourceRows;
-        if (!string.IsNullOrWhiteSpace(SelectedStatusFilter) && SelectedStatusFilter != "الكل")
+        if (!string.IsNullOrWhiteSpace(targetStatusCode))
         {
-            query = query.Where(r => r.ArabicStatus.Equals(SelectedStatusFilter, StringComparison.OrdinalIgnoreCase));
+            query = query.Where(r => 
+                (r.Source.Status != null && r.Source.Status.Equals(targetStatusCode, StringComparison.OrdinalIgnoreCase)) ||
+                r.ArabicStatus.Equals(SelectedStatusFilter, StringComparison.OrdinalIgnoreCase));
         }
 
         if (!string.IsNullOrWhiteSpace(SearchText))
@@ -155,9 +174,11 @@ public partial class LocationDetailsViewModel : ObservableObject
 
         // 2. تصفية المصادر النيترونية
         IEnumerable<LocationNeutronSourceRow> neutronQuery = _allNeutronSourceRows;
-        if (!string.IsNullOrWhiteSpace(SelectedStatusFilter) && SelectedStatusFilter != "الكل")
+        if (!string.IsNullOrWhiteSpace(targetStatusCode))
         {
-            neutronQuery = neutronQuery.Where(r => r.ArabicStatus.Equals(SelectedStatusFilter, StringComparison.OrdinalIgnoreCase));
+            neutronQuery = neutronQuery.Where(r => 
+                (r.NeutronSource.Status != null && r.NeutronSource.Status.Equals(targetStatusCode, StringComparison.OrdinalIgnoreCase)) ||
+                r.ArabicStatus.Equals(SelectedStatusFilter, StringComparison.OrdinalIgnoreCase));
         }
 
         if (!string.IsNullOrWhiteSpace(SearchText))

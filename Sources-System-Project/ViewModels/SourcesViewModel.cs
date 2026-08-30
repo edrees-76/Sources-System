@@ -311,7 +311,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         ActiveSourcesCount = allSources.Count;
         var deletedList = await Task.Run(() => _sourceService.GetDeletedSources());
         DeletedSourcesCount = deletedList.Count;
-        var neutronList = await Task.Run(() => _neutronSourceService.GetAll());
+        var neutronList = await Task.Run(() => _neutronSourceService?.GetAll() ?? new List<NeutronSource>()) ?? new List<NeutronSource>();
         NeutronSourcesCount = neutronList.Count;
 
         // تطبيق الفلاتر

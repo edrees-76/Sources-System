@@ -203,7 +203,7 @@
                                  Style="{StaticResource MaterialDesignFloatingHintTextBox}"
                                  materialDesign:HintAssist.Hint="{DynamicResource HintAverageEnergyMev}"/>
 
-                        <TextBox Grid.Column="2" Text="{Binding EditNeutronYield, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox Grid.Column="2" Text="{Binding EditNeutronYieldText, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource MaterialDesignFloatingHintTextBox}"
                                  materialDesign:HintAssist.Hint="{DynamicResource HintNeutronYield}"/>
                     </Grid>

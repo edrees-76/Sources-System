@@ -569,5 +569,92 @@ public class NeutronSourcesUITests : IDisposable
             Assert.Contains($"x:Key=\"{key}\"", enContent);
         }
     }
+
+    [Fact]
+    public void LocationDetailsViewModel_FilterByMokhzan_ReturnsStorageNeutronSources()
+    {
+        // Arrange
+        var loc = new Location { Id = _locationId, LocationName = "Vault A" };
+        var neutronList = new List<NeutronSource>
+        {
+            new NeutronSource
+            {
+                Id = Guid.NewGuid(),
+                SourceCode = "NS-STOR-01",
+                LocationId = _locationId,
+                EmissionRate = 2000000,
+                Status = "Storage",
+                NeutronSourceType = new NeutronSourceType { Code = "Cf-252", NameAr = "كاليفورنيوم" }
+            },
+            new NeutronSource
+            {
+                Id = Guid.NewGuid(),
+                SourceCode = "NS-USE-01",
+                LocationId = _locationId,
+                EmissionRate = 3500000,
+                Status = "InUse",
+                NeutronSourceType = new NeutronSourceType { Code = "Am-241/Be", NameAr = "أمريسيوم" }
+            }
+        };
+
+        var mockNeutronService = new Mock<INeutronSourceService>();
+        mockNeutronService.Setup(s => s.GetByLocation(_locationId)).Returns(neutronList);
+
+        var vm = new LocationDetailsViewModel(
+            location: loc,
+            sources: new List<Source>(),
+            reportingService: null,
+            neutronSources: neutronList,
+            neutronSourceService: mockNeutronService.Object);
+
+        // Act 1 - Filter with "مخزن" (the exact item from StatusFilterOptions)
+        vm.SelectedStatusFilter = "مخزن";
+
+        // Assert 1
+        Assert.Single(vm.FilteredNeutronSources);
+        Assert.Equal("NS-STOR-01", vm.FilteredNeutronSources[0].SourceCode);
+        Assert.Equal("مخزن", vm.FilteredNeutronSources[0].ArabicStatus);
+
+        // Act 2 - Filter with "في المخزن"
+        vm.SelectedStatusFilter = "في المخزن";
+        Assert.Single(vm.FilteredNeutronSources);
+        Assert.Equal("NS-STOR-01", vm.FilteredNeutronSources[0].SourceCode);
+
+        // Act 3 - Filter with "Storage"
+        vm.SelectedStatusFilter = "Storage";
+        Assert.Single(vm.FilteredNeutronSources);
+        Assert.Equal("NS-STOR-01", vm.FilteredNeutronSources[0].SourceCode);
+    }
+
+    [Fact]
+    public void NeutronSourceTypesViewModel_OnEditNeutronYieldTextChanged_InvalidInputResetsToNull()
+    {
+        // Arrange
+        var mockService = new Mock<INeutronSourceTypeService>();
+        mockService.Setup(s => s.GetAll()).Returns(new List<NeutronSourceType>());
+        var vm = new NeutronSourceTypesViewModel(mockService.Object);
+
+        // Act 1: valid number (scientific notation)
+        vm.EditNeutronYieldText = "2.2e6";
+        Assert.Equal(2200000, vm.EditNeutronYield);
+
+        // Act 2: invalid string input
+        vm.EditNeutronYieldText = "invalid-yield-value";
+        Assert.Null(vm.EditNeutronYield);
+
+        // Act 3: edit existing type and then set invalid input
+        var existing = new NeutronSourceType
+        {
+            Id = Guid.NewGuid(),
+            Code = "Am-241/Be",
+            HalfLife = 432.2,
+            TypicalNeutronYield = 2200000
+        };
+        vm.Edit(existing);
+        Assert.Equal(2200000, vm.EditNeutronYield);
+
+        vm.EditNeutronYieldText = "not-a-number";
+        Assert.Null(vm.EditNeutronYield);
+    }
 }
 
