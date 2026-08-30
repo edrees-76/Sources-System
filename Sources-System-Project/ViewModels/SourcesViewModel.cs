@@ -7,12 +7,14 @@ using Sources.Services;
 using Sources.Helpers;
 using Sources.Data;
 using Sources.Interfaces;
+using Sources.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using Microsoft.Win32;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Sources.ViewModels;
 
@@ -72,6 +74,8 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     private readonly ILocationService _locationService;
     private readonly IReportingService _reportingService;
     private readonly IDecayCalculationService _decayService;
+    private readonly INeutronSourceService _neutronSourceService;
+    private readonly INeutronSourceTypeService _neutronSourceTypeService;
 
     [ObservableProperty] private ObservableCollection<Source> _sources = new();
     [ObservableProperty] private ObservableCollection<Radioisotope> _radioisotopes = new();
@@ -84,6 +88,33 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     [ObservableProperty] private bool _isEditing;
     [ObservableProperty] private string _message = string.Empty;
 
+    // ─── تبويبات العرض (Active, Neutron, Deleted) ───
+    [ObservableProperty] private string _selectedTab = "Active"; // "Active", "Neutron", "Deleted"
+    [ObservableProperty] private bool _isNeutronSourcesView;
+    [ObservableProperty] private ObservableCollection<NeutronSource> _neutronSources = new();
+    [ObservableProperty] private ObservableCollection<NeutronSource> _pagedNeutronSources = new();
+    [ObservableProperty] private ObservableCollection<NeutronSourceType> _neutronSourceTypes = new();
+    [ObservableProperty] private NeutronSource? _selectedNeutronSource;
+    [ObservableProperty] private int _neutronSourcesCount;
+    [ObservableProperty] private bool _hasNeutronSources;
+    [ObservableProperty] private int _neutronCurrentPage = 1;
+    [ObservableProperty] private int _neutronTotalPages = 1;
+    [ObservableProperty] private string _neutronPageStatusText = string.Empty;
+
+    partial void OnSelectedTabChanged(string value)
+    {
+        IsNeutronSourcesView = value == "Neutron";
+        IsDeletedSourcesView = value == "Deleted";
+        if (value == "Neutron")
+        {
+            _ = LoadNeutronDataAsync();
+        }
+        else if (value == "Deleted")
+        {
+            _ = LoadDeletedDataAsync();
+        }
+    }
+
     // ─── خصائص التقسيم إلى صفحات (Pagination) ───
     [ObservableProperty] private int _currentPage = 1;
     [ObservableProperty] private int _pageSize = 16;
@@ -95,7 +126,8 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
 
     [ObservableProperty] private ObservableCollection<TotalActivityItem> _totalActivityItems = new();
 
-    // حقول النموذج
+    // حقول النموذج الموحد
+    [ObservableProperty] private bool _isNeutronForm;
     [ObservableProperty] private string _editSourceCode = string.Empty;
     [ObservableProperty] private Guid? _editRadioisotopeId;
     [ObservableProperty] private string _editSerialNumber = string.Empty;
@@ -110,6 +142,34 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     [ObservableProperty] private string _editStatus = "InUse";
     [ObservableProperty] private bool _editIsSealed = true;
     [ObservableProperty] private bool _isActivelyBorrowed;
+
+    // حقول المصدر النيتروني الخاصة
+    [ObservableProperty] private Guid? _editNeutronTypeId;
+    [ObservableProperty] private double _editEmissionRate;
+    [ObservableProperty] private string _editEmissionRateText = string.Empty;
+    [ObservableProperty] private double? _editRelativeUncertaintyPercent;
+    [ObservableProperty] private string _editRelativeUncertaintyText = string.Empty;
+
+    partial void OnEditEmissionRateTextChanged(string value)
+    {
+        if (double.TryParse(value, out double result))
+        {
+            EditEmissionRate = result;
+        }
+    }
+
+    partial void OnEditRelativeUncertaintyTextChanged(string value)
+    {
+        string clean = value.Replace("%", "").Trim();
+        if (double.TryParse(clean, out double result))
+        {
+            EditRelativeUncertaintyPercent = result;
+        }
+        else
+        {
+            EditRelativeUncertaintyPercent = null;
+        }
+    }
 
     partial void OnEditInitialActivityTextChanged(string value)
     {
@@ -141,13 +201,22 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     [ObservableProperty] private bool _hasActiveSources;
     [ObservableProperty] private bool _hasDeletedSources;
 
-    public SourcesViewModel(ISourceService sourceService, IRadioisotopeService isotopeService, ILocationService locationService, IReportingService reportingService, IDecayCalculationService? decayService = null)
+    public SourcesViewModel(
+        ISourceService sourceService, 
+        IRadioisotopeService isotopeService, 
+        ILocationService locationService, 
+        IReportingService reportingService, 
+        IDecayCalculationService? decayService = null,
+        INeutronSourceService? neutronSourceService = null,
+        INeutronSourceTypeService? neutronSourceTypeService = null)
     {
         _sourceService = sourceService;
         _isotopeService = isotopeService;
         _locationService = locationService;
         _reportingService = reportingService;
         _decayService = decayService ?? new DecayCalculationService();
+        _neutronSourceService = neutronSourceService ?? App.ServiceProvider?.GetService<INeutronSourceService>()!;
+        _neutronSourceTypeService = neutronSourceTypeService ?? App.ServiceProvider?.GetService<INeutronSourceTypeService>()!;
         _ = LoadDataAsync();
 
         WeakReferenceMessenger.Default.Register<NavigateToSearchResultMessage>(this, (r, m) =>
@@ -199,14 +268,27 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     [RelayCommand]
     public async Task SwitchToActiveSourcesAsync()
     {
+        SelectedTab = "Active";
         IsDeletedSourcesView = false;
+        IsNeutronSourcesView = false;
         await LoadDataAsync();
+    }
+
+    [RelayCommand]
+    public async Task SwitchToNeutronSourcesAsync()
+    {
+        SelectedTab = "Neutron";
+        IsDeletedSourcesView = false;
+        IsNeutronSourcesView = true;
+        await LoadNeutronDataAsync();
     }
 
     [RelayCommand]
     public async Task SwitchToDeletedSourcesAsync()
     {
+        SelectedTab = "Deleted";
         IsDeletedSourcesView = true;
+        IsNeutronSourcesView = false;
         await LoadDeletedDataAsync();
     }
 
@@ -219,10 +301,18 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
             return;
         }
 
+        if (IsNeutronSourcesView)
+        {
+            await LoadNeutronDataAsync();
+            return;
+        }
+
         var allSources = await Task.Run(() => _sourceService.GetAllSources());
         ActiveSourcesCount = allSources.Count;
         var deletedList = await Task.Run(() => _sourceService.GetDeletedSources());
         DeletedSourcesCount = deletedList.Count;
+        var neutronList = await Task.Run(() => _neutronSourceService.GetAll());
+        NeutronSourcesCount = neutronList.Count;
 
         // تطبيق الفلاتر
         if (!string.IsNullOrWhiteSpace(SearchText))
@@ -265,6 +355,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
 
         Radioisotopes = new ObservableCollection<Radioisotope>(_isotopeService.GetAll());
         Locations = new ObservableCollection<Location>(_locationService.GetAll());
+        NeutronSourceTypes = new ObservableCollection<NeutronSourceType>(_neutronSourceTypeService?.GetAll() ?? new List<NeutronSourceType>());
 
         // تحميل وحدات النشاط
         using var db = App.CreateDbContext();
@@ -274,12 +365,120 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         UpdateTotalActivityItems();
     }
 
+    public async Task LoadNeutronDataAsync()
+    {
+        var allNeutrons = await Task.Run(() => _neutronSourceService?.GetAll() ?? new List<NeutronSource>()) ?? new List<NeutronSource>();
+        NeutronSourcesCount = allNeutrons.Count;
+        var activeList = await Task.Run(() => _sourceService?.GetAllSources() ?? new List<Source>()) ?? new List<Source>();
+        ActiveSourcesCount = activeList.Count;
+        var deletedList = await Task.Run(() => _sourceService?.GetDeletedSources() ?? new List<Source>()) ?? new List<Source>();
+        DeletedSourcesCount = deletedList.Count;
+
+        if (!string.IsNullOrWhiteSpace(SearchText))
+        {
+            var searchLower = SearchText.ToLower();
+            allNeutrons = allNeutrons.Where(n =>
+                (n.SourceCode?.ToLower().Contains(searchLower) ?? false) ||
+                (n.NeutronSourceType?.Code?.ToLower().Contains(searchLower) ?? false) ||
+                (n.NeutronSourceType?.NameAr?.ToLower().Contains(searchLower) ?? false) ||
+                (n.NeutronSourceType?.NameEn?.ToLower().Contains(searchLower) ?? false) ||
+                (n.SerialNumber?.ToLower().Contains(searchLower) ?? false) ||
+                (n.Location?.LocationName?.ToLower().Contains(searchLower) ?? false) ||
+                (n.Status?.ToLower().Contains(searchLower) ?? false) ||
+                (n.CalibrationDate.HasValue && n.CalibrationDate.Value.ToString("yyyy-MM-dd").Contains(searchLower)) ||
+                n.EmissionRate.ToString().Contains(searchLower)
+            ).ToList();
+        }
+
+        if (!string.IsNullOrWhiteSpace(StatusFilter) && StatusFilter != "All")
+        {
+            allNeutrons = allNeutrons.Where(n => n.Status == StatusFilter).ToList();
+        }
+
+        NeutronSources = new ObservableCollection<NeutronSource>(allNeutrons);
+        HasNeutronSources = NeutronSources.Count > 0;
+        NeutronCurrentPage = 1;
+        UpdateNeutronPagination();
+
+        if (NeutronSources.Count == 0 && !string.IsNullOrWhiteSpace(SearchText))
+        {
+            DialogHelper.ShowInfo("لم يتم العثور على مصادر نيترونية تطابق معايير البحث.", "نتائج البحث");
+        }
+
+        Locations = new ObservableCollection<Location>(_locationService?.GetAll() ?? new List<Location>());
+        NeutronSourceTypes = new ObservableCollection<NeutronSourceType>(_neutronSourceTypeService?.GetAll() ?? new List<NeutronSourceType>());
+    }
+
+    private bool CanGoToPreviousNeutronPage => NeutronCurrentPage > 1;
+    private bool CanGoToNextNeutronPage => NeutronCurrentPage < NeutronTotalPages;
+
+    [RelayCommand(CanExecute = nameof(CanGoToPreviousNeutronPage))]
+    private void FirstNeutronPage()
+    {
+        if (NeutronCurrentPage > 1)
+        {
+            NeutronCurrentPage = 1;
+            UpdatePagedNeutronSources();
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanGoToPreviousNeutronPage))]
+    private void PreviousNeutronPage()
+    {
+        if (NeutronCurrentPage > 1)
+        {
+            NeutronCurrentPage--;
+            UpdatePagedNeutronSources();
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanGoToNextNeutronPage))]
+    private void NextNeutronPage()
+    {
+        if (NeutronCurrentPage < NeutronTotalPages)
+        {
+            NeutronCurrentPage++;
+            UpdatePagedNeutronSources();
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanGoToNextNeutronPage))]
+    private void LastNeutronPage()
+    {
+        if (NeutronCurrentPage < NeutronTotalPages)
+        {
+            NeutronCurrentPage = NeutronTotalPages;
+            UpdatePagedNeutronSources();
+        }
+    }
+
+    private void UpdateNeutronPagination()
+    {
+        NeutronTotalPages = (int)Math.Ceiling((double)NeutronSources.Count / PageSize);
+        if (NeutronTotalPages == 0) NeutronTotalPages = 1;
+        if (NeutronCurrentPage > NeutronTotalPages) NeutronCurrentPage = NeutronTotalPages;
+        UpdatePagedNeutronSources();
+    }
+
+    private void UpdatePagedNeutronSources()
+    {
+        var items = NeutronSources.Skip((NeutronCurrentPage - 1) * PageSize).Take(PageSize).ToList();
+        PagedNeutronSources = new ObservableCollection<NeutronSource>(items);
+        NeutronPageStatusText = TranslationHelper.GetFormat("PageStatusFormat", NeutronCurrentPage, NeutronTotalPages, NeutronSources.Count);
+        FirstNeutronPageCommand.NotifyCanExecuteChanged();
+        PreviousNeutronPageCommand.NotifyCanExecuteChanged();
+        NextNeutronPageCommand.NotifyCanExecuteChanged();
+        LastNeutronPageCommand.NotifyCanExecuteChanged();
+    }
+
     public async Task LoadDeletedDataAsync()
     {
-        var deleted = await Task.Run(() => _sourceService.GetDeletedSources());
+        var deleted = await Task.Run(() => _sourceService?.GetDeletedSources() ?? new List<Source>()) ?? new List<Source>();
         DeletedSourcesCount = deleted.Count;
-        var activeList = await Task.Run(() => _sourceService.GetAllSources());
+        var activeList = await Task.Run(() => _sourceService?.GetAllSources() ?? new List<Source>()) ?? new List<Source>();
         ActiveSourcesCount = activeList.Count;
+        var neutronList = await Task.Run(() => _neutronSourceService?.GetAll() ?? new List<NeutronSource>()) ?? new List<NeutronSource>();
+        NeutronSourcesCount = neutronList.Count;
 
         if (!string.IsNullOrWhiteSpace(SearchText))
         {
@@ -379,8 +578,21 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     }
 
     [RelayCommand]
-    private void AddNew()
+    public void AddNew()
     {
+        IsNeutronForm = false;
+        IsNew = true;
+        _editingId = null;
+        IsActivelyBorrowed = false;
+        ClearForm();
+        CurrentStep = 1;
+        IsEditing = true;
+    }
+
+    [RelayCommand]
+    public void AddNewNeutron()
+    {
+        IsNeutronForm = true;
         IsNew = true;
         _editingId = null;
         IsActivelyBorrowed = false;
@@ -409,6 +621,13 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         EditImagePath = null;
         IsActivelyBorrowed = false;
         IsotopeEntries.Clear();
+
+        // Neutron form fields
+        EditNeutronTypeId = NeutronSourceTypes.FirstOrDefault()?.Id;
+        EditEmissionRate = 0;
+        EditEmissionRateText = string.Empty;
+        EditRelativeUncertaintyPercent = null;
+        EditRelativeUncertaintyText = string.Empty;
     }
 
     [RelayCommand]
@@ -416,21 +635,102 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     {
         SearchText = string.Empty;
         StatusFilter = "All";
-        await LoadDataAsync();
+        if (IsNeutronSourcesView)
+            await LoadNeutronDataAsync();
+        else if (IsDeletedSourcesView)
+            await LoadDeletedDataAsync();
+        else
+            await LoadDataAsync();
     }
     
     [RelayCommand]
     private async Task SearchAsync()
     {
-        await LoadDataAsync();
+        if (IsNeutronSourcesView)
+            await LoadNeutronDataAsync();
+        else if (IsDeletedSourcesView)
+            await LoadDeletedDataAsync();
+        else
+            await LoadDataAsync();
     }
     
+
+    [RelayCommand]
+    public void EditNeutronSource(NeutronSource? source)
+    {
+        var target = source ?? SelectedNeutronSource;
+        if (target == null) return;
+
+        SelectedNeutronSource = target;
+        IsNeutronForm = true;
+        IsNew = false;
+        _editingId = target.Id;
+        IsActivelyBorrowed = false;
+
+        EditSourceCode = target.SourceCode;
+        EditNeutronTypeId = target.NeutronSourceTypeId;
+        EditSerialNumber = target.SerialNumber ?? "";
+        EditEmissionRate = target.EmissionRate;
+        EditEmissionRateText = target.EmissionRate.ToString();
+        EditRelativeUncertaintyPercent = target.RelativeExpandedUncertaintyPercent;
+        EditRelativeUncertaintyText = target.RelativeExpandedUncertaintyPercent?.ToString() ?? "";
+        EditCalibrationDate = target.CalibrationDate ?? DateTime.Today;
+        EditLocationId = target.LocationId;
+        EditStatus = target.Status;
+        EditNotes = target.Notes ?? "";
+        EditImagePath = null;
+        CurrentStep = 1;
+
+        IsEditing = true;
+    }
+
+    [RelayCommand]
+    public async Task DeleteNeutronSourceAsync(NeutronSource? source)
+    {
+        var target = source ?? SelectedNeutronSource;
+        if (target == null) return;
+
+        string confirmMsg = TranslationHelper.GetString("MsgConfirmDeleteNeutronSource") ?? "هل أنت متأكد من حذف هذا المصدر النيتروني؟";
+        string confirmTitle = TranslationHelper.GetString("AlertConfirmation") ?? "تأكيد الحذف";
+        if (!DialogHelper.ShowConfirmation(confirmMsg, confirmTitle)) return;
+
+        var result = _neutronSourceService.Delete(target.Id);
+        ShowMessage(result.Message);
+        if (!result.Success)
+        {
+            DialogHelper.ShowError(result.Message);
+        }
+        else
+        {
+            await LoadNeutronDataAsync();
+            WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
+        }
+    }
+
+    [RelayCommand]
+    public void ViewNeutronSourceDetails(object? param)
+    {
+        SourceNavigationHelper.OpenNeutronSourceDetails(param);
+    }
+
+    [RelayCommand]
+    public void OpenNeutronSourceTypesManagement()
+    {
+        var window = new NeutronSourceTypesWindow(new NeutronSourceTypesViewModel(_neutronSourceTypeService));
+        if (System.Windows.Application.Current?.MainWindow != null && System.Windows.Application.Current.MainWindow.IsVisible)
+        {
+            window.Owner = System.Windows.Application.Current.MainWindow;
+        }
+        window.ShowDialog();
+        NeutronSourceTypes = new ObservableCollection<NeutronSourceType>(_neutronSourceTypeService.GetAll());
+    }
 
     [RelayCommand]
     private void EditSource(Source source)
     {
         if (source == null) return;
         SelectedSource = source;
+        IsNeutronForm = false;
         IsNew = false;
         _editingId = source.Id;
         IsActivelyBorrowed = _sourceService.HasActiveBorrow(source.Id);
@@ -476,6 +776,76 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     {
         try
         {
+            if (IsNeutronForm)
+            {
+                if (string.IsNullOrWhiteSpace(EditSourceCode))
+                {
+                    ShowMessage(TranslationHelper.GetString("MsgErrSourceCodeReq"));
+                    return;
+                }
+                if (EditNeutronTypeId == null)
+                {
+                    ShowMessage(TranslationHelper.GetString("MsgErrNeutronTypeReq") ?? "نوع المصدر النيتروني مطلوب");
+                    return;
+                }
+                if (EditEmissionRate <= 0 && !string.IsNullOrWhiteSpace(EditEmissionRateText) && double.TryParse(EditEmissionRateText, out double er))
+                {
+                    EditEmissionRate = er;
+                }
+                if (EditEmissionRate <= 0)
+                {
+                    ShowMessage(TranslationHelper.GetString("MsgErrEmissionRateReq") ?? "معدل انبعاث النيترونات يجب أن يكون قيمة موجبة");
+                    return;
+                }
+                if (EditCalibrationDate == default)
+                {
+                    ShowMessage(TranslationHelper.GetString("MsgErrCalibrationDateReq"));
+                    return;
+                }
+                if (EditCalibrationDate.Date > DateTime.Today)
+                {
+                    ShowMessage(TranslationHelper.GetString("MsgErrCalibrationDateFuture"));
+                    return;
+                }
+                if (EditLocationId == null)
+                {
+                    ShowMessage(TranslationHelper.GetString("MsgErrLocationReq"));
+                    return;
+                }
+                if (string.IsNullOrWhiteSpace(EditStatus))
+                {
+                    ShowMessage(TranslationHelper.GetString("MsgErrStatusReq"));
+                    return;
+                }
+
+                var neutronSource = new NeutronSource
+                {
+                    Id = IsNew ? Guid.NewGuid() : _editingId!.Value,
+                    SourceCode = EditSourceCode.Trim(),
+                    NeutronSourceTypeId = EditNeutronTypeId.Value,
+                    SerialNumber = EditSerialNumber?.Trim(),
+                    EmissionRate = EditEmissionRate,
+                    RelativeExpandedUncertaintyPercent = EditRelativeUncertaintyPercent,
+                    CalibrationDate = EditCalibrationDate,
+                    LocationId = EditLocationId,
+                    Status = EditStatus,
+                    Notes = EditNotes?.Trim()
+                };
+
+                var neutronResult = IsNew 
+                    ? _neutronSourceService.Create(neutronSource) 
+                    : _neutronSourceService.Update(neutronSource);
+
+                ShowMessage(neutronResult.Message);
+                if (neutronResult.Success)
+                {
+                    IsEditing = false;
+                    DialogHelper.ShowInfo(neutronResult.Message, "نجاح العملية");
+                    await LoadNeutronDataAsync();
+                    WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
+                }
+                return;
+            }
             // 1. التحقق من الحقول الأساسية العامة (دائماً مطلوبة)
             if (string.IsNullOrWhiteSpace(EditSourceCode))
             {

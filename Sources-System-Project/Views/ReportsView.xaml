@@ -158,6 +158,23 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+
+        <Style x:Key="NeutronInventoryReportTabBtn" TargetType="Button" BasedOn="{StaticResource ReportTabButtonBase}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SelectedReport}" Value="NeutronInventoryReport">
+                    <Setter Property="Background" Value="{DynamicResource DataGridRowSelected}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="BorderThickness" Value="1.5"/>
+                    <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.12" Color="{StaticResource PrimaryColor}"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
 
     <Grid Margin="24">
@@ -174,6 +191,8 @@
                             Command="{Binding SelectReportCommand}" CommandParameter="GeneralReport"/>
                     <Button Content="{DynamicResource BtnInventoryReport}" Style="{StaticResource InventoryReportTabBtn}"
                             Command="{Binding SelectReportCommand}" CommandParameter="InventoryReport"/>
+                    <Button Content="{DynamicResource BtnNeutronInventoryReport}" Style="{StaticResource NeutronInventoryReportTabBtn}"
+                            Command="{Binding SelectReportCommand}" CommandParameter="NeutronInventoryReport"/>
                     <Button Content="{DynamicResource BtnBorrowingReport}" Style="{StaticResource BorrowingReportTabBtn}"
                             Command="{Binding SelectReportCommand}" CommandParameter="BorrowingReport"/>
                     <Button Content="{DynamicResource BtnActivityReport}" Style="{StaticResource ActivityReportTabBtn}"
@@ -731,6 +750,29 @@
                         </DataGrid.Columns>
                     </DataGrid>
                     <Border Visibility="{Binding FailedLeakTestsData.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}"
+                            Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,36,0,0" IsHitTestVisible="False">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="InformationOutline" Width="18" Height="18" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="{DynamicResource LabelNoDataAvailable}" FontSize="13" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- تقرير جرد المصادر النيترونية -->
+                <Grid Visibility="{Binding SelectedReport, Converter={StaticResource EqualityToVis}, ConverterParameter=NeutronInventoryReport}">
+                    <DataGrid ItemsSource="{Binding NeutronInventoryData}" Style="{StaticResource ModernDataGrid}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColNeutronType}" Binding="{Binding TypeCode}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColEmissionRate}" Binding="{Binding EmissionRate, StringFormat={}{0:N2}}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColUncertainty}" Binding="{Binding RelativeUncertainty}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="Auto" MinWidth="95" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColCalibrationDate}" Binding="{Binding CalibrationDate, StringFormat=d}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Border Visibility="{Binding NeutronInventoryData.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}"
                             Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,36,0,0" IsHitTestVisible="False">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="InformationOutline" Width="18" Height="18" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>

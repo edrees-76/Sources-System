@@ -1056,9 +1056,32 @@
     <!-- حالة فارغة - شاشة المصادر -->
     <system:String x:Key="EmptySourcesTitle">لا توجد مصادر مسجّلة بعد</system:String>
     <system:String x:Key="EmptySourcesSubtitle">ابدأ بإضافة أول مصدر إشعاعي لتتبع نشاطه وإدارة دورة حياته بشكل كامل</system:String>
-    <!-- تبويبات المصادر والمصادر المحذوفة -->
+    <!-- تبويبات المصادر والمصادر المحذوفة والمصادر النيترونية -->
     <system:String x:Key="TabActiveSources">المصادر النشطة</system:String>
+    <system:String x:Key="TabNeutronSources">المصادر النيترونية</system:String>
     <system:String x:Key="TabDeletedSources">المصادر المحذوفة</system:String>
+    <system:String x:Key="BtnAddNeutronSource">إضافة مصدر نيتروني</system:String>
+    <system:String x:Key="BtnManageNeutronTypes">إدارة الأنواع المرجعية</system:String>
+    <system:String x:Key="ColEmissionRate">معدل الانبعاث (n/s)</system:String>
+    <system:String x:Key="ColUncertainty">عدم اليقين (%)</system:String>
+    <system:String x:Key="ColNeutronType">النوع المرجعي</system:String>
+    <system:String x:Key="EmptyNeutronSourcesTitle">لا توجد مصادر نيترونية مسجلة</system:String>
+    <system:String x:Key="EmptyNeutronSourcesSubtitle">ابدأ بإضافة أول مصدر نيتروني لتتبع بيانات انبعاثه وموقعه</system:String>
+    <system:String x:Key="LabelSourceCategory">فئة المصدر:</system:String>
+    <system:String x:Key="LabelStandardSource">مصدر مشع (غاما/بيتا/ألفا)</system:String>
+    <system:String x:Key="LabelNeutronSource">مصدر نيتروني</system:String>
+    <system:String x:Key="FieldEmissionRateReq">معدل انبعاث النيترونات (n/s) *</system:String>
+    <system:String x:Key="FieldUncertainty">نسبة عدم اليقين الموسعة (k=2) %</system:String>
+    <system:String x:Key="FieldNeutronTypeReq">نوع المصدر النيتروني المرجعي *</system:String>
+    <system:String x:Key="TitleNeutronSourceDetails">تفاصيل المصدر النيتروني</system:String>
+    <system:String x:Key="TitleNeutronSourceTypes">إدارة أنواع المصادر النيترونية</system:String>
+    <system:String x:Key="BtnNeutronInventoryReport">جرد المصادر النيترونية</system:String>
+    <system:String x:Key="CardDeletedNeutronSources">مصادر نيترونية</system:String>
+    <system:String x:Key="FilterNeutronSources">مصادر نيترونية</system:String>
+    <system:String x:Key="EntityTypeNeutronSource">مصدر نيتروني</system:String>
+    <system:String x:Key="MsgConfirmDeleteNeutronSource">هل أنت متأكد من حذف هذا المصدر النيتروني؟</system:String>
+    <system:String x:Key="MsgErrEmissionRateReq">معدل انبعاث النيترونات يجب أن يكون قيمة موجبة أكبر من صفر</system:String>
+    <system:String x:Key="MsgErrNeutronTypeReq">يجب تحديد نوع المصدر النيتروني المرجعي</system:String>
     <system:String x:Key="ColDeletedAt">تاريخ الحذف</system:String>
     <system:String x:Key="ColDeletedBy">حُذف بواسطة</system:String>
     <system:String x:Key="ColLastStatus">الحالة قبل الحذف</system:String>

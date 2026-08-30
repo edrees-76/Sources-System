@@ -998,6 +998,16 @@ public class NeutronSource
     };
 
     [NotMapped]
+    public string StatusColor => Status switch
+    {
+        "InUse" => "#10B981",
+        "Storage" => "#0284C7",
+        "Waste" => "#EF4444",
+        "Transfer" => "#F59E0B",
+        _ => "#6B7280"
+    };
+
+    [NotMapped]
     public string DisplaySourceCode => IsDeleted ? $"{SourceCode} (محذوف)" : SourceCode;
 }
 

@@ -24,6 +24,8 @@ namespace Sources.Services
         Task GenerateLeakTestsReportExcelAsync(IEnumerable<LeakTestRecord> records, string filePath, string reportTitle);
         Task GenerateFailedLeakTestsReportPdfAsync(IEnumerable<LeakTestRecord> records, string filePath, string? reportTitle = null);
         Task GenerateFailedLeakTestsReportExcelAsync(IEnumerable<LeakTestRecord> records, string filePath, string? reportTitle = null);
+        Task GenerateNeutronInventoryReportPdfAsync(IEnumerable<NeutronSource> sources, string filePath, string? reportTitle = null);
+        Task GenerateNeutronInventoryReportExcelAsync(IEnumerable<NeutronSource> sources, string filePath, string? reportTitle = null);
     }
 }
 

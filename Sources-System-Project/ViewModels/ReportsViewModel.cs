@@ -98,6 +98,21 @@ public class ReportFailedLeakTestRow
     public string DoseRateTooltip => Source.DoseRateTooltip;
 }
 
+public class ReportNeutronInventoryRow
+{
+    public int RowNumber { get; set; }
+    public NeutronSource Source { get; set; } = null!;
+    public string SourceCode => Source.SourceCode;
+    public string TypeCode => Source.NeutronSourceType?.Code ?? "-";
+    public string TypeName => Source.NeutronSourceType?.NameAr ?? Source.NeutronSourceType?.NameEn ?? "-";
+    public double EmissionRate => Source.EmissionRate;
+    public string RelativeUncertainty => Source.RelativeExpandedUncertaintyPercent.HasValue ? $"{Source.RelativeExpandedUncertaintyPercent:N1}%" : "-";
+    public Location? Location => Source.Location;
+    public string Status => Source.Status;
+    public string ArabicStatus => Source.ArabicStatus;
+    public DateTime? CalibrationDate => Source.CalibrationDate;
+}
+
 public partial class ReportsViewModel : ObservableObject
 {
     private readonly ISourceService _sourceService;
@@ -105,12 +120,14 @@ public partial class ReportsViewModel : ObservableObject
     private readonly IReportingService _reportingService;
     private readonly ISystemSettingsService _settingsService;
     private readonly IDbContextFactory<AppDbContext>? _dbFactory;
+    private readonly INeutronSourceService? _neutronSourceService;
 
     [ObservableProperty] private string _selectedReport = "InventoryReport";
     [ObservableProperty] private ObservableCollection<ReportInventoryRow> _inventoryData = new();
     [ObservableProperty] private ObservableCollection<ReportBorrowingRow> _borrowingData = new();
     [ObservableProperty] private ObservableCollection<ReportActivityRow> _activityData = new();
     [ObservableProperty] private ObservableCollection<ReportLowActivityRow> _lowActivityData = new();
+    [ObservableProperty] private ObservableCollection<ReportNeutronInventoryRow> _neutronInventoryData = new();
     [ObservableProperty] private double _lowActivityThreshold = 10;
     [ObservableProperty] private ObservableCollection<ReportLowActivityAlertRow> _lowActivityAlertData = new();
     [ObservableProperty] private ObservableCollection<ReportFailedLeakTestRow> _failedLeakTestsData = new();
@@ -120,13 +137,15 @@ public partial class ReportsViewModel : ObservableObject
         IBorrowService borrowService, 
         IReportingService reportingService,
         ISystemSettingsService settingsService,
-        IDbContextFactory<AppDbContext>? dbFactory = null)
+        IDbContextFactory<AppDbContext>? dbFactory = null,
+        INeutronSourceService? neutronSourceService = null)
     {
         _sourceService = sourceService;
         _borrowService = borrowService;
         _reportingService = reportingService;
         _settingsService = settingsService;
         _dbFactory = dbFactory;
+        _neutronSourceService = neutronSourceService;
         
         // جلب عتبة النشاط المنخفض من الإعدادات
         LowActivityThreshold = _settingsService.GetSetting("LowActivityThresholdPercent", 10.0);
@@ -170,6 +189,11 @@ public partial class ReportsViewModel : ObservableObject
                 break;
             case "FailedLeakTestsReport":
                 FailedLeakTestsData = new ObservableCollection<ReportFailedLeakTestRow>(GetFailedLeakTestsRows());
+                break;
+            case "NeutronInventoryReport":
+                var neutronSources = _neutronSourceService?.GetAll() ?? new List<NeutronSource>();
+                NeutronInventoryData = new ObservableCollection<ReportNeutronInventoryRow>(
+                    neutronSources.OrderBy(s => s.SourceCode).Select((s, index) => new ReportNeutronInventoryRow { RowNumber = index + 1, Source = s }));
                 break;
             case "GeneralReport":
                 InventoryData = new ObservableCollection<ReportInventoryRow>(
@@ -332,6 +356,10 @@ public partial class ReportsViewModel : ObservableObject
                 {
                     await _reportingService.GenerateBorrowHistoryPdfAsync(BorrowingData.Select(r => r.Request), sfd.FileName);
                 }
+                else if (SelectedReport == "NeutronInventoryReport")
+                {
+                    await _reportingService.GenerateNeutronInventoryReportPdfAsync(NeutronInventoryData.Select(r => r.Source), sfd.FileName);
+                }
 
                 FileHelper.OpenFile(sfd.FileName);
             }
@@ -387,6 +415,10 @@ public partial class ReportsViewModel : ObservableObject
                 else if (SelectedReport == "BorrowingReport")
                 {
                     await _reportingService.GenerateBorrowHistoryExcelAsync(BorrowingData.Select(r => r.Request), sfd.FileName);
+                }
+                else if (SelectedReport == "NeutronInventoryReport")
+                {
+                    await _reportingService.GenerateNeutronInventoryReportExcelAsync(NeutronInventoryData.Select(r => r.Source), sfd.FileName);
                 }
 
                 FileHelper.OpenFile(sfd.FileName);

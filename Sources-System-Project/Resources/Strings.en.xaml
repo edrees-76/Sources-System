@@ -1061,7 +1061,30 @@
     <system:String x:Key="LabelSerialShort">S/N: </system:String>
     <!-- Tabs and Deleted Sources -->
     <system:String x:Key="TabActiveSources">Active Sources</system:String>
+    <system:String x:Key="TabNeutronSources">Neutron Sources</system:String>
     <system:String x:Key="TabDeletedSources">Deleted Sources</system:String>
+    <system:String x:Key="BtnAddNeutronSource">Add Neutron Source</system:String>
+    <system:String x:Key="BtnManageNeutronTypes">Manage Reference Types</system:String>
+    <system:String x:Key="ColEmissionRate">Emission Rate (n/s)</system:String>
+    <system:String x:Key="ColUncertainty">Uncertainty (%)</system:String>
+    <system:String x:Key="ColNeutronType">Reference Type</system:String>
+    <system:String x:Key="EmptyNeutronSourcesTitle">No neutron sources registered yet</system:String>
+    <system:String x:Key="EmptyNeutronSourcesSubtitle">Start by adding the first neutron source to track its emission and location</system:String>
+    <system:String x:Key="LabelSourceCategory">Source Category:</system:String>
+    <system:String x:Key="LabelStandardSource">Standard Source (Gamma/Beta/Alpha)</system:String>
+    <system:String x:Key="LabelNeutronSource">Neutron Source</system:String>
+    <system:String x:Key="FieldEmissionRateReq">Neutron Emission Rate (n/s) *</system:String>
+    <system:String x:Key="FieldUncertainty">Expanded Uncertainty (k=2) %</system:String>
+    <system:String x:Key="FieldNeutronTypeReq">Reference Neutron Source Type *</system:String>
+    <system:String x:Key="TitleNeutronSourceDetails">Neutron Source Details</system:String>
+    <system:String x:Key="TitleNeutronSourceTypes">Manage Neutron Source Types</system:String>
+    <system:String x:Key="BtnNeutronInventoryReport">Neutron Inventory</system:String>
+    <system:String x:Key="CardDeletedNeutronSources">Neutron Sources</system:String>
+    <system:String x:Key="FilterNeutronSources">Neutron Sources</system:String>
+    <system:String x:Key="EntityTypeNeutronSource">Neutron Source</system:String>
+    <system:String x:Key="MsgConfirmDeleteNeutronSource">Are you sure you want to delete this neutron source?</system:String>
+    <system:String x:Key="MsgErrEmissionRateReq">Neutron emission rate must be a positive number greater than zero.</system:String>
+    <system:String x:Key="MsgErrNeutronTypeReq">Reference neutron source type must be selected.</system:String>
     <system:String x:Key="ColDeletedAt">Deleted At</system:String>
     <system:String x:Key="ColDeletedBy">Deleted By</system:String>
     <system:String x:Key="ColLastStatus">Status Prior Deletion</system:String>

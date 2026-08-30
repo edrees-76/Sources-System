@@ -104,6 +104,8 @@ public partial class App : Application
         services.AddTransient<Sources.Views.ScreensaverWindow>();
         services.AddTransient<Sources.Views.LocationDetailsWindow>();
         services.AddTransient<Sources.Views.SourceDetailsWindow>();
+        services.AddTransient<Sources.Views.NeutronSourceDetailsWindow>();
+        services.AddTransient<Sources.Views.NeutronSourceTypesWindow>();
         services.AddTransient<Sources.Views.AlertsView>();
         services.AddTransient<Sources.Views.LeakTestsView>();
         services.AddTransient<Sources.Views.IsotopeLibraryView>();
@@ -135,6 +137,7 @@ public partial class App : Application
         services.AddSingleton<MainViewModel>();
         services.AddTransient<DashboardViewModel>();
         services.AddTransient<SourcesViewModel>();
+        services.AddTransient<NeutronSourceTypesViewModel>();
         services.AddTransient<RadioisotopesViewModel>();
         services.AddTransient<LocationsViewModel>();
         services.AddTransient<BorrowViewModel>();

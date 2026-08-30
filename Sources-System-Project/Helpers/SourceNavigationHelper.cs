@@ -90,6 +90,72 @@ public static class SourceNavigationHelper
         }
     }
 
+    public static void OpenNeutronSourceDetails(object? parameter, Guid? sourceId = null)
+    {
+        NeutronSource? source = parameter switch
+        {
+            NeutronSource ns => ns,
+            ReportNeutronInventoryRow rnir => rnir.Source,
+            Guid id => GetNeutronSourceById(id),
+            _ => sourceId.HasValue ? GetNeutronSourceById(sourceId.Value) : null
+        };
+
+        if (source == null && sourceId.HasValue)
+        {
+            source = GetNeutronSourceById(sourceId.Value);
+        }
+
+        if (source == null)
+        {
+            DialogHelper.ShowWarning(
+                "المصدر النيتروني غير موجود أو تم حذفه من المنظومة.",
+                "تفاصيل المصدر النيتروني");
+            return;
+        }
+
+        if (DialogHelper.IsTestMode) return;
+
+        var app = Application.Current;
+        if (app == null) return;
+
+        if (app.Dispatcher != null && !app.Dispatcher.CheckAccess())
+        {
+            app.Dispatcher.BeginInvoke(() => OpenNeutronSourceDetails(source));
+            return;
+        }
+
+        try
+        {
+            var viewModel = new NeutronSourceDetailsViewModel(source);
+            var window = new NeutronSourceDetailsWindow(viewModel);
+
+            if (app.MainWindow != null && app.MainWindow.IsVisible && app.MainWindow != window)
+            {
+                window.Owner = app.MainWindow;
+            }
+
+            window.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            LoggerService.LogError("SourceNavigationHelper: Failed to open NeutronSourceDetailsWindow", ex);
+        }
+    }
+
+    private static NeutronSource? GetNeutronSourceById(Guid id)
+    {
+        try
+        {
+            var service = App.ServiceProvider?.GetService(typeof(INeutronSourceService)) as INeutronSourceService;
+            return service?.GetById(id);
+        }
+        catch (Exception ex)
+        {
+            LoggerService.LogError("SourceNavigationHelper: Failed to get neutron source by ID", ex);
+            return null;
+        }
+    }
+
     private static Source? GetSourceById(Guid id)
     {
         try
@@ -119,3 +185,4 @@ public static class SourceNavigationHelper
         }
     }
 }
+

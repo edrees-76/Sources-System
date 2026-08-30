@@ -77,18 +77,20 @@
         <Grid Grid.Row="1" Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="10"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="10"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="10"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="10"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
             <!-- إجمالي المحذوفات -->
-            <Border Grid.Column="0" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="14,12"
+            <Border Grid.Column="0" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="12,10"
                     BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -97,16 +99,16 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="{DynamicResource CardTotalDeletions}" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="SemiBold"/>
-                        <TextBlock Text="{Binding TotalCount}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,0"/>
+                        <TextBlock Text="{Binding TotalCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,0"/>
                     </StackPanel>
-                    <Border Grid.Column="1" Background="#151F5A66" CornerRadius="10" Width="38" Height="38" VerticalAlignment="Center">
-                        <materialDesign:PackIcon Kind="DeleteSweepOutline" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Border Grid.Column="1" Background="#151F5A66" CornerRadius="10" Width="34" Height="34" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="DeleteSweepOutline" Width="18" Height="18" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                 </Grid>
             </Border>
 
             <!-- المصادر المحذوفة -->
-            <Border Grid.Column="2" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="14,12"
+            <Border Grid.Column="2" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="12,10"
                     BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -115,16 +117,34 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="{DynamicResource CardDeletedSources}" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="SemiBold"/>
-                        <TextBlock Text="{Binding SourcesCount}" FontSize="22" FontWeight="Bold" Foreground="#0284C7" Margin="0,4,0,0"/>
+                        <TextBlock Text="{Binding SourcesCount}" FontSize="20" FontWeight="Bold" Foreground="#0284C7" Margin="0,4,0,0"/>
                     </StackPanel>
-                    <Border Grid.Column="1" Background="#1A0284C7" CornerRadius="10" Width="38" Height="38" VerticalAlignment="Center">
-                        <materialDesign:PackIcon Kind="Radioactive" Width="20" Height="20" Foreground="#0284C7" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Border Grid.Column="1" Background="#1A0284C7" CornerRadius="10" Width="34" Height="34" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="Radioactive" Width="18" Height="18" Foreground="#0284C7" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- المصادر النيترونية المحذوفة -->
+            <Border Grid.Column="4" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="12,10"
+                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{DynamicResource CardDeletedNeutronSources}" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding NeutronSourcesCount}" FontSize="20" FontWeight="Bold" Foreground="#0D9488" Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <Border Grid.Column="1" Background="#1A0D9488" CornerRadius="10" Width="34" Height="34" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="AtomVariant" Width="18" Height="18" Foreground="#0D9488" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                 </Grid>
             </Border>
 
             <!-- المواقع المحذوفة -->
-            <Border Grid.Column="4" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="14,12"
+            <Border Grid.Column="6" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="12,10"
                     BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -133,16 +153,16 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="{DynamicResource CardDeletedLocations}" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="SemiBold"/>
-                        <TextBlock Text="{Binding LocationsCount}" FontSize="22" FontWeight="Bold" Foreground="#10B981" Margin="0,4,0,0"/>
+                        <TextBlock Text="{Binding LocationsCount}" FontSize="20" FontWeight="Bold" Foreground="#10B981" Margin="0,4,0,0"/>
                     </StackPanel>
-                    <Border Grid.Column="1" Background="#1A10B981" CornerRadius="10" Width="38" Height="38" VerticalAlignment="Center">
-                        <materialDesign:PackIcon Kind="MapMarkerOutline" Width="20" Height="20" Foreground="#10B981" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Border Grid.Column="1" Background="#1A10B981" CornerRadius="10" Width="34" Height="34" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="MapMarkerOutline" Width="18" Height="18" Foreground="#10B981" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                 </Grid>
             </Border>
 
             <!-- المستخدمين المحذوفين -->
-            <Border Grid.Column="6" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="14,12"
+            <Border Grid.Column="8" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="12,10"
                     BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -151,16 +171,16 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="{DynamicResource CardDeletedUsers}" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="SemiBold"/>
-                        <TextBlock Text="{Binding UsersCount}" FontSize="22" FontWeight="Bold" Foreground="#8B5CF6" Margin="0,4,0,0"/>
+                        <TextBlock Text="{Binding UsersCount}" FontSize="20" FontWeight="Bold" Foreground="#8B5CF6" Margin="0,4,0,0"/>
                     </StackPanel>
-                    <Border Grid.Column="1" Background="#1A8B5CF6" CornerRadius="10" Width="38" Height="38" VerticalAlignment="Center">
-                        <materialDesign:PackIcon Kind="AccountOutline" Width="20" Height="20" Foreground="#8B5CF6" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Border Grid.Column="1" Background="#1A8B5CF6" CornerRadius="10" Width="34" Height="34" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="AccountOutline" Width="18" Height="18" Foreground="#8B5CF6" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                 </Grid>
             </Border>
 
             <!-- النظائر المحذوفة -->
-            <Border Grid.Column="8" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="14,12"
+            <Border Grid.Column="10" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="12,10"
                     BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -169,10 +189,10 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="{DynamicResource CardDeletedIsotopes}" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="SemiBold"/>
-                        <TextBlock Text="{Binding RadioisotopesCount}" FontSize="22" FontWeight="Bold" Foreground="#F59E0B" Margin="0,4,0,0"/>
+                        <TextBlock Text="{Binding RadioisotopesCount}" FontSize="20" FontWeight="Bold" Foreground="#F59E0B" Margin="0,4,0,0"/>
                     </StackPanel>
-                    <Border Grid.Column="1" Background="#1AF59E0B" CornerRadius="10" Width="38" Height="38" VerticalAlignment="Center">
-                        <materialDesign:PackIcon Kind="Atom" Width="20" Height="20" Foreground="#F59E0B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Border Grid.Column="1" Background="#1AF59E0B" CornerRadius="10" Width="34" Height="34" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="Atom" Width="18" Height="18" Foreground="#F59E0B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                 </Grid>
             </Border>
@@ -199,6 +219,12 @@
                     <RadioButton Content="{DynamicResource FilterSources}" Margin="0,0,8,0"
                                  IsChecked="{Binding SelectedFilter, Converter={StaticResource EqualityToBool}, ConverterParameter=Sources}"
                                  Command="{Binding SetFilterCommand}" CommandParameter="Sources"
+                                 Style="{StaticResource FilterRadioChip}"/>
+
+                    <!-- مصادر نيترونية -->
+                    <RadioButton Content="{DynamicResource FilterNeutronSources}" Margin="0,0,8,0"
+                                 IsChecked="{Binding SelectedFilter, Converter={StaticResource EqualityToBool}, ConverterParameter=NeutronSources}"
+                                 Command="{Binding SetFilterCommand}" CommandParameter="NeutronSources"
                                  Style="{StaticResource FilterRadioChip}"/>
 
                     <!-- المواقع -->
