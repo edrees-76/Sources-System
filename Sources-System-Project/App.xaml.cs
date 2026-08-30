@@ -128,6 +128,8 @@ public partial class App : Application
         services.AddTransient<ILeakTestService, LeakTestService>();
         services.AddTransient<ISystemResetService, SystemResetService>();
         services.AddTransient<IGlobalSearchService, GlobalSearchService>();
+        services.AddTransient<INeutronSourceTypeService, NeutronSourceTypeService>();
+        services.AddTransient<INeutronSourceService, NeutronSourceService>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();

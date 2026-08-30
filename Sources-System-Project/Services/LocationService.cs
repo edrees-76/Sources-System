@@ -99,7 +99,7 @@ public class LocationService : ILocationService
         using var db = _dbFactory.CreateDbContext();
         var item = db.Locations.Include(l => l.Sources).FirstOrDefault(l => l.Id == id);
         if (item == null) return (false, "الموقع غير موجود");
-        if (item.Sources.Any()) return (false, $"لا يمكن حذف الموقع \"{item.LocationName}\" لاحتوائه على مصادر مرتبطة به");
+        if (item.Sources.Any() || db.NeutronSources.Any(ns => ns.LocationId == id)) return (false, $"لا يمكن حذف الموقع \"{item.LocationName}\" لاحتوائه على مصادر مرتبطة به");
         item.IsDeleted = true;
         item.DeletedAt = DateTime.Now;
         var currentUserId = _userService.CurrentUser?.Id;

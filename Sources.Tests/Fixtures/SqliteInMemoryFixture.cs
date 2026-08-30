@@ -55,7 +55,10 @@ public class SqliteInMemoryFixture : IDisposable
                 DELETE FROM SourceLocationHistories;
                 DELETE FROM SourceIsotopes;
                 DELETE FROM GammaLines;
+                DELETE FROM LeakTestRecords;
                 DELETE FROM Sources;
+                DELETE FROM NeutronSources;
+                DELETE FROM NeutronSourceTypes;
                 DELETE FROM ActivityUnits;
                 DELETE FROM Locations;
                 DELETE FROM Radioisotopes;
