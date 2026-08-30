@@ -115,7 +115,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         CanSeeCalculator = user.HasSectionPermission("ActivityCalculator");
         CanSeeIsotopeLibrary = true;
         CanSeeAlerts = user.HasSectionPermission("Alerts");
-        CanSeeDeletions = user.IsAdmin || user.HasSectionPermission("Deletions") || user.HasSectionPermission("Settings") || user.HasSectionPermission("Users");
+        CanSeeDeletions = user.IsAdmin || user.HasSectionPermission("Deletions");
     }
 
 

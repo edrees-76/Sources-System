@@ -510,6 +510,7 @@
     <system:String x:Key="PermUsers">Users Management</system:String>
     <system:String x:Key="PermSettings">Settings</system:String>
     <system:String x:Key="PermCalculator">Radiological Calculator</system:String>
+    <system:String x:Key="PermDeletions">Deletions</system:String>
 
     <!-- Locations Page -->
     <system:String x:Key="LocationsManagementTitle">Locations Map Management</system:String>

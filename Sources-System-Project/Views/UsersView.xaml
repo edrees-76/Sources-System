@@ -504,7 +504,7 @@
                                         <materialDesign:PackIcon Kind="ShieldKey" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
                                         <TextBlock Text="{DynamicResource LabelPermissions}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
                                     </StackPanel>
-                                    <UniformGrid Columns="2" Rows="4">
+                                    <UniformGrid Columns="2">
                                         <CheckBox Content="{DynamicResource PermRadioisotopes}" IsChecked="{Binding PermRadioisotopes}" Margin="0,4" Foreground="{DynamicResource TextPrimary}"/>
                                         <CheckBox Content="{DynamicResource PermSources}" IsChecked="{Binding PermSources}" Margin="0,4" Foreground="{DynamicResource TextPrimary}"/>
                                         <CheckBox Content="{DynamicResource PermLocations}" IsChecked="{Binding PermLocations}" Margin="0,4" Foreground="{DynamicResource TextPrimary}"/>
@@ -513,6 +513,7 @@
                                         <CheckBox Content="{DynamicResource PermCalculator}" IsChecked="{Binding PermCalculator}" Margin="0,4" Foreground="{DynamicResource TextPrimary}"/>
                                         <CheckBox Content="{DynamicResource PermUsers}" IsChecked="{Binding PermUsers}" Margin="0,4" Foreground="{DynamicResource TextPrimary}"/>
                                         <CheckBox Content="{DynamicResource PermSettings}" IsChecked="{Binding PermSettings}" Margin="0,4" Foreground="{DynamicResource TextPrimary}"/>
+                                        <CheckBox Content="{DynamicResource PermDeletions}" IsChecked="{Binding PermDeletions}" Margin="0,4" Foreground="{DynamicResource TextPrimary}"/>
                                     </UniformGrid>
                                 </StackPanel>
                             </Border>

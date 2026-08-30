@@ -67,6 +67,7 @@ public class UsersViewModelPermissionsTests
         Assert.False(vm.PermUsers);
         Assert.False(vm.PermSettings);
         Assert.False(vm.PermCalculator);
+        Assert.False(vm.PermDeletions);
     }
 
     [Theory]
@@ -90,7 +91,7 @@ public class UsersViewModelPermissionsTests
         // Act
         vm.EditCommand.Execute(null);
 
-        // Assert - كافة الصلاحيات الثمانية يجب أن تكون true
+        // Assert - كافة الصلاحيات التسعة يجب أن تكون true
         Assert.True(vm.PermRadioisotopes);
         Assert.True(vm.PermSources);
         Assert.True(vm.PermLocations);
@@ -99,6 +100,7 @@ public class UsersViewModelPermissionsTests
         Assert.True(vm.PermUsers);
         Assert.True(vm.PermSettings);
         Assert.True(vm.PermCalculator);
+        Assert.True(vm.PermDeletions);
     }
 
     [Fact]
@@ -224,6 +226,141 @@ public class UsersViewModelPermissionsTests
         var permDiff = vm.AuditDiffItems.FirstOrDefault(d => d.FieldName == "صلاحيات الوصول للأقسام");
         Assert.NotNull(permDiff);
         Assert.False(permDiff!.HasChanged);
+    }
+
+    #endregion
+
+    #region 4. Deletions Permission & Sidebar Decoupling Tests (Round 83)
+
+    [Fact]
+    public void SidebarPermissions_UserWithDeletionsPermissionOnly_CanSeeDeletionsIsTrue()
+    {
+        // Arrange
+        var mockUserService = new Mock<IUserService>();
+        var user = new User
+        {
+            FullName = "مسؤول المحذوفات",
+            Username = "del_manager",
+            Role = new Role { RoleName = "مستخدم عادي" },
+            Permissions = "Deletions"
+        };
+        mockUserService.Setup(u => u.CurrentUser).Returns(user);
+        mockUserService.Setup(u => u.IsLoggedIn).Returns(true);
+
+        var mockAlertService = new Mock<IAlertService>();
+        var mockSettingsService = new Mock<ISystemSettingsService>();
+
+        // Act
+        var mainVm = new MainViewModel(mockUserService.Object, mockAlertService.Object, mockSettingsService.Object);
+
+        // Assert - يرى رابط المحذوفات حصراً
+        Assert.True(mainVm.CanSeeDeletions);
+        Assert.False(mainVm.CanSeeSettings);
+        Assert.False(mainVm.CanSeeUsers);
+    }
+
+    [Fact]
+    public void SidebarPermissions_UserWithSettingsPermissionOnly_CanSeeDeletionsIsFalse()
+    {
+        // Arrange
+        var mockUserService = new Mock<IUserService>();
+        var user = new User
+        {
+            FullName = "مستخدم الإعدادات فقط",
+            Username = "settings_only_user",
+            Role = new Role { RoleName = "مستخدم عادي" },
+            Permissions = "Settings" // يملك صلاحية الإعدادات فقط بدون Deletions
+        };
+        mockUserService.Setup(u => u.CurrentUser).Returns(user);
+        mockUserService.Setup(u => u.IsLoggedIn).Returns(true);
+
+        var mockAlertService = new Mock<IAlertService>();
+        var mockSettingsService = new Mock<ISystemSettingsService>();
+
+        // Act
+        var mainVm = new MainViewModel(mockUserService.Object, mockAlertService.Object, mockSettingsService.Object);
+
+        // Assert - يرى الإعدادات ولكن لا يرى المحذوفات إطلاقاً (كسر الاقتران القديم)
+        Assert.True(mainVm.CanSeeSettings);
+        Assert.False(mainVm.CanSeeDeletions);
+    }
+
+    [Fact]
+    public void SidebarPermissions_UserWithUsersPermissionOnly_CanSeeDeletionsIsFalse()
+    {
+        // Arrange
+        var mockUserService = new Mock<IUserService>();
+        var user = new User
+        {
+            FullName = "مستخدم إدارة المستخدمين فقط",
+            Username = "users_only_user",
+            Role = new Role { RoleName = "مستخدم عادي" },
+            Permissions = "Users" // يملك صلاحية المستخدمين فقط بدون Deletions
+        };
+        mockUserService.Setup(u => u.CurrentUser).Returns(user);
+        mockUserService.Setup(u => u.IsLoggedIn).Returns(true);
+
+        var mockAlertService = new Mock<IAlertService>();
+        var mockSettingsService = new Mock<ISystemSettingsService>();
+
+        // Act
+        var mainVm = new MainViewModel(mockUserService.Object, mockAlertService.Object, mockSettingsService.Object);
+
+        // Assert - يرى إدارة المستخدمين ولكن لا يرى المحذوفات إطلاقاً
+        Assert.True(mainVm.CanSeeUsers);
+        Assert.False(mainVm.CanSeeDeletions);
+    }
+
+    [Fact]
+    public void SidebarPermissions_AdminUser_AlwaysCanSeeDeletions_RegardlessOfExplicitPermissions()
+    {
+        // Arrange
+        var mockUserService = new Mock<IUserService>();
+        var adminUser = new User
+        {
+            FullName = "مدير النظام الشامل",
+            Username = "sys_admin",
+            Role = new Role { RoleName = "مدير النظام" },
+            Permissions = null // لا توجد صلاحيات نصية صريحة، دوره كمدير نظام يمنح كل شيء
+        };
+        mockUserService.Setup(u => u.CurrentUser).Returns(adminUser);
+        mockUserService.Setup(u => u.IsLoggedIn).Returns(true);
+
+        var mockAlertService = new Mock<IAlertService>();
+        var mockSettingsService = new Mock<ISystemSettingsService>();
+
+        // Act
+        var mainVm = new MainViewModel(mockUserService.Object, mockAlertService.Object, mockSettingsService.Object);
+
+        // Assert - مدير النظام يرى رابط المحذوفات دائماً
+        Assert.True(mainVm.CanSeeDeletions);
+        Assert.True(mainVm.CanSeeSettings);
+        Assert.True(mainVm.CanSeeUsers);
+        Assert.True(mainVm.CanSeeSources);
+    }
+
+    [Fact]
+    public void UsersViewModel_DiffViewer_TranslatesDeletionsPermissionCorrectly()
+    {
+        // Arrange
+        var vm = CreateViewModel();
+        var log = new AuditLog
+        {
+            Action = "Update",
+            TableName = "Users",
+            OldValues = JsonSerializer.Serialize(new { Permissions = "Sources,Settings" }),
+            NewValues = JsonSerializer.Serialize(new { Permissions = "Sources,Settings,Deletions" })
+        };
+
+        // Act
+        vm.OpenDiffViewerCommand.Execute(log);
+
+        // Assert
+        Assert.True(vm.IsDiffViewerOpen);
+        var permDiff = vm.AuditDiffItems.FirstOrDefault(d => d.FieldName == "صلاحيات الوصول للأقسام");
+        Assert.NotNull(permDiff);
+        Assert.True(permDiff!.HasChanged);
+        Assert.Contains("+ المحذوفات", permDiff.NewValue);
     }
 
     #endregion

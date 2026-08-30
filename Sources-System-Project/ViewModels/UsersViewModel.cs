@@ -99,6 +99,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
     [ObservableProperty] private bool _permUsers;
     [ObservableProperty] private bool _permSettings;
     [ObservableProperty] private bool _permCalculator = true;
+    [ObservableProperty] private bool _permDeletions;
 
     // ─── رؤية قسم الصلاحيات ───
     [ObservableProperty] private bool _isPermissionsSectionVisible;
@@ -112,7 +113,8 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
         "Reports",
         "Users",
         "Settings",
-        "ActivityCalculator"
+        "ActivityCalculator",
+        "Deletions"
     };
 
     private readonly List<string> _customOrUnrecognizedPermissions = new();
@@ -446,6 +448,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
             "Users" => "إدارة المستخدمين",
             "Settings" => "الإعدادات",
             "ActivityCalculator" or "Calculator" => "الحاسبة الإشعاعية",
+            "Deletions" => "المحذوفات",
             "All" => "كافة الصلاحيات",
             _ => perm
         };
@@ -710,7 +713,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
         EditRoleId = null; EditIsActive = true; EditIsEditor = true;
         _customOrUnrecognizedPermissions.Clear();
         PermRadioisotopes = PermSources = PermLocations = PermBorrowing = PermReports = PermCalculator = true;
-        PermUsers = PermSettings = false;
+        PermUsers = PermSettings = PermDeletions = false;
         UpdatePermissionsVisibility();
     }
 
@@ -728,6 +731,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
         if (PermUsers) perms.Add("Users");
         if (PermSettings) perms.Add("Settings");
         if (PermCalculator) perms.Add("ActivityCalculator");
+        if (PermDeletions) perms.Add("Deletions");
 
         if (_customOrUnrecognizedPermissions.Count > 0)
         {
@@ -744,14 +748,14 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
         if (string.IsNullOrWhiteSpace(perms))
         {
             PermRadioisotopes = PermSources = PermLocations = PermBorrowing = PermReports = PermCalculator = false;
-            PermUsers = PermSettings = false;
+            PermUsers = PermSettings = PermDeletions = false;
             return;
         }
 
         if (string.Equals(perms.Trim(), "All", StringComparison.OrdinalIgnoreCase))
         {
             PermRadioisotopes = PermSources = PermLocations = PermBorrowing = PermReports = PermCalculator = true;
-            PermUsers = PermSettings = true;
+            PermUsers = PermSettings = PermDeletions = true;
             return;
         }
 
@@ -766,6 +770,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
         PermUsers = set.Contains("Users");
         PermSettings = set.Contains("Settings");
         PermCalculator = set.Contains("ActivityCalculator");
+        PermDeletions = set.Contains("Deletions");
 
         foreach (var token in tokens)
         {

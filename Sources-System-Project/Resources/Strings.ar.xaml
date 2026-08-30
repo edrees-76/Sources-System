@@ -507,6 +507,7 @@
     <system:String x:Key="PermUsers">إدارة المستخدمين</system:String>
     <system:String x:Key="PermSettings">الإعدادات</system:String>
     <system:String x:Key="PermCalculator">الحاسبة الإشعاعية</system:String>
+    <system:String x:Key="PermDeletions">المحذوفات</system:String>
 
     <!-- Locations Page -->
     <system:String x:Key="LocationsManagementTitle">إدارة خارطة المواقع</system:String>
