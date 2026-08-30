@@ -5,6 +5,9 @@ using Sources.Models;
 
 namespace Sources.ViewModels;
 
+/// <summary>
+/// نموذج عرض تفاصيل مصدر نيتروني
+/// </summary>
 public partial class NeutronSourceDetailsViewModel : ObservableObject
 {
     [ObservableProperty] private NeutronSource _neutronSource;

@@ -98,6 +98,9 @@ public class ReportFailedLeakTestRow
     public string DoseRateTooltip => Source.DoseRateTooltip;
 }
 
+/// <summary>
+/// صف عرض مخصص لجدول تقرير جرد المصادر النيترونية لضمان ثبات الترقيم التسلسلي #
+/// </summary>
 public class ReportNeutronInventoryRow
 {
     public int RowNumber { get; set; }

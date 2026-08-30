@@ -1361,6 +1361,7 @@ namespace Sources.Services
             });
         }
 
+        /// <summary>إنشاء تقرير جرد المصادر النيترونية بصيغة Excel</summary>
         public async Task GenerateNeutronInventoryReportExcelAsync(IEnumerable<NeutronSource> sources, string filePath, string? reportTitle = null)
         {
             await Task.Run(() =>
@@ -1401,6 +1402,7 @@ namespace Sources.Services
             });
         }
 
+        /// <summary>إنشاء تقرير جرد المصادر النيترونية بصيغة PDF</summary>
         public async Task GenerateNeutronInventoryReportPdfAsync(IEnumerable<NeutronSource> sources, string filePath, string? reportTitle = null)
         {
             await Task.Run(() =>

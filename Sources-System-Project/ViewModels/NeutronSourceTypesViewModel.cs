@@ -11,6 +11,9 @@ using Sources.Services;
 
 namespace Sources.ViewModels;
 
+/// <summary>
+/// نموذج عرض إدارة أنواع المصادر النيترونية المرجعية
+/// </summary>
 public partial class NeutronSourceTypesViewModel : ObservableObject
 {
     private readonly INeutronSourceTypeService _service;
@@ -50,6 +53,7 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
         LoadData();
     }
 
+    /// <summary>تحميل بيانات أنواع المصادر النيترونية مع تطبيق الفلترة</summary>
     public void LoadData()
     {
         var all = _service.GetAll();
@@ -236,6 +240,7 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
         }
     }
 
+    /// <summary>مسح نموذج الإدخال</summary>
     private void ClearForm()
     {
         EditCode = string.Empty;

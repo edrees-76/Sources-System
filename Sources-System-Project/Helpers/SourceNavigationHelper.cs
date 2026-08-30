@@ -7,10 +7,14 @@ using Sources.Views;
 
 namespace Sources.Helpers;
 
+/// <summary>
+/// مساعد للتنقل وفتح نوافذ تفاصيل المصادر المشعة والنيترونية
+/// </summary>
 public static class SourceNavigationHelper
 {
     public static Action<Source>? CustomOpenAction { get; set; }
 
+    /// <summary>فتح نافذة تفاصيل مصدر مشع</summary>
     public static void OpenSourceDetails(object? parameter, Guid? sourceId = null)
     {
         Source? source = parameter switch
@@ -90,6 +94,7 @@ public static class SourceNavigationHelper
         }
     }
 
+    /// <summary>فتح نافذة تفاصيل مصدر نيتروني</summary>
     public static void OpenNeutronSourceDetails(object? parameter, Guid? sourceId = null)
     {
         NeutronSource? source = parameter switch
@@ -142,6 +147,7 @@ public static class SourceNavigationHelper
         }
     }
 
+    /// <summary>جلب مصدر نيتروني بالمعرف</summary>
     private static NeutronSource? GetNeutronSourceById(Guid id)
     {
         try
@@ -156,6 +162,7 @@ public static class SourceNavigationHelper
         }
     }
 
+    /// <summary>جلب مصدر مشع بالمعرف</summary>
     private static Source? GetSourceById(Guid id)
     {
         try
@@ -170,6 +177,7 @@ public static class SourceNavigationHelper
         }
     }
 
+    /// <summary>جلب مصدر مشع بالكود</summary>
     private static Source? GetSourceByCode(string code)
     {
         if (string.IsNullOrWhiteSpace(code)) return null;
