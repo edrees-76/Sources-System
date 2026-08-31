@@ -150,11 +150,43 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     [ObservableProperty] private double? _editRelativeUncertaintyPercent;
     [ObservableProperty] private string _editRelativeUncertaintyText = string.Empty;
 
+    private bool _isUpdatingEmissionRate;
+
     partial void OnEditEmissionRateTextChanged(string value)
     {
-        if (double.TryParse(value, out double result))
+        if (_isUpdatingEmissionRate) return;
+        try
         {
-            EditEmissionRate = result;
+            _isUpdatingEmissionRate = true;
+            if (ScientificNotationParser.TryParse(value, out double result))
+            {
+                EditEmissionRate = result;
+            }
+            else
+            {
+                EditEmissionRate = 0;
+            }
+        }
+        finally
+        {
+            _isUpdatingEmissionRate = false;
+        }
+    }
+
+    partial void OnEditEmissionRateChanged(double value)
+    {
+        if (_isUpdatingEmissionRate) return;
+        try
+        {
+            _isUpdatingEmissionRate = true;
+            if (value > 0 && (string.IsNullOrWhiteSpace(EditEmissionRateText) || (ScientificNotationParser.TryParse(EditEmissionRateText, out double r) && Math.Abs(r - value) > 0.0001)))
+            {
+                EditEmissionRateText = value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            }
+        }
+        finally
+        {
+            _isUpdatingEmissionRate = false;
         }
     }
 
@@ -788,15 +820,28 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                     ShowMessage(TranslationHelper.GetString("MsgErrNeutronTypeReq") ?? "نوع المصدر النيتروني مطلوب");
                     return;
                 }
-                if (EditEmissionRate <= 0 && !string.IsNullOrWhiteSpace(EditEmissionRateText) && double.TryParse(EditEmissionRateText, out double er))
+                
+                double finalRate = EditEmissionRate;
+                if (!string.IsNullOrWhiteSpace(EditEmissionRateText))
                 {
-                    EditEmissionRate = er;
+                    if (ScientificNotationParser.TryParsePositive(EditEmissionRateText, out double parsedRate, out string? rateError))
+                    {
+                        finalRate = parsedRate;
+                    }
+                    else if (EditEmissionRate <= 0)
+                    {
+                        ShowMessage(rateError ?? TranslationHelper.GetString("MsgErrEmissionRateReq") ?? "معدل انبعاث النيترونات يجب أن يكون قيمة موجبة");
+                        return;
+                    }
                 }
-                if (EditEmissionRate <= 0)
+                
+                if (finalRate <= 0)
                 {
                     ShowMessage(TranslationHelper.GetString("MsgErrEmissionRateReq") ?? "معدل انبعاث النيترونات يجب أن يكون قيمة موجبة");
                     return;
                 }
+                EditEmissionRate = finalRate;
+
                 if (EditCalibrationDate == default)
                 {
                     ShowMessage(TranslationHelper.GetString("MsgErrCalibrationDateReq"));

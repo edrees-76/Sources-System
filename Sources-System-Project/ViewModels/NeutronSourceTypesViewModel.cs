@@ -83,13 +83,13 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
 
     partial void OnEditAverageEnergyTextChanged(string value)
     {
-        if (double.TryParse(value, out double res)) EditAverageEnergyMev = res;
+        if (ScientificNotationParser.TryParse(value, out double res)) EditAverageEnergyMev = res;
         else EditAverageEnergyMev = null;
     }
 
     partial void OnEditNeutronYieldTextChanged(string value)
     {
-        if (double.TryParse(value, out double res)) EditNeutronYield = res;
+        if (ScientificNotationParser.TryParse(value, out double res)) EditNeutronYield = res;
         else EditNeutronYield = null;
     }
 
@@ -143,7 +143,7 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
             return;
         }
 
-        if (EditHalfLife <= 0 && !string.IsNullOrWhiteSpace(EditHalfLifeText) && double.TryParse(EditHalfLifeText, out double hl))
+        if (EditHalfLife <= 0 && !string.IsNullOrWhiteSpace(EditHalfLifeText) && ScientificNotationParser.TryParse(EditHalfLifeText, out double hl))
         {
             EditHalfLife = hl;
         }
@@ -152,6 +152,37 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
         {
             DialogHelper.ShowWarning("يجب إدخال قيمة عمر نصف موجبة وأكبر من صفر", "تنبيه");
             return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(EditNeutronYieldText))
+        {
+            if (!ScientificNotationParser.TryParse(EditNeutronYieldText, out double yieldVal) || yieldVal <= 0)
+            {
+                DialogHelper.ShowWarning(
+                    TranslationHelper.GetString("MsgErrInvalidScientificNumber") 
+                    ?? "صيغة المردود النيتروني غير صحيحة. الصيغ المقبولة: أرقام عادية مثل 2200000، أو بصيغة الأس مثل 2.2E6 أو 2.2x10^6",
+                    TranslationHelper.GetString("TitleWarning") ?? "تنبيه");
+                return;
+            }
+            EditNeutronYield = yieldVal;
+        }
+        else
+        {
+            EditNeutronYield = null;
+        }
+
+        if (!string.IsNullOrWhiteSpace(EditAverageEnergyText))
+        {
+            if (!ScientificNotationParser.TryParse(EditAverageEnergyText, out double energyVal) || energyVal <= 0)
+            {
+                DialogHelper.ShowWarning("متوسط طاقة النيترونات يجب أن يكون قيمة رقمية موجبة", "تنبيه");
+                return;
+            }
+            EditAverageEnergyMev = energyVal;
+        }
+        else
+        {
+            EditAverageEnergyMev = null;
         }
 
         if (IsNew)

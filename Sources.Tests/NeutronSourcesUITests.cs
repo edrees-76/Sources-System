@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Sources.Data;
+using Sources.Helpers;
 using Sources.Models;
 using Sources.Services;
 using Sources.Tests.Fixtures;
@@ -655,6 +656,136 @@ public class NeutronSourcesUITests : IDisposable
 
         vm.EditNeutronYieldText = "not-a-number";
         Assert.Null(vm.EditNeutronYield);
+    }
+
+    [Theory]
+    [InlineData("1.1E7", 11000000.0)]
+    [InlineData("1.1e+7", 11000000.0)]
+    [InlineData("1.1E-3", 0.0011)]
+    [InlineData("2.2e6", 2200000.0)]
+    public void ScientificNotationParser_ParsesStandardScientificNotation(string input, double expected)
+    {
+        bool success = ScientificNotationParser.TryParse(input, out double result);
+        Assert.True(success);
+        Assert.Equal(expected, result, 6);
+    }
+
+    [Theory]
+    [InlineData("1.1x10^7", 11000000.0)]
+    [InlineData("1.1X10^7", 11000000.0)]
+    [InlineData("1.1*10^7", 11000000.0)]
+    [InlineData("1.1*10^-3", 0.0011)]
+    [InlineData("2.2 x 10^6", 2200000.0)]
+    public void ScientificNotationParser_ParsesMultiplicationFormat(string input, double expected)
+    {
+        bool success = ScientificNotationParser.TryParse(input, out double result);
+        Assert.True(success);
+        Assert.Equal(expected, result, 6);
+    }
+
+    [Theory]
+    [InlineData("1.1×10^7", 11000000.0)]
+    [InlineData("1.1×10⁷", 11000000.0)]
+    [InlineData("1.1 × 10⁷", 11000000.0)]
+    [InlineData("10^7", 10000000.0)]
+    [InlineData("10⁷", 10000000.0)]
+    [InlineData("10⁻³", 0.001)]
+    public void ScientificNotationParser_ParsesMultiplicationSymbolAndSuperscripts(string input, double expected)
+    {
+        bool success = ScientificNotationParser.TryParse(input, out double result);
+        Assert.True(success);
+        Assert.Equal(expected, result, 6);
+    }
+
+    [Theory]
+    [InlineData("11000000", 11000000.0)]
+    [InlineData("11,000,000", 11000000.0)]
+    [InlineData("1,234.56", 1234.56)]
+    public void ScientificNotationParser_ParsesStandardDecimalAndThousandsCommas(string input, double expected)
+    {
+        bool success = ScientificNotationParser.TryParse(input, out double result);
+        Assert.True(success);
+        Assert.Equal(expected, result, 2);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("invalid-text")]
+    [InlineData("1.1xx10")]
+    [InlineData("10^^7")]
+    public void ScientificNotationParser_RejectsInvalidStrings(string input)
+    {
+        bool success = ScientificNotationParser.TryParse(input, out double result);
+        Assert.False(success);
+    }
+
+    [Fact]
+    public void ScientificNotationParser_TryParsePositive_RejectsZeroAndNegativeAndReturnsErrorMessage()
+    {
+        // Act & Assert 1: Zero
+        bool successZero = ScientificNotationParser.TryParsePositive("0", out double resZero, out string? errZero);
+        Assert.False(successZero);
+        Assert.NotNull(errZero);
+
+        // Act & Assert 2: Negative
+        bool successNeg = ScientificNotationParser.TryParsePositive("-1.1E7", out double resNeg, out string? errNeg);
+        Assert.False(successNeg);
+        Assert.NotNull(errNeg);
+
+        // Act & Assert 3: Invalid text
+        bool successInv = ScientificNotationParser.TryParsePositive("abc", out double resInv, out string? errInv);
+        Assert.False(successInv);
+        Assert.NotNull(errInv);
+        Assert.Contains("11000000", errInv);
+
+        // Act & Assert 4: Valid
+        bool successVal = ScientificNotationParser.TryParsePositive("1.1E7", out double resVal, out string? errVal);
+        Assert.True(successVal);
+        Assert.Null(errVal);
+        Assert.Equal(11000000.0, resVal);
+    }
+
+    [Fact]
+    public void SourcesViewModel_EmissionRate_AcceptsScientificAndMultiplicationNotations()
+    {
+        // Arrange
+        var mockSourceService = new Mock<ISourceService>();
+        mockSourceService.Setup(s => s.GetAllSources()).Returns(new List<Source>());
+        mockSourceService.Setup(s => s.GetDeletedSources()).Returns(new List<Source>());
+        var mockIsotopeService = new Mock<IRadioisotopeService>();
+        mockIsotopeService.Setup(s => s.GetAll()).Returns(new List<Radioisotope>());
+        var mockLocationService = new Mock<ILocationService>();
+        mockLocationService.Setup(s => s.GetAll()).Returns(new List<Location>());
+        var mockNeutronTypeService = new Mock<INeutronSourceTypeService>();
+        mockNeutronTypeService.Setup(s => s.GetAll()).Returns(new List<NeutronSourceType>());
+        var mockNeutronService = new Mock<INeutronSourceService>();
+        mockNeutronService.Setup(s => s.GetAll()).Returns(new List<NeutronSource>());
+
+        var vm = new SourcesViewModel(
+            sourceService: mockSourceService.Object,
+            isotopeService: mockIsotopeService.Object,
+            locationService: mockLocationService.Object,
+            reportingService: null!,
+            decayService: null,
+            neutronSourceService: mockNeutronService.Object,
+            neutronSourceTypeService: mockNeutronTypeService.Object);
+
+        // Act 1: Standard scientific notation
+        vm.EditEmissionRateText = "1.1E7";
+        Assert.Equal(11000000.0, vm.EditEmissionRate);
+
+        // Act 2: Multiplication notation
+        vm.EditEmissionRateText = "1.1x10^7";
+        Assert.Equal(11000000.0, vm.EditEmissionRate);
+
+        // Act 3: Symbol multiplication with superscript
+        vm.EditEmissionRateText = "1.1 × 10⁷";
+        Assert.Equal(11000000.0, vm.EditEmissionRate);
+
+        // Act 4: Invalid input sets to 0
+        vm.EditEmissionRateText = "invalid-rate";
+        Assert.Equal(0, vm.EditEmissionRate);
     }
 }
 
