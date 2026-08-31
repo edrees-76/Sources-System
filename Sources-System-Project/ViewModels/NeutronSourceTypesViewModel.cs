@@ -175,7 +175,9 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
         {
             if (!ScientificNotationParser.TryParse(EditAverageEnergyText, out double energyVal) || energyVal <= 0)
             {
-                DialogHelper.ShowWarning("متوسط طاقة النيترونات يجب أن يكون قيمة رقمية موجبة", "تنبيه");
+                DialogHelper.ShowWarning(
+                    TranslationHelper.GetString("MsgErrAverageEnergyPositive") ?? "متوسط طاقة النيترونات يجب أن يكون قيمة رقمية موجبة",
+                    TranslationHelper.GetString("TitleWarning") ?? "تنبيه");
                 return;
             }
             EditAverageEnergyMev = energyVal;

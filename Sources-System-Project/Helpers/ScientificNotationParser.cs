@@ -45,21 +45,21 @@ public static class ScientificNotationParser
             return true;
         }
 
-        // 2. محاولة التحويل عبر regex لصيغ الضرب: base × 10^exp أو 10^exp
-        // تدعم: 1.1x10^7, 1.1X10^7, 1.1×10^7, 1.1*10^7, 10^7, 10^-3, 1.1x10+7
-        var match = Regex.Match(normalized, @"^(?:(?<base>[-+]?[0-9]+(?:\.[0-9]+)?)\s*(?:[xX\*×]|\\times|\*)\s*)?10(?:\^|\s*)(?<exp>[-+]?[0-9]+)$", RegexOptions.IgnoreCase);
-        if (match.Success)
+        // 2. محاولة التحويل عبر regex لصيغ الأس العشري: base × 10^exp أو 10^exp
+        // تدعم: 1.1x10^7, 1.1X10^7, 1.1×10^7, 1.1*10^7, 10^7, 10^-3, 1.1x10^+7 (علامة ^ إلزامية للأس)
+        var matchExp = Regex.Match(normalized, @"^(?:(?<base>[-+]?[0-9]+(?:\.[0-9]+)?)\s*[xX\*×]\s*)?10\^(?<exp>[-+]?[0-9]+)$");
+        if (matchExp.Success)
         {
             double baseVal = 1.0;
-            if (match.Groups["base"].Success && !string.IsNullOrWhiteSpace(match.Groups["base"].Value))
+            if (matchExp.Groups["base"].Success && !string.IsNullOrWhiteSpace(matchExp.Groups["base"].Value))
             {
-                if (!double.TryParse(match.Groups["base"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out baseVal))
+                if (!double.TryParse(matchExp.Groups["base"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out baseVal))
                 {
                     return false;
                 }
             }
 
-            if (int.TryParse(match.Groups["exp"].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int expVal))
+            if (int.TryParse(matchExp.Groups["exp"].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int expVal))
             {
                 if (expVal > 308 || expVal < -308) return false;
                 result = baseVal * Math.Pow(10, expVal);
@@ -79,7 +79,19 @@ public static class ScientificNotationParser
             }
         }
 
-        // 4. محاولة أخيرة عبر الثقافة الحالية
+        // 4. صيغة الضرب العادي مثل 1.1×1000000 أو 5x1000 أو 2*500000
+        var matchMul = Regex.Match(normalized, @"^(?<left>[-+]?[0-9]+(?:\.[0-9]+)?)\s*[xX\*×]\s*(?<right>[-+]?[0-9]+(?:\.[0-9]+)?)$");
+        if (matchMul.Success)
+        {
+            if (double.TryParse(matchMul.Groups["left"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out double left) &&
+                double.TryParse(matchMul.Groups["right"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out double right))
+            {
+                result = left * right;
+                return !double.IsNaN(result) && !double.IsInfinity(result);
+            }
+        }
+
+        // 5. محاولة أخيرة عبر الثقافة الحالية
         if (double.TryParse(normalized, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.CurrentCulture, out double currentCultureVal)
             && !double.IsNaN(currentCultureVal) && !double.IsInfinity(currentCultureVal))
         {
