@@ -51,10 +51,30 @@ public class LocationSourceRow
     public string? Manufacturer => Source.Manufacturer;
 }
 
+/// <summary>
+/// صف عرض مخصص لقائمة المصادر النيترونية المرتبطة بموقع معين في نافذة التفاصيل
+/// </summary>
+public class LocationNeutronSourceRow
+{
+    public int RowNumber { get; set; }
+    public NeutronSource NeutronSource { get; set; } = null!;
+    public Guid Id => NeutronSource.Id;
+    public string SourceCode => NeutronSource.SourceCode;
+    public string TypeCode => NeutronSource.NeutronSourceType?.Code ?? "-";
+    public string TypeNameAr => NeutronSource.NeutronSourceType?.NameAr ?? "-";
+    public string EmissionRateFormatted => NeutronSource.EmissionRateFormatted;
+    public string UncertaintyFormatted => NeutronSource.RelativeExpandedUncertaintyPercent.HasValue ? $"{NeutronSource.RelativeExpandedUncertaintyPercent.Value:N1}%" : "-";
+    public string ArabicStatus => NeutronSource.ArabicStatus;
+    public string StatusColor => NeutronSource.StatusColor;
+    public string CalibrationDateFormatted => NeutronSource.CalibrationDate?.ToString("yyyy-MM-dd") ?? "-";
+    public string SerialNumber => !string.IsNullOrWhiteSpace(NeutronSource.SerialNumber) ? NeutronSource.SerialNumber : "-";
+}
+
 public partial class LocationsViewModel : ObservableObject, IEditableViewModel
 {
     private readonly ILocationService _service;
     private readonly IReportingService? _reportingService;
+    private readonly INeutronSourceService? _neutronSourceService;
 
     [ObservableProperty] private ObservableCollection<LocationRow> _locations = new();
     [ObservableProperty] private LocationRow? _selected;
@@ -76,10 +96,14 @@ public partial class LocationsViewModel : ObservableObject, IEditableViewModel
     [ObservableProperty] private bool _isLocationDetailsOpen;
     [ObservableProperty] private bool _hasLinkedSources;
 
-    public LocationsViewModel(ILocationService service, IReportingService? reportingService = null)
+    public LocationsViewModel(
+        ILocationService service, 
+        IReportingService? reportingService = null,
+        INeutronSourceService? neutronSourceService = null)
     {
         _service = service;
         _reportingService = reportingService ?? (App.ServiceProvider?.GetService(typeof(IReportingService)) as IReportingService);
+        _neutronSourceService = neutronSourceService ?? (App.ServiceProvider?.GetService(typeof(INeutronSourceService)) as INeutronSourceService);
         LoadData();
 
         CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Register<Sources.Messages.NavigateToSearchResultMessage>(this, (r, m) =>
@@ -247,7 +271,8 @@ public partial class LocationsViewModel : ObservableObject, IEditableViewModel
         {
             if (app.MainWindow == null || !app.MainWindow.IsVisible) return;
 
-            var detailsVm = new LocationDetailsViewModel(target, sources, _reportingService);
+            var neutronSources = _neutronSourceService?.GetByLocation(target.Id);
+            var detailsVm = new LocationDetailsViewModel(target, sources, _reportingService, neutronSources, _neutronSourceService);
             var win = new Views.LocationDetailsWindow(detailsVm)
             {
                 Owner = app.MainWindow

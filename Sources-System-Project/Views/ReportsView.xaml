@@ -158,6 +158,23 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+
+        <Style x:Key="NeutronInventoryReportTabBtn" TargetType="Button" BasedOn="{StaticResource ReportTabButtonBase}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SelectedReport}" Value="NeutronInventoryReport">
+                    <Setter Property="Background" Value="{DynamicResource DataGridRowSelected}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="BorderThickness" Value="1.5"/>
+                    <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.12" Color="{StaticResource PrimaryColor}"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
 
     <Grid Margin="24">
@@ -167,40 +184,48 @@
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0" Margin="0,0,0,16">
-            <StackPanel HorizontalAlignment="Right">
-                <!-- أزرار التقارير بتصميم موحد وتأثير تفاعلي للتبويب النشط والتحويم -->
-                <WrapPanel Margin="0,0,0,0">
-                    <Button Content="{DynamicResource BtnGeneralReport}" Style="{StaticResource GeneralReportTabBtn}"
-                            Command="{Binding SelectReportCommand}" CommandParameter="GeneralReport"/>
-                    <Button Content="{DynamicResource BtnInventoryReport}" Style="{StaticResource InventoryReportTabBtn}"
-                            Command="{Binding SelectReportCommand}" CommandParameter="InventoryReport"/>
-                    <Button Content="{DynamicResource BtnBorrowingReport}" Style="{StaticResource BorrowingReportTabBtn}"
-                            Command="{Binding SelectReportCommand}" CommandParameter="BorrowingReport"/>
-                    <Button Content="{DynamicResource BtnActivityReport}" Style="{StaticResource ActivityReportTabBtn}"
-                            Command="{Binding SelectReportCommand}" CommandParameter="ActivityReport"/>
-                    <Button Content="{DynamicResource BtnLowActivityReport}" Style="{StaticResource LowActivityReportTabBtn}"
-                            Command="{Binding SelectReportCommand}" CommandParameter="LowActivityReport"/>
-                    <Button Content="{DynamicResource BtnCalibrationReport}" Style="{StaticResource LowActivityAlertReportTabBtn}"
-                            Command="{Binding SelectReportCommand}" CommandParameter="LowActivityAlertReport"/>
-                    <Button Content="{DynamicResource BtnFailedLeakTestsReport}" Style="{StaticResource FailedLeakTestsReportTabBtn}"
-                            Command="{Binding SelectReportCommand}" CommandParameter="FailedLeakTestsReport"/>
-                </WrapPanel>
-            </StackPanel>
-            
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top">
-                <Button Command="{Binding ExportToPdfCommand}" Style="{StaticResource MaterialDesignOutlinedButton}" Foreground="{DynamicResource DangerBrush}" BorderBrush="{DynamicResource DangerBrush}" Margin="0,0,8,0">
-                    <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="FilePdfBox" Margin="-4,0,4,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="{DynamicResource BtnExportPdf}" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
-                <Button Command="{Binding ExportToExcelCommand}" Style="{StaticResource MaterialDesignOutlinedButton}" Foreground="{DynamicResource SuccessBrush}" BorderBrush="{DynamicResource SuccessBrush}">
-                    <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="FileExcelBox" Margin="-4,0,4,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="{DynamicResource BtnExportExcel}" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
-            </StackPanel>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- شريط أزرار التصدير العلوي -->
+            <DockPanel Grid.Row="0" Margin="0,0,0,12" LastChildFill="False">
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Command="{Binding ExportToPdfCommand}" Style="{StaticResource MaterialDesignOutlinedButton}" Foreground="{DynamicResource DangerBrush}" BorderBrush="{DynamicResource DangerBrush}" Margin="0,0,8,0" Height="36">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FilePdfBox" Margin="-4,0,4,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource BtnExportPdf}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding ExportToExcelCommand}" Style="{StaticResource MaterialDesignOutlinedButton}" Foreground="{DynamicResource SuccessBrush}" BorderBrush="{DynamicResource SuccessBrush}" Height="36">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FileExcelBox" Margin="-4,0,4,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource BtnExportExcel}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </DockPanel>
+
+            <!-- أزرار تبويبات التقارير -->
+            <WrapPanel Grid.Row="1" Margin="0,0,0,0">
+                <Button Content="{DynamicResource BtnGeneralReport}" Style="{StaticResource GeneralReportTabBtn}"
+                        Command="{Binding SelectReportCommand}" CommandParameter="GeneralReport"/>
+                <Button Content="{DynamicResource BtnInventoryReport}" Style="{StaticResource InventoryReportTabBtn}"
+                        Command="{Binding SelectReportCommand}" CommandParameter="InventoryReport"/>
+                <Button Content="{DynamicResource BtnNeutronInventoryReport}" Style="{StaticResource NeutronInventoryReportTabBtn}"
+                        Command="{Binding SelectReportCommand}" CommandParameter="NeutronInventoryReport"/>
+                <Button Content="{DynamicResource BtnBorrowingReport}" Style="{StaticResource BorrowingReportTabBtn}"
+                        Command="{Binding SelectReportCommand}" CommandParameter="BorrowingReport"/>
+                <Button Content="{DynamicResource BtnActivityReport}" Style="{StaticResource ActivityReportTabBtn}"
+                        Command="{Binding SelectReportCommand}" CommandParameter="ActivityReport"/>
+                <Button Content="{DynamicResource BtnLowActivityReport}" Style="{StaticResource LowActivityReportTabBtn}"
+                        Command="{Binding SelectReportCommand}" CommandParameter="LowActivityReport"/>
+                <Button Content="{DynamicResource BtnCalibrationReport}" Style="{StaticResource LowActivityAlertReportTabBtn}"
+                        Command="{Binding SelectReportCommand}" CommandParameter="LowActivityAlertReport"/>
+                <Button Content="{DynamicResource BtnFailedLeakTestsReport}" Style="{StaticResource FailedLeakTestsReportTabBtn}"
+                        Command="{Binding SelectReportCommand}" CommandParameter="FailedLeakTestsReport"/>
+            </WrapPanel>
         </Grid>
 
         <Border Grid.Row="1" Style="{StaticResource ContentCard}">
@@ -731,6 +756,29 @@
                         </DataGrid.Columns>
                     </DataGrid>
                     <Border Visibility="{Binding FailedLeakTestsData.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}"
+                            Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,36,0,0" IsHitTestVisible="False">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="InformationOutline" Width="18" Height="18" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="{DynamicResource LabelNoDataAvailable}" FontSize="13" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- تقرير جرد المصادر النيترونية -->
+                <Grid Visibility="{Binding SelectedReport, Converter={StaticResource EqualityToVis}, ConverterParameter=NeutronInventoryReport}">
+                    <DataGrid ItemsSource="{Binding NeutronInventoryData}" Style="{StaticResource ModernDataGrid}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColNeutronType}" Binding="{Binding TypeCode}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColEmissionRate}" Binding="{Binding EmissionRateFormatted}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColUncertainty}" Binding="{Binding RelativeUncertainty}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="Auto" MinWidth="95" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColCalibrationDate}" Binding="{Binding CalibrationDate, StringFormat=d}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Border Visibility="{Binding NeutronInventoryData.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}"
                             Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,36,0,0" IsHitTestVisible="False">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="InformationOutline" Width="18" Height="18" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>

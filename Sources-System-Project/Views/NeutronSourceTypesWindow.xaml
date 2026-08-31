@@ -1,0 +1,231 @@
+<Window x:Class="Sources.Views.NeutronSourceTypesWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:vm="clr-namespace:Sources.ViewModels"
+        Title="{DynamicResource TitleNeutronSourceTypes}"
+        Width="920" Height="680"
+        MinWidth="800" MinHeight="550"
+        WindowStartupLocation="CenterOwner"
+        WindowState="Normal"
+        Background="{DynamicResource WindowBackground}"
+        FontFamily="Segoe UI">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Header -->
+            <RowDefinition Height="*"/>    <!-- Content: Grid or Form -->
+        </Grid.RowDefinitions>
+
+        <!-- ══ 0. Header ══ -->
+        <Border Grid.Row="0" Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="16,12" Margin="0,0,0,14"
+                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+            <DockPanel LastChildFill="False">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="#1A0D9488" Width="40" Height="40" CornerRadius="10">
+                        <materialDesign:PackIcon Kind="ShapePlus" Width="22" Height="22" Foreground="#0D9488" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Margin="12,0,0,0">
+                        <TextBlock Text="{DynamicResource TitleNeutronSourceTypes}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="{DynamicResource SubtitleNeutronTypes}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Command="{Binding AddNewCommand}" Style="{DynamicResource PrimaryButton}" Margin="0,0,8,0"
+                            Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVis}}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Plus" Margin="-4,0,4,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource BtnAddNeutronType}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- ══ 1. Content ══ -->
+        <!-- Scene A: List View -->
+        <Border Grid.Row="1" Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="16"
+                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
+                Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVis}}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Search Bar -->
+                <Border Grid.Row="0" Background="{DynamicResource MainBackground}" CornerRadius="8"
+                        BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Height="38" Padding="10,0" Margin="0,0,0,12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <materialDesign:PackIcon Grid.Column="0" Kind="Magnify" Width="20" Height="20" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                 VerticalAlignment="Center" BorderThickness="0" Background="Transparent"
+                                 materialDesign:HintAssist.Hint="{DynamicResource HintSearchNeutronType}"
+                                 materialDesign:TextFieldAssist.DecorationVisibility="Hidden"/>
+                    </Grid>
+                </Border>
+
+                <!-- DataGrid -->
+                <DataGrid Grid.Row="1" ItemsSource="{Binding Types}" SelectedItem="{Binding SelectedType}"
+                          Style="{StaticResource ModernDataGrid}" AutoGenerateColumns="False" IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="{DynamicResource ColTypeCode}" Binding="{Binding Code}" FontWeight="Bold" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColNameAr}" Binding="{Binding NameAr}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColNameEn}" Binding="{Binding NameEn}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColReactionType}" Binding="{Binding ReactionType}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColTargetMaterial}" Binding="{Binding TargetMaterial}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColHalfLife}" Binding="{Binding HalfLife}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColHalfLifeUnit}" Binding="{Binding HalfLifeUnit}" Width="Auto" MinWidth="80" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColAverageEnergyMev}" Binding="{Binding AverageNeutronEnergyMeV, StringFormat={}{0:N2}}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
+
+                        <!-- الإجراءات -->
+                        <DataGridTemplateColumn Header="{DynamicResource ColActions}" Width="100">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <Button Style="{StaticResource MaterialDesignIconButton}" Width="30" Height="30" Padding="0"
+                                                Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}" ToolTip="{DynamicResource BtnEdit}">
+                                            <materialDesign:PackIcon Kind="Pencil" Width="16" Height="16" Foreground="{DynamicResource PrimaryBrush}"/>
+                                        </Button>
+                                        <Button Style="{StaticResource MaterialDesignIconButton}" Width="30" Height="30" Padding="0"
+                                                Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}" ToolTip="{DynamicResource BtnDelete}">
+                                            <materialDesign:PackIcon Kind="Delete" Width="16" Height="16" Foreground="{DynamicResource DangerBrush}"/>
+                                        </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+
+        <!-- Scene B: Add / Edit Form -->
+        <Border Grid.Row="1" Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="20"
+                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
+                Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel MaxWidth="680" HorizontalAlignment="Center">
+                    <TextBlock FontSize="16" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,0,16">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="{DynamicResource TitleEditNeutronType}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsNew}" Value="True">
+                                        <Setter Property="Text" Value="{DynamicResource TitleAddNeutronType}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox Grid.Column="0" Text="{Binding EditCode, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                 materialDesign:HintAssist.Hint="{DynamicResource HintTypeCodeReq}"/>
+
+                        <ComboBox Grid.Column="2" ItemsSource="{Binding CommonReactions}"
+                                  SelectedItem="{Binding EditReactionType}"
+                                  Style="{StaticResource MaterialDesignFloatingHintComboBox}"
+                                  materialDesign:HintAssist.Hint="{DynamicResource HintReactionTypeReq}"/>
+                    </Grid>
+
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox Grid.Column="0" Text="{Binding EditNameAr, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                 materialDesign:HintAssist.Hint="{DynamicResource HintNameAr}"/>
+
+                        <TextBox Grid.Column="2" Text="{Binding EditNameEn, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                 materialDesign:HintAssist.Hint="{DynamicResource HintNameEn}"/>
+                    </Grid>
+
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox Grid.Column="0" Text="{Binding EditParentNuclide, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                 materialDesign:HintAssist.Hint="{DynamicResource HintParentNuclide}"/>
+
+                        <TextBox Grid.Column="2" Text="{Binding EditTargetMaterial, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                 materialDesign:HintAssist.Hint="{DynamicResource HintTargetMaterial}"/>
+                    </Grid>
+
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox Grid.Column="0" Text="{Binding EditHalfLifeText, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                 materialDesign:HintAssist.Hint="{DynamicResource HintHalfLifeReq}"/>
+
+                        <ComboBox Grid.Column="2" ItemsSource="{Binding CommonUnits}"
+                                  SelectedItem="{Binding EditHalfLifeUnit}"
+                                  Style="{StaticResource MaterialDesignFloatingHintComboBox}"
+                                  materialDesign:HintAssist.Hint="{DynamicResource HintHalfLifeUnitReq}"/>
+                    </Grid>
+
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox Grid.Column="0" Text="{Binding EditAverageEnergyText, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                 materialDesign:HintAssist.Hint="{DynamicResource HintAverageEnergyMev}"/>
+
+                        <TextBox Grid.Column="2" Text="{Binding EditNeutronYieldText, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                 materialDesign:HintAssist.Hint="{DynamicResource HintNeutronYield}"/>
+                    </Grid>
+
+                    <TextBox Text="{Binding EditNotes, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                             materialDesign:HintAssist.Hint="{DynamicResource HintNeutronTypeNotes}"
+                             Margin="0,0,0,20"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                        <Button Command="{Binding SaveCommand}" Style="{DynamicResource PrimaryButton}" Margin="0,0,10,0" MinWidth="110">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="ContentSave" Margin="-4,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource BtnSave}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Command="{Binding CancelEditCommand}" Style="{StaticResource MaterialDesignOutlinedButton}" MinWidth="100">
+                            <TextBlock Text="{DynamicResource BtnCancel}" VerticalAlignment="Center"/>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</Window>

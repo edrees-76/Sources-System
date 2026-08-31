@@ -1167,7 +1167,7 @@
     <system:String x:Key="MenuDeletions">المحذوفات</system:String>
     <system:String x:Key="NavDeletions">سجل المحذوفات الإداري</system:String>
     <system:String x:Key="TitleDeletions">سجل المحذوفات الموحّد</system:String>
-    <system:String x:Key="SubtitleDeletions">عرض وإدارة كافة العناصر المحذوفة من الكيانات الأربعة (المصادر، المواقع، المستخدمين، النظائر)</system:String>
+    <system:String x:Key="SubtitleDeletions">عرض وإدارة كافة العناصر المحذوفة من الكيانات الخمسة (المصادر المشعة، المصادر النيترونية، المواقع، المستخدمين، النظائر)</system:String>
     <system:String x:Key="TitleAdminPasswordRequired">التحقق من هوية مدير النظام</system:String>
     <system:String x:Key="PromptAdminPasswordRequired">يرجى إدخال كلمة مرور مدير النظام للمتابعة</system:String>
     <system:String x:Key="PromptAdminPasswordForDeletions">يرجى إدخال كلمة مرور مدير النظام للوصول إلى شاشة المحذوفات الإدارية</system:String>
@@ -1194,6 +1194,98 @@
     <system:String x:Key="EntityTypeUser">مستخدم</system:String>
     <system:String x:Key="EntityTypeRadioisotope">نظير مشع</system:String>
     <system:String x:Key="BtnConfirm">تأكيد</system:String>
+
+    <!-- ========================================== -->
+    <!-- Neutron Sources Feature (Rounds 86-A & 86-B) -->
+    <!-- ========================================== -->
+    <system:String x:Key="TabNeutronSources">المصادر النيترونية</system:String>
+    <system:String x:Key="BtnAddNeutronSource">إضافة مصدر نيتروني</system:String>
+    <system:String x:Key="BtnManageNeutronTypes">الأنواع المرجعية</system:String>
+    <system:String x:Key="HintSearchNeutronSource">بحث بكود المصدر، النوع، الرقم التسلسلي، الموقع...</system:String>
+    <system:String x:Key="HeaderRefType">النوع المرجعي</system:String>
+    <system:String x:Key="HeaderEmissionRate">معدل الانبعاث (n/s)</system:String>
+    <system:String x:Key="HeaderUncertaintyPercent">عدم اليقين %</system:String>
+    <system:String x:Key="MsgNoNeutronSourcesRecorded">لا توجد مصادر نيترونية مسجلة</system:String>
+    <system:String x:Key="MsgNoNeutronSourcesHint">يمكنك البدء بإضافة مصدر نيتروني جديد من زر الإضافة أعلاه.</system:String>
+    <system:String x:Key="MsgNoSearchNeutronSource">لم يتم العثور على مصادر نيترونية تطابق معايير البحث.</system:String>
+    <system:String x:Key="MsgConfirmDeleteNeutronSource">هل أنت متأكد من حذف هذا المصدر النيتروني؟</system:String>
+    <system:String x:Key="MsgNeutronSourceNotFound">المصدر النيتروني غير موجود أو تم حذفه من المنظومة.</system:String>
+    <system:String x:Key="TitleNeutronSourceDetails">تفاصيل المصدر النيتروني</system:String>
+    <system:String x:Key="MsgErrNeutronTypeReq">نوع المصدر النيتروني مطلوب</system:String>
+    <system:String x:Key="MsgErrEmissionRateReq">معدل انبعاث النيترونات يجب أن يكون قيمة موجبة</system:String>
+    
+    <!-- Add/Edit Form Categories -->
+    <system:String x:Key="LabelSourceCategory">فئة المصدر:</system:String>
+    <system:String x:Key="RadioCategoryStandardSource">مصدر مشع عادي (غاما / بيتا / ألفا)</system:String>
+    <system:String x:Key="RadioCategoryNeutronSource">مصدر نيتروني (Neutron Source)</system:String>
+    <system:String x:Key="CardNeutronEmissionProps">الخصائص ومعدل انبعاث النيترونات</system:String>
+    <system:String x:Key="FieldNeutronRefTypeReq">النوع النيتروني المرجعي *</system:String>
+    <system:String x:Key="FieldEmissionRateReq">معدل انبعاث النيترونات (n/s) *</system:String>
+    <system:String x:Key="HintEmissionRateExample">مثال: 11000000 أو 1.1E7 أو 1.1x10^7</system:String>
+    <system:String x:Key="MsgErrInvalidScientificNumber">صيغة الرقم غير صحيحة. الصيغ المقبولة: أرقام عادية مثل 11000000، أو بصيغة الأس مثل 1.1E7 أو 1.1x10^7</system:String>
+    <system:String x:Key="FieldUncertaintyPercent">نسبة عدم اليقين الموسعة (k=2) %</system:String>
+    <system:String x:Key="HintUncertaintyExample">مثال: 3.5</system:String>
+
+    <!-- Neutron Source Details Window -->
+    <system:String x:Key="DetailCardNeutronIdentity">بيانات المصدر والنوع المرجعي</system:String>
+    <system:String x:Key="DetailLabelSourceCode">كود المصدر:</system:String>
+    <system:String x:Key="DetailLabelSerialNumber">الرقم التسلسلي (S/N):</system:String>
+    <system:String x:Key="DetailLabelNeutronRefType">النوع النيتروني المرجعي:</system:String>
+    <system:String x:Key="DetailLabelReactionType">نوع التفاعل النووي:</system:String>
+    <system:String x:Key="DetailLabelTargetMaterialParent">مادة الهدف / النظير الأب:</system:String>
+    <system:String x:Key="DetailLabelHalfLife">عمر النصف للنوع المرجعي:</system:String>
+    <system:String x:Key="DetailCardNeutronEmissionProps">الخصائص الإشعاعية والانبعاث</system:String>
+    <system:String x:Key="DetailLabelEmissionRate">معدل انبعاث النيترونات:</system:String>
+    <system:String x:Key="DetailLabelUncertainty">نسبة عدم اليقين الموسعة (k=2):</system:String>
+    <system:String x:Key="DetailLabelAverageNeutronEnergy">متوسط طاقة النيترونات (MeV):</system:String>
+    <system:String x:Key="DetailLabelCalibrationDate">تاريخ المعايرة / القياس المرجعي:</system:String>
+    <system:String x:Key="DetailCardLocationNotes">الموقع والتخزين والملاحظات</system:String>
+    <system:String x:Key="DetailLabelCurrentLocation">الموقع الحالي:</system:String>
+    <system:String x:Key="DetailLabelNotes">الملاحظات:</system:String>
+    <system:String x:Key="DetailLabelCreatedAt">تاريخ التسجيل:</system:String>
+    <system:String x:Key="DetailLabelAddedBy">أُضيف بواسطة:</system:String>
+    <system:String x:Key="DetailLabelUpdatedAt">آخر تحديث:</system:String>
+
+    <!-- Neutron Reference Types Window -->
+    <system:String x:Key="TitleNeutronSourceTypes">الأنواع النيترونية المرجعية</system:String>
+    <system:String x:Key="SubtitleNeutronTypes">الأنواع المرجعية والخصائص النووية للمصادر النيترونية القياسية</system:String>
+    <system:String x:Key="BtnAddNeutronType">إضافة نوع مرجعي</system:String>
+    <system:String x:Key="HintSearchNeutronType">بحث بالكود، الاسم، نوع التفاعل، النظير الأب...</system:String>
+    <system:String x:Key="ColTypeCode">كود النوع</system:String>
+    <system:String x:Key="ColNameAr">الاسم بالعربية</system:String>
+    <system:String x:Key="ColNameEn">الاسم بالإنجليزية</system:String>
+    <system:String x:Key="ColReactionType">نوع التفاعل</system:String>
+    <system:String x:Key="ColTargetMaterial">مادة الهدف</system:String>
+    <system:String x:Key="ColHalfLifeUnit">الوحدة</system:String>
+    <system:String x:Key="ColAverageEnergyMev">متوسط الطاقة (MeV)</system:String>
+    <system:String x:Key="TitleEditNeutronType">تعديل بيانات النوع المرجعي</system:String>
+    <system:String x:Key="TitleAddNeutronType">إضافة نوع نيتروني مرجعي جديد</system:String>
+    <system:String x:Key="HintTypeCodeReq">كود النوع (مثل Cf-252, Am-241/Be) *</system:String>
+    <system:String x:Key="HintReactionTypeReq">نوع التفاعل النووي *</system:String>
+    <system:String x:Key="HintNameAr">الاسم بالعربية</system:String>
+    <system:String x:Key="HintNameEn">الاسم بالإنجليزية</system:String>
+    <system:String x:Key="HintParentNuclide">النظير الأب (Parent Nuclide)</system:String>
+    <system:String x:Key="HintTargetMaterial">مادة الهدف (Be, B, Li, F)</system:String>
+    <system:String x:Key="HintHalfLifeReq">عمر النصف (Half-life) *</system:String>
+    <system:String x:Key="HintHalfLifeUnitReq">وحدة عمر النصف *</system:String>
+    <system:String x:Key="HintAverageEnergyMev">متوسط طاقة النيترونات (MeV)</system:String>
+    <system:String x:Key="HintNeutronYield">المردود النيتروني (مثال: 2200000 أو 2.2E6)</system:String>
+    <system:String x:Key="HintNeutronTypeNotes">ملاحظات ومرجع المعايرة</system:String>
+
+    <!-- Deletions Screen Updates for Neutron Sources -->
+    <system:String x:Key="CardDeletedNeutronSources">المصادر النيترونية المحذوفة</system:String>
+    <system:String x:Key="FilterNeutronSources">المصادر النيترونية</system:String>
+    <system:String x:Key="EntityTypeNeutronSource">مصدر نيتروني</system:String>
+
+    <!-- Reports Screen Updates for Neutron Sources -->
+    <system:String x:Key="BtnNeutronInventoryReport">جرد المصادر النيترونية</system:String>
+    <system:String x:Key="ColNeutronType">النوع المرجعي</system:String>
+    <system:String x:Key="ColEmissionRate">معدل الانبعاث (n/s)</system:String>
+    <system:String x:Key="ColUncertainty">عدم اليقين</system:String>
+
+    <!-- Location Details Updates for Neutron Sources -->
+    <system:String x:Key="HeaderLocationNeutronSources">المصادر النيترونية في هذا الموقع</system:String>
+    <system:String x:Key="HeaderLocationStandardSources">المصادر المشعة النشطة</system:String>
 </ResourceDictionary>
 
 

@@ -37,16 +37,18 @@ namespace Sources.ViewModels
         private readonly ILocationService _locationService;
         private readonly IUserService _userService;
         private readonly IRadioisotopeService _radioisotopeService;
+        private readonly INeutronSourceService _neutronSourceService;
 
         [ObservableProperty] private ObservableCollection<DeletedItemRow> _allItems = new();
         [ObservableProperty] private ObservableCollection<DeletedItemRow> _filteredItems = new();
         [ObservableProperty] private string _searchText = string.Empty;
-        [ObservableProperty] private string _selectedFilter = "All"; // "All", "Sources", "Locations", "Users", "Radioisotopes"
+        [ObservableProperty] private string _selectedFilter = "All"; // "All", "Sources", "NeutronSources", "Locations", "Users", "Radioisotopes"
         [ObservableProperty] private bool _isLoading;
 
         // ─── إحصائيات المحذوفات (KPIs) ───
         [ObservableProperty] private int _totalCount;
         [ObservableProperty] private int _sourcesCount;
+        [ObservableProperty] private int _neutronSourcesCount;
         [ObservableProperty] private int _locationsCount;
         [ObservableProperty] private int _usersCount;
         [ObservableProperty] private int _radioisotopesCount;
@@ -56,7 +58,8 @@ namespace Sources.ViewModels
             ISourceService? sourceService = null,
             ILocationService? locationService = null,
             IUserService? userService = null,
-            IRadioisotopeService? radioisotopeService = null)
+            IRadioisotopeService? radioisotopeService = null,
+            INeutronSourceService? neutronSourceService = null)
         {
             _dbFactory = dbFactory;
             var defaultUserSvc = userService ?? new UserService(dbFactory);
@@ -66,6 +69,7 @@ namespace Sources.ViewModels
             _sourceService = sourceService ?? new SourceService(dbFactory, new DecayCalculationService(), defaultAuditSvc, defaultUserSvc);
             _locationService = locationService ?? new LocationService(dbFactory, defaultAuditSvc, defaultUserSvc);
             _radioisotopeService = radioisotopeService ?? new RadioisotopeService(dbFactory, defaultAuditSvc, defaultUserSvc);
+            _neutronSourceService = neutronSourceService ?? new NeutronSourceService(dbFactory, defaultAuditSvc, defaultUserSvc);
 
             _ = LoadDeletedItemsAsync();
         }
@@ -191,6 +195,35 @@ namespace Sources.ViewModels
                         });
                     }
 
+                    // 5. المصادر النيترونية المحذوفة (NeutronSources)
+                    var deletedNeutronSources = db.NeutronSources
+                        .IgnoreQueryFilters()
+                        .AsNoTracking()
+                        .Include(n => n.NeutronSourceType)
+                        .Include(n => n.Location)
+                        .Include(n => n.DeletedByUser)
+                        .Where(n => n.IsDeleted)
+                        .ToList();
+
+                    foreach (var n in deletedNeutronSources)
+                    {
+                        var typeCode = n.NeutronSourceType?.Code ?? "";
+                        result.Add(new DeletedItemRow
+                        {
+                            Id = n.Id,
+                            EntityType = "NeutronSource",
+                            EntityTypeDisplayName = TranslationHelper.GetString("EntityTypeNeutronSource") ?? "مصدر نيتروني",
+                            Identifier = n.SourceCode,
+                            SecondaryIdentifier = !string.IsNullOrEmpty(typeCode) ? $"({typeCode})" : string.Empty,
+                            DeletedByName = n.DeletedByUser?.FullName ?? "-",
+                            DeletedAt = n.DeletedAt ?? n.CreatedAt,
+                            EntityObject = n,
+                            IconKind = PackIconKind.AtomVariant,
+                            BadgeBackgroundHex = "#0D9488",
+                            BadgeForegroundHex = "#FFFFFF"
+                        });
+                    }
+
                     // ترتيب زمني تنازلي حسب تاريخ الحذف
                     return result.OrderByDescending(r => r.DeletedAt ?? DateTime.MinValue)
                                  .ThenBy(r => r.Identifier)
@@ -201,6 +234,7 @@ namespace Sources.ViewModels
 
                 // تحديث العدادات
                 SourcesCount = AllItems.Count(i => i.EntityType == "Source");
+                NeutronSourcesCount = AllItems.Count(i => i.EntityType == "NeutronSource");
                 LocationsCount = AllItems.Count(i => i.EntityType == "Location");
                 UsersCount = AllItems.Count(i => i.EntityType == "User");
                 RadioisotopesCount = AllItems.Count(i => i.EntityType == "Radioisotope");
@@ -241,6 +275,7 @@ namespace Sources.ViewModels
                 query = SelectedFilter switch
                 {
                     "Sources" => query.Where(i => i.EntityType == "Source"),
+                    "NeutronSources" => query.Where(i => i.EntityType == "NeutronSource"),
                     "Locations" => query.Where(i => i.EntityType == "Location"),
                     "Users" => query.Where(i => i.EntityType == "User"),
                     "Radioisotopes" => query.Where(i => i.EntityType == "Radioisotope"),
@@ -279,6 +314,10 @@ namespace Sources.ViewModels
                     SourceNavigationHelper.OpenSourceDetails(src);
                     break;
 
+                case "NeutronSource" when row.EntityObject is NeutronSource ns:
+                    ShowNeutronSourceDetailsDialog(ns, row);
+                    break;
+
                 case "Location" when row.EntityObject is Location loc:
                     ShowLocationDetailsDialog(loc, row);
                     break;
@@ -313,6 +352,9 @@ namespace Sources.ViewModels
                 case "Source":
                     result = _sourceService.RestoreSource(row.Id);
                     break;
+                case "NeutronSource":
+                    result = _neutronSourceService.Restore(row.Id);
+                    break;
                 case "Location":
                     result = _locationService.Restore(row.Id);
                     break;
@@ -336,6 +378,21 @@ namespace Sources.ViewModels
             {
                 DialogHelper.ShowWarning(result.Message, "تعذر الاسترجاع");
             }
+        }
+
+        private void ShowNeutronSourceDetailsDialog(NeutronSource ns, DeletedItemRow row)
+        {
+            string info = $"☢️ كود المصدر النيتروني: {ns.SourceCode}\n" +
+                          $"🏷️ النوع المرجعي: {ns.NeutronSourceType?.Code ?? "-"} ({ns.NeutronSourceType?.NameAr ?? ns.NeutronSourceType?.NameEn ?? "-"})\n" +
+                          $"🔢 الرقم التسلسلي: {ns.SerialNumber ?? "-"}\n" +
+                          $"⚡ معدل الانبعاث: {ns.EmissionRateFormatted}\n" +
+                          $"📊 عدم اليقين: {(ns.RelativeExpandedUncertaintyPercent.HasValue ? $"{ns.RelativeExpandedUncertaintyPercent:N1}%" : "-")}\n" +
+                          $"📍 الموقع: {ns.Location?.LocationName ?? "-"}\n" +
+                          $"📅 تاريخ المعايرة: {ns.CalibrationDate:yyyy/MM/dd}\n" +
+                          $"🕒 تاريخ الحذف: {row.DeletedAtFormatted}\n" +
+                          $"🛡️ حُذف بواسطة: {row.DeletedByName}";
+
+            DialogHelper.ShowInfo(info, $"تفاصيل المصدر النيتروني المحذوف — {ns.SourceCode}");
         }
 
         // اسم بديل للأمر للتوافق

@@ -32,7 +32,7 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <!-- تبويبات التبديل بين المصادر النشطة والمصادر المحذوفة -->
+                    <!-- تبويبات التبديل بين المصادر النشطة، المصادر النيترونية، والمصادر المحذوفة -->
                     <Border DockPanel.Dock="Right" Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="4" Margin="24,0,0,0" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal">
                             <!-- تبويب المصادر النشطة -->
@@ -44,7 +44,7 @@
                                         <Setter Property="Background" Value="Transparent"/>
                                         <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsDeletedSourcesView}" Value="False">
+                                            <DataTrigger Binding="{Binding SelectedTab}" Value="Active">
                                                 <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
                                                 <Setter Property="Foreground" Value="White"/>
                                                 <Setter Property="FontWeight" Value="Bold"/>
@@ -55,9 +55,34 @@
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="Radioactive" Width="16" Height="16" Margin="-2,0,6,0" VerticalAlignment="Center"/>
                                     <TextBlock Text="{DynamicResource TabActiveSources}" VerticalAlignment="Center"/>
-                                    <Border Background="#33FFFFFF" CornerRadius="8" Padding="6,1" Margin="6,0,0,0"
-                                            Visibility="{Binding IsDeletedSourcesView, Converter={StaticResource InverseBoolToVis}}">
+                                    <Border Background="#33FFFFFF" CornerRadius="8" Padding="6,1" Margin="6,0,0,0">
                                         <TextBlock Text="{Binding ActiveSourcesCount}" FontSize="11" FontWeight="Bold"/>
+                                    </Border>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- تبويب المصادر النيترونية -->
+                            <Button Command="{Binding SwitchToNeutronSourcesCommand}"
+                                    Padding="14,6" Height="34" Margin="0,0,4,0"
+                                    BorderThickness="0">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedTab}" Value="Neutron">
+                                                <Setter Property="Background" Value="#0D9488"/>
+                                                <Setter Property="Foreground" Value="White"/>
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="AtomVariant" Width="16" Height="16" Margin="-2,0,6,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource TabNeutronSources}" VerticalAlignment="Center"/>
+                                    <Border Background="#33FFFFFF" CornerRadius="8" Padding="6,1" Margin="6,0,0,0">
+                                        <TextBlock Text="{Binding NeutronSourcesCount}" FontSize="11" FontWeight="Bold"/>
                                     </Border>
                                 </StackPanel>
                             </Button>
@@ -71,7 +96,7 @@
                                         <Setter Property="Background" Value="Transparent"/>
                                         <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsDeletedSourcesView}" Value="True">
+                                            <DataTrigger Binding="{Binding SelectedTab}" Value="Deleted">
                                                 <Setter Property="Background" Value="{DynamicResource DangerBrush}"/>
                                                 <Setter Property="Foreground" Value="White"/>
                                                 <Setter Property="FontWeight" Value="Bold"/>
@@ -82,8 +107,7 @@
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="DeleteSweepOutline" Width="16" Height="16" Margin="-2,0,6,0" VerticalAlignment="Center"/>
                                     <TextBlock Text="{DynamicResource TabDeletedSources}" VerticalAlignment="Center"/>
-                                    <Border Background="#33FFFFFF" CornerRadius="8" Padding="6,1" Margin="6,0,0,0"
-                                            Visibility="{Binding IsDeletedSourcesView, Converter={StaticResource BoolToVis}}">
+                                    <Border Background="#33FFFFFF" CornerRadius="8" Padding="6,1" Margin="6,0,0,0">
                                         <TextBlock Text="{Binding DeletedSourcesCount}" FontSize="11" FontWeight="Bold"/>
                                     </Border>
                                 </StackPanel>
@@ -91,31 +115,52 @@
                         </StackPanel>
                     </Border>
                     
-                    <!-- زر الإضافة في اليسار مع أزرار التصدير (تظهر فقط في مشهد المصادر النشطة) -->
-                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center"
-                                Visibility="{Binding IsDeletedSourcesView, Converter={StaticResource InverseBoolToVis}}">
-                        <Button Content="{DynamicResource BtnAddSource}" Style="{DynamicResource PrimaryButton}"
-                                Command="{Binding AddNewCommand}" Margin="0,0,8,0">
-                            <Button.Effect>
-                                <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.15" Color="{StaticResource GoldColor}"/>
-                            </Button.Effect>
-                        </Button>
-                        
-                        <Button Command="{Binding ExportToPdfCommand}" Style="{StaticResource MaterialDesignOutlinedButton}" 
-                                Foreground="{DynamicResource DangerBrush}" BorderBrush="{DynamicResource DangerBrush}" Margin="0,0,8,0" Height="40">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="FilePdfBox" Margin="-4,0,4,0" VerticalAlignment="Center"/>
-                                <TextBlock Text="{DynamicResource BtnExportPdf}" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
+                    <!-- أزرار الإجراءات في اليسار -->
+                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- أزرار مشهد المصادر النشطة العادية -->
+                        <StackPanel Orientation="Horizontal" Visibility="{Binding SelectedTab, Converter={StaticResource EqualityToVis}, ConverterParameter=Active}">
+                            <Button Content="{DynamicResource BtnAddSource}" Style="{DynamicResource PrimaryButton}"
+                                    Command="{Binding AddNewCommand}" Margin="0,0,8,0">
+                                <Button.Effect>
+                                    <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.15" Color="{StaticResource GoldColor}"/>
+                                </Button.Effect>
+                            </Button>
+                            
+                            <Button Command="{Binding ExportToPdfCommand}" Style="{StaticResource MaterialDesignOutlinedButton}" 
+                                    Foreground="{DynamicResource DangerBrush}" BorderBrush="{DynamicResource DangerBrush}" Margin="0,0,8,0" Height="40">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="FilePdfBox" Margin="-4,0,4,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource BtnExportPdf}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
 
-                        <Button Command="{Binding ExportToExcelCommand}" Style="{StaticResource MaterialDesignOutlinedButton}" 
-                                Foreground="{DynamicResource SuccessBrush}" BorderBrush="{DynamicResource SuccessBrush}" Height="40">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="FileExcelBox" Margin="-4,0,4,0" VerticalAlignment="Center"/>
-                                <TextBlock Text="{DynamicResource BtnExportExcel}" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
+                            <Button Command="{Binding ExportToExcelCommand}" Style="{StaticResource MaterialDesignOutlinedButton}" 
+                                    Foreground="{DynamicResource SuccessBrush}" BorderBrush="{DynamicResource SuccessBrush}" Height="40">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="FileExcelBox" Margin="-4,0,4,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource BtnExportExcel}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+
+                        <!-- أزرار مشهد المصادر النيترونية -->
+                        <StackPanel Orientation="Horizontal" Visibility="{Binding SelectedTab, Converter={StaticResource EqualityToVis}, ConverterParameter=Neutron}">
+                            <Button Style="{DynamicResource PrimaryButton}" Background="#0D9488" BorderBrush="#0D9488"
+                                    Command="{Binding AddNewNeutronCommand}" Margin="0,0,8,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Plus" Margin="-4,0,4,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource BtnAddNeutronSource}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Button Command="{Binding OpenNeutronSourceTypesManagementCommand}" Style="{StaticResource MaterialDesignOutlinedButton}" 
+                                    Foreground="#0D9488" BorderBrush="#0D9488" Height="40">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="ShapeOutline" Margin="-4,0,4,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource BtnManageNeutronTypes}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
                     </StackPanel>
                 </DockPanel>
 
@@ -123,7 +168,7 @@
                 <!-- المشهد الفرعي 1: المصادر النشطة                    -->
                 <!-- ══════════════════════════════════════════════════ -->
                 <Grid Grid.Row="1" Grid.RowSpan="3"
-                      Visibility="{Binding IsDeletedSourcesView, Converter={StaticResource InverseBoolToVis}}">
+                      Visibility="{Binding SelectedTab, Converter={StaticResource EqualityToVis}, ConverterParameter=Active}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/> <!-- Row 0: Total Activity Stats -->
                         <RowDefinition Height="Auto"/> <!-- Row 1: Search & Filters -->
@@ -681,10 +726,194 @@
                 </Grid>
 
                 <!-- ══════════════════════════════════════════════════ -->
-                <!-- المشهد الفرعي 2: سجل المصادر المحذوفة (ReadOnly)  -->
+                <!-- المشهد الفرعي 2: المصادر النيترونية                -->
                 <!-- ══════════════════════════════════════════════════ -->
                 <Grid Grid.Row="1" Grid.RowSpan="3"
-                      Visibility="{Binding IsDeletedSourcesView, Converter={StaticResource BoolToVis}}">
+                      Visibility="{Binding SelectedTab, Converter={StaticResource EqualityToVis}, ConverterParameter=Neutron}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/> <!-- Search & Filters -->
+                        <RowDefinition Height="*"/>    <!-- Main Content DataGrid -->
+                        <RowDefinition Height="Auto"/> <!-- Pagination -->
+                    </Grid.RowDefinitions>
+
+                    <!-- شريط البحث والتصفية للمصادر النيترونية -->
+                    <Border Grid.Row="0" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="16" Margin="0,0,0,16" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                        <DockPanel>
+                            <materialDesign:PackIcon Kind="FilterVariant" Width="20" Height="20" Foreground="#0D9488" VerticalAlignment="Center" DockPanel.Dock="Right" Margin="0,0,8,0"/>
+
+                            <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Width="320"
+                                     Style="{DynamicResource SearchBox}" materialDesign:HintAssist.Hint="{DynamicResource HintSearchNeutronSource}"
+                                     DockPanel.Dock="Right" BorderThickness="0,0,0,1" BorderBrush="#0D9488">
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
+                                </TextBox.InputBindings>
+                            </TextBox>
+
+                            <Button Command="{Binding SearchCommand}" Style="{StaticResource MaterialDesignToolButton}"
+                                    DockPanel.Dock="Right" Margin="2,0,4,0" Padding="4" Height="32" Width="32">
+                                <materialDesign:PackIcon Kind="Magnify" Width="20" Height="20" Foreground="#0D9488"/>
+                            </Button>
+
+                            <ComboBox SelectedValue="{Binding StatusFilter}" SelectedValuePath="Tag" Width="140"
+                                      DockPanel.Dock="Right" Margin="0,0,12,0" Style="{DynamicResource CustomComboBox}"
+                                      materialDesign:HintAssist.Hint="{DynamicResource HintFilterStatus}">
+                                <ComboBoxItem Content="{DynamicResource FilterAllStatuses}" Tag="All"/>
+                                <ComboBoxItem Content="{DynamicResource StatusInUse}" Tag="InUse"/>
+                                <ComboBoxItem Content="{DynamicResource StatusStorage}" Tag="Storage"/>
+                                <ComboBoxItem Content="{DynamicResource StatusWaste}" Tag="Waste"/>
+                                <ComboBoxItem Content="{DynamicResource StatusTransfer}" Tag="Transfer"/>
+                            </ComboBox>
+
+                            <Button Command="{Binding ResetSearchCommand}" Style="{StaticResource MaterialDesignOutlinedButton}" 
+                                    DockPanel.Dock="Right" Margin="0,0,12,0" Height="40" BorderBrush="#0D9488" Foreground="#0D9488">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Refresh" Width="16" Height="16" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{DynamicResource BtnReset}" Margin="4,0,0,0" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Button>
+                            <TextBlock/>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- جدول المصادر النيترونية -->
+                    <Border Grid.Row="1" Style="{StaticResource ContentCard}" Margin="0,0,0,0" Padding="0" ClipToBounds="True">
+                        <Grid>
+                            <DataGrid ItemsSource="{Binding PagedNeutronSources}" Style="{StaticResource ModernDataGrid}"
+                                      IsReadOnly="True" AutoGenerateColumns="False"
+                                      Visibility="{Binding HasNeutronSources, Converter={StaticResource BoolToVis}}">
+                                <DataGrid.Columns>
+                                    <!-- كود المصدر -->
+                                    <DataGridTextColumn Header="{DynamicResource ColSourceCode}" Binding="{Binding SourceCode}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource BoldCenterAligned}"/>
+
+                                    <!-- النوع المرجعي -->
+                                    <DataGridTemplateColumn Header="{DynamicResource HeaderRefType}" Width="Auto" MinWidth="130">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding NeutronSourceType.Code}" FontWeight="Bold" Foreground="#0D9488" TextAlignment="Center"/>
+                                                    <TextBlock Text="{Binding NeutronSourceType.NameAr}" FontSize="11" Foreground="{DynamicResource TextSecondary}" TextAlignment="Center"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- الموقع -->
+                                    <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName, TargetNullValue='—'}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
+
+                                    <!-- معدل الانبعاث -->
+                                    <DataGridTemplateColumn Header="{DynamicResource HeaderEmissionRate}" Width="Auto" MinWidth="140">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border Background="#1A0D9488" CornerRadius="4" Padding="6,3" Margin="4,2" HorizontalAlignment="Center">
+                                                    <TextBlock Text="{Binding EmissionRateFormatted}" FontWeight="Bold" Foreground="#0D9488" FlowDirection="LeftToRight"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- نسبة عدم اليقين -->
+                                    <DataGridTextColumn Header="{DynamicResource HeaderUncertaintyPercent}" Binding="{Binding RelativeExpandedUncertaintyPercent, StringFormat={}{0:N1}%, TargetNullValue='—'}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterAligned}"/>
+
+                                    <!-- الحالة -->
+                                    <DataGridTemplateColumn Header="{DynamicResource ColStatus}" Width="Auto" MinWidth="100">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{Binding StatusColor, Converter={StaticResource HexToBrush}}" CornerRadius="6" Padding="8,3" HorizontalAlignment="Center">
+                                                    <TextBlock Text="{Binding ArabicStatus}" FontSize="11" FontWeight="Bold" Foreground="White"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- تاريخ المعايرة -->
+                                    <DataGridTextColumn Header="{DynamicResource ColCalibrationDate}" Binding="{Binding CalibrationDate, StringFormat='yyyy/MM/dd'}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
+
+                                    <!-- إجراءات -->
+                                    <DataGridTemplateColumn Header="{DynamicResource ColActions}" Width="120">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                    <!-- عرض التفاصيل -->
+                                                    <Button Command="{Binding DataContext.ViewNeutronSourceDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                            CommandParameter="{Binding}"
+                                                            Style="{StaticResource MaterialDesignToolForegroundButton}"
+                                                            Padding="4" Height="30" Width="30"
+                                                            Foreground="#0D9488" ToolTip="{DynamicResource ToolTipViewDetails}">
+                                                        <materialDesign:PackIcon Kind="Eye" Width="18" Height="18"/>
+                                                    </Button>
+                                                    <!-- تعديل -->
+                                                    <Button Command="{Binding DataContext.EditNeutronSourceCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                            CommandParameter="{Binding}"
+                                                            Style="{StaticResource MaterialDesignToolForegroundButton}"
+                                                            Padding="4" Height="30" Width="30"
+                                                            Foreground="{DynamicResource PrimaryBrush}" ToolTip="{DynamicResource CtxEdit}">
+                                                        <materialDesign:PackIcon Kind="Pencil" Width="18" Height="18"/>
+                                                    </Button>
+                                                    <!-- حذف -->
+                                                    <Button Command="{Binding DataContext.DeleteNeutronSourceCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                            CommandParameter="{Binding}"
+                                                            Style="{StaticResource MaterialDesignToolForegroundButton}"
+                                                            Padding="4" Height="30" Width="30"
+                                                            Foreground="{DynamicResource DangerBrush}" ToolTip="{DynamicResource CtxDelete}">
+                                                        <materialDesign:PackIcon Kind="Delete" Width="18" Height="18"/>
+                                                    </Button>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <!-- حالة فارغة عند عدم وجود مصادر نيترونية -->
+                            <Border Background="{DynamicResource CardBackground}" Padding="40"
+                                    Visibility="{Binding HasNeutronSources, Converter={StaticResource InverseBoolToVis}}">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="AtomVariant" Width="54" Height="54" Foreground="#0D9488" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                                    <TextBlock Text="{DynamicResource MsgNoNeutronSourcesRecorded}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource MsgNoNeutronSourcesHint}" FontSize="13" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- شريط ترقيم صفحات المصادر النيترونية -->
+                    <Border Grid.Row="2" Background="{DynamicResource CardBackground}" CornerRadius="0,0,10,10" Padding="16,10" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,1,0,0" Margin="0,6,0,0"
+                            Visibility="{Binding HasNeutronSources, Converter={StaticResource BoolToVis}}">
+                        <DockPanel>
+                            <TextBlock Text="{Binding NeutronPageStatusText}" Foreground="{DynamicResource TextSecondary}" FontSize="12" FontFamily="Segoe UI" VerticalAlignment="Center" DockPanel.Dock="Right"/>
+                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                                <Button Command="{Binding FirstNeutronPageCommand}" Style="{StaticResource MaterialDesignToolButton}" Height="32" Width="32" Padding="4" ToolTip="{DynamicResource BtnFirstPage}">
+                                    <materialDesign:PackIcon Kind="ChevronDoubleRight" Width="20" Height="20" Foreground="#0D9488"/>
+                                </Button>
+                                <Button Command="{Binding PreviousNeutronPageCommand}" Style="{StaticResource MaterialDesignToolButton}" Height="32" Width="32" Padding="4" ToolTip="{DynamicResource BtnPrevious}">
+                                    <materialDesign:PackIcon Kind="ChevronRight" Width="20" Height="20" Foreground="#0D9488"/>
+                                </Button>
+                                <Border Background="{DynamicResource InputBackground}" CornerRadius="6" Padding="12,4" Margin="4,0">
+                                    <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center">
+                                        <TextBlock.Text>
+                                            <MultiBinding StringFormat="{}{0} / {1}">
+                                                <Binding Path="NeutronCurrentPage"/>
+                                                <Binding Path="NeutronTotalPages"/>
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </Border>
+                                <Button Command="{Binding NextNeutronPageCommand}" Style="{StaticResource MaterialDesignToolButton}" Height="32" Width="32" Padding="4" ToolTip="{DynamicResource BtnNext}">
+                                    <materialDesign:PackIcon Kind="ChevronLeft" Width="20" Height="20" Foreground="#0D9488"/>
+                                </Button>
+                                <Button Command="{Binding LastNeutronPageCommand}" Style="{StaticResource MaterialDesignToolButton}" Height="32" Width="32" Padding="4" ToolTip="{DynamicResource BtnLastPage}">
+                                    <materialDesign:PackIcon Kind="ChevronDoubleLeft" Width="20" Height="20" Foreground="#0D9488"/>
+                                </Button>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                </Grid>
+
+                <!-- ══════════════════════════════════════════════════ -->
+                <!-- المشهد الفرعي 3: سجل المصادر المحذوفة (ReadOnly)  -->
+                <!-- ══════════════════════════════════════════════════ -->
+                <Grid Grid.Row="1" Grid.RowSpan="3"
+                      Visibility="{Binding SelectedTab, Converter={StaticResource EqualityToVis}, ConverterParameter=Deleted}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/> <!-- Search & Refresh -->
                         <RowDefinition Height="*"/>    <!-- DataGrid -->
@@ -1225,6 +1454,30 @@
                             <!-- ─── الخطوة 1: تعريف المصدر ─── -->
                             <StackPanel Visibility="{Binding CurrentStep, Converter={StaticResource EqualityToVis}, ConverterParameter=1}">
                                 
+                                <!-- اختيار فئة المصدر (عادي / نيتروني) -->
+                                <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Margin="0,0,0,16" Padding="14,10" Background="{DynamicResource InputBackground}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+                                            <materialDesign:PackIcon Kind="ShapePlus" Width="18" Height="18" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                            <TextBlock Text="{DynamicResource LabelSourceCategory}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <RadioButton Content="{DynamicResource RadioCategoryStandardSource}"
+                                                         IsChecked="{Binding IsNeutronForm, Converter={StaticResource InverseBoolConverter}}"
+                                                         IsEnabled="{Binding IsNew}"
+                                                         Margin="0,0,20,0" FontWeight="SemiBold"/>
+                                            <RadioButton Content="{DynamicResource RadioCategoryNeutronSource}"
+                                                         IsChecked="{Binding IsNeutronForm}"
+                                                         IsEnabled="{Binding IsNew}"
+                                                         FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
                                 <!-- بطاقة فرعية 1: البيانات الأساسية -->
                                 <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Margin="0,0,0,16" Background="{DynamicResource CardBackground}">
                                     <Border.Effect>
@@ -1357,193 +1610,251 @@
                             <!-- ─── الخطوة 2: البيانات والخصائص الإشعاعية ─── -->
                             <StackPanel Visibility="{Binding CurrentStep, Converter={StaticResource EqualityToVis}, ConverterParameter=2}">
                                 
-                                <!-- خيار تعدد النظائر المشعة -->
-                                <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,14" Background="{DynamicResource InputBackground}">
-                                    <CheckBox Content="{DynamicResource LabelIsMultiIsotope}" IsChecked="{Binding IsMultiIsotope}" 
-                                              FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
-                                </Border>
-
-                                <!-- بطاقة فرعية 1: نظير مشع أحادي (في حال عدم التفعيل) -->
+                                <!-- خصائص المصدر النيتروني (عند اختيار مصدر نيتروني) -->
                                 <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Margin="0,0,0,14" Background="{DynamicResource CardBackground}"
-                                        Visibility="{Binding IsMultiIsotope, Converter={StaticResource InverseBoolToVis}}">
+                                        Visibility="{Binding IsNeutronForm, Converter={StaticResource BoolToVis}}">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.04" Color="#000000"/>
                                     </Border.Effect>
                                     <StackPanel>
-                                        <Border Background="#121F5A66" CornerRadius="8,8,0,0" Padding="16,10" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1">
+                                        <Border Background="#120D9488" CornerRadius="8,8,0,0" Padding="16,10" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1">
                                             <StackPanel Orientation="Horizontal">
-                                                <materialDesign:PackIcon Kind="Atom" Width="16" Height="16" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                                <TextBlock Text="{DynamicResource Step2Radiological}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
-                                            </StackPanel>
-                                        </Border>
-                                        <UniformGrid Columns="2" Margin="16,14">
-                                            <!-- النظير المشع -->
-                                            <StackPanel Margin="0,0,12,0">
-                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                                    <materialDesign:PackIcon Kind="Atom" Width="15" Height="15" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                                    <TextBlock Text="{DynamicResource FieldRadioisotopeReq}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
-                                                </StackPanel>
-                                                <ComboBox ItemsSource="{Binding Radioisotopes}" SelectedValue="{Binding EditRadioisotopeId}" 
-                                                          SelectedValuePath="Id" DisplayMemberPath="Symbol"
-                                                          Style="{StaticResource FormComboBox}"/>
-                                            </StackPanel>
-
-                                            <!-- النشاط الابتدائي -->
-                                            <StackPanel>
-                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                                    <materialDesign:PackIcon Kind="FlashOutline" Width="15" Height="15" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                                    <TextBlock Text="{DynamicResource FieldInitialActivityReq}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
-                                                </StackPanel>
-                                                <TextBox Text="{Binding EditInitialActivityText, UpdateSourceTrigger=LostFocus}"
-                                                         Style="{StaticResource FormTextBox}"
-                                                         materialDesign:HintAssist.Hint="3.7"/>
-                                            </StackPanel>
-                                        </UniformGrid>
-                                    </StackPanel>
-                                </Border>
-
-                                <!-- بطاقة فرعية 2: جدول النظائر المتعددة (عند تفعيل تعدد النظائر) -->
-                                <Border Visibility="{Binding IsMultiIsotope, Converter={StaticResource BoolToVis}}"
-                                        BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" 
-                                        Margin="0,0,0,14" Background="{DynamicResource CardBackground}">
-                                    <Border.Effect>
-                                        <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.04" Color="#000000"/>
-                                    </Border.Effect>
-                                    <StackPanel>
-                                        <Border Background="#121F5A66" CornerRadius="8,8,0,0" Padding="16,10" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1">
-                                            <StackPanel Orientation="Horizontal">
-                                                <materialDesign:PackIcon Kind="FormatListNumbered" Width="16" Height="16" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                                <TextBlock Text="{DynamicResource ColRadioisotopes}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                <materialDesign:PackIcon Kind="AtomVariant" Width="16" Height="16" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                <TextBlock Text="{DynamicResource CardNeutronEmissionProps}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
                                             </StackPanel>
                                         </Border>
 
                                         <StackPanel Margin="16,14">
-                                            <DataGrid ItemsSource="{Binding IsotopeEntries}" AutoGenerateColumns="False" CanUserAddRows="False"
-                                                      Style="{StaticResource ModernDataGrid}" MaxHeight="250"
-                                                      CanUserDeleteRows="False" SelectionMode="Single" IsReadOnly="False"
-                                                      HeadersVisibility="Column" GridLinesVisibility="Horizontal"
-                                                      HorizontalGridLinesBrush="{DynamicResource BorderColor}"
-                                                      AlternationCount="1000">
-                                                <DataGrid.Columns>
-                                                    <!-- عمود الترقيم البسيط # -->
-                                                    <DataGridTemplateColumn Header="#" Width="45">
-                                                        <DataGridTemplateColumn.CellTemplate>
-                                                            <DataTemplate>
-                                                                <TextBlock FontSize="12" FontWeight="SemiBold"
-                                                                           FontFamily="Segoe UI"
-                                                                           Foreground="{DynamicResource TextSecondary}"
-                                                                           TextAlignment="Center"
-                                                                           VerticalAlignment="Center"
-                                                                           HorizontalAlignment="Center">
-                                                                    <TextBlock.Text>
-                                                                        <MultiBinding Converter="{StaticResource RowIndexConverter}">
-                                                                            <Binding Path="(ItemsControl.AlternationIndex)" RelativeSource="{RelativeSource AncestorType=DataGridRow}"/>
-                                                                        </MultiBinding>
-                                                                    </TextBlock.Text>
-                                                                </TextBlock>
-                                                            </DataTemplate>
-                                                        </DataGridTemplateColumn.CellTemplate>
-                                                    </DataGridTemplateColumn>
-
-                                                    <!-- عمود النظير المشع -->
-                                                    <DataGridTemplateColumn Header="{DynamicResource ColRadioisotopes}" Width="*" MinWidth="130">
-                                                        <DataGridTemplateColumn.CellTemplate>
-                                                            <DataTemplate>
-                                                                <ComboBox ItemsSource="{Binding DataContext.Radioisotopes, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                                          SelectedValue="{Binding RadioisotopeId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                                                                          SelectedValuePath="Id" DisplayMemberPath="Symbol"
-                                                                          Style="{StaticResource CompactComboBox}" Margin="4"/>
-                                                            </DataTemplate>
-                                                        </DataGridTemplateColumn.CellTemplate>
-                                                    </DataGridTemplateColumn>
-
-                                                    <!-- عمود النشاط الابتدائي -->
-                                                    <DataGridTemplateColumn Header="{DynamicResource ColInitialActivity}" Width="*" MinWidth="110">
-                                                        <DataGridTemplateColumn.CellTemplate>
-                                                            <DataTemplate>
-                                                                <TextBox Text="{Binding InitialActivityText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                                                                         Style="{StaticResource CompactTextBox}" Margin="4"
-                                                                         TextAlignment="Center"/>
-                                                            </DataTemplate>
-                                                        </DataGridTemplateColumn.CellTemplate>
-                                                    </DataGridTemplateColumn>
-
-                                                    <!-- عمود وحدة النشاط الإشعاعي -->
-                                                    <DataGridTemplateColumn Header="{DynamicResource ColActivityUnit}" Width="130" MinWidth="100">
-                                                        <DataGridTemplateColumn.CellTemplate>
-                                                            <DataTemplate>
-                                                                <ComboBox ItemsSource="{Binding DataContext.ActivityUnits, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                                          SelectedValue="{Binding ActivityUnitId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                                                                          SelectedValuePath="Id" DisplayMemberPath="UnitSymbol"
-                                                                          Style="{StaticResource CompactComboBox}" Margin="4"/>
-                                                            </DataTemplate>
-                                                        </DataGridTemplateColumn.CellTemplate>
-                                                    </DataGridTemplateColumn>
-
-                                                    <!-- عمود الحذف -->
-                                                    <DataGridTemplateColumn Width="45">
-                                                        <DataGridTemplateColumn.CellTemplate>
-                                                            <DataTemplate>
-                                                                <Button Command="{Binding DataContext.RemoveIsotopeEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                                        CommandParameter="{Binding}" HorizontalAlignment="Center"
-                                                                        Style="{StaticResource MaterialDesignToolButton}" Foreground="{DynamicResource DangerBrush}" 
-                                                                        Padding="0" Height="28" Width="28" ToolTip="{DynamicResource CtxDelete}">
-                                                                    <materialDesign:PackIcon Kind="TrashCanOutline" Width="18" Height="18"/>
-                                                                </Button>
-                                                            </DataTemplate>
-                                                        </DataGridTemplateColumn.CellTemplate>
-                                                    </DataGridTemplateColumn>
-                                                </DataGrid.Columns>
-                                            </DataGrid>
-
-                                            <!-- زر إضافة نظير جديد -->
-                                            <Button Command="{Binding AddIsotopeEntryCommand}" 
-                                                    Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" 
-                                                    Margin="0,14,0,0" Height="36" FontSize="13" Padding="16,0">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <materialDesign:PackIcon Kind="Plus" Width="16" Height="16" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                                    <TextBlock Text="{DynamicResource BtnAddIsotopeEntry}" VerticalAlignment="Center"/>
+                                            <UniformGrid Columns="2" Margin="0,0,0,12">
+                                                <!-- النوع النيتروني المرجعي -->
+                                                <StackPanel Margin="0,0,12,0">
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                        <materialDesign:PackIcon Kind="ShapePlus" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                        <TextBlock Text="{DynamicResource FieldNeutronRefTypeReq}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                    </StackPanel>
+                                                    <ComboBox ItemsSource="{Binding NeutronSourceTypes}" SelectedValue="{Binding EditNeutronTypeId}" 
+                                                              SelectedValuePath="Id" DisplayMemberPath="Code"
+                                                              Style="{StaticResource FormComboBox}"/>
                                                 </StackPanel>
-                                            </Button>
+
+                                                <!-- معدل الانبعاث -->
+                                                <StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                        <materialDesign:PackIcon Kind="Wave" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                        <TextBlock Text="{DynamicResource FieldEmissionRateReq}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                    </StackPanel>
+                                                    <TextBox Text="{Binding EditEmissionRateText, UpdateSourceTrigger=LostFocus}"
+                                                             Style="{StaticResource FormTextBox}"
+                                                             materialDesign:HintAssist.Hint="{DynamicResource HintEmissionRateExample}"/>
+                                                </StackPanel>
+                                            </UniformGrid>
+
+                                            <StackPanel>
+                                                <!-- نسبة عدم اليقين -->
+                                                <StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                        <materialDesign:PackIcon Kind="PercentOutline" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                        <TextBlock Text="{DynamicResource FieldUncertaintyPercent}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                    </StackPanel>
+                                                    <TextBox Text="{Binding EditRelativeUncertaintyText, UpdateSourceTrigger=LostFocus}"
+                                                             Style="{StaticResource FormTextBox}"
+                                                             materialDesign:HintAssist.Hint="{DynamicResource HintUncertaintyExample}"/>
+                                                </StackPanel>
+                                            </StackPanel>
                                         </StackPanel>
                                     </StackPanel>
                                 </Border>
 
-                                <!-- بطاقة فرعية 3: وحدات النشاط الإشعاعي -->
-                                <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Background="{DynamicResource CardBackground}">
-                                    <Border.Effect>
-                                        <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.04" Color="#000000"/>
-                                    </Border.Effect>
-                                    <StackPanel>
-                                        <Border Background="#121F5A66" CornerRadius="8,8,0,0" Padding="16,10" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1">
-                                            <StackPanel Orientation="Horizontal">
-                                                <materialDesign:PackIcon Kind="ScaleBalance" Width="16" Height="16" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                                <TextBlock Text="{DynamicResource ColActivityUnit}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
-                                            </StackPanel>
-                                        </Border>
-                                        <UniformGrid Columns="2" Margin="16,14">
-                                            <!-- وحدة النشاط الابتدائي -->
-                                            <StackPanel Margin="0,0,12,0">
-                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                                    <materialDesign:PackIcon Kind="Scale" Width="15" Height="15" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                                    <TextBlock Text="{DynamicResource FieldInitialUnitReq}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
-                                                </StackPanel>
-                                                <ComboBox ItemsSource="{Binding ActivityUnits}" SelectedValue="{Binding EditInitialUnitId}" 
-                                                          SelectedValuePath="Id" DisplayMemberPath="UnitSymbol" Style="{StaticResource FormComboBox}"/>
-                                            </StackPanel>
+                                <!-- خصائص المصدر المشع العادي (عند اختيار مصدر عادي) -->
+                                <StackPanel Visibility="{Binding IsNeutronForm, Converter={StaticResource InverseBoolToVis}}">
+                                    <!-- خيار تعدد النظائر المشعة -->
+                                    <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,14" Background="{DynamicResource InputBackground}">
+                                        <CheckBox Content="{DynamicResource LabelIsMultiIsotope}" IsChecked="{Binding IsMultiIsotope}" 
+                                                  FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                    </Border>
 
-                                            <!-- وحدة العرض المعتمدة -->
-                                            <StackPanel>
-                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                                    <materialDesign:PackIcon Kind="MonitorDashboard" Width="15" Height="15" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                                    <TextBlock Text="{DynamicResource FieldCurrentUnitReq}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                    <!-- بطاقة فرعية 1: نظير مشع أحادي (في حال عدم التفعيل) -->
+                                    <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Margin="0,0,0,14" Background="{DynamicResource CardBackground}"
+                                            Visibility="{Binding IsMultiIsotope, Converter={StaticResource InverseBoolToVis}}">
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.04" Color="#000000"/>
+                                        </Border.Effect>
+                                        <StackPanel>
+                                            <Border Background="#121F5A66" CornerRadius="8,8,0,0" Padding="16,10" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <materialDesign:PackIcon Kind="Atom" Width="16" Height="16" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                    <TextBlock Text="{DynamicResource Step2Radiological}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
                                                 </StackPanel>
-                                                <ComboBox ItemsSource="{Binding ActivityUnits}" SelectedValue="{Binding EditCurrentUnitId}" 
-                                                          SelectedValuePath="Id" DisplayMemberPath="UnitSymbol" Style="{StaticResource FormComboBox}"/>
+                                            </Border>
+                                            <UniformGrid Columns="2" Margin="16,14">
+                                                <!-- النظير المشع -->
+                                                <StackPanel Margin="0,0,12,0">
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                        <materialDesign:PackIcon Kind="Atom" Width="15" Height="15" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                        <TextBlock Text="{DynamicResource FieldRadioisotopeReq}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                    </StackPanel>
+                                                    <ComboBox ItemsSource="{Binding Radioisotopes}" SelectedValue="{Binding EditRadioisotopeId}" 
+                                                              SelectedValuePath="Id" DisplayMemberPath="Symbol"
+                                                              Style="{StaticResource FormComboBox}"/>
+                                                </StackPanel>
+
+                                                <!-- النشاط الابتدائي -->
+                                                <StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                        <materialDesign:PackIcon Kind="FlashOutline" Width="15" Height="15" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                        <TextBlock Text="{DynamicResource FieldInitialActivityReq}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                    </StackPanel>
+                                                    <TextBox Text="{Binding EditInitialActivityText, UpdateSourceTrigger=LostFocus}"
+                                                             Style="{StaticResource FormTextBox}"
+                                                             materialDesign:HintAssist.Hint="3.7"/>
+                                                </StackPanel>
+                                            </UniformGrid>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- بطاقة فرعية 2: جدول النظائر المتعددة (عند تفعيل تعدد النظائر) -->
+                                    <Border Visibility="{Binding IsMultiIsotope, Converter={StaticResource BoolToVis}}"
+                                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" 
+                                            Margin="0,0,0,14" Background="{DynamicResource CardBackground}">
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.04" Color="#000000"/>
+                                        </Border.Effect>
+                                        <StackPanel>
+                                            <Border Background="#121F5A66" CornerRadius="8,8,0,0" Padding="16,10" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <materialDesign:PackIcon Kind="FormatListNumbered" Width="16" Height="16" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                    <TextBlock Text="{DynamicResource ColRadioisotopes}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <StackPanel Margin="16,14">
+                                                <DataGrid ItemsSource="{Binding IsotopeEntries}" AutoGenerateColumns="False" CanUserAddRows="False"
+                                                          Style="{StaticResource ModernDataGrid}" MaxHeight="250"
+                                                          CanUserDeleteRows="False" SelectionMode="Single" IsReadOnly="False"
+                                                          HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                                                          HorizontalGridLinesBrush="{DynamicResource BorderColor}"
+                                                          AlternationCount="1000">
+                                                    <DataGrid.Columns>
+                                                        <!-- عمود الترقيم البسيط # -->
+                                                        <DataGridTemplateColumn Header="#" Width="45">
+                                                            <DataGridTemplateColumn.CellTemplate>
+                                                                <DataTemplate>
+                                                                    <TextBlock FontSize="12" FontWeight="SemiBold"
+                                                                               FontFamily="Segoe UI"
+                                                                               Foreground="{DynamicResource TextSecondary}"
+                                                                               TextAlignment="Center"
+                                                                               VerticalAlignment="Center"
+                                                                               HorizontalAlignment="Center">
+                                                                        <TextBlock.Text>
+                                                                            <MultiBinding Converter="{StaticResource RowIndexConverter}">
+                                                                                <Binding Path="(ItemsControl.AlternationIndex)" RelativeSource="{RelativeSource AncestorType=DataGridRow}"/>
+                                                                            </MultiBinding>
+                                                                        </TextBlock.Text>
+                                                                    </TextBlock>
+                                                                </DataTemplate>
+                                                            </DataGridTemplateColumn.CellTemplate>
+                                                        </DataGridTemplateColumn>
+
+                                                        <!-- عمود النظير المشع -->
+                                                        <DataGridTemplateColumn Header="{DynamicResource ColRadioisotopes}" Width="*" MinWidth="130">
+                                                            <DataGridTemplateColumn.CellTemplate>
+                                                                <DataTemplate>
+                                                                    <ComboBox ItemsSource="{Binding DataContext.Radioisotopes, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                              SelectedValue="{Binding RadioisotopeId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                                                              SelectedValuePath="Id" DisplayMemberPath="Symbol"
+                                                                              Style="{StaticResource CompactComboBox}" Margin="4"/>
+                                                                </DataTemplate>
+                                                            </DataGridTemplateColumn.CellTemplate>
+                                                        </DataGridTemplateColumn>
+
+                                                        <!-- عمود النشاط الابتدائي -->
+                                                        <DataGridTemplateColumn Header="{DynamicResource ColInitialActivity}" Width="*" MinWidth="110">
+                                                            <DataGridTemplateColumn.CellTemplate>
+                                                                <DataTemplate>
+                                                                    <TextBox Text="{Binding InitialActivityText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                                                             Style="{StaticResource CompactTextBox}" Margin="4"
+                                                                             TextAlignment="Center"/>
+                                                                </DataTemplate>
+                                                            </DataGridTemplateColumn.CellTemplate>
+                                                        </DataGridTemplateColumn>
+
+                                                        <!-- عمود وحدة النشاط الإشعاعي -->
+                                                        <DataGridTemplateColumn Header="{DynamicResource ColActivityUnit}" Width="130" MinWidth="100">
+                                                            <DataGridTemplateColumn.CellTemplate>
+                                                                <DataTemplate>
+                                                                    <ComboBox ItemsSource="{Binding DataContext.ActivityUnits, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                              SelectedValue="{Binding ActivityUnitId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                                                              SelectedValuePath="Id" DisplayMemberPath="UnitSymbol"
+                                                                              Style="{StaticResource CompactComboBox}" Margin="4"/>
+                                                                </DataTemplate>
+                                                            </DataGridTemplateColumn.CellTemplate>
+                                                        </DataGridTemplateColumn>
+
+                                                        <!-- عمود الحذف -->
+                                                        <DataGridTemplateColumn Width="45">
+                                                            <DataGridTemplateColumn.CellTemplate>
+                                                                <DataTemplate>
+                                                                    <Button Command="{Binding DataContext.RemoveIsotopeEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                            CommandParameter="{Binding}" HorizontalAlignment="Center"
+                                                                            Style="{StaticResource MaterialDesignToolButton}" Foreground="{DynamicResource DangerBrush}" 
+                                                                            Padding="0" Height="28" Width="28" ToolTip="{DynamicResource CtxDelete}">
+                                                                        <materialDesign:PackIcon Kind="TrashCanOutline" Width="18" Height="18"/>
+                                                                    </Button>
+                                                                </DataTemplate>
+                                                            </DataGridTemplateColumn.CellTemplate>
+                                                        </DataGridTemplateColumn>
+                                                    </DataGrid.Columns>
+                                                </DataGrid>
+
+                                                <!-- زر إضافة نظير جديد -->
+                                                <Button Command="{Binding AddIsotopeEntryCommand}" 
+                                                        Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" 
+                                                        Margin="0,14,0,0" Height="36" FontSize="13" Padding="16,0">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <materialDesign:PackIcon Kind="Plus" Width="16" Height="16" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="{DynamicResource BtnAddIsotopeEntry}" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Button>
                                             </StackPanel>
-                                        </UniformGrid>
-                                    </StackPanel>
-                                </Border>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- بطاقة فرعية 3: وحدات النشاط الإشعاعي -->
+                                    <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Background="{DynamicResource CardBackground}">
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.04" Color="#000000"/>
+                                        </Border.Effect>
+                                        <StackPanel>
+                                            <Border Background="#121F5A66" CornerRadius="8,8,0,0" Padding="16,10" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <materialDesign:PackIcon Kind="ScaleBalance" Width="16" Height="16" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                    <TextBlock Text="{DynamicResource ColActivityUnit}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                </StackPanel>
+                                            </Border>
+                                            <UniformGrid Columns="2" Margin="16,14">
+                                                <!-- وحدة النشاط الابتدائي -->
+                                                <StackPanel Margin="0,0,12,0">
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                        <materialDesign:PackIcon Kind="Scale" Width="15" Height="15" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                        <TextBlock Text="{DynamicResource FieldInitialUnitReq}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                    </StackPanel>
+                                                    <ComboBox ItemsSource="{Binding ActivityUnits}" SelectedValue="{Binding EditInitialUnitId}" 
+                                                              SelectedValuePath="Id" DisplayMemberPath="UnitSymbol" Style="{StaticResource FormComboBox}"/>
+                                                </StackPanel>
+
+                                                <!-- وحدة العرض المعتمدة -->
+                                                <StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                        <materialDesign:PackIcon Kind="MonitorDashboard" Width="15" Height="15" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                        <TextBlock Text="{DynamicResource FieldCurrentUnitReq}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                    </StackPanel>
+                                                    <ComboBox ItemsSource="{Binding ActivityUnits}" SelectedValue="{Binding EditCurrentUnitId}" 
+                                                              SelectedValuePath="Id" DisplayMemberPath="UnitSymbol" Style="{StaticResource FormComboBox}"/>
+                                                </StackPanel>
+                                            </UniformGrid>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
                             </StackPanel>
 
                             <!-- ─── الخطوة 3: اللوجستيات ومعاينة الصورة ─── -->

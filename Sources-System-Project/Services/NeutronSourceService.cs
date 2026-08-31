@@ -7,6 +7,9 @@ using Sources.Models;
 
 namespace Sources.Services;
 
+/// <summary>
+/// خدمة إدارة المصادر النيترونية
+/// </summary>
 public class NeutronSourceService : INeutronSourceService
 {
     private readonly IDbContextFactory<AppDbContext> _dbFactory;
@@ -20,6 +23,7 @@ public class NeutronSourceService : INeutronSourceService
         _userService = userService;
     }
 
+    /// <summary>جلب جميع المصادر النيترونية النشطة</summary>
     public List<NeutronSource> GetAll()
     {
         using var db = _dbFactory.CreateDbContext();
@@ -31,6 +35,7 @@ public class NeutronSourceService : INeutronSourceService
             .ToList();
     }
 
+    /// <summary>جلب المصادر النيترونية المحذوفة</summary>
     public List<NeutronSource> GetDeleted()
     {
         using var db = _dbFactory.CreateDbContext();
@@ -45,6 +50,7 @@ public class NeutronSourceService : INeutronSourceService
             .ToList();
     }
 
+    /// <summary>جلب مصدر نيتروني بالمعرف</summary>
     public NeutronSource? GetById(Guid id)
     {
         using var db = _dbFactory.CreateDbContext();
@@ -54,6 +60,7 @@ public class NeutronSourceService : INeutronSourceService
             .FirstOrDefault(n => n.Id == id);
     }
 
+    /// <summary>جلب مصدر نيتروني بالكود</summary>
     public NeutronSource? GetByCode(string sourceCode)
     {
         if (string.IsNullOrWhiteSpace(sourceCode)) return null;
@@ -65,6 +72,7 @@ public class NeutronSourceService : INeutronSourceService
             .FirstOrDefault(n => n.SourceCode.ToLower() == lowerCode);
     }
 
+    /// <summary>جلب المصادر النيترونية حسب الموقع</summary>
     public List<NeutronSource> GetByLocation(Guid locationId)
     {
         using var db = _dbFactory.CreateDbContext();
@@ -77,12 +85,14 @@ public class NeutronSourceService : INeutronSourceService
             .ToList();
     }
 
+    /// <summary>عدد المصادر النيترونية الكلي</summary>
     public int GetTotalCount()
     {
         using var db = _dbFactory.CreateDbContext();
         return db.NeutronSources.Count();
     }
 
+    /// <summary>إنشاء مصدر نيتروني جديد</summary>
     public (bool Success, string Message) Create(NeutronSource item)
     {
         if (item == null) return (false, "بيانات المصدر النيتروني غير صالحة");
@@ -116,6 +126,7 @@ public class NeutronSourceService : INeutronSourceService
         return (true, "تم إضافة المصدر النيتروني بنجاح");
     }
 
+    /// <summary>تحديث مصدر نيتروني</summary>
     public (bool Success, string Message) Update(NeutronSource item)
     {
         if (item == null) return (false, "بيانات المصدر النيتروني غير صالحة");
@@ -155,6 +166,7 @@ public class NeutronSourceService : INeutronSourceService
         return (true, "تم تحديث المصدر النيتروني");
     }
 
+    /// <summary>حذف مصدر نيتروني</summary>
     public (bool Success, string Message) Delete(Guid id)
     {
         using var db = _dbFactory.CreateDbContext();
@@ -178,6 +190,7 @@ public class NeutronSourceService : INeutronSourceService
         return (true, "تم حذف المصدر النيتروني");
     }
 
+    /// <summary>استرجاع مصدر نيتروني محذوف</summary>
     public (bool Success, string Message) Restore(Guid id)
     {
         using var db = _dbFactory.CreateDbContext();

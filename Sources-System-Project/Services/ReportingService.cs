@@ -1360,6 +1360,138 @@ namespace Sources.Services
                 }).GeneratePdf(filePath);
             });
         }
+
+        /// <summary>إنشاء تقرير جرد المصادر النيترونية بصيغة Excel</summary>
+        public async Task GenerateNeutronInventoryReportExcelAsync(IEnumerable<NeutronSource> sources, string filePath, string? reportTitle = null)
+        {
+            await Task.Run(() =>
+            {
+                using var workbook = new XLWorkbook();
+                var title = reportTitle ?? "جرد المصادر النيترونية";
+                var sheetName = SanitizeSheetName(title, "المصادر النيترونية");
+                var worksheet = workbook.Worksheets.Add(sheetName);
+                worksheet.RightToLeft = true;
+
+                // Headers
+                string[] headers = { "#", "رقم المصدر", "النوع المرجعي", "معدل الانبعاث (n/s)", "عدم اليقين %", "الموقع", "الحالة", "تاريخ المعايرة" };
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    worksheet.Cell(1, i + 1).Value = headers[i];
+                    worksheet.Cell(1, i + 1).Style.Font.Bold = true;
+                    worksheet.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.FromArgb(31, 90, 102);
+                    worksheet.Cell(1, i + 1).Style.Font.FontColor = XLColor.White;
+                }
+
+                int row = 2;
+                int index = 1;
+                foreach (var s in sources ?? Enumerable.Empty<NeutronSource>())
+                {
+                    worksheet.Cell(row, 1).Value = index++;
+                    worksheet.Cell(row, 2).Value = s.SourceCode;
+                    worksheet.Cell(row, 3).Value = s.NeutronSourceType?.Code ?? "-";
+                    worksheet.Cell(row, 4).Value = s.EmissionRate;
+                    worksheet.Cell(row, 4).Style.NumberFormat.Format = "#,##0.00";
+                    if (s.RelativeExpandedUncertaintyPercent.HasValue)
+                    {
+                        worksheet.Cell(row, 5).Value = s.RelativeExpandedUncertaintyPercent.Value;
+                        worksheet.Cell(row, 5).Style.NumberFormat.Format = "0.0\"%\"";
+                    }
+                    else
+                    {
+                        worksheet.Cell(row, 5).Value = "-";
+                    }
+                    worksheet.Cell(row, 6).Value = s.Location?.LocationName ?? "غير محدد";
+                    worksheet.Cell(row, 7).Value = s.ArabicStatus;
+                    worksheet.Cell(row, 8).Value = s.CalibrationDate?.ToString("yyyy-MM-dd") ?? "-";
+                    row++;
+                }
+
+                worksheet.Columns().AdjustToContents();
+                workbook.SaveAs(filePath);
+            });
+        }
+
+        /// <summary>إنشاء تقرير جرد المصادر النيترونية بصيغة PDF</summary>
+        public async Task GenerateNeutronInventoryReportPdfAsync(IEnumerable<NeutronSource> sources, string filePath, string? reportTitle = null)
+        {
+            await Task.Run(() =>
+            {
+                var title = reportTitle ?? "تقرير جرد المصادر النيترونية";
+                var list = sources?.ToList() ?? new List<NeutronSource>();
+
+                Document.Create(container =>
+                {
+                    container.Page(page =>
+                    {
+                        page.Size(PageSizes.A4);
+                        page.Margin(1.5f, Unit.Centimetre);
+                        page.PageColor(Colors.White);
+                        page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
+                        page.ContentFromRightToLeft();
+
+                        page.Header().Element(c => ComposeHeaderInventory(c, title));
+
+                        page.Content().PaddingTop(10).Column(col =>
+                        {
+                            col.Item().Table(table =>
+                            {
+                                table.ColumnsDefinition(columns =>
+                                {
+                                    columns.ConstantColumn(25);  // #
+                                    columns.RelativeColumn(2);   // Source Code
+                                    columns.RelativeColumn(2);   // Reference Type
+                                    columns.RelativeColumn(2);   // Emission Rate
+                                    columns.RelativeColumn(1.5f);// Uncertainty
+                                    columns.RelativeColumn(2);   // Location
+                                    columns.RelativeColumn(1.5f);// Status
+                                    columns.RelativeColumn(2);   // Calibration Date
+                                });
+
+                                table.Header(h =>
+                                {
+                                    h.Cell().Element(HeaderStyle).Text("#");
+                                    h.Cell().Element(HeaderStyle).Text("رقم المصدر");
+                                    h.Cell().Element(HeaderStyle).Text("النوع المرجعي");
+                                    h.Cell().Element(HeaderStyle).Text("معدل الانبعاث (n/s)");
+                                    h.Cell().Element(HeaderStyle).Text("عدم اليقين");
+                                    h.Cell().Element(HeaderStyle).Text("الموقع");
+                                    h.Cell().Element(HeaderStyle).Text("الحالة");
+                                    h.Cell().Element(HeaderStyle).Text("تاريخ المعايرة");
+
+                                    static IContainer HeaderStyle(IContainer c) => c.Background(Colors.Teal.Darken2).PaddingVertical(6).AlignCenter().DefaultTextStyle(x => x.SemiBold().FontColor(Colors.White));
+                                });
+
+                                if (!list.Any())
+                                {
+                                    table.Cell().ColumnSpan(8).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text("لا توجد مصادر نيترونية مسجلة").FontSize(11).FontColor(Colors.Grey.Darken1);
+                                }
+                                else
+                                {
+                                    int i = 1;
+                                    foreach (var s in list)
+                                    {
+                                        var bg = i % 2 == 0 ? Colors.White : Colors.Teal.Lighten5;
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(i.ToString());
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(s.SourceCode);
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(s.NeutronSourceType?.Code ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(ScientificNotationParser.FormatScientific(s.EmissionRate));
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(s.RelativeExpandedUncertaintyPercent.HasValue ? $"{s.RelativeExpandedUncertaintyPercent:N1}%" : "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(s.Location?.LocationName ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(s.ArabicStatus);
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(s.CalibrationDate?.ToString("yyyy/MM/dd") ?? "-");
+                                        i++;
+                                    }
+                                }
+
+                                static IContainer CellStyle(IContainer c, string bg) => c.Background(bg).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(4).AlignCenter();
+                            });
+                        });
+
+                        page.Footer().Element(ComposeFooter);
+                    });
+                }).GeneratePdf(filePath);
+            });
+        }
     }
 }
 

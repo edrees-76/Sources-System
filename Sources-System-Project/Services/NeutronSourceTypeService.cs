@@ -7,6 +7,9 @@ using Sources.Models;
 
 namespace Sources.Services;
 
+/// <summary>
+/// خدمة إدارة أنواع المصادر النيترونية
+/// </summary>
 public class NeutronSourceTypeService : INeutronSourceTypeService
 {
     private readonly IDbContextFactory<AppDbContext> _dbFactory;
@@ -20,6 +23,7 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
         _userService = userService;
     }
 
+    /// <summary>جلب جميع أنواع المصادر النيترونية النشطة</summary>
     public List<NeutronSourceType> GetAll()
     {
         using var db = _dbFactory.CreateDbContext();
@@ -29,6 +33,7 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
             .ToList();
     }
 
+    /// <summary>جلب أنواع المصادر النيترونية المحذوفة</summary>
     public List<NeutronSourceType> GetDeleted()
     {
         using var db = _dbFactory.CreateDbContext();
@@ -41,12 +46,14 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
             .ToList();
     }
 
+    /// <summary>جلب نوع مصدر نيتروني بالمعرف</summary>
     public NeutronSourceType? GetById(Guid id)
     {
         using var db = _dbFactory.CreateDbContext();
         return db.NeutronSourceTypes.Find(id);
     }
 
+    /// <summary>إنشاء نوع مصدر نيتروني جديد</summary>
     public (bool Success, string Message) Create(NeutronSourceType item)
     {
         if (item == null) return (false, "بيانات نوع المصدر غير صالحة");
@@ -70,6 +77,7 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
         return (true, "تم إضافة نوع المصدر النيتروني بنجاح");
     }
 
+    /// <summary>تحديث نوع مصدر نيتروني</summary>
     public (bool Success, string Message) Update(NeutronSourceType item)
     {
         if (item == null) return (false, "بيانات نوع المصدر غير صالحة");
@@ -103,6 +111,7 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
         return (true, "تم تحديث نوع المصدر النيتروني");
     }
 
+    /// <summary>حذف نوع مصدر نيتروني</summary>
     public (bool Success, string Message) Delete(Guid id)
     {
         using var db = _dbFactory.CreateDbContext();
@@ -129,6 +138,7 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
         return (true, "تم حذف نوع المصدر النيتروني");
     }
 
+    /// <summary>استرجاع نوع مصدر نيتروني محذوف</summary>
     public (bool Success, string Message) Restore(Guid id)
     {
         using var db = _dbFactory.CreateDbContext();

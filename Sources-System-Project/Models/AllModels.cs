@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Sources.Helpers;
 
 namespace Sources.Models;
 
@@ -991,13 +992,29 @@ public class NeutronSource
     public string ArabicStatus => Status switch
     {
         "InUse" => "قيد الاستخدام",
-        "Storage" => "في المخزن",
+        "Storage" => "مخزن",
         "Waste" => "نفايات",
-        "Transfer" => "نقل",
+        "Transfer" => "قيد النقل",
         _ => Status
     };
 
     [NotMapped]
+    public string StatusColor => Status switch
+    {
+        "InUse" => "#10B981",
+        "Storage" => "#0284C7",
+        "Waste" => "#EF4444",
+        "Transfer" => "#F59E0B",
+        _ => "#6B7280"
+    };
+
+    [NotMapped]
     public string DisplaySourceCode => IsDeleted ? $"{SourceCode} (محذوف)" : SourceCode;
+
+    [NotMapped]
+    public string DisplayEmissionRate => $"{ScientificNotationParser.FormatScientific(EmissionRate)} n/s";
+
+    [NotMapped]
+    public string EmissionRateFormatted => DisplayEmissionRate;
 }
 

@@ -9,8 +9,7 @@
         WindowStartupLocation="CenterOwner"
         WindowState="Normal"
         Background="{DynamicResource WindowBackground}"
-        FontFamily="Segoe UI"
-        FlowDirection="RightToLeft">
+        FontFamily="Segoe UI">
 
     <Grid Margin="24">
         <Grid.RowDefinitions>
@@ -196,71 +195,146 @@
         </Border>
 
         <!-- ════════ 5. DataGrid / Empty State ════════ -->
-        <Grid Grid.Row="4">
-            <!-- DataGrid عند وجود مصادر مطابقة -->
-            <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" ClipToBounds="True"
-                    Background="{DynamicResource CardBackground}"
-                    Visibility="{Binding HasFilteredSources, Converter={StaticResource BoolToVis}}">
-                <DataGrid ItemsSource="{Binding FilteredSources}" Style="{StaticResource ModernDataGrid}" AutoGenerateColumns="False" IsReadOnly="True">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
-                        <DataGridTemplateColumn Header="{DynamicResource ColSourceCode}" Width="Auto" MinWidth="130">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding DisplaySourceCode}"
-                                               FontWeight="Bold"
-                                               TextAlignment="Center"
-                                               VerticalAlignment="Center"
-                                               HorizontalAlignment="Center"
-                                               Cursor="Hand"
-                                               Foreground="{DynamicResource PrimaryBrush}"
-                                               TextDecorations="Underline"
-                                               ToolTip="{DynamicResource ToolTipViewDetails}">
-                                        <TextBlock.InputBindings>
-                                            <MouseBinding Gesture="LeftClick"
-                                                          Command="{Binding DataContext.ViewSourceDetailsCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
-                                                          CommandParameter="{Binding Source}"/>
-                                        </TextBlock.InputBindings>
-                                    </TextBlock>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
-                        <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="Auto" MinWidth="150" ElementStyle="{StaticResource CenterAligned}"/>
-                        <DataGridTemplateColumn Header="{DynamicResource ColDoseRate}" Width="Auto" MinWidth="110">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Border Background="#141F5A66" CornerRadius="4" Padding="6,3" Margin="4,2"
-                                            HorizontalAlignment="Center" VerticalAlignment="Center"
-                                            ToolTip="{Binding DoseRateTooltip}">
-                                        <TextBlock Text="{Binding DisplayDoseRate}"
-                                                   FontSize="10.5" FontWeight="SemiBold"
-                                                   FontFamily="Segoe UI"
-                                                   Foreground="{DynamicResource PrimaryBrush}"
-                                                   TextAlignment="Center"
-                                                   FlowDirection="LeftToRight"/>
-                                    </Border>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterAligned}"/>
-                        <DataGridTextColumn Header="{DynamicResource ColCalibrationDate}" Binding="{Binding CalibrationDate, StringFormat='yyyy-MM-dd'}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
-                        <DataGridTextColumn Header="{DynamicResource ColSerialNumber}" Binding="{Binding SerialNumber, TargetNullValue='—'}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
-                        <DataGridTextColumn Header="{DynamicResource ColManufacturer}" Binding="{Binding Manufacturer, TargetNullValue='—'}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource CenterAligned}"/>
-                    </DataGrid.Columns>
-                </DataGrid>
-            </Border>
+        <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- 1. جدول المصادر المشعة القياسية -->
+                <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" ClipToBounds="True"
+                        Background="{DynamicResource CardBackground}" Margin="0,0,0,14"
+                        Visibility="{Binding HasFilteredSources, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <Border Background="#121F5A66" Padding="14,10" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Radioactive" Width="18" Height="18" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="{DynamicResource HeaderLocationStandardSources}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                <Border Background="{DynamicResource PrimaryBrush}" CornerRadius="10" Padding="8,2" Margin="10,0,0,0">
+                                    <TextBlock Text="{Binding FilteredSourcesCount}" Foreground="White" FontSize="11" FontWeight="Bold"/>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                        <DataGrid ItemsSource="{Binding FilteredSources}" Style="{StaticResource ModernDataGrid}" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="260">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                                <DataGridTemplateColumn Header="{DynamicResource ColSourceCode}" Width="Auto" MinWidth="130">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding DisplaySourceCode}"
+                                                       FontWeight="Bold"
+                                                       TextAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       HorizontalAlignment="Center"
+                                                       Cursor="Hand"
+                                                       Foreground="{DynamicResource PrimaryBrush}"
+                                                       TextDecorations="Underline"
+                                                       ToolTip="{DynamicResource ToolTipViewDetails}">
+                                                <TextBlock.InputBindings>
+                                                    <MouseBinding Gesture="LeftClick"
+                                                                  Command="{Binding DataContext.ViewSourceDetailsCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                                  CommandParameter="{Binding Source}"/>
+                                                </TextBlock.InputBindings>
+                                            </TextBlock>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
+                                <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="Auto" MinWidth="150" ElementStyle="{StaticResource CenterAligned}"/>
+                                <DataGridTemplateColumn Header="{DynamicResource ColDoseRate}" Width="Auto" MinWidth="110">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border Background="#141F5A66" CornerRadius="4" Padding="6,3" Margin="4,2"
+                                                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                    ToolTip="{Binding DoseRateTooltip}">
+                                                <TextBlock Text="{Binding DisplayDoseRate}"
+                                                           FontSize="10.5" FontWeight="SemiBold"
+                                                           FontFamily="Segoe UI"
+                                                           Foreground="{DynamicResource PrimaryBrush}"
+                                                           TextAlignment="Center"
+                                                           FlowDirection="LeftToRight"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterAligned}"/>
+                                <DataGridTextColumn Header="{DynamicResource ColCalibrationDate}" Binding="{Binding CalibrationDate, StringFormat='yyyy-MM-dd'}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
+                                <DataGridTextColumn Header="{DynamicResource ColSerialNumber}" Binding="{Binding SerialNumber, TargetNullValue='—'}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
+                                <DataGridTextColumn Header="{DynamicResource ColManufacturer}" Binding="{Binding Manufacturer, TargetNullValue='—'}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource CenterAligned}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Border>
 
-            <!-- Empty State عند عدم وجود مصادر مطابقة -->
-            <Border Background="{DynamicResource CardBackground}" CornerRadius="8" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Padding="40"
-                    Visibility="{Binding HasFilteredSources, Converter={StaticResource InverseBoolToVis}}">
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <materialDesign:PackIcon Kind="DatabaseRemoveOutline" Width="56" Height="56" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,0,0,12"/>
-                    <TextBlock Text="{DynamicResource MsgNoSourcesMatchFilter}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
-                    <Button Command="{Binding ClearFiltersCommand}" Content="{DynamicResource BtnClearFilters}" Style="{StaticResource SecondaryButton}" Margin="0,14,0,0" HorizontalAlignment="Center"/>
-                </StackPanel>
-            </Border>
-        </Grid>
+                <!-- 2. جدول المصادر النيترونية المرتبطة بهذا الموقع -->
+                <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" ClipToBounds="True"
+                        Background="{DynamicResource CardBackground}" Margin="0,0,0,14"
+                        Visibility="{Binding HasFilteredNeutronSources, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <Border Background="#120D9488" Padding="14,10" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="AtomVariant" Width="18" Height="18" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="{DynamicResource HeaderLocationNeutronSources}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                <Border Background="#0D9488" CornerRadius="10" Padding="8,2" Margin="10,0,0,0">
+                                    <TextBlock Text="{Binding FilteredNeutronSourcesCount}" Foreground="White" FontSize="11" FontWeight="Bold"/>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                        <DataGrid ItemsSource="{Binding FilteredNeutronSources}" Style="{StaticResource ModernDataGrid}" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="260">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
+                                <DataGridTemplateColumn Header="{DynamicResource ColSourceCode}" Width="Auto" MinWidth="130">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding SourceCode}"
+                                                       FontWeight="Bold"
+                                                       TextAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       HorizontalAlignment="Center"
+                                                       Cursor="Hand"
+                                                       Foreground="#0D9488"
+                                                       TextDecorations="Underline"
+                                                       ToolTip="{DynamicResource ToolTipViewDetails}">
+                                                <TextBlock.InputBindings>
+                                                    <MouseBinding Gesture="LeftClick"
+                                                                  Command="{Binding DataContext.ViewNeutronSourceDetailsCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                                  CommandParameter="{Binding NeutronSource}"/>
+                                                </TextBlock.InputBindings>
+                                            </TextBlock>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="{DynamicResource HeaderRefType}" Binding="{Binding TypeCode}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
+                                <DataGridTextColumn Header="{DynamicResource HeaderEmissionRate}" Binding="{Binding EmissionRateFormatted}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource CenterAligned}"/>
+                                <DataGridTextColumn Header="{DynamicResource HeaderUncertaintyPercent}" Binding="{Binding UncertaintyFormatted}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterAligned}"/>
+                                <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterAligned}"/>
+                                <DataGridTextColumn Header="{DynamicResource ColCalibrationDate}" Binding="{Binding CalibrationDateFormatted}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
+                                <DataGridTextColumn Header="{DynamicResource ColSerialNumber}" Binding="{Binding SerialNumber}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Empty State عند عدم وجود أي مصادر مطابقة -->
+                <Border Background="{DynamicResource CardBackground}" CornerRadius="8" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Padding="40">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding HasFilteredSources}" Value="False"/>
+                                        <Condition Binding="{Binding HasFilteredNeutronSources}" Value="False"/>
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </MultiDataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="DatabaseRemoveOutline" Width="56" Height="56" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                        <TextBlock Text="{DynamicResource MsgNoSourcesMatchFilter}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
+                        <Button Command="{Binding ClearFiltersCommand}" Content="{DynamicResource BtnClearFilters}" Style="{StaticResource SecondaryButton}" Margin="0,14,0,0" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
 
         <!-- ════════ 6. Footer ════════ -->
         <DockPanel Grid.Row="5" Margin="0,16,0,0" LastChildFill="False">

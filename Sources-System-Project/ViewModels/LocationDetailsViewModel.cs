@@ -14,7 +14,9 @@ namespace Sources.ViewModels;
 public partial class LocationDetailsViewModel : ObservableObject
 {
     private readonly IReportingService? _reportingService;
+    private readonly INeutronSourceService? _neutronSourceService;
     private readonly List<LocationSourceRow> _allSourceRows = new();
+    private readonly List<LocationNeutronSourceRow> _allNeutronSourceRows = new();
 
     public Location Location { get; }
 
@@ -27,6 +29,9 @@ public partial class LocationDetailsViewModel : ObservableObject
 
     [ObservableProperty]
     private ObservableCollection<LocationSourceRow> _filteredSources = new();
+
+    [ObservableProperty]
+    private ObservableCollection<LocationNeutronSourceRow> _filteredNeutronSources = new();
 
     [ObservableProperty]
     private ObservableCollection<TotalActivityItem> _totalActivityItems = new();
@@ -49,6 +54,18 @@ public partial class LocationDetailsViewModel : ObservableObject
     [ObservableProperty]
     private int _filteredSourcesCount;
 
+    [ObservableProperty]
+    private bool _hasNeutronSources;
+
+    [ObservableProperty]
+    private bool _hasFilteredNeutronSources;
+
+    [ObservableProperty]
+    private int _totalNeutronSourcesCount;
+
+    [ObservableProperty]
+    private int _filteredNeutronSourcesCount;
+
     public List<string> StatusFilterOptions { get; } = new()
     {
         "الكل",
@@ -61,10 +78,13 @@ public partial class LocationDetailsViewModel : ObservableObject
     public LocationDetailsViewModel(
         Location location,
         IEnumerable<Source> sources,
-        IReportingService? reportingService = null)
+        IReportingService? reportingService = null,
+        IEnumerable<NeutronSource>? neutronSources = null,
+        INeutronSourceService? neutronSourceService = null)
     {
         Location = location ?? throw new ArgumentNullException(nameof(location));
         _reportingService = reportingService ?? (App.ServiceProvider?.GetService(typeof(IReportingService)) as IReportingService);
+        _neutronSourceService = neutronSourceService ?? (App.ServiceProvider?.GetService(typeof(INeutronSourceService)) as INeutronSourceService);
 
         var sourceList = sources?.ToList() ?? new List<Source>();
         _allSourceRows = sourceList.Select((src, index) => new LocationSourceRow
@@ -75,6 +95,18 @@ public partial class LocationDetailsViewModel : ObservableObject
 
         TotalSourcesCount = _allSourceRows.Count;
         HasSources = TotalSourcesCount > 0;
+
+        var neutronList = neutronSources?.ToList() ?? 
+            (_neutronSourceService?.GetByLocation(location.Id) ?? new List<NeutronSource>());
+
+        _allNeutronSourceRows = neutronList.Select((ns, index) => new LocationNeutronSourceRow
+        {
+            RowNumber = index + 1,
+            NeutronSource = ns
+        }).ToList();
+
+        TotalNeutronSourcesCount = _allNeutronSourceRows.Count;
+        HasNeutronSources = TotalNeutronSourcesCount > 0;
 
         CalculateTotalActivity(sourceList);
         ApplyFilters();
@@ -90,17 +122,34 @@ public partial class LocationDetailsViewModel : ObservableObject
         ApplyFilters();
     }
 
+    private static string? MapFilterToStatusCode(string? filter)
+    {
+        if (string.IsNullOrWhiteSpace(filter) || filter == "الكل" || filter.Equals("All", StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        return filter.Trim() switch
+        {
+            "قيد الاستخدام" or "InUse" => "InUse",
+            "مخزن" or "في المخزن" or "Storage" => "Storage",
+            "نفايات" or "Waste" => "Waste",
+            "قيد النقل" or "نقل" or "Transfer" => "Transfer",
+            _ => filter.Trim()
+        };
+    }
+
     public void ApplyFilters()
     {
-        IEnumerable<LocationSourceRow> query = _allSourceRows;
+        var targetStatusCode = MapFilterToStatusCode(SelectedStatusFilter);
 
-        // 1. تصفية الحالة
-        if (!string.IsNullOrWhiteSpace(SelectedStatusFilter) && SelectedStatusFilter != "الكل")
+        // 1. تصفية المصادر المشعة العادية
+        IEnumerable<LocationSourceRow> query = _allSourceRows;
+        if (!string.IsNullOrWhiteSpace(targetStatusCode))
         {
-            query = query.Where(r => r.ArabicStatus.Equals(SelectedStatusFilter, StringComparison.OrdinalIgnoreCase));
+            query = query.Where(r => 
+                (r.Source.Status != null && r.Source.Status.Equals(targetStatusCode, StringComparison.OrdinalIgnoreCase)) ||
+                r.ArabicStatus.Equals(SelectedStatusFilter, StringComparison.OrdinalIgnoreCase));
         }
 
-        // 2. البحث النصي
         if (!string.IsNullOrWhiteSpace(SearchText))
         {
             var search = SearchText.Trim();
@@ -114,8 +163,6 @@ public partial class LocationDetailsViewModel : ObservableObject
         }
 
         var results = query.ToList();
-
-        // إعادة ترقيم الصفوف المفلترة لتكون تسلسلية في العرض
         for (int i = 0; i < results.Count; i++)
         {
             results[i].RowNumber = i + 1;
@@ -124,6 +171,36 @@ public partial class LocationDetailsViewModel : ObservableObject
         FilteredSources = new ObservableCollection<LocationSourceRow>(results);
         FilteredSourcesCount = results.Count;
         HasFilteredSources = FilteredSourcesCount > 0;
+
+        // 2. تصفية المصادر النيترونية
+        IEnumerable<LocationNeutronSourceRow> neutronQuery = _allNeutronSourceRows;
+        if (!string.IsNullOrWhiteSpace(targetStatusCode))
+        {
+            neutronQuery = neutronQuery.Where(r => 
+                (r.NeutronSource.Status != null && r.NeutronSource.Status.Equals(targetStatusCode, StringComparison.OrdinalIgnoreCase)) ||
+                r.ArabicStatus.Equals(SelectedStatusFilter, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(SearchText))
+        {
+            var search = SearchText.Trim();
+            neutronQuery = neutronQuery.Where(r =>
+                (r.SourceCode?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (r.TypeCode?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (r.TypeNameAr?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (r.SerialNumber?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false)
+            );
+        }
+
+        var neutronResults = neutronQuery.ToList();
+        for (int i = 0; i < neutronResults.Count; i++)
+        {
+            neutronResults[i].RowNumber = i + 1;
+        }
+
+        FilteredNeutronSources = new ObservableCollection<LocationNeutronSourceRow>(neutronResults);
+        FilteredNeutronSourcesCount = neutronResults.Count;
+        HasFilteredNeutronSources = FilteredNeutronSourcesCount > 0;
     }
 
     [RelayCommand]
@@ -142,7 +219,6 @@ public partial class LocationDetailsViewModel : ObservableObject
         try
         {
             double totalBq = 0;
-            // حصر الحساب بالمصادر غير المحذوفة والمتواجدة حالياً في هذا الموقع
             var activeCurrentSources = (sources ?? Enumerable.Empty<Source>())
                 .Where(s => !s.IsDeleted && (Location == null || s.LocationId == Location.Id));
 
@@ -159,7 +235,6 @@ public partial class LocationDetailsViewModel : ObservableObject
                 }
             }
 
-            // الوحدات القياسية المعتمدة في النظام
             var units = new List<(string Symbol, double Factor)>
             {
                 ("Ci", 3.7e10),
@@ -257,5 +332,11 @@ public partial class LocationDetailsViewModel : ObservableObject
     private void ViewSourceDetails(object? parameter)
     {
         SourceNavigationHelper.OpenSourceDetails(parameter);
+    }
+
+    [RelayCommand]
+    private void ViewNeutronSourceDetails(object? parameter)
+    {
+        SourceNavigationHelper.OpenNeutronSourceDetails(parameter);
     }
 }

@@ -1170,7 +1170,7 @@
     <system:String x:Key="MenuDeletions">Deletions</system:String>
     <system:String x:Key="NavDeletions">Administrative Deletions Log</system:String>
     <system:String x:Key="TitleDeletions">Unified Deletions Log</system:String>
-    <system:String x:Key="SubtitleDeletions">View and manage all deleted records across the four entities (Sources, Locations, Users, Radioisotopes)</system:String>
+    <system:String x:Key="SubtitleDeletions">View and manage all deleted records across the five entities (Radioactive Sources, Neutron Sources, Locations, Users, Radioisotopes)</system:String>
     <system:String x:Key="TitleAdminPasswordRequired">Admin Identity Verification</system:String>
     <system:String x:Key="PromptAdminPasswordRequired">Please enter administrator password to proceed:</system:String>
     <system:String x:Key="PromptAdminPasswordForDeletions">Please enter administrator password to open the administrative deletions view:</system:String>
@@ -1197,6 +1197,98 @@
     <system:String x:Key="EntityTypeUser">User Account</system:String>
     <system:String x:Key="EntityTypeRadioisotope">Radioisotope</system:String>
     <system:String x:Key="BtnConfirm">Confirm</system:String>
+
+    <!-- ========================================== -->
+    <!-- Neutron Sources Feature (Rounds 86-A & 86-B) -->
+    <!-- ========================================== -->
+    <system:String x:Key="TabNeutronSources">Neutron Sources</system:String>
+    <system:String x:Key="BtnAddNeutronSource">Add Neutron Source</system:String>
+    <system:String x:Key="BtnManageNeutronTypes">Reference Types</system:String>
+    <system:String x:Key="HintSearchNeutronSource">Search by code, type, serial number, location...</system:String>
+    <system:String x:Key="HeaderRefType">Reference Type</system:String>
+    <system:String x:Key="HeaderEmissionRate">Emission Rate (n/s)</system:String>
+    <system:String x:Key="HeaderUncertaintyPercent">Uncertainty %</system:String>
+    <system:String x:Key="MsgNoNeutronSourcesRecorded">No neutron sources recorded</system:String>
+    <system:String x:Key="MsgNoNeutronSourcesHint">You can start by adding a new neutron source using the button above.</system:String>
+    <system:String x:Key="MsgNoSearchNeutronSource">No neutron sources found matching search criteria.</system:String>
+    <system:String x:Key="MsgConfirmDeleteNeutronSource">Are you sure you want to delete this neutron source?</system:String>
+    <system:String x:Key="MsgNeutronSourceNotFound">The neutron source does not exist or has been removed from the system.</system:String>
+    <system:String x:Key="TitleNeutronSourceDetails">Neutron Source Details</system:String>
+    <system:String x:Key="MsgErrNeutronTypeReq">Neutron source type is required</system:String>
+    <system:String x:Key="MsgErrEmissionRateReq">Neutron emission rate must be a positive value</system:String>
+    
+    <!-- Add/Edit Form Categories -->
+    <system:String x:Key="LabelSourceCategory">Source Category:</system:String>
+    <system:String x:Key="RadioCategoryStandardSource">Standard Radionuclide (Gamma / Beta / Alpha)</system:String>
+    <system:String x:Key="RadioCategoryNeutronSource">Neutron Source</system:String>
+    <system:String x:Key="CardNeutronEmissionProps">Neutron Emission Characteristics</system:String>
+    <system:String x:Key="FieldNeutronRefTypeReq">Reference Neutron Type *</system:String>
+    <system:String x:Key="FieldEmissionRateReq">Neutron Emission Rate (n/s) *</system:String>
+    <system:String x:Key="HintEmissionRateExample">e.g. 11000000 or 1.1E7 or 1.1x10^7</system:String>
+    <system:String x:Key="MsgErrInvalidScientificNumber">Invalid number format. Accepted formats: standard numbers like 11000000, or scientific notation like 1.1E7 or 1.1x10^7</system:String>
+    <system:String x:Key="FieldUncertaintyPercent">Expanded Uncertainty (k=2) %</system:String>
+    <system:String x:Key="HintUncertaintyExample">e.g. 3.5</system:String>
+
+    <!-- Neutron Source Details Window -->
+    <system:String x:Key="DetailCardNeutronIdentity">Source &amp; Reference Type Information</system:String>
+    <system:String x:Key="DetailLabelSourceCode">Source Code:</system:String>
+    <system:String x:Key="DetailLabelSerialNumber">Serial Number (S/N):</system:String>
+    <system:String x:Key="DetailLabelNeutronRefType">Reference Neutron Type:</system:String>
+    <system:String x:Key="DetailLabelReactionType">Nuclear Reaction Type:</system:String>
+    <system:String x:Key="DetailLabelTargetMaterialParent">Target Material / Parent Nuclide:</system:String>
+    <system:String x:Key="DetailLabelHalfLife">Reference Half-life:</system:String>
+    <system:String x:Key="DetailCardNeutronEmissionProps">Radiation &amp; Emission Properties</system:String>
+    <system:String x:Key="DetailLabelEmissionRate">Neutron Emission Rate:</system:String>
+    <system:String x:Key="DetailLabelUncertainty">Expanded Uncertainty (k=2):</system:String>
+    <system:String x:Key="DetailLabelAverageNeutronEnergy">Average Neutron Energy (MeV):</system:String>
+    <system:String x:Key="DetailLabelCalibrationDate">Calibration / Reference Date:</system:String>
+    <system:String x:Key="DetailCardLocationNotes">Location, Storage &amp; Notes</system:String>
+    <system:String x:Key="DetailLabelCurrentLocation">Current Location:</system:String>
+    <system:String x:Key="DetailLabelNotes">Notes:</system:String>
+    <system:String x:Key="DetailLabelCreatedAt">Created Date:</system:String>
+    <system:String x:Key="DetailLabelAddedBy">Added By:</system:String>
+    <system:String x:Key="DetailLabelUpdatedAt">Last Updated:</system:String>
+
+    <!-- Neutron Reference Types Window -->
+    <system:String x:Key="TitleNeutronSourceTypes">Reference Neutron Types</system:String>
+    <system:String x:Key="SubtitleNeutronTypes">Reference types and nuclear parameters for standard neutron sources</system:String>
+    <system:String x:Key="BtnAddNeutronType">Add Reference Type</system:String>
+    <system:String x:Key="HintSearchNeutronType">Search by code, name, reaction, parent nuclide...</system:String>
+    <system:String x:Key="ColTypeCode">Type Code</system:String>
+    <system:String x:Key="ColNameAr">Name (Arabic)</system:String>
+    <system:String x:Key="ColNameEn">Name (English)</system:String>
+    <system:String x:Key="ColReactionType">Reaction Type</system:String>
+    <system:String x:Key="ColTargetMaterial">Target Material</system:String>
+    <system:String x:Key="ColHalfLifeUnit">Unit</system:String>
+    <system:String x:Key="ColAverageEnergyMev">Avg Energy (MeV)</system:String>
+    <system:String x:Key="TitleEditNeutronType">Edit Reference Type</system:String>
+    <system:String x:Key="TitleAddNeutronType">Add New Reference Neutron Type</system:String>
+    <system:String x:Key="HintTypeCodeReq">Type Code (e.g. Cf-252, Am-241/Be) *</system:String>
+    <system:String x:Key="HintReactionTypeReq">Reaction Type *</system:String>
+    <system:String x:Key="HintNameAr">Arabic Name</system:String>
+    <system:String x:Key="HintNameEn">English Name</system:String>
+    <system:String x:Key="HintParentNuclide">Parent Nuclide</system:String>
+    <system:String x:Key="HintTargetMaterial">Target Material (Be, B, Li, F)</system:String>
+    <system:String x:Key="HintHalfLifeReq">Half-life *</system:String>
+    <system:String x:Key="HintHalfLifeUnitReq">Half-life Unit *</system:String>
+    <system:String x:Key="HintAverageEnergyMev">Avg Neutron Energy (MeV)</system:String>
+    <system:String x:Key="HintNeutronYield">Typical Yield (e.g. 2200000 or 2.2E6)</system:String>
+    <system:String x:Key="HintNeutronTypeNotes">Notes &amp; Calibration Reference</system:String>
+
+    <!-- Deletions Screen Updates for Neutron Sources -->
+    <system:String x:Key="CardDeletedNeutronSources">Deleted Neutron Sources</system:String>
+    <system:String x:Key="FilterNeutronSources">Neutron Sources</system:String>
+    <system:String x:Key="EntityTypeNeutronSource">Neutron Source</system:String>
+
+    <!-- Reports Screen Updates for Neutron Sources -->
+    <system:String x:Key="BtnNeutronInventoryReport">Neutron Inventory</system:String>
+    <system:String x:Key="ColNeutronType">Reference Type</system:String>
+    <system:String x:Key="ColEmissionRate">Emission Rate (n/s)</system:String>
+    <system:String x:Key="ColUncertainty">Uncertainty</system:String>
+
+    <!-- Location Details Updates for Neutron Sources -->
+    <system:String x:Key="HeaderLocationNeutronSources">Neutron Sources at this Location</system:String>
+    <system:String x:Key="HeaderLocationStandardSources">Active Radioactive Sources</system:String>
 </ResourceDictionary>
 
 
