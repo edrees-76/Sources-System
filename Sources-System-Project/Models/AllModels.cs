@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Sources.Helpers;
 
 namespace Sources.Models;
 
@@ -1009,5 +1010,11 @@ public class NeutronSource
 
     [NotMapped]
     public string DisplaySourceCode => IsDeleted ? $"{SourceCode} (محذوف)" : SourceCode;
+
+    [NotMapped]
+    public string DisplayEmissionRate => $"{ScientificNotationParser.FormatScientific(EmissionRate)} n/s";
+
+    [NotMapped]
+    public string EmissionRateFormatted => DisplayEmissionRate;
 }
 

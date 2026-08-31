@@ -787,5 +787,82 @@ public class NeutronSourcesUITests : IDisposable
         vm.EditEmissionRateText = "invalid-rate";
         Assert.Equal(0, vm.EditEmissionRate);
     }
+
+    [Fact]
+    public async Task SourcesViewModel_InvalidEmissionRate_ShowsWarningAndPreventsSave()
+    {
+        // Arrange
+        var mockSourceService = new Mock<ISourceService>();
+        var mockIsotopeService = new Mock<IRadioisotopeService>();
+        var mockLocationService = new Mock<ILocationService>();
+        var mockReportingService = new Mock<IReportingService>();
+        var mockNeutronService = new Mock<INeutronSourceService>();
+        var mockNeutronTypeService = new Mock<INeutronSourceTypeService>();
+
+        var vm = new SourcesViewModel(
+            mockSourceService.Object,
+            mockIsotopeService.Object,
+            mockLocationService.Object,
+            mockReportingService.Object,
+            neutronSourceService: mockNeutronService.Object,
+            neutronSourceTypeService: mockNeutronTypeService.Object);
+
+        // Act
+        vm.AddNewNeutron();
+        vm.EditSourceCode = "NS-ERR-TEST";
+        vm.EditNeutronTypeId = _neutronTypeId;
+        vm.EditEmissionRateText = "invalid_text_abc";
+        vm.EditCalibrationDate = DateTime.Today;
+        vm.EditLocationId = _locationId;
+        vm.EditStatus = "Storage";
+
+        await vm.SaveCommand.ExecuteAsync(null);
+
+        // Assert: Save is prevented, form remains open, message is set
+        mockNeutronService.Verify(s => s.Create(It.IsAny<NeutronSource>()), Times.Never);
+        Assert.True(vm.IsEditing);
+        Assert.True(vm.HasMessage);
+        Assert.False(string.IsNullOrWhiteSpace(vm.Message));
+    }
+
+    [Theory]
+    [InlineData(11000000, "1.1×10⁷")]
+    [InlineData(2200000, "2.2×10⁶")]
+    [InlineData(10000000, "1×10⁷")]
+    [InlineData(3500000, "3.5×10⁶")]
+    [InlineData(0.0011, "1.1×10⁻³")]
+    [InlineData(500, "500")]
+    [InlineData(0, "0")]
+    public void ScientificNotationParser_FormatScientific_FormatsNumbersCorrectly(double value, string expected)
+    {
+        // Act
+        string formatted = ScientificNotationParser.FormatScientific(value);
+
+        // Assert
+        Assert.Equal(expected, formatted);
+    }
+
+    [Fact]
+    public void NeutronSource_DisplayEmissionRate_PreservesDoubleAndFormatsConciseString()
+    {
+        // Arrange
+        var source = new NeutronSource
+        {
+            Id = Guid.NewGuid(),
+            SourceCode = "NS-DISP-1",
+            EmissionRate = 11000000.0
+        };
+
+        // Assert: Numeric value is untouched
+        Assert.Equal(11000000.0, source.EmissionRate);
+
+        // Assert: Formatted display uses superscripts
+        Assert.Equal("1.1×10⁷ n/s", source.DisplayEmissionRate);
+        Assert.Equal("1.1×10⁷ n/s", source.EmissionRateFormatted);
+
+        // Details VM
+        var detailsVm = new NeutronSourceDetailsViewModel(source);
+        Assert.Equal("1.1×10⁷ n/s", detailsVm.EmissionRateFormatted);
+    }
 }
 

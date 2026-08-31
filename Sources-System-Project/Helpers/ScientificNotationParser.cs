@@ -216,4 +216,72 @@ public static class ScientificNotationParser
 
         return str;
     }
+
+    /// <summary>
+    /// يحول الرقم إلى صيغة علمية مقروءة ومختصرة باستخدام Unicode Superscripts (مثل 1.1×10⁷ أو 2.2×10⁶)
+    /// مع الاحتفاظ بالقيمة الرقمية الأصلية كاملة الدقة.
+    /// </summary>
+    public static string FormatScientific(double value, int maxDecimals = 3)
+    {
+        if (double.IsNaN(value) || double.IsInfinity(value))
+            return value.ToString(CultureInfo.InvariantCulture);
+
+        if (value == 0)
+            return "0";
+
+        if (value < 0)
+            return "-" + FormatScientific(-value, maxDecimals);
+
+        // للأرقام الكبيرة (>= 1,000) أو الصغيرة جداً (< 0.01)
+        if (value >= 1000.0 || value < 0.01)
+        {
+            int exp = (int)Math.Floor(Math.Log10(value));
+            double mantissa = value / Math.Pow(10, exp);
+
+            // معالجة حالات التقريب مثل 9.99999 -> 10.0
+            mantissa = Math.Round(mantissa, maxDecimals);
+            if (mantissa >= 10.0)
+            {
+                mantissa /= 10.0;
+                exp += 1;
+            }
+
+            string mantissaStr = mantissa.ToString("0." + new string('#', maxDecimals), CultureInfo.InvariantCulture);
+            string expSuperscript = ToSuperscriptString(exp);
+
+            return $"{mantissaStr}×10{expSuperscript}";
+        }
+
+        // الأرقام العادية بين 0.01 و 999.99
+        return value.ToString("0." + new string('#', maxDecimals), CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>
+    /// يحول رقماً صحيحاً إلى نصوص أسس مرتفعة (Unicode Superscripts)
+    /// </summary>
+    public static string ToSuperscriptString(int number)
+    {
+        string numStr = number.ToString(CultureInfo.InvariantCulture);
+        var sb = new StringBuilder(numStr.Length);
+        foreach (char c in numStr)
+        {
+            sb.Append(c switch
+            {
+                '0' => '⁰',
+                '1' => '¹',
+                '2' => '²',
+                '3' => '³',
+                '4' => '⁴',
+                '5' => '⁵',
+                '6' => '⁶',
+                '7' => '⁷',
+                '8' => '⁸',
+                '9' => '⁹',
+                '-' => '⁻',
+                '+' => '⁺',
+                _ => c
+            });
+        }
+        return sb.ToString();
+    }
 }

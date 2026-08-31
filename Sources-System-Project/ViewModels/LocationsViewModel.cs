@@ -62,7 +62,7 @@ public class LocationNeutronSourceRow
     public string SourceCode => NeutronSource.SourceCode;
     public string TypeCode => NeutronSource.NeutronSourceType?.Code ?? "-";
     public string TypeNameAr => NeutronSource.NeutronSourceType?.NameAr ?? "-";
-    public string EmissionRateFormatted => $"{NeutronSource.EmissionRate:N2} n/s";
+    public string EmissionRateFormatted => NeutronSource.EmissionRateFormatted;
     public string UncertaintyFormatted => NeutronSource.RelativeExpandedUncertaintyPercent.HasValue ? $"{NeutronSource.RelativeExpandedUncertaintyPercent.Value:N1}%" : "-";
     public string ArabicStatus => NeutronSource.ArabicStatus;
     public string StatusColor => NeutronSource.StatusColor;

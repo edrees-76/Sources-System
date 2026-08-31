@@ -821,21 +821,21 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                     return;
                 }
                 
-                double finalRate = EditEmissionRate;
+                double finalRate = 0;
                 if (!string.IsNullOrWhiteSpace(EditEmissionRateText))
                 {
-                    if (ScientificNotationParser.TryParsePositive(EditEmissionRateText, out double parsedRate, out string? rateError))
+                    if (!ScientificNotationParser.TryParsePositive(EditEmissionRateText, out double parsedRate, out string? rateError))
                     {
-                        finalRate = parsedRate;
-                    }
-                    else if (EditEmissionRate <= 0)
-                    {
-                        ShowMessage(rateError ?? TranslationHelper.GetString("MsgErrEmissionRateReq") ?? "معدل انبعاث النيترونات يجب أن يكون قيمة موجبة");
+                        ShowMessage(rateError ?? TranslationHelper.GetString("MsgErrInvalidScientificNumber") ?? "صيغة معدل انبعاث النيترونات غير صحيحة");
                         return;
                     }
+                    finalRate = parsedRate;
                 }
-                
-                if (finalRate <= 0)
+                else if (EditEmissionRate > 0)
+                {
+                    finalRate = EditEmissionRate;
+                }
+                else
                 {
                     ShowMessage(TranslationHelper.GetString("MsgErrEmissionRateReq") ?? "معدل انبعاث النيترونات يجب أن يكون قيمة موجبة");
                     return;
@@ -1163,6 +1163,10 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     {
         Message = msg;
         HasMessage = true;
+        if (!string.IsNullOrWhiteSpace(msg))
+        {
+            DialogHelper.ShowWarning(msg, TranslationHelper.GetString("TitleWarning") ?? "تنبيه");
+        }
     }
 
     [RelayCommand]

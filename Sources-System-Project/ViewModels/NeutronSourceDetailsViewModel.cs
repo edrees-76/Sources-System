@@ -32,9 +32,9 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
     public string ParentNuclide => !string.IsNullOrWhiteSpace(NeutronSource.NeutronSourceType?.ParentNuclide) ? NeutronSource.NeutronSourceType.ParentNuclide : "-";
     public string HalfLifeDisplay => NeutronSource.NeutronSourceType != null && NeutronSource.NeutronSourceType.HalfLife > 0 ? $"{NeutronSource.NeutronSourceType.HalfLife} {NeutronSource.NeutronSourceType.HalfLifeUnit}" : "-";
     public string EnergyDisplay => NeutronSource.NeutronSourceType?.AverageNeutronEnergyMeV.HasValue == true ? $"{NeutronSource.NeutronSourceType.AverageNeutronEnergyMeV.Value:N2} MeV" : "-";
-    public string YieldDisplay => NeutronSource.NeutronSourceType?.TypicalNeutronYield.HasValue == true ? $"{NeutronSource.NeutronSourceType.TypicalNeutronYield.Value:E2} n/s" : "-";
+    public string YieldDisplay => NeutronSource.NeutronSourceType?.TypicalNeutronYield.HasValue == true ? $"{ScientificNotationParser.FormatScientific(NeutronSource.NeutronSourceType.TypicalNeutronYield.Value)} n/s" : "-";
 
-    public string EmissionRateFormatted => $"{NeutronSource.EmissionRate:N2} n/s";
+    public string EmissionRateFormatted => NeutronSource.EmissionRateFormatted;
     public string UncertaintyFormatted => NeutronSource.RelativeExpandedUncertaintyPercent.HasValue ? $"{NeutronSource.RelativeExpandedUncertaintyPercent.Value:N1}%" : "-";
     public string CalibrationDateFormatted => NeutronSource.CalibrationDate?.ToString("yyyy/MM/dd") ?? "-";
     public string LocationDisplay => NeutronSource.Location?.LocationName ?? (TranslationHelper.GetString("TextUnspecified") ?? "غير محدد");

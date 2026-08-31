@@ -805,7 +805,7 @@
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <Border Background="#1A0D9488" CornerRadius="4" Padding="6,3" Margin="4,2" HorizontalAlignment="Center">
-                                                    <TextBlock Text="{Binding EmissionRate, StringFormat={}{0:N2} n/s}" FontWeight="Bold" Foreground="#0D9488" FlowDirection="LeftToRight"/>
+                                                    <TextBlock Text="{Binding EmissionRateFormatted}" FontWeight="Bold" Foreground="#0D9488" FlowDirection="LeftToRight"/>
                                                 </Border>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>

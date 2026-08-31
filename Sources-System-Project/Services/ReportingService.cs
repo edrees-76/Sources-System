@@ -1474,7 +1474,7 @@ namespace Sources.Services
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(i.ToString());
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(s.SourceCode);
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(s.NeutronSourceType?.Code ?? "-");
-                                        table.Cell().Element(c => CellStyle(c, bg)).Text(s.EmissionRate.ToString("N2"));
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(ScientificNotationParser.FormatScientific(s.EmissionRate));
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(s.RelativeExpandedUncertaintyPercent.HasValue ? $"{s.RelativeExpandedUncertaintyPercent:N1}%" : "-");
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(s.Location?.LocationName ?? "-");
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(s.ArabicStatus);

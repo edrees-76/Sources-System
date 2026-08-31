@@ -385,7 +385,7 @@ namespace Sources.ViewModels
             string info = $"☢️ كود المصدر النيتروني: {ns.SourceCode}\n" +
                           $"🏷️ النوع المرجعي: {ns.NeutronSourceType?.Code ?? "-"} ({ns.NeutronSourceType?.NameAr ?? ns.NeutronSourceType?.NameEn ?? "-"})\n" +
                           $"🔢 الرقم التسلسلي: {ns.SerialNumber ?? "-"}\n" +
-                          $"⚡ معدل الانبعاث: {ns.EmissionRate:N2} n/s\n" +
+                          $"⚡ معدل الانبعاث: {ns.EmissionRateFormatted}\n" +
                           $"📊 عدم اليقين: {(ns.RelativeExpandedUncertaintyPercent.HasValue ? $"{ns.RelativeExpandedUncertaintyPercent:N1}%" : "-")}\n" +
                           $"📍 الموقع: {ns.Location?.LocationName ?? "-"}\n" +
                           $"📅 تاريخ المعايرة: {ns.CalibrationDate:yyyy/MM/dd}\n" +
