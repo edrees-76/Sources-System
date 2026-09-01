@@ -263,7 +263,12 @@ public partial class SourceDetailsViewModel : ObservableObject
                 return;
             }
 
-            var attachedBy = _userService?.CurrentUser?.FullName ?? "مدير النظام";
+            var attachedBy = _userService?.CurrentUser?.FullName;
+            if (string.IsNullOrWhiteSpace(attachedBy))
+            {
+                attachedBy = "غير معروف";
+                LoggerService.LogWarning($"SourceDetailsViewModel.AttachCertificate: Current user is null or empty when attaching certificate for Source {Source.Id}. Falling back to '{attachedBy}'.");
+            }
             _certificateService.AttachCertificate(Source.Id, "Standard", dialog.FileName, attachedBy);
             LoadCertificates();
 
@@ -354,7 +359,12 @@ public partial class SourceDetailsViewModel : ObservableObject
 
         try
         {
-            var deletedBy = _userService?.CurrentUser?.FullName ?? "مدير النظام";
+            var deletedBy = _userService?.CurrentUser?.FullName;
+            if (string.IsNullOrWhiteSpace(deletedBy))
+            {
+                deletedBy = "غير معروف";
+                LoggerService.LogWarning($"SourceDetailsViewModel.DeleteCertificate: Current user is null or empty when deleting certificate {cert.Id} for Source {Source.Id}. Falling back to '{deletedBy}'.");
+            }
             _certificateService.DeleteCertificate(cert.Id, deletedBy);
             LoadCertificates();
 

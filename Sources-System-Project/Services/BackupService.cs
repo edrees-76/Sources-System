@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using Sources.Data;
 
 namespace Sources.Services;
@@ -238,7 +239,10 @@ public class BackupService : IBackupService
             try
             {
                 var knownMigrations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                using (var appDb = new AppDbContext())
+                var options = new Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<AppDbContext>()
+                    .UseSqlite($"Data Source={_dbPath}")
+                    .Options;
+                using (var appDb = new AppDbContext(options))
                 {
                     foreach (var m in Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.GetMigrations(appDb.Database))
                     {

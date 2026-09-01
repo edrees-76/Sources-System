@@ -409,33 +409,31 @@ public class NeutronSourcesUITests : IDisposable
     }
 
     [Fact]
-    public void NeutronSourceDetailsViewModel_AddedBy_ResolvesUserNameFromUserService()
+    public void NeutronSourceDetailsViewModel_AddedByName_ResolvesUserNameFromModel()
     {
         // Arrange
-        var userId = Guid.NewGuid();
-        var mockUserService = new Mock<IUserService>();
-        mockUserService.Setup(u => u.GetUserById(userId)).Returns(new User
+        var user = new User
         {
-            Id = userId,
+            Id = Guid.NewGuid(),
             Username = "dr_radiation",
             FullName = "د. أحمد الإشعاعي"
-        });
+        };
 
         var neutron = new NeutronSource
         {
             Id = Guid.NewGuid(),
             SourceCode = "NS-USR-01",
             EmissionRate = 123456,
-            AddedBy = userId,
+            AddedBy = user.Id,
+            AddedByUser = user,
             CreatedAt = DateTime.Now
         };
 
         // Act
-        var vm = new NeutronSourceDetailsViewModel(neutron, mockUserService.Object);
+        var vm = new NeutronSourceDetailsViewModel(neutron);
 
         // Assert
-        Assert.Equal("د. أحمد الإشعاعي", vm.AddedBy);
-        Assert.DoesNotContain(userId.ToString(), vm.AddedBy);
+        Assert.Equal("د. أحمد الإشعاعي", vm.AddedByName);
     }
 
     [Fact]

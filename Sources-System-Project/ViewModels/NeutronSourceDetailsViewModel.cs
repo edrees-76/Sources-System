@@ -69,27 +69,7 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
     public string CreatedAtFormatted => NeutronSource.CreatedAt.ToString("yyyy/MM/dd HH:mm");
     public string UpdatedAtFormatted => "-";
     
-    public string AddedBy
-    {
-        get
-        {
-            if (!NeutronSource.AddedBy.HasValue) return "-";
-            try
-            {
-                var user = _userService?.GetUserById(NeutronSource.AddedBy.Value);
-                if (user != null && !string.IsNullOrWhiteSpace(user.FullName))
-                {
-                    return user.FullName;
-                }
-                if (user != null && !string.IsNullOrWhiteSpace(user.Username))
-                {
-                    return user.Username;
-                }
-            }
-            catch { }
-            return NeutronSource.AddedBy.Value.ToString();
-        }
-    }
+    public string AddedByName => NeutronSource.AddedByName;
 
     public void LoadCertificates()
     {
@@ -132,7 +112,12 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
                 return;
             }
 
-            var attachedBy = _userService?.CurrentUser?.FullName ?? "مدير النظام";
+            var attachedBy = _userService?.CurrentUser?.FullName;
+            if (string.IsNullOrWhiteSpace(attachedBy))
+            {
+                attachedBy = "غير معروف";
+                LoggerService.LogWarning($"NeutronSourceDetailsViewModel.AttachCertificate: Current user is null or empty when attaching certificate for NeutronSource {NeutronSource.Id}. Falling back to '{attachedBy}'.");
+            }
             _certificateService.AttachCertificate(NeutronSource.Id, "Neutron", dialog.FileName, attachedBy);
             LoadCertificates();
 
@@ -223,7 +208,12 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
 
         try
         {
-            var deletedBy = _userService?.CurrentUser?.FullName ?? "مدير النظام";
+            var deletedBy = _userService?.CurrentUser?.FullName;
+            if (string.IsNullOrWhiteSpace(deletedBy))
+            {
+                deletedBy = "غير معروف";
+                LoggerService.LogWarning($"NeutronSourceDetailsViewModel.DeleteCertificate: Current user is null or empty when deleting certificate {cert.Id} for NeutronSource {NeutronSource.Id}. Falling back to '{deletedBy}'.");
+            }
             _certificateService.DeleteCertificate(cert.Id, deletedBy);
             LoadCertificates();
 

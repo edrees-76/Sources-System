@@ -269,6 +269,8 @@ WHERE AddedBy IS NOT NULL
                 oldNullable: true);
 
             migrationBuilder.Sql(@"
+PRAGMA foreign_keys = 0;
+
 UPDATE Sources
 SET AddedBy = (SELECT u.FullName FROM Users u WHERE u.Id = Sources.AddedBy)
 WHERE AddedBy IS NOT NULL;
@@ -284,7 +286,9 @@ WHERE AddedBy IS NOT NULL;
 UPDATE BorrowRequests
 SET AddedBy = (SELECT u.FullName FROM Users u WHERE u.Id = BorrowRequests.AddedBy)
 WHERE AddedBy IS NOT NULL;
-");
+
+PRAGMA foreign_keys = 1;
+", suppressTransaction: true);
         }
     }
 }

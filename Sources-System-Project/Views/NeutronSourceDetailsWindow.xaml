@@ -227,7 +227,7 @@
 
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Text="{DynamicResource DetailLabelAddedBy}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
-                                    <TextBlock Text="{Binding AddedBy}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
+                                    <TextBlock Text="{Binding AddedByName}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="2">

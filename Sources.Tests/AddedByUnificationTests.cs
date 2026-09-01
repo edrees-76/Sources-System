@@ -556,5 +556,80 @@ VALUES ('{Guid.NewGuid()}', 'SRC-MATCH', (SELECT Id FROM Radioisotopes LIMIT 1),
         }
     }
 
+    [Fact]
+    public void Migration_DownFromUnifyAddedByToGuid_RevertsToInitialSchemaAndConvertsAddedByToString()
+    {
+        var tempDbPath = Path.Combine(Path.GetTempPath(), "Sources_DownMigrateTest_" + Guid.NewGuid().ToString("N") + ".db");
+        try
+        {
+            var options = new DbContextOptionsBuilder<AppDbContext>()
+                .UseSqlite($"Data Source={tempDbPath}")
+                .Options;
+
+            // 1. تطبيق جميع الترحيلات كاملة Database.Migrate()
+            using (var ctx = new AppDbContext(options))
+            {
+                ctx.Database.Migrate();
+            }
+
+            var userId = Guid.NewGuid();
+            var roleId = Guid.NewGuid();
+            var userFullName = "د. محمد الباحث";
+            var sourceId = Guid.NewGuid();
+            var isoId = Guid.NewGuid();
+            var unitId = Guid.NewGuid();
+
+            // 2. زرع مستخدم ومصدر يحمل AddedBy مساوياً لمعرّف ذلك المستخدم
+            using (var conn = new SqliteConnection($"Data Source={tempDbPath}"))
+            {
+                conn.Open();
+                using var cmd = conn.CreateCommand();
+
+                cmd.CommandText = $@"
+INSERT INTO Roles (Id, RoleName, Description, Permissions) VALUES ('{roleId}', 'Admin', 'Admin Role', 'All');
+
+INSERT INTO Users (Id, FullName, Username, PasswordHash, RoleId, IsActive, IsDeleted, CreatedAt, FailedLoginAttempts, IsEditor)
+VALUES ('{userId}', '{userFullName}', 'mohamed_doc', 'hash', '{roleId}', 1, 0, '2026-01-01', 0, 0);
+
+INSERT INTO Radioisotopes (Id, Name, Symbol, RadiationType, HalfLife, HalfLifeUnit, Energy, Category, IsDeleted)
+VALUES ('{isoId}', 'Cobalt', 'Co-60-Down', 'Gamma', 5.27, 'years', 1173.2, 1, 0);
+
+INSERT INTO ActivityUnits (Id, UnitName, UnitSymbol, ConversionToBq)
+VALUES ('{unitId}', 'MBq-Down', 'MBq', 1e6);
+
+INSERT INTO Sources (Id, SourceCode, RadioisotopeId, InitialActivityValue, InitialActivityUnitId, CurrentActivityValue, CurrentActivityUnitId, CalibrationDate, Status, HasDetailedIsotopes, IsSealed, AddedBy, IsDeleted, CreatedAt)
+VALUES ('{sourceId}', 'SRC-DOWN-01', '{isoId}', 100, '{unitId}', 100, '{unitId}', '2026-01-01', 'Storage', 0, 1, '{userId}', 0, '2026-01-01');
+";
+                cmd.ExecuteNonQuery();
+            }
+
+            // 3. التراجع إلى InitialSchema عبر IMigrator.Migrate("20260901112320_InitialSchema")
+            using (var ctx = new AppDbContext(options))
+            {
+                var migrator = Microsoft.EntityFrameworkCore.Infrastructure.AccessorExtensions.GetService<Microsoft.EntityFrameworkCore.Migrations.IMigrator>(ctx.Database);
+                migrator.Migrate("20260901112320_InitialSchema");
+            }
+
+            // 4. التحقق بـ SqliteConnection و SQL خام أن العمود يحمل FullName نصاً وأن التراجع لم يرمِ استثناءً
+            using (var conn = new SqliteConnection($"Data Source={tempDbPath}"))
+            {
+                conn.Open();
+                using var cmd = conn.CreateCommand();
+
+                cmd.CommandText = "SELECT AddedBy FROM Sources WHERE SourceCode = 'SRC-DOWN-01';";
+                var result = cmd.ExecuteScalar()?.ToString();
+                Assert.Equal(userFullName, result);
+            }
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (File.Exists(tempDbPath))
+            {
+                try { File.Delete(tempDbPath); } catch { }
+            }
+        }
+    }
+
     #endregion
 }

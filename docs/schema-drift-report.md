@@ -1,61 +1,60 @@
-# تقرير انحراف المخطط (Schema Drift Report)
-**تاريخ التوثيق:** الجولة 89  
-**النطاق:** توثيق الفروقات بين المخطط المُنشأ عبر SQL الخام في `AppDbContext.MigrateSchema()` وما يصفه `OnModelCreating` وملفات `Migrations/` و `AppDbContextModelSnapshot.cs`.
+# تقرير وقرارات المخطط (Database Schema & Decision Record)
+**تاريخ التحديث:** الجولة 96 (محدّث من الجولة 89 والجولة 95)  
+**المرجع الأساسي:** `OnModelCreating` في `AppDbContext.cs`، وملفات `Migrations/`، ومخطط النموذج `AppDbContextModelSnapshot.cs`.
 
 ---
 
-## 1. ملخص تنفيذي (Executive Summary)
+## 1. ملخص تنفيذي وسياق التوحيد
 
-يعتمد نظام `Sources` على آليتين لتجهيز وصيانة قاعدة بيانات SQLite:
-1. **الآلية البرمجية المباشرة (Raw SQL):** تُنفذ داخل الدالة `AppDbContext.MigrateSchema()` عند تشغيل التطبيق (`InitializeDatabase`).
-2. **الآلية التصريحية في EF Core:** الموصوفة في `OnModelCreating` وملفات الترحيل `Migrations/` ومخطط النموذج `AppDbContextModelSnapshot.cs`.
+في الجولات السابقة (حتى الجولة 89)، كان النظام يعتمد على آليتين:
+1. **الآلية البرمجية المباشرة (Raw SQL):** داخل الدالة `MigrateSchema()` في `AppDbContext`.
+2. **الآلية التصريحية في EF Core:** الموصوفة في `OnModelCreating` وترحيلات EF Core.
 
-أظهر الفحص التفصيلي وجود انحرافات جوهرية (Schema Drift) بين الآليتين تشمل:
-- غياب كامل لجدول حديث (`SourceCertificates`) من ترحيلات ومخطط EF Core.
-- انحرافات في قيود الفهرسة الفريدة والمفلترة (`UNIQUE ... WHERE IsDeleted = 0`) بين المصادر النيترونية والأنواع المرجعية مقارنة بنموذج EF.
-- غياب العديد من فهارس الأداء الخاصة بالحذف الناعم (`IsDeleted`) والحالات والتواريخ من نموذج EF Core رغم إنشائها في SQL الخام.
-- عدم تصفية الفهرس الفريد لكود المصدر العادي (`Sources.SourceCode`) عند الحذف الناعم في نموذج EF.
+**في الجولة 90 أُلغيت دالة `MigrateSchema()` بالكامل**، ونُقلت كافة تعريفات الجداول والفهارس والعلاقات إلى `OnModelCreating`، وأصبح المخطط موحداً بنسبة 100% تحت إدارة **EF Core Migrations** وحدها.
+وبناءً عليه، لم يعد هذا التقرير سجلاً لانحراف بين آليتين متنافستين، بل تحوّل إلى **سجل رسمي لقرارات المخطط والفهارس وتوثيق حالتها**.
 
 ---
 
-## 2. جدول مقارنة الانحرافات التفصيلية
+## 2. سجل بنود المخطط والفهارس والتحقق منها
 
-| # | اسم الجدول (Table) | العنصر / الحقل | الحالة في SQL الخام (`MigrateSchema`) | الحالة في EF Core (`OnModelCreating` / `Migrations` / `ModelSnapshot`) | الأثر السلوكي المحتمل (Behavioral Impact) |
+| # | اسم الجدول (Table) | العنصر / الحقل | الحالة في المخطط المعتمد (`OnModelCreating` / `Migrations` / `ModelSnapshot`) | حالة البند | سطر الإثبات في الكود |
 |---|---|---|---|---|---|
-| **1** | `NeutronSources` | `IX_NeutronSources_SourceCode` | فهرس فريد مفلتر: `CREATE UNIQUE INDEX ... WHERE IsDeleted = 0` | فهرس عادي غير فريد وبلا فلتر: `entity.HasIndex(n => n.SourceCode)` | في بيئات الاختبار أو قواعد البيانات المُنشأة عبر EF Migration فقط، لا تمنع قاعدة البيانات تكرار كود المصدر النيتروني النشط، بينما في قواعد البيانات الفعلية يمنع الـ DB التكرار بقيد فريد. |
-| **2** | `NeutronSourceTypes` | `IX_NeutronSourceTypes_Code` | فهرس فريد مفلتر: `CREATE UNIQUE INDEX ... WHERE IsDeleted = 0` | فهرس عادي غير فريد وبلا فلتر: `entity.HasIndex(t => t.Code)` | نفس الأثر: تكرار الكود لنوع المصدر مسموح في مخطط EF وممنوع بقيد صارم في SQL الخام. |
-| **3** | `SourceCertificates` | الجدول والفهارس بالكامل | جدول كامل يُنشأ بـ `CREATE TABLE IF NOT EXISTS SourceCertificates` مع فهرسين `IX_SourceCertificates_SourceId` و `IX_SourceCertificates_SourceType` | **غير موجود نهائياً** في مجلد `Migrations/` أو `AppDbContextModelSnapshot.cs` (معرّف فقط كـ `DbSet` في `AppDbContext`) | لو شُغّلت أداة `dotnet ef database update` لإنشاء قاعدة بيانات جديدة من الصفر دون المرور بـ `MigrateSchema()`، سيفشل التطبيق فوراً بخطأ `SQLite Error 1: no such table: SourceCertificates` عند محاولة حفظ أو قراءة أي شهادة. |
-| **4** | `Sources` | `IX_Sources_SourceCode` | لا يتم إنشاء فهرس مخصص في `MigrateSchema`، بل يعتمد على EF | فهرس فريد **غير مفلتر**: `entity.HasIndex(s => s.SourceCode).IsUnique()` | إذا حُذف مصدر بالـ Soft Delete (`IsDeleted = 1`)، فإن محاولة إضافة مصدر جديد بنفس الكود تفشل بـ Unique Constraint Violation في EF لأن الفهرس غير مفلتر بـ `WHERE IsDeleted = 0` (عكس باقي الجداول). |
-| **5** | `Sources` | فهارس الأداء (`Status`, `CalibrationDate`, `IsDeleted`, `SerialNumber`, `IsSealed`) | تُنشأ 5 فهارس منفصلة في SQL الخام: `IX_Sources_Status`, `IX_Sources_CalibrationDate`, `IX_Sources_IsDeleted`, `IX_Sources_SerialNumber`, `IX_Sources_IsSealed` | **غير معرّفة** في `OnModelCreating` ولا تظهر في `AppDbContextModelSnapshot` | في حال عدم تنفيذ SQL الخام، ستعاني استعلامات الفلترة حسب الحالة وتواريخ المعايرة والحذف الناعم والمصادر المختومة من بطء في الأداء (Full Table Scans). |
-| **6** | `Locations` | `IX_Locations_IsDeleted` | يُنشأ فهرس أداء: `CREATE INDEX IF NOT EXISTS IX_Locations_IsDeleted ON Locations(IsDeleted)` | غير معرّف في `OnModelCreating` أو `ModelSnapshot` (يوجد فقط `IX_Locations_LocationName` المفلتر) | تراجع أداء استعلامات تصفية المواقع النشطة والمحذوفة في البيئات التي تعتمد فقط على ترحيلات EF Core. |
-| **7** | `Users` | `IX_Users_IsDeleted` | يُنشأ فهرس أداء: `CREATE INDEX IF NOT EXISTS IX_Users_IsDeleted ON Users(IsDeleted)` | غير معرّف في `OnModelCreating` أو `ModelSnapshot` | تراجع أداء استعلامات المستخدمين النشطين/المحذوفين. |
-| **8** | `Radioisotopes` | `IX_Radioisotopes_IsDeleted` | يُنشأ فهرس أداء: `CREATE INDEX IF NOT EXISTS IX_Radioisotopes_IsDeleted ON Radioisotopes(IsDeleted)` | غير معرّف في `OnModelCreating` أو `ModelSnapshot` | تراجع أداء استعلامات النظائر المشعة عند كثرة السجلات. |
-| **9** | `AuditLogs` | `IX_AuditLogs_ActionDate` | يُنشأ فهرس أداء: `CREATE INDEX IF NOT EXISTS IX_AuditLogs_ActionDate ON AuditLogs(ActionDate)` | غير معرّف في `OnModelCreating` أو `ModelSnapshot` | عند تضخم سجل التدقيق لعشرات الآلاف من السجلات، ستصبح استعلامات التقارير والبحث بالتواريخ بطيئة جداً إذا لم يُنشأ الفهرس عبر SQL الخام. |
-| **10** | `AlertNotifications` | `IX_AlertNotifications_IsRead` | يُنشأ فهرس أداء: `CREATE INDEX IF NOT EXISTS IX_AlertNotifications_IsRead ON AlertNotifications(IsRead)` | غير معرّف في `OnModelCreating` أو `ModelSnapshot` | استعلام جلب التنبيهات غير المقروءة سيمسح الجدول كاملاً بدون الفهرس. |
-| **11** | `BorrowRequests` | `IX_BorrowRequests_Status` | يُنشأ فهرس أداء: `CREATE INDEX IF NOT EXISTS IX_BorrowRequests_Status ON BorrowRequests(Status)` | غير معرّف في `OnModelCreating` أو `ModelSnapshot` | استعلامات تصنيف طلبات الاستعارة (معلقة، متأخرة، مسلّمة) تصبح أبطأ. |
-| **12** | `BorrowRequests` | `IX_BorrowRequests_SourceId` | يُنشأ فهرسان: فهرس عادي `IX_BorrowRequests_SourceId` وفهرس فريد مفلتر `IX_BorrowRequests_SourceId_Active` (`WHERE Status IN ('Delivered', 'Overdue')`) | يُعرّف فهرس واحد فريد مفلتر باسم `IX_BorrowRequests_SourceId` | في نموذج EF، يحل الفهرس المفلتر محل فهرس المفتاح الخارجي العادي، بينما في SQL الخام يوجد فهرسان مما قد يسبب ازدواجية طفيفة في التخزين لكنه يضمن تسريع الاستعلامات العادية على المفتاح الخارجي. |
-| **13** | الكيانات الستة (`Sources`, `Locations`, `Radioisotopes`, `BorrowRequests`, `NeutronSources`, `NeutronSourceTypes`) | نوع العمود `AddedBy` والعلاقة `AddedByUser` | **تم الإغلاق والتوحيد في الجولة 95** على `Guid?` مع قيد مفتاح خارجي `SetNull` وفهرس لكل جدول وخاصية `[NotMapped] AddedByName`. | **مطابق تماماً** في `OnModelCreating` وترحيل `20260901133004_UnifyAddedByToGuid` و `AppDbContextModelSnapshot`. | تم القضاء على الانحراف بالكامل، وتوحيد منطق تسجيل المستخدم المنشئ مع معالجة البيانات القائمة وحماية التوافق. |
+| **1** | `NeutronSources` | `IX_NeutronSources_SourceCode` | فهرس فريد مفلتر: `HasDatabaseName("IX_NeutronSources_SourceCode").HasFilter("IsDeleted = 0").IsUnique()` | **مغلق (مُطبّق)** | `Data/AppDbContext.cs`: الأسطر 622-625 |
+| **2** | `NeutronSourceTypes` | `IX_NeutronSourceTypes_Code` | فهرس فريد مفلتر: `HasDatabaseName("IX_NeutronSourceTypes_Code").HasFilter("IsDeleted = 0").IsUnique()` | **مغلق (مُطبّق)** | `Data/AppDbContext.cs`: الأسطر 578-581 |
+| **3** | `SourceCertificates` | الجدول والفهارس بالكامل | جدول كامل معرّف بـ `DbSet<SourceCertificate>` ومفهرس على `SourceId` و `SourceType`. | **مغلق (مُطبّق)** | 1) التهيئة: `Data/AppDbContext.cs` (الأسطر 633-637)<br>2) الترحيل: `Migrations/20260901112320_InitialSchema.cs` (الأسطر 56-71 و 684-693)<br>3) المخطط: `Migrations/AppDbContextModelSnapshot.cs` (الأسطر 720-759) |
+| **5** | `Sources` | فهارس الأداء (`Status`, `CalibrationDate`, `IsDeleted`, `SerialNumber`, `IsSealed`) | 5 فهارس منفصلة لتسريع الفلترة والحذف الناعم والبحث. | **مغلق (مُطبّق)** | `Data/AppDbContext.cs`: الأسطر 366-370 |
+| **6** | `Locations` | `IX_Locations_IsDeleted` | فهرس أداء على الحذف الناعم: `entity.HasIndex(l => l.IsDeleted)`. | **مغلق (مُطبّق)** | `Data/AppDbContext.cs`: السطر 392 |
+| **7** | `Users` | `IX_Users_IsDeleted` | فهرس أداء على الحذف الناعم: `entity.HasIndex(u => u.IsDeleted)`. | **مغلق (مُطبّق)** | `Data/AppDbContext.cs`: السطر 474 |
+| **8** | `Radioisotopes` | `IX_Radioisotopes_IsDeleted` | فهرس أداء على الحذف الناعم: `entity.HasIndex(r => r.IsDeleted)`. | **مغلق (مُطبّق)** | `Data/AppDbContext.cs`: السطر 410 |
+| **9** | `AuditLogs` | `IX_AuditLogs_ActionDate` | فهرس أداء على تاريخ العملية لتسريع التقارير: `entity.HasIndex(a => a.ActionDate)`. | **مغلق (مُطبّق)** | `Data/AppDbContext.cs`: السطر 485 |
+| **10** | `AlertNotifications` | `IX_AlertNotifications_IsRead` | فهرس أداء على حالة القراءة: `entity.HasIndex(n => n.IsRead)`. | **مغلق (مُطبّق)** | `Data/AppDbContext.cs`: السطر 497 |
+| **11** | `BorrowRequests` | `IX_BorrowRequests_Status` | فهرس أداء على حالة الاستعارة: `entity.HasIndex(b => b.Status)`. | **مغلق (مُطبّق)** | `Data/AppDbContext.cs`: السطر 453 |
+| **12** | `BorrowRequests` | `IX_BorrowRequests_SourceId` | فهرسان: فهرس مفتاح خارجي عادي + فهرس فريد مفلتر `IX_BorrowRequests_SourceId_Active` للطلبات النشطة (`Status IN ('Delivered', 'Overdue')`). | **مغلق (مُطبّق)** | `Data/AppDbContext.cs`: الأسطر 447-451 |
+| **13** | الكيانات الستة (`Sources`, `Locations`, `Radioisotopes`, `BorrowRequests`, `NeutronSources`, `NeutronSourceTypes`) | نوع العمود `AddedBy` والعلاقة `AddedByUser` | توحيد كامل على `Guid?` مع قيد مفتاح خارجي `SetNull` وفهارس `IX_*_AddedBy` وخاصية `[NotMapped] AddedByName`. | **مغلق (مُطبّق)** | `Data/AppDbContext.cs` والترحيل `20260901133004_UnifyAddedByToGuid` |
 
 ---
 
-## 3. التحديثات المنجزة (Resolved Items)
+## 3. قرارات تصميم مقصودة (Intentional Design Decisions)
+
+1. **فهرس كود المصدر العادي `Sources.SourceCode` فريد غير مفلتر عمداً:**
+   - **التعريف:** `entity.HasIndex(s => s.SourceCode).IsUnique();` (`AppDbContext.cs` السطر 363).
+   - **التعليل الهندسي والرقابي:** كود المصدر معرّف دائم لجسم مشع خاضع للرقابة الدولية والمحلية ولا يُعاد استخدامه أبداً بعد الحذف الناعم حفاظاً على سلامة سجل الحيازة والتدقيق وتجنب أي خلط بين جسمين مشعين.
+2. **بقاء الأنواع المرجعية للمصادر النيترونية `NeutronSourceTypes` عند إعادة ضبط المصنع:**
+   - جدول `NeutronSourceTypes` يمثل بيانات مرجعية أساسية وثوابت فيزيائية تنجو من إعادة ضبط المصنع (`SystemResetService`) لضمان جاهزية النظام التشغيلية بعد التهيئة.
+
+---
+
+## 4. التحديثات المنجزة
 
 ### الجولة 95: توحيد `AddedBy` إلى `Guid?` مع قيد المفتاح الخارجي
-- **الكيانات المشمولة:** `Source`, `Location`, `Radioisotope`, `BorrowRequest`, `NeutronSource`, `NeutronSourceType`.
-- **النمط الموحد:**
-  - `public Guid? AddedBy { get; set; }`
-  - `[ForeignKey(nameof(AddedBy))] public User? AddedByUser { get; set; }`
-  - `[NotMapped] public string AddedByName => AddedByUser?.FullName ?? "غير معروف";`
-- **التهيئة والترحيل:** إضافة علاقة `AddedByUser` مع `IsRequired(false)` و `OnDelete(DeleteBehavior.SetNull)` وفهارس `IX_*_AddedBy`. تم إنشاء الترحيل `20260901133004_UnifyAddedByToGuid` وترحيل البيانات القائمة برمجياً.
-- **استثناء `SourceCertificate.AttachedBy`:** يظل `string?` لكونه يعبر عن نص الوصف/جهة الإرفاق وليس المستخدم المنشئ للنظام.
-- **تشديد فحص التوافق في `BackupService`:** مقارنة ترحيلات `__EFMigrationsHistory` في النسخة الاحتياطية بالمخطط المعتمد للمنظومة لرفض النسخ المستقبلية المجهولة أو القديمة الخالية من سجل الترحيلات بأمان.
-- **تغيير سلوك مرئي في `DeletionsViewModel`:** كان حقل `DeletedByName` يعرض اسم مُضيف السجل كقيمة احتياطية حين يكون القائم بالحذف مجهولاً، في `Source` و `Location` و `Radioisotope`. أُزيلت هذه الاحتياطية وصار يُعرض `"-"`، لأن عرض اسم المُضيف تحت لافتة "حُذف بواسطة" إسناد كاذب في سجل التدقيق.
+- توحيد الكيانات الستة بنمط `AddedByUser` + `AddedByName`.
+- إضافة حراس وجود المستخدم في دوال الإنشاء الست.
+- الترحيل `20260901133004_UnifyAddedByToGuid` مع ترحيل البيانات السابقة وعكسية كاملة في `Down()`.
+- تشديد فحص التوافق في `BackupService`.
 
----
-
-## 4. التوصيات الفنية للجولات القادمة (Technical Recommendations)
-
-عند التخطيط لمعالجة باقي الانحرافات في جولات لاحقة، يُوصى بما يلي:
-1. **تحديث `OnModelCreating`:** لمطابقة الفهارس الفريدة المفلترة لـ `NeutronSources.SourceCode` و `NeutronSourceTypes.Code` وفهارس الأداء.
-2. **إضافة تهيئة `SourceCertificates` إلى `OnModelCreating`:** وتوليد Migration رسمي لها لضمان تزامن `AppDbContextModelSnapshot`.
-3. **الجولة 96 القادمة:** استكمال تحديث الـ ViewModels والـ XAML لعرض `AddedByName` في باقي الواجهات والنوافذ.
+### الجولة 96: تصحيح التوثيق وإغلاق الإسناد الكاذب والبنود الصغيرة
+- تصحيح هذا التقرير ليعتمد على `OnModelCreating` وترحيلات EF Core بعد حذف `MigrateSchema()` في الجولة 90.
+- إغلاق الإسناد الكاذب في `SourceDetailsViewModel` و `NeutronSourceDetailsViewModel` واستبداله بـ `"غير معروف"` مع `LoggerService.LogWarning`.
+- تحديث `NeutronSourceDetailsViewModel` و `NeutronSourceDetailsWindow.xaml` لربط `AddedByName` مباشرة من النموذج.
+- إضافة اختبار شامل لمسار التراجع `Down()` للترحيل `20260901133004_UnifyAddedByToGuid`.
+- تنظيف استدعاء فحص الترحيلات في `RestoreBackup` لتفادي إنشاء مجلد LocalAppData كأثر جانبي.
