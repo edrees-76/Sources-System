@@ -73,7 +73,7 @@
                     BorderThickness="0">
 
             <!-- ─── التبويب 1: التفاصيل ─── -->
-            <TabItem Header="{DynamicResource TabDetails}">
+            <TabItem Header="{DynamicResource TabDetails}" Style="{StaticResource SourcesSystemTabItemStyle}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,14,4,0">
                     <StackPanel>
 
@@ -322,7 +322,7 @@
             </TabItem>
 
             <!-- ─── التبويب 2: الشهادات والمستندات ─── -->
-            <TabItem Header="{DynamicResource TabCertificates}">
+            <TabItem Header="{DynamicResource TabCertificates}" Style="{StaticResource SourcesSystemTabItemStyle}">
                 <Grid Margin="0,14,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/> <!-- Action Bar -->

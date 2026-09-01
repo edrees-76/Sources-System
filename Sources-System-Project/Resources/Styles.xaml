@@ -656,8 +656,7 @@
         </Setter>
     </Style>
 
-    <Style x:Key="SourcesSystemTabControlStyle" TargetType="TabControl" BasedOn="{StaticResource MaterialDesignFilledTabControl}">
-        <Setter Property="ItemContainerStyle" Value="{StaticResource SourcesSystemTabItemStyle}"/>
+    <Style x:Key="SourcesSystemTabControlStyle" TargetType="TabControl">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
     </Style>
