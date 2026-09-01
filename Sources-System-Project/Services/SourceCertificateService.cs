@@ -136,4 +136,31 @@ public class SourceCertificateService : ISourceCertificateService
         File.Copy(sourcePath, destinationPath, overwrite: true);
         return true;
     }
+
+    public void DeleteAllCertificateFiles()
+    {
+        try
+        {
+            var folder = GetCertificatesFolder();
+            if (Directory.Exists(folder))
+            {
+                var files = Directory.GetFiles(folder);
+                foreach (var file in files)
+                {
+                    try
+                    {
+                        File.Delete(file);
+                    }
+                    catch (Exception ex)
+                    {
+                        LoggerService.LogWarning($"تعذر حذف ملف الشهادة '{file}' أثناء تنظيف الملفات: {ex.Message}");
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggerService.LogWarning($"تعذر الوصول لمجلد الشهادات لحذف الملفات: {ex.Message}");
+        }
+    }
 }

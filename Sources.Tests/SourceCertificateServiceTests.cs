@@ -367,4 +367,24 @@ public class SourceCertificateServiceTests : IClassFixture<SqliteInMemoryFixture
             try { Directory.Delete(tempFolder, recursive: true); } catch { }
         }
     }
+
+    [Fact]
+    public void DeleteAllCertificateFiles_DeletesAllFilesAndPreservesDirectory()
+    {
+        // Arrange
+        var file1 = Path.Combine(_testCertFolder, "cert1.pdf");
+        var file2 = Path.Combine(_testCertFolder, "cert2.pdf");
+        File.WriteAllText(file1, "Cert 1 Data");
+        File.WriteAllText(file2, "Cert 2 Data");
+
+        Assert.True(File.Exists(file1));
+        Assert.True(File.Exists(file2));
+
+        // Act
+        _sut.DeleteAllCertificateFiles();
+
+        // Assert
+        Assert.True(Directory.Exists(_testCertFolder));
+        Assert.Empty(Directory.GetFiles(_testCertFolder));
+    }
 }

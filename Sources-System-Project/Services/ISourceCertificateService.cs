@@ -11,4 +11,5 @@ public interface ISourceCertificateService
     bool DeleteCertificate(Guid certificateId, string deletedBy);
     bool DownloadCertificate(Guid certificateId, string destinationPath);
     string GetCertificatesFolder();
+    void DeleteAllCertificateFiles();
 }

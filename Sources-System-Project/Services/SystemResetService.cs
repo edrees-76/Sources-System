@@ -13,15 +13,18 @@ public class SystemResetService : ISystemResetService
     private readonly IDbContextFactory<AppDbContext> _dbFactory;
     private readonly IBackupService _backupService;
     private readonly ISystemSettingsService? _settingsService;
+    private readonly ISourceCertificateService? _certificateService;
 
     public SystemResetService(
         IDbContextFactory<AppDbContext> dbFactory,
         IBackupService backupService,
-        ISystemSettingsService? settingsService = null)
+        ISystemSettingsService? settingsService = null,
+        ISourceCertificateService? certificateService = null)
     {
         _dbFactory = dbFactory;
         _backupService = backupService;
         _settingsService = settingsService;
+        _certificateService = certificateService;
     }
 
     public async Task<(bool Success, string Message, string? BackupPath)> ResetSystemAsync(string executedByUsername)
@@ -40,19 +43,32 @@ public class SystemResetService : ISystemResetService
 
             try
             {
-                // 2. حذف الصفوف بالترتيب الآمن للمفاتيح الخارجية:
-                // AlertNotifications → BorrowRequests → SourceLocationHistories → SourceIsotopes → Sources → Locations → AuditLogs
+                // 2. حذف الصفوف بالترتيب الآمن للمفاتيح الخارجية مع تجاوز مرشحات الحذف الناعم:
+                // AlertNotifications → BorrowRequests → SourceLocationHistories → SourceIsotopes → LeakTestRecords → SourceCertificates → Sources → NeutronSources → Locations → AuditLogs
                 db.AlertNotifications.RemoveRange(db.AlertNotifications);
                 db.BorrowRequests.RemoveRange(db.BorrowRequests);
                 db.SourceLocationHistories.RemoveRange(db.SourceLocationHistories);
                 db.SourceIsotopes.RemoveRange(db.SourceIsotopes);
-                db.Sources.RemoveRange(db.Sources);
-                db.Locations.RemoveRange(db.Locations);
+                db.LeakTestRecords.RemoveRange(db.LeakTestRecords);
+                db.SourceCertificates.RemoveRange(db.SourceCertificates);
+                db.Sources.RemoveRange(db.Sources.IgnoreQueryFilters());
+                db.NeutronSources.RemoveRange(db.NeutronSources.IgnoreQueryFilters());
+                db.Locations.RemoveRange(db.Locations.IgnoreQueryFilters());
                 db.AuditLogs.RemoveRange(db.AuditLogs);
 
                 await db.SaveChangesAsync();
 
-                // 3. إعادة ضبط قيم إعدادات النظام للقيم الافتراضية الموحدة
+                // 3. حذف ملفات الشهادات الفعلية من القرص
+                try
+                {
+                    _certificateService?.DeleteAllCertificateFiles();
+                }
+                catch (Exception ex)
+                {
+                    LoggerService.LogWarning($"تعذر إكمال حذف ملفات الشهادات أثناء إعادة الضبط: {ex.Message}");
+                }
+
+                // 4. إعادة ضبط قيم إعدادات النظام للقيم الافتراضية الموحدة
                 var existingSettings = db.AppSettings.ToList();
                 foreach (var kvp in SystemSettingsDefaults.AllDefaults)
                 {
@@ -69,7 +85,7 @@ public class SystemResetService : ISystemResetService
 
                 await db.SaveChangesAsync();
 
-                // 4. تسجيل عملية التصفير في AuditLog بعد حذف السجلات القديمة (ليكون أول سجل)
+                // 5. تسجيل عملية التصفير في AuditLog بعد حذف السجلات القديمة (ليكون أول سجل)
                 var executingUser = db.Users.FirstOrDefault(u => u.Username == executedByUsername);
                 var resetLog = new AuditLog
                 {
@@ -79,7 +95,7 @@ public class SystemResetService : ISystemResetService
                     Action = "SystemReset",
                     TableName = "System",
                     RecordId = Guid.Empty,
-                    Details = $"إعادة ضبط المنظومة للوضع الافتراضي (Factory Reset) بواسطة {executedByUsername}. تم حفظ نسخة احتياطية في: {Path.GetFileName(backupResult.BackupPath)}"
+                    Details = $"إعادة ضبط المنظومة للوضع الافتراضي (Factory Reset) شاملاً المصادر المشعة والنيترونية وفحوصات التسرب والشهادات والسجلات المحذوفة بواسطة {executedByUsername}. تم حفظ نسخة احتياطية في: {Path.GetFileName(backupResult.BackupPath)}"
                 };
                 db.AuditLogs.Add(resetLog);
 
