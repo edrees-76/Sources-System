@@ -249,6 +249,11 @@
                                     <TextBlock Text="{DynamicResource DetailLabelAddedBy}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                                     <TextBlock Text="{Binding AddedByName}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
                                 </StackPanel>
+
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{DynamicResource DetailLabelGeneralCalibrationDate}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                    <TextBlock Text="{Binding CalibrationDateFormatted}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
+                                </StackPanel>
                             </Grid>
                         </Border>
                     </StackPanel>

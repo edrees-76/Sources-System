@@ -1273,6 +1273,7 @@
     <system:String x:Key="DetailLabelNotes">Notes:</system:String>
     <system:String x:Key="DetailLabelCreatedAt">Created Date:</system:String>
     <system:String x:Key="DetailLabelAddedBy">Added By:</system:String>
+    <system:String x:Key="DetailLabelGeneralCalibrationDate">General Inspection / Calibration Date:</system:String>
     <system:String x:Key="DetailLabelUpdatedAt">Last Updated:</system:String>
 
     <!-- Neutron Decay Status Messages & Field Fallbacks -->

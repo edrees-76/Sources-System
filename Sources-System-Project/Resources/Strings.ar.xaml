@@ -1270,6 +1270,7 @@
     <system:String x:Key="DetailLabelNotes">الملاحظات:</system:String>
     <system:String x:Key="DetailLabelCreatedAt">تاريخ التسجيل:</system:String>
     <system:String x:Key="DetailLabelAddedBy">أُضيف بواسطة:</system:String>
+    <system:String x:Key="DetailLabelGeneralCalibrationDate">تاريخ الفحص / المعايرة العامة:</system:String>
     <system:String x:Key="DetailLabelUpdatedAt">آخر تحديث:</system:String>
 
     <!-- Neutron Decay Status Messages & Field Fallbacks -->
