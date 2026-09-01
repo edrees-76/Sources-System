@@ -522,6 +522,47 @@ public class SourcesViewModelTests : IDisposable
         Assert.Equal("DEL-03", vm.PagedDeletedSources[2].SourceCode);
     }
 
+    [Fact]
+    public async Task SaveAsync_NewSource_ShowsDialogWithExtraOption()
+    {
+        // Arrange
+        DialogHelper.IsTestMode = true;
+        DialogHelper.ShowInfoWithExtraOptionResult = Sources.Views.AlertDialog.AlertResult.OK;
+        DialogHelper.LastMessage = null;
+
+        _mockSourceService.Setup(s => s.CreateSource(It.IsAny<Source>(), It.IsAny<List<SourceIsotope>>()))
+            .Returns((true, "تم إضافة المصدر بنجاح"));
+
+        var vm = CreateViewModel();
+        vm.IsNew = true;
+        vm.IsNeutronForm = false;
+        vm.EditSourceCode = "SRC-NEW-01";
+        vm.EditRadioisotopeId = Guid.NewGuid();
+        vm.EditInitialActivityText = "100";
+        vm.EditInitialActivity = 100;
+        vm.EditInitialUnitId = Guid.NewGuid();
+        vm.EditCurrentUnitId = Guid.NewGuid();
+        vm.EditCalibrationDate = DateTime.Today;
+        vm.EditLocationId = Guid.NewGuid();
+        vm.EditStatus = "InUse";
+
+        try
+        {
+            // Act
+            await vm.SaveCommand.ExecuteAsync(null);
+
+            // Assert
+            Assert.Equal("تم إضافة المصدر بنجاح", DialogHelper.LastMessage);
+            Assert.False(vm.IsEditing);
+        }
+        finally
+        {
+            DialogHelper.IsTestMode = false;
+            DialogHelper.ShowInfoWithExtraOptionResult = null;
+            DialogHelper.LastMessage = null;
+        }
+    }
+
     #endregion
 }
 

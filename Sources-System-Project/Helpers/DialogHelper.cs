@@ -81,5 +81,28 @@ namespace Sources.Helpers
             });
             return result;
         }
+
+        public static AlertDialog.AlertResult? ShowInfoWithExtraOptionResult { get; set; }
+
+        public static AlertDialog.AlertResult ShowInfoWithExtraOption(string message, string extraButtonText, string? title = null)
+        {
+            LastMessage = message;
+            LastTitle = title;
+            if (ShowInfoWithExtraOptionResult.HasValue) return ShowInfoWithExtraOptionResult.Value;
+            if (IsTestMode || Application.Current?.Dispatcher == null) return AlertDialog.AlertResult.OK;
+            AlertDialog.AlertResult result = AlertDialog.AlertResult.OK;
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var finalTitle = title ?? TranslationHelper.GetString("AlertTitle");
+                var dialog = new AlertDialog(message, finalTitle, "Info", extraButtonText: extraButtonText);
+                if (Application.Current.MainWindow != null && Application.Current.MainWindow != dialog)
+                {
+                    dialog.Owner = Application.Current.MainWindow;
+                }
+                dialog.ShowDialog();
+                result = dialog.Result;
+            });
+            return result;
+        }
     }
 }

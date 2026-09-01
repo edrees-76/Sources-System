@@ -55,12 +55,12 @@
 
         <!-- ════════ 2. TabControl Body ════════ -->
         <TabControl Grid.Row="1" SelectedIndex="{Binding SelectedTabIndex}"
-                    Style="{StaticResource MaterialDesignFilledTabControl}"
+                    Style="{StaticResource SourcesSystemTabControlStyle}"
                     Background="Transparent"
                     BorderThickness="0">
 
             <!-- ─── التبويب 1: التفاصيل ─── -->
-            <TabItem Header="{DynamicResource TabDetails}" Height="40" Padding="18,0">
+            <TabItem Header="{DynamicResource TabDetails}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,14,4,0">
                     <StackPanel>
                         <!-- ─── 1. بطاقة الهوية والنوع المرجعي ─── -->
@@ -241,7 +241,7 @@
             </TabItem>
 
             <!-- ─── التبويب 2: الشهادات والمستندات ─── -->
-            <TabItem Header="{DynamicResource TabCertificates}" Height="40" Padding="18,0">
+            <TabItem Header="{DynamicResource TabCertificates}">
                 <Grid Margin="0,14,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/> <!-- Action Bar -->

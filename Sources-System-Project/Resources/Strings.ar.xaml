@@ -1307,6 +1307,7 @@
     <system:String x:Key="MsgCertificateAttachedSuccess">تم إرفاق الشهادة بنجاح.</system:String>
     <system:String x:Key="MsgCertificateDeletedSuccess">تم حذف الشهادة بنجاح.</system:String>
     <system:String x:Key="MsgCertificateDownloadedSuccess">تم تنزيل نسخة من الشهادة بنجاح.</system:String>
+    <system:String x:Key="BtnAttachCertNow">إرفاق شهادة الآن؟</system:String>
 </ResourceDictionary>
 
 

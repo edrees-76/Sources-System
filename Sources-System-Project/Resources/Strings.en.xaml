@@ -1310,6 +1310,7 @@
     <system:String x:Key="MsgCertificateAttachedSuccess">Certificate attached successfully.</system:String>
     <system:String x:Key="MsgCertificateDeletedSuccess">Certificate deleted successfully.</system:String>
     <system:String x:Key="MsgCertificateDownloadedSuccess">A copy of the certificate was downloaded successfully.</system:String>
+    <system:String x:Key="BtnAttachCertNow">Attach Certificate Now?</system:String>
 </ResourceDictionary>
 
 

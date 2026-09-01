@@ -13,12 +13,13 @@ namespace Sources.Views
             OK,
             Yes,
             No,
-            Cancel
+            Cancel,
+            Extra
         }
 
         public AlertResult Result { get; private set; } = AlertResult.OK;
 
-        public AlertDialog(string message, string? title = null, string type = "Info", bool showCancel = false, bool isQuestion = false, string? imagePath = null)
+        public AlertDialog(string message, string? title = null, string type = "Info", bool showCancel = false, bool isQuestion = false, string? imagePath = null, string? extraButtonText = null)
         {
             InitializeComponent();
             MessageText.Text = message;
@@ -32,6 +33,13 @@ namespace Sources.Views
             else
             {
                 TitleText.Text = title;
+            }
+
+            // معالجة الزر الإضافي الاختياري
+            if (!string.IsNullOrWhiteSpace(extraButtonText))
+            {
+                ExtraButton.Content = extraButtonText;
+                ExtraButton.Visibility = Visibility.Visible;
             }
 
             // معالجة الصورة إذا وجدت
@@ -97,6 +105,12 @@ namespace Sources.Views
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             Result = AlertResult.OK;
+            Close();
+        }
+
+        private void ExtraButton_Click(object sender, RoutedEventArgs e)
+        {
+            Result = AlertResult.Extra;
             Close();
         }
 

@@ -915,6 +915,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                     Notes = EditNotes?.Trim()
                 };
 
+                var isCreatingNewNeutron = IsNew;
                 var neutronResult = IsNew 
                     ? (_neutronSourceService?.Create(neutronSource) ?? (false, "خدمة المصادر النيترونية غير متاحة"))
                     : (_neutronSourceService?.Update(neutronSource) ?? (false, "خدمة المصادر النيترونية غير متاحة"));
@@ -924,7 +925,36 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                     Message = neutronResult.Message;
                     HasMessage = true;
                     IsEditing = false;
-                    DialogHelper.ShowInfo(neutronResult.Message, TranslationHelper.GetString("TitleSuccess") ?? "نجاح العملية");
+
+                    if (isCreatingNewNeutron)
+                    {
+                        var dialogResult = DialogHelper.ShowInfoWithExtraOption(
+                            neutronResult.Message,
+                            TranslationHelper.GetString("BtnAttachCertNow") ?? "إرفاق شهادة الآن؟",
+                            TranslationHelper.GetString("TitleSuccess") ?? "نجاح العملية");
+
+                        if (dialogResult == AlertDialog.AlertResult.Extra)
+                        {
+                            var createdNeutron = _neutronSourceService?.GetById(neutronSource.Id) ?? neutronSource;
+                            var userService = App.ServiceProvider?.GetService(typeof(IUserService)) as IUserService;
+                            var certService = App.ServiceProvider?.GetService(typeof(ISourceCertificateService)) as ISourceCertificateService;
+                            var vm = new NeutronSourceDetailsViewModel(createdNeutron, userService, certService)
+                            {
+                                SelectedTabIndex = 1
+                            };
+                            var win = new NeutronSourceDetailsWindow(vm);
+                            if (System.Windows.Application.Current?.MainWindow != null && System.Windows.Application.Current.MainWindow.IsVisible)
+                            {
+                                win.Owner = System.Windows.Application.Current.MainWindow;
+                            }
+                            win.ShowDialog();
+                        }
+                    }
+                    else
+                    {
+                        DialogHelper.ShowInfo(neutronResult.Message, TranslationHelper.GetString("TitleSuccess") ?? "نجاح العملية");
+                    }
+
                     await LoadNeutronDataAsync();
                     WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
                 }
@@ -1065,13 +1095,42 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                 isotopes = IsotopeEntries.Select(e => e.ToSourceIsotope()).ToList();
             }
 
+            var isCreatingNew = IsNew;
             var result = IsNew ? _sourceService.CreateSource(source, isotopes) : _sourceService.UpdateSource(source, isotopes);
             if (result.Success)
             {
                 Message = result.Message;
                 HasMessage = true;
                 IsEditing = false;
-                DialogHelper.ShowInfo(result.Message, "نجاح العملية");
+
+                if (isCreatingNew)
+                {
+                    var dialogResult = DialogHelper.ShowInfoWithExtraOption(
+                        result.Message,
+                        TranslationHelper.GetString("BtnAttachCertNow") ?? "إرفاق شهادة الآن؟",
+                        TranslationHelper.GetString("TitleSuccess") ?? "نجاح العملية");
+
+                    if (dialogResult == AlertDialog.AlertResult.Extra)
+                    {
+                        var createdSource = _sourceService.GetSourceById(source.Id) ?? source;
+                        var certService = App.ServiceProvider?.GetService(typeof(ISourceCertificateService)) as ISourceCertificateService;
+                        var userService = App.ServiceProvider?.GetService(typeof(IUserService)) as IUserService;
+                        var vm = new SourceDetailsViewModel(createdSource, certService, userService)
+                        {
+                            SelectedTabIndex = 1
+                        };
+                        var win = new SourceDetailsWindow(vm);
+                        if (System.Windows.Application.Current?.MainWindow != null && System.Windows.Application.Current.MainWindow.IsVisible)
+                        {
+                            win.Owner = System.Windows.Application.Current.MainWindow;
+                        }
+                        win.ShowDialog();
+                    }
+                }
+                else
+                {
+                    DialogHelper.ShowInfo(result.Message, "نجاح العملية");
+                }
             }
             else
             {
