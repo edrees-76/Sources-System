@@ -897,5 +897,35 @@ public class NeutronSourcesUITests : IDisposable
         Assert.True(success, $"Parsing failed for: {input}");
         Assert.Equal(expected, result);
     }
+
+    [Theory]
+    [InlineData("11,000x2", 22000.0)]
+    [InlineData("11,000", 11000.0)]
+    [InlineData("1,1x10^7", 11000000.0)]
+    [InlineData("1,5", 1.5)]
+    [InlineData("1,234.56", 1234.56)]
+    [InlineData("11,000,000", 11000000.0)]
+    public void ScientificNotationParser_ThousandsCommaAndDecimals_ParsesCorrectly(string input, double expected)
+    {
+        // Act
+        bool success = ScientificNotationParser.TryParse(input, out double result);
+
+        // Assert
+        Assert.True(success, $"Parsing failed for input: {input}");
+        Assert.Equal(expected, result, 4);
+    }
+
+    [Fact]
+    public void ScientificNotationParser_ThousandsCommaWithMultiplication_AvoidsSilentTruncationBug()
+    {
+        // Act
+        bool success = ScientificNotationParser.TryParse("11,000x2", out double result);
+
+        // Assert
+        Assert.True(success);
+        Assert.Equal(22000.0, result);
+        Assert.NotEqual(22.0, result); // Must not treat 11,000 as 11.000 leading to 11 * 2 = 22
+    }
 }
+
 

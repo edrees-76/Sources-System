@@ -205,19 +205,27 @@ public static class ScientificNotationParser
         else if (str.Contains(','))
         {
             int commaIdx = str.IndexOf(',');
+            bool isThousandsComma = commaIdx > 0 
+                && char.IsDigit(str[commaIdx - 1]) 
+                && commaIdx + 3 < str.Length 
+                && char.IsDigit(str[commaIdx + 1]) 
+                && char.IsDigit(str[commaIdx + 2]) 
+                && char.IsDigit(str[commaIdx + 3]) 
+                && (commaIdx + 4 == str.Length || !char.IsDigit(str[commaIdx + 4]));
+
+            if (isThousandsComma)
+            {
+                // مثل 11,000 أو 11,000x2 -> فاصلة آلاف
+                str = str.Replace(",", "");
+            }
             // إذا كانت الفاصلة في صيغة علمية مثل 1,1x10^7 أو 1,1E7 -> هي فاصلة عشرية
-            if (str.Contains('x', StringComparison.OrdinalIgnoreCase) || 
+            else if (str.Contains('x', StringComparison.OrdinalIgnoreCase) || 
                 str.Contains('e', StringComparison.OrdinalIgnoreCase) || 
                 str.Contains('×') || 
                 str.Contains('*') ||
                 str.Contains('^'))
             {
                 str = str.Replace(',', '.');
-            }
-            else if (str.Length - commaIdx == 4 && commaIdx > 0 && char.IsDigit(str[commaIdx - 1]))
-            {
-                // مثل 11,000 -> فاصلة آلاف
-                str = str.Replace(",", "");
             }
             else
             {
