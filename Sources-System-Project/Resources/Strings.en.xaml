@@ -667,6 +667,7 @@
     <system:String x:Key="MsgErrMixUnitReq">Please select the unit for each isotope in the mixture.</system:String>
     <system:String x:Key="MsgErrCalibrationDateFuture">Calibration date cannot be in the future.</system:String>
     <system:String x:Key="MsgErrCannotDisableMultiIsotope">Cannot convert to a single-isotope source while multiple isotopes are saved for this source. Please remove extra isotopes from the mixture list first.</system:String>
+    <system:String x:Key="MsgErrSourceCodeDeleted">Source code ({0}) is used by a deleted source. Source codes cannot be reused to preserve the audit trail; you can restore the source from the Deletions section.</system:String>
 
     <!-- Details Labels -->
     <system:String x:Key="LabelSourceCode">Source Code:</system:String>

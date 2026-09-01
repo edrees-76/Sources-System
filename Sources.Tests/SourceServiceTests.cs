@@ -140,6 +140,57 @@ public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
     }
 
     [Fact]
+    public void CreateSource_WithDeletedSourceCode_ReturnsFalseWithSpecificMessage_WithoutThrowingException()
+    {
+        // Arrange: Create and soft delete a source
+        var sourceDeleted = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-DEL-REUSE");
+        var createResult = _sourceService.CreateSource(sourceDeleted);
+        Assert.True(createResult.Success);
+
+        var deleteResult = _sourceService.DeleteSource(sourceDeleted.Id);
+        Assert.True(deleteResult.Success);
+
+        var newSource = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, sourceCode: "SRC-DEL-REUSE");
+
+        // Act: Attempt to create a new source with the deleted source's code
+        var result = _sourceService.CreateSource(newSource);
+
+        // Assert: Must fail gracefully without throwing DbUpdateException/SqliteException
+        Assert.False(result.Success);
+        Assert.Contains("SRC-DEL-REUSE", result.Message);
+        Assert.Contains("مستخدم لمصدر محذوف", result.Message);
+        Assert.Contains("المحذوفات", result.Message);
+        Assert.Contains("حفاظاً على سجل التدقيق", result.Message);
+    }
+
+    [Fact]
+    public void CreateSource_WithCaseInsensitiveAndWhitespaceVariations_DetectsDuplicateActiveAndDeleted()
+    {
+        // Arrange: Active source
+        var activeSource = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-CASE-TEST");
+        _sourceService.CreateSource(activeSource);
+
+        // Act & Assert 1: Case and whitespace duplicate on ACTIVE source
+        var duplicateActive = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, sourceCode: "  src-case-test  ");
+        var activeResult = _sourceService.CreateSource(duplicateActive);
+        Assert.False(activeResult.Success);
+        Assert.Equal("كود المصدر موجود بالفعل", activeResult.Message);
+
+        // Arrange 2: Deleted source
+        var deletedSource = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-DEL-CASE");
+        _sourceService.CreateSource(deletedSource);
+        _sourceService.DeleteSource(deletedSource.Id);
+
+        // Act & Assert 2: Case and whitespace duplicate on DELETED source
+        var duplicateDeleted = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, sourceCode: "  src-del-case  ");
+        var deletedResult = _sourceService.CreateSource(duplicateDeleted);
+        Assert.False(deletedResult.Success);
+        Assert.Contains("src-del-case", deletedResult.Message);
+        Assert.Contains("مستخدم لمصدر محذوف", deletedResult.Message);
+        Assert.Contains("المحذوفات", deletedResult.Message);
+    }
+
+    [Fact]
     public void CreateSource_MultiIsotope_CalculatesTotalInitialAndCurrentActivityInBqAndConvertsCorrectly()
     {
         // Arrange
@@ -360,6 +411,50 @@ public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         // Assert
         Assert.False(result.Success);
         Assert.Equal("المصدر غير موجود", result.Message);
+    }
+
+    [Fact]
+    public void UpdateSource_WithDeletedSourceCode_ReturnsFalseWithSpecificMessage()
+    {
+        // Arrange: Source 1 active, Source 2 deleted
+        var activeSource = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-UP-ACT");
+        _sourceService.CreateSource(activeSource);
+
+        var deletedSource = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, sourceCode: "SRC-UP-DEL");
+        _sourceService.CreateSource(deletedSource);
+        _sourceService.DeleteSource(deletedSource.Id);
+
+        // Act: Attempt to update activeSource with code of deletedSource
+        activeSource.SourceCode = "SRC-UP-DEL";
+        var result = _sourceService.UpdateSource(activeSource);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Contains("SRC-UP-DEL", result.Message);
+        Assert.Contains("مستخدم لمصدر محذوف", result.Message);
+        Assert.Contains("المحذوفات", result.Message);
+    }
+
+    [Fact]
+    public void UpdateSource_KeepingSameSourceCode_Succeeds()
+    {
+        // Arrange
+        var source = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-SAME-CODE");
+        _sourceService.CreateSource(source);
+
+        // Act: Update with identical code (including case variations)
+        source.Notes = "Updated notes";
+        source.SourceCode = "  src-same-code  ";
+        var result = _sourceService.UpdateSource(source);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.Equal("تم تحديث المصدر بنجاح", result.Message);
+
+        var retrieved = _sourceService.GetSourceById(source.Id);
+        Assert.NotNull(retrieved);
+        Assert.Equal("src-same-code", retrieved.SourceCode);
+        Assert.Equal("Updated notes", retrieved.Notes);
     }
 
     #endregion

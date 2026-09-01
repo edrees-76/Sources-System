@@ -664,6 +664,7 @@
     <system:String x:Key="MsgErrMixUnitReq">الرجاء اختيار 'الوحدة' لكل نظير في الخليط.</system:String>
     <system:String x:Key="MsgErrCalibrationDateFuture">لا يمكن أن يكون تاريخ المعايرة في المستقبل.</system:String>
     <system:String x:Key="MsgErrCannotDisableMultiIsotope">لا يمكن التحويل لمصدر ذو نظير واحد بينما توجد أكثر من نظير محفوظ لهذا المصدر. الرجاء حذف النظائر الزائدة أولاً من قائمة الخليط.</system:String>
+    <system:String x:Key="MsgErrSourceCodeDeleted">كود المصدر ({0}) مستخدم لمصدر محذوف. لا يمكن إعادة استخدام كود المصدر حفاظاً على سجل التدقيق، ويمكنك استرجاع المصدر من قسم المحذوفات.</system:String>
 
     <!-- Details Labels -->
     <system:String x:Key="LabelSourceCode">كود المصدر:</system:String>

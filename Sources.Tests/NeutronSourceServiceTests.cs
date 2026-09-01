@@ -203,6 +203,49 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
     }
 
     [Fact]
+    public void Create_WithCodeOfDeletedNeutronSource_Succeeds_BecauseFilteredIndexAllowsReuse()
+    {
+        // Arrange: Soft-deleted neutron source with code "NS-REUSE-01"
+        var typeId = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Cf-252", NameEn = "Californium-252", HalfLife = 2.645 });
+            db.NeutronSources.Add(new NeutronSource
+            {
+                SourceCode = "NS-REUSE-01",
+                NeutronSourceTypeId = typeId,
+                EmissionRate = 1e6,
+                IsDeleted = true,
+                DeletedAt = DateTime.Now
+            });
+            db.SaveChanges();
+        }
+
+        var newNeutronSource = new NeutronSource
+        {
+            SourceCode = "NS-REUSE-01",
+            NeutronSourceTypeId = typeId,
+            EmissionRate = 2e6,
+            Status = "Storage"
+        };
+
+        // Act: Create new neutron source with the same code as the soft-deleted one
+        var (success, message) = _sut.Create(newNeutronSource);
+
+        // Assert: Must succeed because NeutronSources uses a filtered index (IsDeleted = 0)
+        Assert.True(success);
+        Assert.Contains("بنجاح", message);
+
+        using (var db = _fixture.CreateContext())
+        {
+            var sourcesWithCode = db.NeutronSources.IgnoreQueryFilters().Where(n => n.SourceCode == "NS-REUSE-01").ToList();
+            Assert.Equal(2, sourcesWithCode.Count);
+            Assert.Single(sourcesWithCode.Where(n => !n.IsDeleted));
+            Assert.Single(sourcesWithCode.Where(n => n.IsDeleted));
+        }
+    }
+
+    [Fact]
     public void Create_InvalidFields_ReturnsFailure()
     {
         var typeId = Guid.NewGuid();

@@ -66,8 +66,18 @@ public class SourceService : ISourceService
     public (bool Success, string Message) CreateSource(Source source, List<SourceIsotope>? isotopes = null)
     {
         using var db = _dbFactory.CreateDbContext();
-        if (db.Sources.Any(s => s.SourceCode == source.SourceCode))
+        var trimmedCode = source.SourceCode?.Trim() ?? string.Empty;
+        var lowerCode = trimmedCode.ToLower();
+
+        // 1. التحقق من وجود مصدر نشط بنفس الكود
+        if (db.Sources.Any(s => s.SourceCode.ToLower() == lowerCode))
             return (false, "كود المصدر موجود بالفعل");
+
+        // 2. التحقق من وجود مصدر محذوف بنفس الكود
+        if (db.Sources.IgnoreQueryFilters().Any(s => s.IsDeleted && s.SourceCode.ToLower() == lowerCode))
+            return (false, $"كود المصدر ({trimmedCode}) مستخدم لمصدر محذوف. لا يمكن إعادة استخدام كود المصدر حفاظاً على سجل التدقيق، ويمكنك استرجاع المصدر من قسم المحذوفات.");
+
+        source.SourceCode = trimmedCode;
 
         var isotopesDict = db.Radioisotopes.ToDictionary(r => r.Id);
         var unitsDict = db.ActivityUnits.ToDictionary(u => u.Id);
@@ -113,8 +123,16 @@ public class SourceService : ISourceService
         var existing = db.Sources.Include(s => s.SourceIsotopes).FirstOrDefault(s => s.Id == source.Id);
         if (existing == null) return (false, "المصدر غير موجود");
 
-        if (db.Sources.Any(s => s.Id != source.Id && s.SourceCode == source.SourceCode))
+        var trimmedCode = source.SourceCode?.Trim() ?? string.Empty;
+        var lowerCode = trimmedCode.ToLower();
+
+        // 1. التحقق من وجود مصدر نشط آخر بنفس الكود
+        if (db.Sources.Any(s => s.Id != source.Id && s.SourceCode.ToLower() == lowerCode))
             return (false, "كود المصدر موجود بالفعل");
+
+        // 2. التحقق من وجود مصدر محذوف آخر بنفس الكود
+        if (db.Sources.IgnoreQueryFilters().Any(s => s.IsDeleted && s.Id != source.Id && s.SourceCode.ToLower() == lowerCode))
+            return (false, $"كود المصدر ({trimmedCode}) مستخدم لمصدر محذوف. لا يمكن إعادة استخدام كود المصدر حفاظاً على سجل التدقيق، ويمكنك استرجاع المصدر من قسم المحذوفات.");
 
         // منع تعديل الموقع أو الحالة لمصدر قيد الاستعارة النشطة
         bool hasActiveBorrow = db.BorrowRequests.Any(b => b.SourceId == source.Id && (b.Status == "Delivered" || b.Status == "Overdue"));
@@ -137,7 +155,7 @@ public class SourceService : ISourceService
             });
         }
 
-        existing.SourceCode = source.SourceCode;
+        existing.SourceCode = trimmedCode;
         existing.RadioisotopeId = source.RadioisotopeId;
         existing.SerialNumber = source.SerialNumber;
         existing.Manufacturer = source.Manufacturer;
