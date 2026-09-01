@@ -46,8 +46,7 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
     public string TargetMaterial => !string.IsNullOrWhiteSpace(NeutronSource.NeutronSourceType?.TargetMaterial) ? NeutronSource.NeutronSourceType.TargetMaterial : "-";
     public string ParentNuclide => !string.IsNullOrWhiteSpace(NeutronSource.NeutronSourceType?.ParentNuclide) ? NeutronSource.NeutronSourceType.ParentNuclide : "-";
     public string HalfLifeDisplay => NeutronSource.NeutronSourceType != null && NeutronSource.NeutronSourceType.HalfLife > 0 ? $"{NeutronSource.NeutronSourceType.HalfLife} {NeutronSource.NeutronSourceType.HalfLifeUnit}" : "-";
-    public string EnergyDisplay => NeutronSource.NeutronSourceType?.AverageNeutronEnergyMeV.HasValue == true ? $"{NeutronSource.NeutronSourceType.AverageNeutronEnergyMeV.Value:N2} MeV" : "-";
-    public string YieldDisplay => NeutronSource.NeutronSourceType?.TypicalNeutronYield.HasValue == true ? $"{ScientificNotationParser.FormatScientific(NeutronSource.NeutronSourceType.TypicalNeutronYield.Value)} n/s" : "-";
+    public string EnergyDisplay => NeutronSource.NeutronSourceType?.MeanNeutronEnergyMeV.HasValue == true ? $"{NeutronSource.NeutronSourceType.MeanNeutronEnergyMeV.Value:N2} MeV" : "-";
 
     public string EmissionRateFormatted => NeutronSource.EmissionRateFormatted;
     public string UncertaintyFormatted => NeutronSource.RelativeExpandedUncertaintyPercent.HasValue ? $"{NeutronSource.RelativeExpandedUncertaintyPercent.Value:N1}%" : "-";

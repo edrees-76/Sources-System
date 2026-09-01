@@ -91,7 +91,7 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
             SourceCode = "NS-RESET-01",
             NeutronSourceTypeId = neutronType.Id,
             LocationId = loc.Id,
-            EmissionRate = 50000.0,
+            CalibratedEmissionRate = 50000.0,
             Status = "Storage"
         };
 
@@ -101,7 +101,7 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
             SourceCode = "NS-RESET-DEL",
             NeutronSourceTypeId = neutronType.Id,
             LocationId = loc.Id,
-            EmissionRate = 20000.0,
+            CalibratedEmissionRate = 20000.0,
             Status = "Storage",
             IsDeleted = true
         };
@@ -235,7 +235,7 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
             Id = Guid.NewGuid(),
             SourceCode = "NS-ACT-01",
             NeutronSourceTypeId = neutronType.Id,
-            EmissionRate = 1000.0,
+            CalibratedEmissionRate = 1000.0,
             Status = "Storage"
         };
 
@@ -244,7 +244,7 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
             Id = Guid.NewGuid(),
             SourceCode = "NS-DEL-01",
             NeutronSourceTypeId = neutronType.Id,
-            EmissionRate = 2000.0,
+            CalibratedEmissionRate = 2000.0,
             Status = "Storage",
             IsDeleted = true
         };
@@ -393,7 +393,7 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
             Id = Guid.NewGuid(),
             SourceCode = "NS-PRESERVE-01",
             NeutronSourceTypeId = neutronType.Id,
-            EmissionRate = 5000.0,
+            CalibratedEmissionRate = 5000.0,
             Status = "Storage"
         };
 

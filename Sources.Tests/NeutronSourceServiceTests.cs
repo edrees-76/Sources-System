@@ -45,8 +45,8 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
             db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Am-241/Be", NameEn = "Americium-Beryllium", HalfLife = 432.2 });
             db.Locations.Add(new Location { Id = locId, LocationName = "Lab 101" });
             db.NeutronSources.AddRange(
-                new NeutronSource { SourceCode = "NS-001", NeutronSourceTypeId = typeId, LocationId = locId, EmissionRate = 2.2e6, IsDeleted = false },
-                new NeutronSource { SourceCode = "NS-002", NeutronSourceTypeId = typeId, LocationId = locId, EmissionRate = 1.1e6, IsDeleted = true }
+                new NeutronSource { SourceCode = "NS-001", NeutronSourceTypeId = typeId, LocationId = locId, CalibratedEmissionRate = 2.2e6, IsDeleted = false },
+                new NeutronSource { SourceCode = "NS-002", NeutronSourceTypeId = typeId, LocationId = locId, CalibratedEmissionRate = 1.1e6, IsDeleted = true }
             );
             db.SaveChanges();
         }
@@ -72,8 +72,8 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
         {
             db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Cf-252", NameEn = "Californium-252", HalfLife = 2.645 });
             db.NeutronSources.AddRange(
-                new NeutronSource { SourceCode = "NS-001", NeutronSourceTypeId = typeId, EmissionRate = 1e6, IsDeleted = false },
-                new NeutronSource { SourceCode = "NS-002", NeutronSourceTypeId = typeId, EmissionRate = 2e6, IsDeleted = true, DeletedAt = DateTime.Now }
+                new NeutronSource { SourceCode = "NS-001", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, IsDeleted = false },
+                new NeutronSource { SourceCode = "NS-002", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 2e6, IsDeleted = true, DeletedAt = DateTime.Now }
             );
             db.SaveChanges();
         }
@@ -96,7 +96,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
         using (var db = _fixture.CreateContext())
         {
             db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Pu-239/Be", NameEn = "Plutonium-Beryllium", HalfLife = 24110 });
-            db.NeutronSources.Add(new NeutronSource { Id = id, SourceCode = "NS-100", SerialNumber = "SN-999", NeutronSourceTypeId = typeId, EmissionRate = 5e5 });
+            db.NeutronSources.Add(new NeutronSource { Id = id, SourceCode = "NS-100", SerialNumber = "SN-999", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 5e5 });
             db.SaveChanges();
         }
 
@@ -123,8 +123,8 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
             db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Cf-252", NameEn = "Cf-252", HalfLife = 2.645 });
             db.Locations.AddRange(new Location { Id = loc1, LocationName = "L1" }, new Location { Id = loc2, LocationName = "L2" });
             db.NeutronSources.AddRange(
-                new NeutronSource { SourceCode = "NS-1", NeutronSourceTypeId = typeId, LocationId = loc1, EmissionRate = 1e6 },
-                new NeutronSource { SourceCode = "NS-2", NeutronSourceTypeId = typeId, LocationId = loc2, EmissionRate = 2e6 }
+                new NeutronSource { SourceCode = "NS-1", NeutronSourceTypeId = typeId, LocationId = loc1, CalibratedEmissionRate = 1e6 },
+                new NeutronSource { SourceCode = "NS-2", NeutronSourceTypeId = typeId, LocationId = loc2, CalibratedEmissionRate = 2e6 }
             );
             db.SaveChanges();
         }
@@ -156,7 +156,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
             SerialNumber = "SN-12345",
             NeutronSourceTypeId = typeId,
             LocationId = locId,
-            EmissionRate = 2.2e6,
+            CalibratedEmissionRate = 2.2e6,
             RelativeExpandedUncertaintyPercent = 3.5,
             CalibrationDate = new DateTime(2025, 1, 1),
             Status = "Storage"
@@ -173,7 +173,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
         {
             var saved = db.NeutronSources.FirstOrDefault(n => n.SourceCode == "NS-2026-001");
             Assert.NotNull(saved);
-            Assert.Equal(2.2e6, saved!.EmissionRate);
+            Assert.Equal(2.2e6, saved!.CalibratedEmissionRate);
             Assert.Equal("SN-12345", saved.SerialNumber);
         }
 
@@ -188,11 +188,11 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
         using (var db = _fixture.CreateContext())
         {
             db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Am-241/Be", NameEn = "Am-Be", HalfLife = 432.2 });
-            db.NeutronSources.Add(new NeutronSource { SourceCode = "NS-001", NeutronSourceTypeId = typeId, EmissionRate = 1e6 });
+            db.NeutronSources.Add(new NeutronSource { SourceCode = "NS-001", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6 });
             db.SaveChanges();
         }
 
-        var duplicate = new NeutronSource { SourceCode = "ns-001", NeutronSourceTypeId = typeId, EmissionRate = 2e6 };
+        var duplicate = new NeutronSource { SourceCode = "ns-001", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 2e6 };
 
         // Act
         var (success, message) = _sut.Create(duplicate);
@@ -214,7 +214,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
             {
                 SourceCode = "NS-REUSE-01",
                 NeutronSourceTypeId = typeId,
-                EmissionRate = 1e6,
+                CalibratedEmissionRate = 1e6,
                 IsDeleted = true,
                 DeletedAt = DateTime.Now
             });
@@ -225,7 +225,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
         {
             SourceCode = "NS-REUSE-01",
             NeutronSourceTypeId = typeId,
-            EmissionRate = 2e6,
+            CalibratedEmissionRate = 2e6,
             Status = "Storage"
         };
 
@@ -257,11 +257,11 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
 
         // Act & Assert
         Assert.False(_sut.Create(null!).Success);
-        Assert.False(_sut.Create(new NeutronSource { SourceCode = "", NeutronSourceTypeId = typeId, EmissionRate = 1e6 }).Success);
-        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-1", NeutronSourceTypeId = typeId, EmissionRate = 0 }).Success);
-        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-1", NeutronSourceTypeId = typeId, EmissionRate = -100 }).Success);
-        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-1", NeutronSourceTypeId = Guid.NewGuid(), EmissionRate = 1e6 }).Success);
-        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-1", NeutronSourceTypeId = typeId, LocationId = Guid.NewGuid(), EmissionRate = 1e6 }).Success);
+        Assert.False(_sut.Create(new NeutronSource { SourceCode = "", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6 }).Success);
+        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-1", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 0 }).Success);
+        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-1", NeutronSourceTypeId = typeId, CalibratedEmissionRate = -100 }).Success);
+        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-1", NeutronSourceTypeId = Guid.NewGuid(), CalibratedEmissionRate = 1e6 }).Success);
+        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-1", NeutronSourceTypeId = typeId, LocationId = Guid.NewGuid(), CalibratedEmissionRate = 1e6 }).Success);
     }
 
     [Fact]
@@ -273,11 +273,11 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
         using (var db = _fixture.CreateContext())
         {
             db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Cf-252", NameEn = "Cf-252", HalfLife = 2.645 });
-            db.NeutronSources.Add(new NeutronSource { Id = id, SourceCode = "NS-OLD", NeutronSourceTypeId = typeId, EmissionRate = 1e6, Status = "Storage" });
+            db.NeutronSources.Add(new NeutronSource { Id = id, SourceCode = "NS-OLD", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, Status = "Storage" });
             db.SaveChanges();
         }
 
-        var updateItem = new NeutronSource { Id = id, SourceCode = "NS-NEW", NeutronSourceTypeId = typeId, EmissionRate = 3.5e6, Status = "InUse" };
+        var updateItem = new NeutronSource { Id = id, SourceCode = "NS-NEW", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 3.5e6, Status = "InUse" };
 
         // Act
         var (success, message) = _sut.Update(updateItem);
@@ -289,7 +289,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
             var updated = db.NeutronSources.Find(id);
             Assert.NotNull(updated);
             Assert.Equal("NS-NEW", updated!.SourceCode);
-            Assert.Equal(3.5e6, updated.EmissionRate);
+            Assert.Equal(3.5e6, updated.CalibratedEmissionRate);
             Assert.Equal("InUse", updated.Status);
         }
 
@@ -305,7 +305,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
         using (var db = _fixture.CreateContext())
         {
             db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Cf-252", NameEn = "Cf-252", HalfLife = 2.645 });
-            db.NeutronSources.Add(new NeutronSource { Id = id, SourceCode = "NS-DEL", NeutronSourceTypeId = typeId, EmissionRate = 1e6 });
+            db.NeutronSources.Add(new NeutronSource { Id = id, SourceCode = "NS-DEL", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6 });
             db.SaveChanges();
         }
 
@@ -338,7 +338,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
         using (var db = _fixture.CreateContext())
         {
             db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Am-241/Be", NameEn = "Am-Be", HalfLife = 432.2 });
-            db.NeutronSources.Add(new NeutronSource { Id = id, SourceCode = "NS-REST", NeutronSourceTypeId = typeId, EmissionRate = 1e6, IsDeleted = true, DeletedAt = DateTime.Now });
+            db.NeutronSources.Add(new NeutronSource { Id = id, SourceCode = "NS-REST", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, IsDeleted = true, DeletedAt = DateTime.Now });
             db.SaveChanges();
         }
 
@@ -369,7 +369,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
         {
             db.Locations.Add(new Location { Id = locId, LocationName = "Neutron Bunker" });
             db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Pu-238/Be", NameEn = "Pu-238/Be", HalfLife = 87.7 });
-            db.NeutronSources.Add(new NeutronSource { SourceCode = "NS-BUNKER-1", LocationId = locId, NeutronSourceTypeId = typeId, EmissionRate = 5e6 });
+            db.NeutronSources.Add(new NeutronSource { SourceCode = "NS-BUNKER-1", LocationId = locId, NeutronSourceTypeId = typeId, CalibratedEmissionRate = 5e6 });
             db.SaveChanges();
         }
 
@@ -398,7 +398,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
         {
             db.Locations.Add(new Location { Id = locId, LocationName = "Old Neutron Lab" });
             db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Pu-238/Be", NameEn = "Pu-238/Be", HalfLife = 87.7 });
-            db.NeutronSources.Add(new NeutronSource { SourceCode = "NS-OLD-1", LocationId = locId, NeutronSourceTypeId = typeId, EmissionRate = 5e6, IsDeleted = true });
+            db.NeutronSources.Add(new NeutronSource { SourceCode = "NS-OLD-1", LocationId = locId, NeutronSourceTypeId = typeId, CalibratedEmissionRate = 5e6, IsDeleted = true });
             db.SaveChanges();
         }
 

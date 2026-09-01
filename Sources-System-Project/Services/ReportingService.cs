@@ -1389,7 +1389,7 @@ namespace Sources.Services
                     worksheet.Cell(row, 1).Value = index++;
                     worksheet.Cell(row, 2).Value = s.SourceCode;
                     worksheet.Cell(row, 3).Value = s.NeutronSourceType?.Code ?? "-";
-                    worksheet.Cell(row, 4).Value = s.EmissionRate;
+                    worksheet.Cell(row, 4).Value = s.CalibratedEmissionRate;
                     worksheet.Cell(row, 4).Style.NumberFormat.Format = "#,##0.00";
                     if (s.RelativeExpandedUncertaintyPercent.HasValue)
                     {
@@ -1474,7 +1474,7 @@ namespace Sources.Services
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(i.ToString());
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(s.SourceCode);
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(s.NeutronSourceType?.Code ?? "-");
-                                        table.Cell().Element(c => CellStyle(c, bg)).Text(ScientificNotationParser.FormatScientific(s.EmissionRate));
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(ScientificNotationParser.FormatScientific(s.CalibratedEmissionRate));
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(s.RelativeExpandedUncertaintyPercent.HasValue ? $"{s.RelativeExpandedUncertaintyPercent:N1}%" : "-");
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(s.Location?.LocationName ?? "-");
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(s.ArabicStatus);

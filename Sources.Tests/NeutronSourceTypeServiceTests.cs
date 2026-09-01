@@ -230,7 +230,7 @@ public class NeutronSourceTypeServiceTests : IClassFixture<SqliteInMemoryFixture
         {
             var nType = new NeutronSourceType { Id = typeId, Code = "Am-241/Be", NameEn = "Americium-Beryllium", HalfLife = 432.2 };
             db.NeutronSourceTypes.Add(nType);
-            db.NeutronSources.Add(new NeutronSource { SourceCode = "NS-001", NeutronSourceTypeId = typeId, EmissionRate = 2.2e6 });
+            db.NeutronSources.Add(new NeutronSource { SourceCode = "NS-001", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 2.2e6 });
             db.SaveChanges();
         }
 

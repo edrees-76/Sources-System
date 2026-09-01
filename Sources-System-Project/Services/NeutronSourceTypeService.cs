@@ -107,8 +107,9 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
         existing.ParentNuclide = item.ParentNuclide?.Trim();
         existing.HalfLife = item.HalfLife;
         existing.HalfLifeUnit = string.IsNullOrWhiteSpace(item.HalfLifeUnit) ? "years" : item.HalfLifeUnit.Trim();
-        existing.AverageNeutronEnergyMeV = item.AverageNeutronEnergyMeV;
-        existing.TypicalNeutronYield = item.TypicalNeutronYield;
+        existing.MeanNeutronEnergyMeV = item.MeanNeutronEnergyMeV;
+        existing.AmbientDoseConversionCoefficient = item.AmbientDoseConversionCoefficient;
+        existing.StandardReference = item.StandardReference;
         existing.Notes = item.Notes;
 
         db.SaveChanges();

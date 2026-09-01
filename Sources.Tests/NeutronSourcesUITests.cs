@@ -41,8 +41,7 @@ public class NeutronSourcesUITests : IDisposable
                 ReactionType = "(α,n)",
                 HalfLife = 432.2,
                 HalfLifeUnit = "years",
-                AverageNeutronEnergyMeV = 4.2,
-                TypicalNeutronYield = 2.2e6
+                MeanNeutronEnergyMeV = 4.2
             });
             db.Locations.Add(new Location
             {
@@ -84,7 +83,7 @@ public class NeutronSourcesUITests : IDisposable
                 SourceCode = "NS-001",
                 NeutronSourceTypeId = _neutronTypeId,
                 NeutronSourceType = new NeutronSourceType { Code = "Am-241/Be" },
-                EmissionRate = 2200000,
+                CalibratedEmissionRate = 2200000,
                 Status = "Storage"
             }
         });
@@ -157,7 +156,7 @@ public class NeutronSourcesUITests : IDisposable
         mockNeutronService.Verify(s => s.Create(It.Is<NeutronSource>(n =>
             n.SourceCode == "NS-TEST-1" &&
             n.NeutronSourceTypeId == _neutronTypeId &&
-            n.EmissionRate == 5000000 &&
+            n.CalibratedEmissionRate == 5000000 &&
             n.RelativeExpandedUncertaintyPercent == 2.5)), Times.Once);
         Assert.False(vm.IsEditing);
     }
@@ -179,7 +178,7 @@ public class NeutronSourcesUITests : IDisposable
             Id = existingId,
             SourceCode = "NS-EDIT-1",
             NeutronSourceTypeId = _neutronTypeId,
-            EmissionRate = 3000000,
+            CalibratedEmissionRate = 3000000,
             RelativeExpandedUncertaintyPercent = 4.0,
             LocationId = _locationId,
             CalibrationDate = DateTime.Today,
@@ -212,7 +211,7 @@ public class NeutronSourcesUITests : IDisposable
         // Assert
         mockNeutronService.Verify(s => s.Update(It.Is<NeutronSource>(n =>
             n.Id == existingId &&
-            n.EmissionRate == 4500000)), Times.Once);
+            n.CalibratedEmissionRate == 4500000)), Times.Once);
         Assert.False(vm.IsEditing);
     }
 
@@ -266,7 +265,7 @@ public class NeutronSourcesUITests : IDisposable
                 Id = deletedId,
                 SourceCode = "NS-DELETED-1",
                 NeutronSourceTypeId = _neutronTypeId,
-                EmissionRate = 1000000,
+                CalibratedEmissionRate = 1000000,
                 IsDeleted = true,
                 DeletedAt = DateTime.Now.AddDays(-1)
             });
@@ -318,7 +317,7 @@ public class NeutronSourcesUITests : IDisposable
                 Id = Guid.NewGuid(),
                 SourceCode = "NS-REP-01",
                 NeutronSourceTypeId = _neutronTypeId,
-                EmissionRate = 2400000,
+                CalibratedEmissionRate = 2400000,
                 RelativeExpandedUncertaintyPercent = 3.0,
                 Status = "Storage",
                 IsDeleted = false
@@ -340,7 +339,7 @@ public class NeutronSourcesUITests : IDisposable
                 SourceCode = "NS-REP-01",
                 NeutronSourceTypeId = _neutronTypeId,
                 NeutronSourceType = new NeutronSourceType { Code = "Am-241/Be", NameAr = "أمريسيوم" },
-                EmissionRate = 2400000,
+                CalibratedEmissionRate = 2400000,
                 RelativeExpandedUncertaintyPercent = 3.0,
                 Status = "Storage"
             }
@@ -378,7 +377,7 @@ public class NeutronSourcesUITests : IDisposable
                 SourceCode = "NS-EXP-01",
                 NeutronSourceTypeId = _neutronTypeId,
                 NeutronSourceType = new NeutronSourceType { Code = "Am-241/Be", NameAr = "أمريسيوم" },
-                EmissionRate = 2500000,
+                CalibratedEmissionRate = 2500000,
                 RelativeExpandedUncertaintyPercent = 2.8,
                 Status = "Storage",
                 CalibrationDate = DateTime.Today
@@ -423,7 +422,7 @@ public class NeutronSourcesUITests : IDisposable
         {
             Id = Guid.NewGuid(),
             SourceCode = "NS-USR-01",
-            EmissionRate = 123456,
+            CalibratedEmissionRate = 123456,
             AddedBy = user.Id,
             AddedByUser = user,
             CreatedAt = DateTime.Now
@@ -465,7 +464,7 @@ public class NeutronSourcesUITests : IDisposable
                 Id = Guid.NewGuid(),
                 SourceCode = "NS-LOC-01",
                 LocationId = _locationId,
-                EmissionRate = 2000000,
+                CalibratedEmissionRate = 2000000,
                 Status = "Storage",
                 NeutronSourceType = new NeutronSourceType { Code = "Cf-252", NameAr = "كاليفورنيوم" }
             },
@@ -474,7 +473,7 @@ public class NeutronSourcesUITests : IDisposable
                 Id = Guid.NewGuid(),
                 SourceCode = "NS-LOC-02",
                 LocationId = _locationId,
-                EmissionRate = 3500000,
+                CalibratedEmissionRate = 3500000,
                 Status = "InUse",
                 NeutronSourceType = new NeutronSourceType { Code = "Am-241/Be", NameAr = "أمريسيوم" }
             }
@@ -581,7 +580,7 @@ public class NeutronSourcesUITests : IDisposable
                 Id = Guid.NewGuid(),
                 SourceCode = "NS-STOR-01",
                 LocationId = _locationId,
-                EmissionRate = 2000000,
+                CalibratedEmissionRate = 2000000,
                 Status = "Storage",
                 NeutronSourceType = new NeutronSourceType { Code = "Cf-252", NameAr = "كاليفورنيوم" }
             },
@@ -590,7 +589,7 @@ public class NeutronSourcesUITests : IDisposable
                 Id = Guid.NewGuid(),
                 SourceCode = "NS-USE-01",
                 LocationId = _locationId,
-                EmissionRate = 3500000,
+                CalibratedEmissionRate = 3500000,
                 Status = "InUse",
                 NeutronSourceType = new NeutronSourceType { Code = "Am-241/Be", NameAr = "أمريسيوم" }
             }
@@ -626,20 +625,20 @@ public class NeutronSourcesUITests : IDisposable
     }
 
     [Fact]
-    public void NeutronSourceTypesViewModel_OnEditNeutronYieldTextChanged_InvalidInputResetsToNull()
+    public void NeutronSourceTypesViewModel_OnEditAverageEnergyTextChanged_InvalidInputResetsToNull()
     {
         // Arrange
         var mockService = new Mock<INeutronSourceTypeService>();
         mockService.Setup(s => s.GetAll()).Returns(new List<NeutronSourceType>());
         var vm = new NeutronSourceTypesViewModel(mockService.Object);
 
-        // Act 1: valid number (scientific notation)
-        vm.EditNeutronYieldText = "2.2e6";
-        Assert.Equal(2200000, vm.EditNeutronYield);
+        // Act 1: valid number
+        vm.EditAverageEnergyText = "4.2";
+        Assert.Equal(4.2, vm.EditAverageEnergyMev);
 
         // Act 2: invalid string input
-        vm.EditNeutronYieldText = "invalid-yield-value";
-        Assert.Null(vm.EditNeutronYield);
+        vm.EditAverageEnergyText = "invalid-energy-value";
+        Assert.Null(vm.EditAverageEnergyMev);
 
         // Act 3: edit existing type and then set invalid input
         var existing = new NeutronSourceType
@@ -647,13 +646,13 @@ public class NeutronSourcesUITests : IDisposable
             Id = Guid.NewGuid(),
             Code = "Am-241/Be",
             HalfLife = 432.2,
-            TypicalNeutronYield = 2200000
+            MeanNeutronEnergyMeV = 4.2
         };
         vm.Edit(existing);
-        Assert.Equal(2200000, vm.EditNeutronYield);
+        Assert.Equal(4.2, vm.EditAverageEnergyMev);
 
-        vm.EditNeutronYieldText = "not-a-number";
-        Assert.Null(vm.EditNeutronYield);
+        vm.EditAverageEnergyText = "not-a-number";
+        Assert.Null(vm.EditAverageEnergyMev);
     }
 
     [Theory]
@@ -847,11 +846,11 @@ public class NeutronSourcesUITests : IDisposable
         {
             Id = Guid.NewGuid(),
             SourceCode = "NS-DISP-1",
-            EmissionRate = 11000000.0
+            CalibratedEmissionRate = 11000000.0
         };
 
         // Assert: Numeric value is untouched
-        Assert.Equal(11000000.0, source.EmissionRate);
+        Assert.Equal(11000000.0, source.CalibratedEmissionRate);
 
         // Assert: Formatted display uses superscripts
         Assert.Equal("1.1×10⁷ n/s", source.DisplayEmissionRate);

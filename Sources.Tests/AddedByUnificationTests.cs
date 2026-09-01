@@ -153,7 +153,7 @@ public class AddedByUnificationTests : IClassFixture<SqliteInMemoryFixture>, IDi
             SourceCode = "NS-ADD-01",
             NeutronSourceTypeId = _nst.Id,
             LocationId = _loc.Id,
-            EmissionRate = 5.5e5
+            CalibratedEmissionRate = 5.5e5
         };
         var (nOk, _) = _neutronSourceService.Create(ns);
         Assert.True(nOk);
@@ -244,7 +244,7 @@ public class AddedByUnificationTests : IClassFixture<SqliteInMemoryFixture>, IDi
             SourceCode = "NS-GHOST-01",
             NeutronSourceTypeId = _nst.Id,
             LocationId = _loc.Id,
-            EmissionRate = 1e5
+            CalibratedEmissionRate = 1e5
         };
         var (nOk, _) = _neutronSourceService.Create(ns);
         Assert.True(nOk);
@@ -362,7 +362,7 @@ public class AddedByUnificationTests : IClassFixture<SqliteInMemoryFixture>, IDi
             SourceCode = "NS-FK-DEL-01",
             NeutronSourceTypeId = _nst.Id,
             LocationId = _loc.Id,
-            EmissionRate = 2e5,
+            CalibratedEmissionRate = 2e5,
             AddedBy = tempUserId
         };
 
@@ -444,7 +444,7 @@ public class AddedByUnificationTests : IClassFixture<SqliteInMemoryFixture>, IDi
             SourceCode = "NS-INVALID-FK-01",
             NeutronSourceTypeId = _nst.Id,
             LocationId = _loc.Id,
-            EmissionRate = 1e4,
+            CalibratedEmissionRate = 1e4,
             AddedBy = nonExistentUserId // مستخدم غير موجود
         };
 

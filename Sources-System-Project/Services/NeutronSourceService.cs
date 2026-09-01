@@ -102,7 +102,7 @@ public class NeutronSourceService : INeutronSourceService
     {
         if (item == null) return (false, "بيانات المصدر النيتروني غير صالحة");
         if (string.IsNullOrWhiteSpace(item.SourceCode)) return (false, "كود المصدر مطلوب");
-        if (item.EmissionRate <= 0) return (false, "معدل انبعاث النيترونات يجب أن يكون أكبر من صفر");
+        if (item.CalibratedEmissionRate <= 0) return (false, "معدل انبعاث النيترونات يجب أن يكون أكبر من صفر");
         if (item.NeutronSourceTypeId == Guid.Empty) return (false, "نوع المصدر النيتروني مطلوب");
 
         using var db = _dbFactory.CreateDbContext();
@@ -139,7 +139,7 @@ public class NeutronSourceService : INeutronSourceService
     {
         if (item == null) return (false, "بيانات المصدر النيتروني غير صالحة");
         if (string.IsNullOrWhiteSpace(item.SourceCode)) return (false, "كود المصدر مطلوب");
-        if (item.EmissionRate <= 0) return (false, "معدل انبعاث النيترونات يجب أن يكون أكبر من صفر");
+        if (item.CalibratedEmissionRate <= 0) return (false, "معدل انبعاث النيترونات يجب أن يكون أكبر من صفر");
         if (item.NeutronSourceTypeId == Guid.Empty) return (false, "نوع المصدر النيتروني مطلوب");
 
         using var db = _dbFactory.CreateDbContext();
@@ -162,9 +162,12 @@ public class NeutronSourceService : INeutronSourceService
         existing.SerialNumber = item.SerialNumber?.Trim();
         existing.NeutronSourceTypeId = item.NeutronSourceTypeId;
         existing.LocationId = item.LocationId;
-        existing.EmissionRate = item.EmissionRate;
+        existing.CalibratedEmissionRate = item.CalibratedEmissionRate;
         existing.RelativeExpandedUncertaintyPercent = item.RelativeExpandedUncertaintyPercent;
         existing.CalibrationDate = item.CalibrationDate;
+        existing.EmissionCalibrationDate = item.EmissionCalibrationDate;
+        existing.CalibrationReference = item.CalibrationReference;
+        existing.AnisotropyFactor = item.AnisotropyFactor;
         existing.Status = string.IsNullOrWhiteSpace(item.Status) ? "Storage" : item.Status.Trim();
         existing.Notes = item.Notes;
 

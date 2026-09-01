@@ -952,9 +952,22 @@ public class NeutronSourceType
     [MaxLength(20)]
     public string HalfLifeUnit { get; set; } = "years";
 
-    public double? AverageNeutronEnergyMeV { get; set; }
+    /// <summary>
+    /// متوسط طاقة النيوترونات المرجَّح بالتدفق بوحدة MeV كما يعرّفه ISO 8529-1:2001 §3.13
+    /// (وليس المرجَّح بمكافئ الجرعة §3.14).
+    /// </summary>
+    public double? MeanNeutronEnergyMeV { get; set; }
 
-    public double? TypicalNeutronYield { get; set; }
+    /// <summary>
+    /// معامل تحويل التدفق إلى المكافئ المحيطي h*_Φ(10) بوحدة pSv·cm².
+    /// متاح فقط للإشعاعات المرجعية المعتمدة في ISO 8529-1. فراغه يعني أن النوع
+    /// ليس ضمنها ولا يجوز تقدير الجرعة له باستعارة معامل نوع آخر.
+    /// </summary>
+    public double? AmbientDoseConversionCoefficient { get; set; }
+
+    /// <summary>مرجع القيم المعيارية لهذا النوع وإصداره.</summary>
+    [MaxLength(200)]
+    public string? StandardReference { get; set; }
 
     public string? Notes { get; set; }
 
@@ -997,11 +1010,25 @@ public class NeutronSource
     [ForeignKey(nameof(LocationId))]
     public Location? Location { get; set; }
 
-    public double EmissionRate { get; set; } // بوحدة n/s
+    public double CalibratedEmissionRate { get; set; } // بوحدة n/s كما في شهادة المعايرة
 
     public double? RelativeExpandedUncertaintyPercent { get; set; }
 
     public DateTime? CalibrationDate { get; set; }
+
+    /// <summary>تاريخ معايرة معدل الانبعاث كما في الشهادة المترولوجية. مطلوب لحساب الاضمحلال.</summary>
+    public DateTime? EmissionCalibrationDate { get; set; }
+
+    /// <summary>مرجع شهادة المعايرة (جهة الإصدار ورقم التقرير).</summary>
+    [MaxLength(200)]
+    public string? CalibrationReference { get; set; }
+
+    /// <summary>
+    /// معامل اللاتماثل الزاوي F_I(θ) لهذا المصدر بعينه.
+    /// ISO 8529-2:2000 §5.2.1: يُقاس لكل مصدر على حدة وقد يختلف بين مصادر
+    /// متشابهة اسمياً في التصنيع. فراغه يعني «غير مقاس» ولا يُفترض بواحد.
+    /// </summary>
+    public double? AnisotropyFactor { get; set; }
 
     [Required, MaxLength(30)]
     public string Status { get; set; } = "Storage"; // Storage, InUse, Waste, Transfer
@@ -1047,7 +1074,7 @@ public class NeutronSource
     public string DisplaySourceCode => IsDeleted ? $"{SourceCode} (محذوف)" : SourceCode;
 
     [NotMapped]
-    public string DisplayEmissionRate => $"{ScientificNotationParser.FormatScientific(EmissionRate)} n/s";
+    public string DisplayEmissionRate => $"{ScientificNotationParser.FormatScientific(CalibratedEmissionRate)} n/s";
 
     [NotMapped]
     public string EmissionRateFormatted => DisplayEmissionRate;

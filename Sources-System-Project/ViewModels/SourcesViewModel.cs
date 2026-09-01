@@ -418,7 +418,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                 (n.Location?.LocationName?.ToLower().Contains(searchLower) ?? false) ||
                 (n.Status?.ToLower().Contains(searchLower) ?? false) ||
                 (n.CalibrationDate.HasValue && n.CalibrationDate.Value.ToString("yyyy-MM-dd").Contains(searchLower)) ||
-                n.EmissionRate.ToString().Contains(searchLower)
+                n.CalibratedEmissionRate.ToString().Contains(searchLower)
             ).ToList();
         }
 
@@ -702,8 +702,8 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         EditSourceCode = target.SourceCode;
         EditNeutronTypeId = target.NeutronSourceTypeId;
         EditSerialNumber = target.SerialNumber ?? "";
-        EditEmissionRate = target.EmissionRate;
-        EditEmissionRateText = target.EmissionRate.ToString();
+        EditEmissionRate = target.CalibratedEmissionRate;
+        EditEmissionRateText = target.CalibratedEmissionRate.ToString();
         EditRelativeUncertaintyPercent = target.RelativeExpandedUncertaintyPercent;
         EditRelativeUncertaintyText = target.RelativeExpandedUncertaintyPercent?.ToString() ?? "";
         EditCalibrationDate = target.CalibrationDate ?? DateTime.Today;
@@ -907,7 +907,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                     SourceCode = EditSourceCode.Trim(),
                     NeutronSourceTypeId = EditNeutronTypeId.Value,
                     SerialNumber = EditSerialNumber?.Trim(),
-                    EmissionRate = EditEmissionRate,
+                    CalibratedEmissionRate = EditEmissionRate,
                     RelativeExpandedUncertaintyPercent = EditRelativeUncertaintyPercent,
                     CalibrationDate = EditCalibrationDate,
                     LocationId = EditLocationId,

@@ -38,8 +38,6 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
     [ObservableProperty] private string _editHalfLifeUnit = "years";
     [ObservableProperty] private double? _editAverageEnergyMev;
     [ObservableProperty] private string _editAverageEnergyText = string.Empty;
-    [ObservableProperty] private double? _editNeutronYield;
-    [ObservableProperty] private string _editNeutronYieldText = string.Empty;
     [ObservableProperty] private string _editNotes = string.Empty;
 
     private Guid? _editingId;
@@ -62,12 +60,9 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
             var search = SearchText.Trim().ToLower();
             all = all.Where(t =>
                 t.Code.ToLower().Contains(search) ||
-                (t.NameAr?.ToLower().Contains(search) ?? false) ||
-                (t.NameEn?.ToLower().Contains(search) ?? false) ||
-                (t.ReactionType?.ToLower().Contains(search) ?? false) ||
-                (t.TargetMaterial?.ToLower().Contains(search) ?? false) ||
-                (t.ParentNuclide?.ToLower().Contains(search) ?? false)
-            ).ToList();
+                t.NameAr.ToLower().Contains(search) ||
+                t.NameEn.ToLower().Contains(search) ||
+                t.ReactionType.ToLower().Contains(search)).ToList();
         }
 
         Types = new ObservableCollection<NeutronSourceType>(all);
@@ -87,18 +82,11 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
         else EditAverageEnergyMev = null;
     }
 
-    partial void OnEditNeutronYieldTextChanged(string value)
-    {
-        if (ScientificNotationParser.TryParse(value, out double res)) EditNeutronYield = res;
-        else EditNeutronYield = null;
-    }
-
     [RelayCommand]
     public void AddNew()
     {
-        IsNew = true;
-        _editingId = null;
         ClearForm();
+        IsNew = true;
         IsEditing = true;
     }
 
@@ -118,10 +106,8 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
         EditHalfLife = target.HalfLife;
         EditHalfLifeText = target.HalfLife.ToString();
         EditHalfLifeUnit = target.HalfLifeUnit;
-        EditAverageEnergyMev = target.AverageNeutronEnergyMeV;
-        EditAverageEnergyText = target.AverageNeutronEnergyMeV?.ToString() ?? string.Empty;
-        EditNeutronYield = target.TypicalNeutronYield;
-        EditNeutronYieldText = target.TypicalNeutronYield?.ToString() ?? string.Empty;
+        EditAverageEnergyMev = target.MeanNeutronEnergyMeV;
+        EditAverageEnergyText = target.MeanNeutronEnergyMeV?.ToString() ?? string.Empty;
         EditNotes = target.Notes ?? string.Empty;
 
         IsEditing = true;
@@ -154,23 +140,6 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
             return;
         }
 
-        if (!string.IsNullOrWhiteSpace(EditNeutronYieldText))
-        {
-            if (!ScientificNotationParser.TryParse(EditNeutronYieldText, out double yieldVal) || yieldVal <= 0)
-            {
-                DialogHelper.ShowWarning(
-                    TranslationHelper.GetString("MsgErrInvalidScientificNumber") 
-                    ?? "صيغة المردود النيتروني غير صحيحة. الصيغ المقبولة: أرقام عادية مثل 2200000، أو بصيغة الأس مثل 2.2E6 أو 2.2x10^6",
-                    TranslationHelper.GetString("TitleWarning") ?? "تنبيه");
-                return;
-            }
-            EditNeutronYield = yieldVal;
-        }
-        else
-        {
-            EditNeutronYield = null;
-        }
-
         if (!string.IsNullOrWhiteSpace(EditAverageEnergyText))
         {
             if (!ScientificNotationParser.TryParse(EditAverageEnergyText, out double energyVal) || energyVal <= 0)
@@ -199,8 +168,7 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
                 ParentNuclide = EditParentNuclide?.Trim(),
                 HalfLife = EditHalfLife,
                 HalfLifeUnit = EditHalfLifeUnit ?? "years",
-                AverageNeutronEnergyMeV = EditAverageEnergyMev,
-                TypicalNeutronYield = EditNeutronYield,
+                MeanNeutronEnergyMeV = EditAverageEnergyMev,
                 Notes = EditNotes?.Trim()
             };
 
@@ -234,8 +202,7 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
             existing.ParentNuclide = EditParentNuclide?.Trim();
             existing.HalfLife = EditHalfLife;
             existing.HalfLifeUnit = EditHalfLifeUnit ?? "years";
-            existing.AverageNeutronEnergyMeV = EditAverageEnergyMev;
-            existing.TypicalNeutronYield = EditNeutronYield;
+            existing.MeanNeutronEnergyMeV = EditAverageEnergyMev;
             existing.Notes = EditNotes?.Trim();
 
             var res = _service.Update(existing);
@@ -288,8 +255,6 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
         EditHalfLifeUnit = "years";
         EditAverageEnergyMev = null;
         EditAverageEnergyText = string.Empty;
-        EditNeutronYield = null;
-        EditNeutronYieldText = string.Empty;
         EditNotes = string.Empty;
     }
 }

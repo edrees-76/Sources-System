@@ -96,8 +96,8 @@ public class NeutronSourceIsolationTests : IClassFixture<SqliteInMemoryFixture>,
 
             db.NeutronSourceTypes.AddRange(cf252Type, amBeType);
             db.NeutronSources.AddRange(
-                new NeutronSource { SourceCode = "NS-001", NeutronSourceType = cf252Type, EmissionRate = 2.4e6, Status = "Storage" },
-                new NeutronSource { SourceCode = "NS-002", NeutronSourceType = amBeType, EmissionRate = 1.1e6, Status = "InUse" }
+                new NeutronSource { SourceCode = "NS-001", NeutronSourceType = cf252Type, CalibratedEmissionRate = 2.4e6, Status = "Storage" },
+                new NeutronSource { SourceCode = "NS-002", NeutronSourceType = amBeType, CalibratedEmissionRate = 1.1e6, Status = "InUse" }
             );
 
             db.SaveChanges();
@@ -154,7 +154,7 @@ public class NeutronSourceIsolationTests : IClassFixture<SqliteInMemoryFixture>,
                 InitialActivityValue = 50,
                 CurrentActivityValue = 50
             });
-            db.NeutronSources.Add(new NeutronSource { SourceCode = "NEUTRON-PU-1", LocationId = locId, NeutronSourceType = nType, EmissionRate = 3e5 });
+            db.NeutronSources.Add(new NeutronSource { SourceCode = "NEUTRON-PU-1", LocationId = locId, NeutronSourceType = nType, CalibratedEmissionRate = 3e5 });
 
             db.SaveChanges();
         }

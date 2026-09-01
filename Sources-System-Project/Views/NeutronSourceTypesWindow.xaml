@@ -81,7 +81,7 @@
                         <DataGridTextColumn Header="{DynamicResource ColTargetMaterial}" Binding="{Binding TargetMaterial}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
                         <DataGridTextColumn Header="{DynamicResource ColHalfLife}" Binding="{Binding HalfLife}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
                         <DataGridTextColumn Header="{DynamicResource ColHalfLifeUnit}" Binding="{Binding HalfLifeUnit}" Width="Auto" MinWidth="80" ElementStyle="{StaticResource CenterAligned}"/>
-                        <DataGridTextColumn Header="{DynamicResource ColAverageEnergyMev}" Binding="{Binding AverageNeutronEnergyMeV, StringFormat={}{0:N2}}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColAverageEnergyMev}" Binding="{Binding MeanNeutronEnergyMeV, StringFormat={}{0:N2}}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
 
                         <!-- الإجراءات -->
                         <DataGridTemplateColumn Header="{DynamicResource ColActions}" Width="100">
@@ -193,19 +193,9 @@
                     </Grid>
 
                     <Grid Margin="0,0,0,12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="16"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <TextBox Grid.Column="0" Text="{Binding EditAverageEnergyText, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox Text="{Binding EditAverageEnergyText, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource MaterialDesignFloatingHintTextBox}"
                                  materialDesign:HintAssist.Hint="{DynamicResource HintAverageEnergyMev}"/>
-
-                        <TextBox Grid.Column="2" Text="{Binding EditNeutronYieldText, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                                 materialDesign:HintAssist.Hint="{DynamicResource HintNeutronYield}"/>
                     </Grid>
 
                     <TextBox Text="{Binding EditNotes, UpdateSourceTrigger=PropertyChanged}"
