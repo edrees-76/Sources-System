@@ -448,4 +448,74 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
 
         _mockCertificateService.Verify(c => c.DeleteAllCertificateFiles(), Times.Never);
     }
+
+    [Fact]
+    public async Task ResetSystemAsync_BackupFails_PreservesCertificateFilesOnDisk()
+    {
+        // Arrange: Real files on disk in temp certificate directory
+        var testId = Guid.NewGuid().ToString("N");
+        var tempFolder = Path.Combine(Path.GetTempPath(), $"ResetFailCertTest_{testId}");
+        Directory.CreateDirectory(tempFolder);
+
+        try
+        {
+            var file1 = Path.Combine(tempFolder, "important_cert_1.pdf");
+            var file2 = Path.Combine(tempFolder, "important_cert_2.pdf");
+            File.WriteAllText(file1, "Original Cert Data 1 - MUST NOT BE DELETED");
+            File.WriteAllText(file2, "Original Cert Data 2 - MUST NOT BE DELETED");
+
+            var mockBackupFail = new Mock<IBackupService>();
+            mockBackupFail.Setup(b => b.CreateBackup())
+                .Returns((false, "Simulated backup disk full", null));
+
+            var auditMock = new Mock<IAuditService>();
+            var realCertService = new SourceCertificateService(_fixture.ContextFactory, auditMock.Object, tempFolder);
+
+            var sut = new SystemResetService(
+                _fixture.ContextFactory,
+                mockBackupFail.Object,
+                _mockSettingsService.Object,
+                realCertService);
+
+            var certRecord = new SourceCertificate
+            {
+                Id = Guid.NewGuid(),
+                SourceId = Guid.NewGuid(),
+                SourceType = "Standard",
+                StoredFileName = "important_cert_1.pdf",
+                OriginalFileName = "important_cert_1.pdf",
+                AttachedAt = DateTime.Now,
+                AttachedBy = "admin"
+            };
+
+            using (var db = _fixture.CreateContext())
+            {
+                db.SourceCertificates.Add(certRecord);
+                db.SaveChanges();
+            }
+
+            // Act
+            var result = await sut.ResetSystemAsync("admin");
+
+            // Assert
+            Assert.False(result.Success);
+            Assert.Contains("فشل إنشاء النسخة الاحتياطية", result.Message);
+
+            // Files on disk MUST still exist completely intact
+            Assert.True(File.Exists(file1));
+            Assert.True(File.Exists(file2));
+            Assert.Equal("Original Cert Data 1 - MUST NOT BE DELETED", File.ReadAllText(file1));
+            Assert.Equal("Original Cert Data 2 - MUST NOT BE DELETED", File.ReadAllText(file2));
+
+            // DB Record must still exist
+            using (var db = _fixture.CreateContext())
+            {
+                Assert.Single(db.SourceCertificates.ToList());
+            }
+        }
+        finally
+        {
+            try { Directory.Delete(tempFolder, recursive: true); } catch { }
+        }
+    }
 }

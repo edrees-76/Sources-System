@@ -58,17 +58,7 @@ public class SystemResetService : ISystemResetService
 
                 await db.SaveChangesAsync();
 
-                // 3. حذف ملفات الشهادات الفعلية من القرص
-                try
-                {
-                    _certificateService?.DeleteAllCertificateFiles();
-                }
-                catch (Exception ex)
-                {
-                    LoggerService.LogWarning($"تعذر إكمال حذف ملفات الشهادات أثناء إعادة الضبط: {ex.Message}");
-                }
-
-                // 4. إعادة ضبط قيم إعدادات النظام للقيم الافتراضية الموحدة
+                // 3. إعادة ضبط قيم إعدادات النظام للقيم الافتراضية الموحدة
                 var existingSettings = db.AppSettings.ToList();
                 foreach (var kvp in SystemSettingsDefaults.AllDefaults)
                 {
@@ -85,7 +75,7 @@ public class SystemResetService : ISystemResetService
 
                 await db.SaveChangesAsync();
 
-                // 5. تسجيل عملية التصفير في AuditLog بعد حذف السجلات القديمة (ليكون أول سجل)
+                // 4. تسجيل عملية التصفير في AuditLog بعد حذف السجلات القديمة (ليكون أول سجل)
                 var executingUser = db.Users.FirstOrDefault(u => u.Username == executedByUsername);
                 var resetLog = new AuditLog
                 {
@@ -102,6 +92,16 @@ public class SystemResetService : ISystemResetService
                 await db.SaveChangesAsync();
 
                 await transaction.CommitAsync();
+
+                // 5. حذف ملفات الشهادات الفعلية من القرص بعد نجاح الالتزام بالمعاملة
+                try
+                {
+                    _certificateService?.DeleteAllCertificateFiles();
+                }
+                catch (Exception ex)
+                {
+                    LoggerService.LogWarning($"تعذر إكمال حذف ملفات الشهادات أثناء إعادة الضبط: {ex.Message}");
+                }
 
                 // تحديث الكاش
                 _settingsService?.ClearCache();
