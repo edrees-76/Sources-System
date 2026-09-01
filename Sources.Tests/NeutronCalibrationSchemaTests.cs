@@ -109,7 +109,7 @@ VALUES ('{ns2Id}', 'NS-WITHOUT-CALIB', '{typeId}', '{locId}', 1200000.0, NULL, '
     }
 
     [Fact]
-    public void SeedData_PopulatesStandardIso8529Fields_OnlyForThreeStandardTypes_AndLeavesOthersNull()
+    public void SeedData_PopulatesStandardIso8529Fields_OnlyForCf252_AndDocumentsStandardReferenceForAmBeAndAmB()
     {
         var tempDbPath = Path.Combine(Path.GetTempPath(), "Sources_SeedDataTest_" + Guid.NewGuid().ToString("N") + ".db");
         try
@@ -128,26 +128,28 @@ VALUES ('{ns2Id}', 'NS-WITHOUT-CALIB', '{typeId}', '{locId}', 1200000.0, NULL, '
                 var types = ctx.NeutronSourceTypes.ToList();
                 Assert.Equal(10, types.Count);
 
-                // 1. الأنواع الثلاثة المعيارية من ISO 8529-1:2001 Table 1
+                // 1. Cf-252 المجرد هو النوع الوحيد ذو المعامل المحدد للنوع ككل في ISO 8529-1:2021 Table 1 و ISO 8529-3:2023 Table 2
                 var cf252 = types.FirstOrDefault(t => t.Code == "Cf-252");
                 Assert.NotNull(cf252);
                 Assert.Equal(2.13, cf252!.MeanNeutronEnergyMeV);
                 Assert.Equal(385.0, cf252.AmbientDoseConversionCoefficient);
-                Assert.Equal("ISO 8529-1:2001, Table 1", cf252.StandardReference);
+                Assert.Equal("ISO 8529-1:2021 Table 1; ISO 8529-3:2023 Table 2", cf252.StandardReference);
 
-                var amB = types.FirstOrDefault(t => t.Code == "Am-241/B");
-                Assert.NotNull(amB);
-                Assert.Equal(2.72, amB!.MeanNeutronEnergyMeV);
-                Assert.Equal(408.0, amB.AmbientDoseConversionCoefficient);
-                Assert.Equal("ISO 8529-1:2001, Table 1", amB.StandardReference);
-
+                // 2. Am-241/Be: المعامل يعتمد على حجم الكبسولة ومصدرها، الحقول NULL والتوثيق المرجعي موجود
                 var amBe = types.FirstOrDefault(t => t.Code == "Am-241/Be");
                 Assert.NotNull(amBe);
-                Assert.Equal(4.16, amBe!.MeanNeutronEnergyMeV);
-                Assert.Equal(391.0, amBe.AmbientDoseConversionCoefficient);
-                Assert.Equal("ISO 8529-1:2001, Table 1", amBe.StandardReference);
+                Assert.Null(amBe!.MeanNeutronEnergyMeV);
+                Assert.Null(amBe.AmbientDoseConversionCoefficient);
+                Assert.Equal("ISO 8529-3:2023 Table 2 — يعتمد على حجم المصدر (صغير 393 / كبير 387)؛ غير محدد للنوع", amBe.StandardReference);
 
-                // 2. الأنواع السبعة الأخرى يجب أن تكون الحقول فيها NULL تماماً
+                // 3. Am-241/B: خرج من الإشعاعات المرجعية في ISO 8529-1:2021، الحقول NULL والتوثيق المرجعي موجود
+                var amB = types.FirstOrDefault(t => t.Code == "Am-241/B");
+                Assert.NotNull(amB);
+                Assert.Null(amB!.MeanNeutronEnergyMeV);
+                Assert.Null(amB.AmbientDoseConversionCoefficient);
+                Assert.Equal("خارج الإشعاعات المرجعية في ISO 8529-1:2021؛ لا معامل معياري حالي", amB.StandardReference);
+
+                // 4. الأنواع السبعة الأخرى يجب أن تكون كافة الحقول المعيارية فيها NULL
                 var otherCodes = new[]
                 {
                     "Pu-239/Be", "Pu-238/Be", "Am-241/F", "Am-241/Li",
