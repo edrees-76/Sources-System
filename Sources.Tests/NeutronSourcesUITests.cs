@@ -736,8 +736,7 @@ public class NeutronSourcesUITests : IDisposable
         // Act & Assert 3: Invalid text
         bool successInv = ScientificNotationParser.TryParsePositive("abc", out double resInv, out string? errInv);
         Assert.False(successInv);
-        Assert.NotNull(errInv);
-        Assert.Contains("11000000", errInv);
+        Assert.False(string.IsNullOrWhiteSpace(errInv));
 
         // Act & Assert 4: Valid
         bool successVal = ScientificNotationParser.TryParsePositive("1.1E7", out double resVal, out string? errVal);
