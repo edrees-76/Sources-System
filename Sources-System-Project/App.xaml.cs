@@ -121,6 +121,7 @@ public partial class App : Application
         services.AddSingleton<ISystemSettingsService, SystemSettingsService>();
         services.AddSingleton<IAuditService, AuditService>();
         services.AddSingleton<IDecayCalculationService, DecayCalculationService>();
+        services.AddSingleton<INeutronDecayCalculationService, NeutronDecayCalculationService>();
         services.AddSingleton<IAlertService, AlertService>();
         services.AddSingleton<IBackupService, BackupService>();
         services.AddSingleton<IAutoBackupService, AutoBackupService>();

@@ -1373,7 +1373,7 @@ namespace Sources.Services
                 worksheet.RightToLeft = true;
 
                 // Headers
-                string[] headers = { "#", "رقم المصدر", "النوع المرجعي", "معدل الانبعاث (n/s)", "عدم اليقين %", "الموقع", "الحالة", "تاريخ المعايرة" };
+                string[] headers = { "#", "رقم المصدر", "النوع المرجعي", "معدل الانبعاث المُعاير (n/s)", "عدم اليقين %", "الموقع", "الحالة", "تاريخ المعايرة" };
                 for (int i = 0; i < headers.Length; i++)
                 {
                     worksheet.Cell(1, i + 1).Value = headers[i];
@@ -1452,7 +1452,7 @@ namespace Sources.Services
                                     h.Cell().Element(HeaderStyle).Text("#");
                                     h.Cell().Element(HeaderStyle).Text("رقم المصدر");
                                     h.Cell().Element(HeaderStyle).Text("النوع المرجعي");
-                                    h.Cell().Element(HeaderStyle).Text("معدل الانبعاث (n/s)");
+                                    h.Cell().Element(HeaderStyle).Text("معدل الانبعاث المُعاير (n/s)");
                                     h.Cell().Element(HeaderStyle).Text("عدم اليقين");
                                     h.Cell().Element(HeaderStyle).Text("الموقع");
                                     h.Cell().Element(HeaderStyle).Text("الحالة");

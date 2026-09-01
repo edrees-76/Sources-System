@@ -18,6 +18,7 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
 {
     private readonly IUserService? _userService;
     private readonly ISourceCertificateService? _certificateService;
+    private readonly INeutronDecayCalculationService _decayService;
 
     [ObservableProperty] private NeutronSource _neutronSource;
     [ObservableProperty] private int _selectedTabIndex = 0;
@@ -28,11 +29,13 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
     public NeutronSourceDetailsViewModel(
         NeutronSource source,
         IUserService? userService = null,
-        ISourceCertificateService? certificateService = null)
+        ISourceCertificateService? certificateService = null,
+        INeutronDecayCalculationService? decayService = null)
     {
         _neutronSource = source ?? throw new ArgumentNullException(nameof(source));
         _userService = userService ?? (App.ServiceProvider?.GetService(typeof(IUserService)) as IUserService);
         _certificateService = certificateService ?? (App.ServiceProvider?.GetService(typeof(ISourceCertificateService)) as ISourceCertificateService);
+        _decayService = decayService ?? (App.ServiceProvider?.GetService(typeof(INeutronDecayCalculationService)) as INeutronDecayCalculationService) ?? new NeutronDecayCalculationService();
 
         LoadCertificates();
     }
@@ -48,9 +51,29 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
     public string HalfLifeDisplay => NeutronSource.NeutronSourceType != null && NeutronSource.NeutronSourceType.HalfLife > 0 ? $"{NeutronSource.NeutronSourceType.HalfLife} {NeutronSource.NeutronSourceType.HalfLifeUnit}" : "-";
     public string EnergyDisplay => NeutronSource.NeutronSourceType?.MeanNeutronEnergyMeV.HasValue == true ? $"{NeutronSource.NeutronSourceType.MeanNeutronEnergyMeV.Value:N2} MeV" : "-";
 
-    public string EmissionRateFormatted => NeutronSource.EmissionRateFormatted;
-    public string UncertaintyFormatted => NeutronSource.RelativeExpandedUncertaintyPercent.HasValue ? $"{NeutronSource.RelativeExpandedUncertaintyPercent.Value:N1}%" : "-";
+    // ─── معدل الانبعاث المُعاير ومعدل الانبعاث الحالي وحقول الشهادة ───
+    public string CalibratedEmissionRateFormatted => NeutronSource.EmissionRateFormatted;
+    public string EmissionRateFormatted => CalibratedEmissionRateFormatted; // للتوافق العكسي
+
+    public string EmissionCalibrationDateFormatted => NeutronSource.EmissionCalibrationDate.HasValue 
+        ? NeutronSource.EmissionCalibrationDate.Value.ToString("yyyy/MM/dd") 
+        : "تاريخ المعايرة غير مسجّل";
+
     public string CalibrationDateFormatted => NeutronSource.CalibrationDate?.ToString("yyyy/MM/dd") ?? "-";
+
+    public NeutronDecayResult DecayResult => _decayService.CalculateCurrentEmissionRate(NeutronSource);
+    public string CurrentEmissionRateDisplay => DecayResult.DisplayRate;
+    public bool IsCurrentEmissionRateCalculated => DecayResult.IsCalculated;
+
+    public string CalibrationReferenceDisplay => !string.IsNullOrWhiteSpace(NeutronSource.CalibrationReference) 
+        ? NeutronSource.CalibrationReference 
+        : "غير مسجّل";
+
+    public string AnisotropyFactorDisplay => NeutronSource.AnisotropyFactor.HasValue 
+        ? NeutronSource.AnisotropyFactor.Value.ToString("F3") 
+        : "غير مقاس";
+
+    public string UncertaintyFormatted => NeutronSource.RelativeExpandedUncertaintyPercent.HasValue ? $"{NeutronSource.RelativeExpandedUncertaintyPercent.Value:N1}%" : "-";
     public string LocationDisplay => NeutronSource.Location?.LocationName ?? (TranslationHelper.GetString("TextUnspecified") ?? "غير محدد");
     public string LocationDetails
     {

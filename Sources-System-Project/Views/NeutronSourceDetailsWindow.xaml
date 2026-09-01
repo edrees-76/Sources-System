@@ -146,30 +146,50 @@
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
 
-                                    <!-- معدل الانبعاث -->
-                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,10">
-                                        <TextBlock Text="{DynamicResource DetailLabelEmissionRate}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
-                                        <TextBlock Text="{Binding EmissionRateFormatted}" FontSize="16" FontWeight="Bold" Foreground="#0D9488" Margin="0,2,0,0"/>
+                                    <!-- 1. معدل الانبعاث المُعاير وتاريخ المعايرة -->
+                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,12">
+                                        <TextBlock Text="{DynamicResource DetailLabelCalibratedEmissionRate}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                        <TextBlock Text="{Binding CalibratedEmissionRateFormatted}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
                                     </StackPanel>
 
-                                    <!-- نسبة عدم اليقين -->
-                                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,10">
+                                    <!-- تاريخ معايرة الانبعاث -->
+                                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,12">
+                                        <TextBlock Text="{DynamicResource DetailLabelEmissionCalibrationDate}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                        <TextBlock Text="{Binding EmissionCalibrationDateFormatted}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+
+                                    <!-- 2. معدل الانبعاث الحالي (محسوباً بتاريخ اليوم) -->
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,12">
+                                        <TextBlock Text="{DynamicResource DetailLabelCurrentEmissionRate}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                        <TextBlock Text="{Binding CurrentEmissionRateDisplay}" FontSize="16" FontWeight="Bold" Foreground="#0D9488" Margin="0,2,0,0"/>
+                                    </StackPanel>
+
+                                    <!-- 3. مرجع المعايرة -->
+                                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,10">
+                                        <TextBlock Text="{DynamicResource DetailLabelCalibrationReference}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                        <TextBlock Text="{Binding CalibrationReferenceDisplay}" FontSize="13" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+
+                                    <!-- 4. عامل التباين الاتجاهي -->
+                                    <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,0,0,10">
+                                        <TextBlock Text="{DynamicResource DetailLabelAnisotropyFactor}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                        <TextBlock Text="{Binding AnisotropyFactorDisplay}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+
+                                    <!-- 5. نسبة عدم اليقين الموسعة -->
+                                    <StackPanel Grid.Row="3" Grid.Column="0">
                                         <TextBlock Text="{DynamicResource DetailLabelUncertainty}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
-                                        <TextBlock Text="{Binding UncertaintyFormatted}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
+                                        <TextBlock Text="{Binding UncertaintyFormatted}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
                                     </StackPanel>
 
-                                    <!-- متوسط الطاقة -->
-                                    <StackPanel Grid.Row="1" Grid.Column="0">
+                                    <!-- 6. متوسط طاقة النيترونات -->
+                                    <StackPanel Grid.Row="3" Grid.Column="1">
                                         <TextBlock Text="{DynamicResource DetailLabelAverageNeutronEnergy}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                                         <TextBlock Text="{Binding EnergyDisplay}" FontSize="13" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
-                                    </StackPanel>
-
-                                    <!-- تاريخ المعايرة -->
-                                    <StackPanel Grid.Row="1" Grid.Column="1">
-                                        <TextBlock Text="{DynamicResource DetailLabelCalibrationDate}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
-                                        <TextBlock Text="{Binding CalibrationDateFormatted}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
                                     </StackPanel>
                                 </Grid>
                             </StackPanel>

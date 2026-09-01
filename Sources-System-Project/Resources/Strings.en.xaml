@@ -1223,7 +1223,7 @@
     <system:String x:Key="BtnManageNeutronTypes">Reference Types</system:String>
     <system:String x:Key="HintSearchNeutronSource">Search by code, type, serial number, location...</system:String>
     <system:String x:Key="HeaderRefType">Reference Type</system:String>
-    <system:String x:Key="HeaderEmissionRate">Emission Rate (n/s)</system:String>
+    <system:String x:Key="HeaderEmissionRate">Calibrated Emission Rate (n/s)</system:String>
     <system:String x:Key="HeaderUncertaintyPercent">Uncertainty %</system:String>
     <system:String x:Key="MsgNoNeutronSourcesRecorded">No neutron sources recorded</system:String>
     <system:String x:Key="MsgNoNeutronSourcesHint">You can start by adding a new neutron source using the button above.</system:String>
@@ -1240,7 +1240,7 @@
     <system:String x:Key="RadioCategoryNeutronSource">Neutron Source</system:String>
     <system:String x:Key="CardNeutronEmissionProps">Neutron Emission Characteristics</system:String>
     <system:String x:Key="FieldNeutronRefTypeReq">Reference Neutron Type *</system:String>
-    <system:String x:Key="FieldEmissionRateReq">Neutron Emission Rate (n/s) *</system:String>
+    <system:String x:Key="FieldEmissionRateReq">Calibrated Emission Rate (n/s) *</system:String>
     <system:String x:Key="HintEmissionRateExample">e.g. 11000000 or 1.1E7 or 1.1x10^7</system:String>
     <system:String x:Key="MsgErrInvalidScientificNumber">Invalid number format. Accepted formats: standard numbers like 11000000, or scientific notation like 1.1E7 or 1.1x10^7</system:String>
     <system:String x:Key="MsgErrAverageEnergyPositive">Average neutron energy must be a positive number</system:String>
@@ -1257,6 +1257,11 @@
     <system:String x:Key="DetailLabelHalfLife">Reference Half-life:</system:String>
     <system:String x:Key="DetailCardNeutronEmissionProps">Radiation &amp; Emission Properties</system:String>
     <system:String x:Key="DetailLabelEmissionRate">Neutron Emission Rate:</system:String>
+    <system:String x:Key="DetailLabelCalibratedEmissionRate">Calibrated Emission Rate:</system:String>
+    <system:String x:Key="DetailLabelCurrentEmissionRate">Current Emission Rate:</system:String>
+    <system:String x:Key="DetailLabelEmissionCalibrationDate">Emission Calibration Date:</system:String>
+    <system:String x:Key="DetailLabelCalibrationReference">Calibration Reference:</system:String>
+    <system:String x:Key="DetailLabelAnisotropyFactor">Anisotropy Factor (Anisotropy):</system:String>
     <system:String x:Key="DetailLabelUncertainty">Expanded Uncertainty (k=2):</system:String>
     <system:String x:Key="DetailLabelAverageNeutronEnergy">Average Neutron Energy (MeV):</system:String>
     <system:String x:Key="DetailLabelCalibrationDate">Calibration / Reference Date:</system:String>
@@ -1301,7 +1306,7 @@
     <!-- Reports Screen Updates for Neutron Sources -->
     <system:String x:Key="BtnNeutronInventoryReport">Neutron Inventory</system:String>
     <system:String x:Key="ColNeutronType">Reference Type</system:String>
-    <system:String x:Key="ColEmissionRate">Emission Rate (n/s)</system:String>
+    <system:String x:Key="ColEmissionRate">Calibrated Emission Rate (n/s)</system:String>
     <system:String x:Key="ColUncertainty">Uncertainty</system:String>
 
     <!-- Location Details Updates for Neutron Sources -->

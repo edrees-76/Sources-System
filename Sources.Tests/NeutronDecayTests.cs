@@ -1,0 +1,273 @@
+using System;
+using Sources.Models;
+using Sources.Services;
+using Sources.ViewModels;
+using Xunit;
+
+namespace Sources.Tests;
+
+public class NeutronDecayTests
+{
+    private readonly NeutronDecayCalculationService _decayService = new();
+
+    [Fact]
+    public void Cf252_CalibratedExactlyOneHalfLifeAgo_ReturnsHalfOfCalibratedRate()
+    {
+        // Arrange: Cf-252, HalfLife = 2.645 years
+        double initialRate = 1.0e7; // 10,000,000 n/s
+        double halfLife = 2.645;
+        string halfLifeUnit = "years";
+        
+        DateTime calDate = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        // 1 half-life = 2.645 * 365.2422 days
+        double halfLifeDays = halfLife * NeutronDecayCalculationService.DaysPerYear;
+        DateTime calcDate = calDate.AddDays(halfLifeDays);
+
+        // Act
+        var result = _decayService.CalculateEmissionRate(initialRate, halfLife, halfLifeUnit, calDate, calcDate);
+
+        // Assert
+        Assert.True(result.IsCalculated);
+        Assert.Equal(NeutronDecayCalculationStatus.Calculated, result.Status);
+        Assert.NotNull(result.CurrentEmissionRate);
+        
+        double expectedRate = initialRate * 0.5;
+        Assert.Equal(expectedRate, result.CurrentEmissionRate.Value, precision: 3);
+    }
+
+    [Fact]
+    public void Cf252_CalibratedFiveYearsAgo_ReturnsApproximately27PercentOfCalibratedRate()
+    {
+        // Arrange: Cf-252, HalfLife = 2.645 years, elapsed = 5 years
+        double initialRate = 1.0e7; // 10,000,000 n/s
+        double halfLife = 2.645;
+        string halfLifeUnit = "years";
+        
+        DateTime calDate = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        double elapsedDays = 5.0 * NeutronDecayCalculationService.DaysPerYear;
+        DateTime calcDate = calDate.AddDays(elapsedDays);
+
+        // Act
+        var result = _decayService.CalculateEmissionRate(initialRate, halfLife, halfLifeUnit, calDate, calcDate);
+
+        // Assert
+        Assert.True(result.IsCalculated);
+        Assert.NotNull(result.CurrentEmissionRate);
+
+        double ratio = result.CurrentEmissionRate.Value / initialRate;
+        // 0.5^(5 / 2.645) ≈ 0.269786 (نحو 27%)
+        Assert.InRange(ratio, 0.265, 0.275);
+        Assert.True(ratio < 0.30, "A 5-year-old Cf-252 source must be under 30% of original emission rate");
+    }
+
+    [Fact]
+    public void Am241Be_CalibratedFiveYearsAgo_ReturnsGreaterThan99PercentOfCalibratedRate()
+    {
+        // Arrange: Am-241/Be, HalfLife = 432.2 years, elapsed = 5 years
+        double initialRate = 2.2e6;
+        double halfLife = 432.2;
+        string halfLifeUnit = "years";
+
+        DateTime calDate = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        double elapsedDays = 5.0 * NeutronDecayCalculationService.DaysPerYear;
+        DateTime calcDate = calDate.AddDays(elapsedDays);
+
+        // Act
+        var result = _decayService.CalculateEmissionRate(initialRate, halfLife, halfLifeUnit, calDate, calcDate);
+
+        // Assert
+        Assert.True(result.IsCalculated);
+        Assert.NotNull(result.CurrentEmissionRate);
+
+        double ratio = result.CurrentEmissionRate.Value / initialRate;
+        // 0.5^(5 / 432.2) ≈ 0.99201 (> 0.99)
+        Assert.True(ratio > 0.99, "Am-241/Be over 5 years must retain > 99% of calibrated emission rate");
+    }
+
+    [Fact]
+    public void Sb124Be_Calibrated60Point2DaysAgo_ReturnsHalfOfCalibratedRate()
+    {
+        // Arrange: Sb-124/Be, HalfLife = 60.2 days (covers 'days' unit)
+        double initialRate = 5.0e5;
+        double halfLife = 60.2;
+        string halfLifeUnit = "days";
+
+        DateTime calDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        DateTime calcDate = calDate.AddDays(60.2);
+
+        // Act
+        var result = _decayService.CalculateEmissionRate(initialRate, halfLife, halfLifeUnit, calDate, calcDate);
+
+        // Assert
+        Assert.True(result.IsCalculated);
+        Assert.NotNull(result.CurrentEmissionRate);
+
+        double expectedRate = initialRate * 0.5;
+        Assert.Equal(expectedRate, result.CurrentEmissionRate.Value, precision: 3);
+    }
+
+    [Fact]
+    public void EmissionCalibrationDate_Null_ReturnsUncalculated_AndNeverReturnsCalibratedEmissionRate()
+    {
+        // Arrange: source with no calibration date
+        var type = new NeutronSourceType { HalfLife = 2.645, HalfLifeUnit = "years" };
+        var source = new NeutronSource
+        {
+            CalibratedEmissionRate = 1.5e7,
+            EmissionCalibrationDate = null,
+            NeutronSourceType = type
+        };
+
+        // Act
+        var result = _decayService.CalculateCurrentEmissionRate(source);
+
+        // Assert
+        Assert.False(result.IsCalculated);
+        Assert.Equal(NeutronDecayCalculationStatus.MissingCalibrationDate, result.Status);
+        Assert.Null(result.CurrentEmissionRate);
+        Assert.Contains("غير محسوب", result.StatusText);
+        Assert.Contains("تاريخ المعايرة غير مسجّل", result.StatusText);
+
+        // التأكيد الصريح: النتيجة لا تساوي القيمة المعايرة
+        Assert.NotEqual(source.CalibratedEmissionRate, result.CurrentEmissionRate ?? 0.0);
+    }
+
+    [Fact]
+    public void HalfLife_ZeroOrNegative_ReturnsUncalculated()
+    {
+        // Arrange
+        DateTime calDate = new DateTime(2024, 1, 1);
+        DateTime calcDate = new DateTime(2026, 1, 1);
+
+        // Act - Zero HalfLife
+        var resultZero = _decayService.CalculateEmissionRate(1.0e6, 0, "years", calDate, calcDate);
+        // Act - Negative HalfLife
+        var resultNeg = _decayService.CalculateEmissionRate(1.0e6, -5.0, "years", calDate, calcDate);
+
+        // Assert
+        Assert.False(resultZero.IsCalculated);
+        Assert.Equal(NeutronDecayCalculationStatus.InvalidHalfLife, resultZero.Status);
+        Assert.Null(resultZero.CurrentEmissionRate);
+
+        Assert.False(resultNeg.IsCalculated);
+        Assert.Equal(NeutronDecayCalculationStatus.InvalidHalfLife, resultNeg.Status);
+        Assert.Null(resultNeg.CurrentEmissionRate);
+    }
+
+    [Fact]
+    public void NeutronSourceType_Null_ReturnsUncalculated()
+    {
+        // Arrange: source with null NeutronSourceType
+        var source = new NeutronSource
+        {
+            CalibratedEmissionRate = 1.0e6,
+            EmissionCalibrationDate = DateTime.Today.AddYears(-2),
+            NeutronSourceType = null
+        };
+
+        // Act
+        var result = _decayService.CalculateCurrentEmissionRate(source);
+
+        // Assert
+        Assert.False(result.IsCalculated);
+        Assert.Equal(NeutronDecayCalculationStatus.MissingSourceType, result.Status);
+        Assert.Null(result.CurrentEmissionRate);
+        Assert.Contains("غير محسوب", result.StatusText);
+    }
+
+    [Fact]
+    public void HalfLifeUnit_Unsupported_ReturnsUncalculated()
+    {
+        // Arrange: Unsupported units like 'hours', 'months', 'invalid'
+        DateTime calDate = new DateTime(2024, 1, 1);
+        DateTime calcDate = new DateTime(2026, 1, 1);
+
+        // Act
+        var resultHours = _decayService.CalculateEmissionRate(1.0e6, 100, "hours", calDate, calcDate);
+        var resultUnknown = _decayService.CalculateEmissionRate(1.0e6, 100, "centuries", calDate, calcDate);
+
+        // Assert
+        Assert.False(resultHours.IsCalculated);
+        Assert.Equal(NeutronDecayCalculationStatus.UnsupportedHalfLifeUnit, resultHours.Status);
+        Assert.Null(resultHours.CurrentEmissionRate);
+
+        Assert.False(resultUnknown.IsCalculated);
+        Assert.Equal(NeutronDecayCalculationStatus.UnsupportedHalfLifeUnit, resultUnknown.Status);
+        Assert.Null(resultUnknown.CurrentEmissionRate);
+    }
+
+    [Fact]
+    public void CalculationDate_BeforeCalibrationDate_ReturnsUncalculated()
+    {
+        // Arrange: Calculation date is BEFORE calibration date (no reverse decay)
+        DateTime calDate = new DateTime(2025, 6, 1);
+        DateTime calcDate = new DateTime(2024, 1, 1);
+
+        // Act
+        var result = _decayService.CalculateEmissionRate(1.0e6, 2.645, "years", calDate, calcDate);
+
+        // Assert
+        Assert.False(result.IsCalculated);
+        Assert.Equal(NeutronDecayCalculationStatus.CalculationDatePrecedesCalibrationDate, result.Status);
+        Assert.Null(result.CurrentEmissionRate);
+        Assert.Contains("يسبق", result.StatusText);
+    }
+
+    [Fact]
+    public void NeutronSourceDetailsViewModel_DisplaysDualRates_AndCertificateProperties()
+    {
+        // Arrange
+        var type = new NeutronSourceType
+        {
+            Code = "Cf-252",
+            NameAr = "كاليفورنيوم-252",
+            HalfLife = 2.645,
+            HalfLifeUnit = "years"
+        };
+        var source = new NeutronSource
+        {
+            SourceCode = "NS-CF-001",
+            CalibratedEmissionRate = 1.0e7,
+            EmissionCalibrationDate = DateTime.Today.AddDays(-2.645 * 365.2422),
+            CalibrationReference = "CERT-2024-001",
+            AnisotropyFactor = 1.045,
+            NeutronSourceType = type
+        };
+
+        // Act
+        var vm = new NeutronSourceDetailsViewModel(source, decayService: _decayService);
+
+        // Assert
+        Assert.Equal(source.EmissionRateFormatted, vm.CalibratedEmissionRateFormatted);
+        Assert.Contains("CERT-2024-001", vm.CalibrationReferenceDisplay);
+        Assert.Equal("1.045", vm.AnisotropyFactorDisplay);
+        Assert.True(vm.IsCurrentEmissionRateCalculated);
+        Assert.Contains("n/s", vm.CurrentEmissionRateDisplay);
+    }
+
+    [Fact]
+    public void NeutronSourceDetailsViewModel_WhenCalibrationDateNull_DisplaysExplicitUncalculatedReason()
+    {
+        // Arrange
+        var type = new NeutronSourceType { Code = "Cf-252", HalfLife = 2.645, HalfLifeUnit = "years" };
+        var source = new NeutronSource
+        {
+            SourceCode = "NS-CF-002",
+            CalibratedEmissionRate = 1.0e7,
+            EmissionCalibrationDate = null,
+            CalibrationReference = null,
+            AnisotropyFactor = null,
+            NeutronSourceType = type
+        };
+
+        // Act
+        var vm = new NeutronSourceDetailsViewModel(source, decayService: _decayService);
+
+        // Assert
+        Assert.Equal("تاريخ المعايرة غير مسجّل", vm.EmissionCalibrationDateFormatted);
+        Assert.Equal("غير مسجّل", vm.CalibrationReferenceDisplay);
+        Assert.Equal("غير مقاس", vm.AnisotropyFactorDisplay);
+        Assert.False(vm.IsCurrentEmissionRateCalculated);
+        Assert.Contains("غير محسوب — تاريخ المعايرة غير مسجّل", vm.CurrentEmissionRateDisplay);
+    }
+}
