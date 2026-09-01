@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -40,40 +41,37 @@ public class BackupServiceTests : IDisposable
         conn.Close();
     }
 
+    private string ExtractDbFromZip(string zipPath)
+    {
+        var tempExtracted = Path.Combine(_testRoot, "extracted_" + Guid.NewGuid().ToString("N") + ".db");
+        using var archive = ZipFile.OpenRead(zipPath);
+        var entry = archive.GetEntry("Sources.db");
+        Assert.NotNull(entry);
+        entry.ExtractToFile(tempExtracted, overwrite: true);
+        return tempExtracted;
+    }
+
     public void Dispose()
     {
+        SqliteConnection.ClearAllPools();
         try
         {
-            SqliteConnection.ClearAllPools();
             if (Directory.Exists(_testRoot))
-            {
                 Directory.Delete(_testRoot, recursive: true);
-            }
         }
-        catch
-        {
-            // Ignore cleanup errors in temp folder
-        }
+        catch { }
     }
 
     [Fact]
-    public void ParameterlessConstructor_InitializesWithoutException()
+    public void BackupFolderName_HasExactCorrectArabicText()
     {
-        // Act
-        var service = new BackupService();
-
-        // Assert
-        Assert.NotNull(service);
+        Assert.Equal("النسخ الاحتياطي لمنظومة مصادر", BackupService.BackupFolderName);
     }
 
     [Fact]
-    public void Constructor_WithNullParameters_InitializesWithoutException()
+    public void LegacyBackupFolderName_HasExactCorrectArabicText()
     {
-        // Act
-        var service = new BackupService(null, null);
-
-        // Assert
-        Assert.NotNull(service);
+        Assert.Equal("النسخ الاحتياطى منظومة مسار", BackupService.LegacyBackupFolderName);
     }
 
     [Fact]
@@ -91,10 +89,11 @@ public class BackupServiceTests : IDisposable
         Assert.True(File.Exists(result.BackupPath), "Backup file should exist on disk");
 
         var fileName = Path.GetFileName(result.BackupPath);
-        Assert.Matches(@"^SOURCES_backup_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.db$", fileName);
+        Assert.Matches(@"^SOURCES_backup_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.zip$", fileName);
 
-        // Verify backup database content
-        using var conn = new SqliteConnection($"Data Source={result.BackupPath}");
+        // Verify backup database content from ZIP
+        var extractedDb = ExtractDbFromZip(result.BackupPath);
+        using var conn = new SqliteConnection($"Data Source={extractedDb}");
         conn.Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT Code FROM Sources LIMIT 1;";
@@ -120,8 +119,9 @@ public class BackupServiceTests : IDisposable
         var expectedParentFolder = Path.Combine(customFolder, BackupService.BackupFolderName);
         Assert.Equal(expectedParentFolder, Path.GetDirectoryName(result.BackupPath));
 
-        // Verify backup database content
-        using var conn = new SqliteConnection($"Data Source={result.BackupPath}");
+        // Verify backup database content from ZIP
+        var extractedDb = ExtractDbFromZip(result.BackupPath);
+        using var conn = new SqliteConnection($"Data Source={extractedDb}");
         conn.Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT Code FROM Sources LIMIT 1;";
@@ -206,7 +206,8 @@ public class BackupServiceTests : IDisposable
         Assert.True(File.Exists(result.BackupPath));
 
         // Verify that the backup file contains all records seamlessly
-        using (var backupConn = new SqliteConnection($"Data Source={result.BackupPath}"))
+        var extractedDb = ExtractDbFromZip(result.BackupPath);
+        using (var backupConn = new SqliteConnection($"Data Source={extractedDb}"))
         {
             backupConn.Open();
             using var cmd = backupConn.CreateCommand();
@@ -242,7 +243,8 @@ public class BackupServiceTests : IDisposable
             Assert.NotNull(result.BackupPath);
             Assert.True(File.Exists(result.BackupPath));
 
-            using var conn = new SqliteConnection($"Data Source={result.BackupPath}");
+            var extractedDb = ExtractDbFromZip(result.BackupPath);
+            using var conn = new SqliteConnection($"Data Source={extractedDb}");
             conn.Open();
             using var cmd = conn.CreateCommand();
 
@@ -326,8 +328,8 @@ public class BackupServiceTests : IDisposable
         var baseDate = DateTime.Now;
 
         var file1 = Path.Combine(_backupDir, "SOURCES_backup_2026-08-01_10-00-00.db");
-        var file2 = Path.Combine(_backupDir, "SOURCES_backup_2026-08-05_10-00-00.db");
-        var file3 = Path.Combine(_backupDir, "SOURCES_backup_2026-08-10_10-00-00.db");
+        var file2 = Path.Combine(_backupDir, "SOURCES_backup_2026-08-05_10-00-00.zip");
+        var file3 = Path.Combine(_backupDir, "SOURCES_backup_2026-08-10_10-00-00.zip");
         var nonBackupFile = Path.Combine(_backupDir, "random_notes.txt");
 
         File.WriteAllBytes(file1, new byte[100]);
@@ -386,8 +388,8 @@ public class BackupServiceTests : IDisposable
         Directory.CreateDirectory(targetDir);
 
         var oldFile1 = Path.Combine(targetDir, "SOURCES_backup_2026-06-01_10-00-00.db");
-        var oldFile2 = Path.Combine(targetDir, "SOURCES_backup_2026-07-01_10-00-00.db");
-        var recentFile1 = Path.Combine(targetDir, "SOURCES_backup_2026-08-01_10-00-00.db");
+        var oldFile2 = Path.Combine(targetDir, "SOURCES_backup_2026-07-01_10-00-00.zip");
+        var recentFile1 = Path.Combine(targetDir, "SOURCES_backup_2026-08-01_10-00-00.zip");
         var recentFile2 = Path.Combine(targetDir, "SOURCES_backup_2026-08-14_10-00-00.db");
 
         File.WriteAllBytes(oldFile1, new byte[64]);

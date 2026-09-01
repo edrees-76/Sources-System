@@ -4,8 +4,8 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:vm="clr-namespace:Sources.ViewModels"
         Title="{DynamicResource TitleSourceDetails}"
-        Width="840" Height="720"
-        MinWidth="740" MinHeight="580"
+        Width="880" Height="740"
+        MinWidth="780" MinHeight="600"
         WindowStartupLocation="CenterOwner"
         WindowState="Normal"
         Background="{DynamicResource WindowBackground}"
@@ -15,7 +15,7 @@
     <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/> <!-- 1. Header -->
-            <RowDefinition Height="*"/>    <!-- 2. Scrollable Body (Cards) -->
+            <RowDefinition Height="*"/>    <!-- 2. TabControl Content -->
             <RowDefinition Height="Auto"/> <!-- 3. Footer (Close Button) -->
         </Grid.RowDefinitions>
 
@@ -66,254 +66,366 @@
             </Grid>
         </Border>
 
-        <!-- ════════ 2. Scrollable Body (البطاقات الأربع) ════════ -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
-            <StackPanel>
+        <!-- ════════ 2. TabControl (التبويبات) ════════ -->
+        <TabControl Grid.Row="1" SelectedIndex="{Binding SelectedTabIndex}"
+                    Style="{StaticResource MaterialDesignFilledTabControl}"
+                    Background="Transparent"
+                    BorderThickness="0">
 
-                <!-- ─── بطاقة الهوية (Identity Card) ─── -->
-                <Border Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="18,16" Margin="0,0,0,14"
-                        BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.06" Color="#000000"/>
-                    </Border.Effect>
-
+            <!-- ─── التبويب 1: التفاصيل ─── -->
+            <TabItem Header="{DynamicResource TabDetails}" Height="40" Padding="18,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,14,4,0">
                     <StackPanel>
-                        <!-- عنوان البطاقة -->
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                            <materialDesign:PackIcon Kind="CardAccountDetailsOutline" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="بيانات التعريف والموقع" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                        </StackPanel>
 
-                        <!-- شبكة الحقول (Grid 2 أعمدة) -->
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="24"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="12"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="12"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
+                        <!-- ─── بطاقة الهوية (Identity Card) ─── -->
+                        <Border Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="18,16" Margin="0,0,0,14"
+                                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.06" Color="#000000"/>
+                            </Border.Effect>
 
-                            <!-- الرقم التسلسلي (صف 0 عمود 0) -->
-                            <StackPanel Grid.Row="0" Grid.Column="0">
-                                <TextBlock Text="{DynamicResource LabelSerialNumber}" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="Medium"/>
-                                <TextBlock Text="{Binding SerialNumber}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,3,0,0" FlowDirection="LeftToRight" TextAlignment="Right"/>
+                            <StackPanel>
+                                <!-- عنوان البطاقة -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                                    <materialDesign:PackIcon Kind="CardAccountDetailsOutline" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="بيانات التعريف والموقع" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <!-- شبكة الحقول (Grid 2 أعمدة) -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="24"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="12"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="12"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- الرقم التسلسلي (صف 0 عمود 0) -->
+                                    <StackPanel Grid.Row="0" Grid.Column="0">
+                                        <TextBlock Text="{DynamicResource LabelSerialNumber}" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="Medium"/>
+                                        <TextBlock Text="{Binding SerialNumber}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,3,0,0" FlowDirection="LeftToRight" TextAlignment="Right"/>
+                                    </StackPanel>
+
+                                    <!-- تاريخ المعايرة أو الصنع (صف 0 عمود 2) -->
+                                    <StackPanel Grid.Row="0" Grid.Column="2">
+                                        <TextBlock Text="{DynamicResource LabelCalibrationDate}" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="Medium"/>
+                                        <TextBlock Text="{Binding CalibrationDateDisplay}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,3,0,0" FlowDirection="LeftToRight" TextAlignment="Right"/>
+                                    </StackPanel>
+
+                                    <!-- الموقع (صف 2 عمود 0) -->
+                                    <StackPanel Grid.Row="2" Grid.Column="0">
+                                        <TextBlock Text="{DynamicResource LabelLocation}" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="Medium"/>
+                                        <TextBlock Text="{Binding LocationName}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryBrush}" Margin="0,3,0,0"/>
+                                    </StackPanel>
+
+                                    <!-- الشركة المصنعة (صف 2 عمود 2) -->
+                                    <StackPanel Grid.Row="2" Grid.Column="2">
+                                        <TextBlock Text="{DynamicResource LabelManufacturer}" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="Medium"/>
+                                        <TextBlock Text="{Binding Manufacturer}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,3,0,0" FlowDirection="LeftToRight" TextAlignment="Right"/>
+                                    </StackPanel>
+
+                                    <!-- نوع المصدر (صف 4 عمود 0) -->
+                                    <StackPanel Grid.Row="4" Grid.Column="0">
+                                        <TextBlock Text="نوع المصدر" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="Medium"/>
+                                        <TextBlock Text="{Binding SourceTypeDisplay}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,3,0,0"/>
+                                    </StackPanel>
+                                </Grid>
                             </StackPanel>
+                        </Border>
 
-                            <!-- تاريخ المعايرة أو الصنع (صف 0 عمود 2) -->
-                            <StackPanel Grid.Row="0" Grid.Column="2">
-                                <TextBlock Text="{DynamicResource LabelCalibrationDate}" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="Medium"/>
-                                <TextBlock Text="{Binding CalibrationDateDisplay}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,3,0,0" FlowDirection="LeftToRight" TextAlignment="Right"/>
-                            </StackPanel>
+                        <!-- ─── بطاقة النظائر والنشاط (Isotopes & Activity Card) ─── -->
+                        <Border Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="18,16" Margin="0,0,0,14"
+                                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.06" Color="#000000"/>
+                            </Border.Effect>
 
-                            <!-- الموقع (صف 2 عمود 0) -->
-                            <StackPanel Grid.Row="2" Grid.Column="0">
-                                <TextBlock Text="{DynamicResource LabelLocation}" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="Medium"/>
-                                <TextBlock Text="{Binding LocationName}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryBrush}" Margin="0,3,0,0"/>
-                            </StackPanel>
+                            <StackPanel>
+                                <!-- عنوان البطاقة -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                    <materialDesign:PackIcon Kind="Atom" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="النظائر والنشاط الإشعاعي الحالي" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
 
-                            <!-- الشركة المصنعة (صف 2 عمود 2) -->
-                            <StackPanel Grid.Row="2" Grid.Column="2">
-                                <TextBlock Text="{DynamicResource LabelManufacturer}" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="Medium"/>
-                                <TextBlock Text="{Binding Manufacturer}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,3,0,0" FlowDirection="LeftToRight" TextAlignment="Right"/>
-                            </StackPanel>
+                                <!-- جدول النظائر -->
+                                <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" ClipToBounds="True" Background="{DynamicResource InputBackground}">
+                                    <DataGrid ItemsSource="{Binding Isotopes}" Style="{StaticResource ModernDataGrid}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column">
+                                        <DataGrid.Columns>
+                                            <!-- الرمز (Symbol) -->
+                                            <DataGridTemplateColumn Header="الرمز (Symbol)" Width="*">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Symbol}" FontWeight="Bold" FontSize="13.5" Foreground="{DynamicResource PrimaryBrush}"
+                                                                   HorizontalAlignment="Center" VerticalAlignment="Center" FlowDirection="LeftToRight"/>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
 
-                            <!-- نوع المصدر (صف 4 عمود 0) -->
-                            <StackPanel Grid.Row="4" Grid.Column="0">
-                                <TextBlock Text="نوع المصدر" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="Medium"/>
-                                <TextBlock Text="{Binding SourceTypeDisplay}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,3,0,0"/>
+                                            <!-- النشاط الإشعاعي (Activity) -->
+                                            <DataGridTemplateColumn Header="النشاط الحالي (Activity)" Width="1.5*">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding ActivityDisplay}" FontWeight="Bold" FontSize="13.5" Foreground="{DynamicResource TextPrimary}"
+                                                                   HorizontalAlignment="Center" VerticalAlignment="Center" FlowDirection="LeftToRight"/>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+
+                                            <!-- الوحدة (Unit) -->
+                                            <DataGridTemplateColumn Header="الوحدة (Unit)" Width="*">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding UnitSymbol}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource TextSecondary}"
+                                                                   HorizontalAlignment="Center" VerticalAlignment="Center" FlowDirection="LeftToRight"/>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </Border>
                             </StackPanel>
-                        </Grid>
+                        </Border>
+
+                        <!-- ─── بطاقة معدل الجرعة الإشعاعية (Dose Rate Card) ─── -->
+                        <Border Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="18,16" Margin="0,0,0,14"
+                                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.06" Color="#000000"/>
+                            </Border.Effect>
+
+                            <StackPanel>
+                                <!-- عنوان البطاقة -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                    <materialDesign:PackIcon Kind="Radiation" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="معدل الجرعة الإشعاعية التقديري عند 1 متر" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <!-- البانر الرئيسي لمعدل الجرعة -->
+                                <Border Background="#121F5A66" CornerRadius="8" Padding="16,12" BorderBrush="#251F5A66" BorderThickness="1">
+                                    <StackPanel>
+                                        <DockPanel LastChildFill="False">
+                                            <StackPanel DockPanel.Dock="Right">
+                                                <TextBlock Text="القيمة الإجمالية عند 1 متر:" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" FontWeight="Medium"/>
+                                                <TextBlock Text="{Binding DisplayDoseRate}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"
+                                                           Margin="0,4,0,0" FlowDirection="LeftToRight" TextAlignment="Right"/>
+                                            </StackPanel>
+                                        </DockPanel>
+
+                                        <!-- الوحدات المكافئة -->
+                                        <TextBlock Text="{Binding EquivalentDoseRatesDisplay}" FontSize="12" Foreground="{DynamicResource TextSecondary}"
+                                                   Margin="0,6,0,0" FlowDirection="LeftToRight" TextAlignment="Right"
+                                                   Visibility="{Binding HasContributingIsotopes, Converter={StaticResource BoolToVis}}"/>
+
+                                        <!-- تنبيه تحذيري -->
+                                        <Border Background="#1CE0A93E" BorderBrush="{DynamicResource WarningBrush}" BorderThickness="1" CornerRadius="6"
+                                                Padding="10,8" Margin="0,10,0,0"
+                                                Visibility="{Binding HasDoseRateWarning, Converter={StaticResource BoolToVis}}">
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <materialDesign:PackIcon Kind="AlertCircleOutline" Width="18" Height="18" Foreground="{DynamicResource WarningBrush}" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding DoseRateWarningText}" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource WarningBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- جدول مصغر لتفصيل مساهمة النظائر -->
+                                <StackPanel Margin="0,12,0,0" Visibility="{Binding HasDoseRateContributions, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock Text="تفصيل مساهمة النظائر:" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,8"/>
+                                    <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" ClipToBounds="True" Background="{DynamicResource InputBackground}">
+                                        <DataGrid ItemsSource="{Binding DoseRateContributions}" Style="{StaticResource ModernDataGrid}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column">
+                                            <DataGrid.Columns>
+                                                <!-- النظير -->
+                                                <DataGridTemplateColumn Header="النظير (Isotope)" Width="*">
+                                                    <DataGridTemplateColumn.CellTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding Symbol}" FontWeight="Bold" FontSize="12.5" Foreground="{DynamicResource PrimaryBrush}"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center" FlowDirection="LeftToRight"/>
+                                                        </DataTemplate>
+                                                    </DataGridTemplateColumn.CellTemplate>
+                                                </DataGridTemplateColumn>
+
+                                                <!-- ثابت غاما -->
+                                                <DataGridTemplateColumn Header="ثابت غاما (Γ)" Width="*">
+                                                    <DataGridTemplateColumn.CellTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding GammaConstantDisplay}" FontSize="12" Foreground="{DynamicResource TextSecondary}"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center" FlowDirection="LeftToRight"/>
+                                                        </DataTemplate>
+                                                    </DataGridTemplateColumn.CellTemplate>
+                                                </DataGridTemplateColumn>
+
+                                                <!-- المساهمة التقديرية -->
+                                                <DataGridTemplateColumn Header="المساهمة التقديرية" Width="1.2*">
+                                                    <DataGridTemplateColumn.CellTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding ContributionDisplay}" FontWeight="Bold" FontSize="12.5" Foreground="{DynamicResource PrimaryBrush}"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center" FlowDirection="LeftToRight"/>
+                                                        </DataTemplate>
+                                                    </DataGridTemplateColumn.CellTemplate>
+                                                </DataGridTemplateColumn>
+
+                                                <!-- الحالة -->
+                                                <DataGridTemplateColumn Header="الحالة" Width="1.4*">
+                                                    <DataGridTemplateColumn.CellTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding StatusText}" FontSize="12" FontWeight="Medium"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                                <TextBlock.Style>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding IsWarning}" Value="True">
+                                                                                <Setter Property="Foreground" Value="{DynamicResource WarningBrush}"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </TextBlock.Style>
+                                                            </TextBlock>
+                                                        </DataTemplate>
+                                                    </DataGridTemplateColumn.CellTemplate>
+                                                </DataGridTemplateColumn>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </Border>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- ─── بطاقة الملاحظات (Notes Card) ─── -->
+                        <Border Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="18,14"
+                                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
+                                Visibility="{Binding HasNotes, Converter={StaticResource BoolToVis}}">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.06" Color="#000000"/>
+                            </Border.Effect>
+
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <materialDesign:PackIcon Kind="NoteTextOutline" Width="18" Height="18" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource LabelNotes}" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <Border Background="{DynamicResource InputBackground}" CornerRadius="6" Padding="12,10" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                                    <TextBlock Text="{Binding Notes}" FontSize="13" TextWrapping="Wrap" LineHeight="20" Foreground="{DynamicResource TextPrimary}"/>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
                     </StackPanel>
-                </Border>
+                </ScrollViewer>
+            </TabItem>
 
-                <!-- ─── بطاقة النظائر والنشاط (Isotopes & Activity Card) ─── -->
-                <Border Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="18,16" Margin="0,0,0,14"
-                        BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.06" Color="#000000"/>
-                    </Border.Effect>
+            <!-- ─── التبويب 2: الشهادات والمستندات ─── -->
+            <TabItem Header="{DynamicResource TabCertificates}" Height="40" Padding="18,0">
+                <Grid Margin="0,14,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/> <!-- Action Bar -->
+                        <RowDefinition Height="*"/>    <!-- Certificates List / Empty State -->
+                    </Grid.RowDefinitions>
 
-                    <StackPanel>
-                        <!-- عنوان البطاقة -->
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                            <materialDesign:PackIcon Kind="Atom" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="النظائر والنشاط الإشعاعي الحالي" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                        </StackPanel>
+                    <!-- شريط الإجراءات العلوي -->
+                    <Border Grid.Row="0" Background="{DynamicResource CardBackground}" CornerRadius="8" Padding="14,10" Margin="0,0,0,12"
+                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                        <DockPanel LastChildFill="False">
+                            <Button DockPanel.Dock="Right" Command="{Binding AttachCertificateCommand}"
+                                    Style="{DynamicResource PrimaryButton}" Height="38" Padding="16,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Paperclip" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource BtnAttachCertificate}" VerticalAlignment="Center" FontWeight="Bold" FontSize="13"/>
+                                </StackPanel>
+                            </Button>
+                        </DockPanel>
+                    </Border>
 
-                        <!-- جدول النظائر -->
-                        <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" ClipToBounds="True" Background="{DynamicResource InputBackground}">
-                            <DataGrid ItemsSource="{Binding Isotopes}" Style="{StaticResource ModernDataGrid}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column">
+                    <!-- محتوى الشهادات (جدول أو حالة فارغة) -->
+                    <Border Grid.Row="1" Background="{DynamicResource CardBackground}" CornerRadius="8"
+                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" ClipToBounds="True">
+                        <Grid>
+                            <!-- جدول الشهادات المرفقة -->
+                            <DataGrid ItemsSource="{Binding Certificates}"
+                                      Style="{StaticResource ModernDataGrid}"
+                                      AutoGenerateColumns="False"
+                                      IsReadOnly="True"
+                                      HeadersVisibility="Column"
+                                      Visibility="{Binding HasCertificates, Converter={StaticResource BoolToVis}}">
                                 <DataGrid.Columns>
-                                    <!-- الرمز (Symbol) -->
-                                    <DataGridTemplateColumn Header="الرمز (Symbol)" Width="*">
+                                    <!-- اسم الملف الأصلي -->
+                                    <DataGridTemplateColumn Header="{DynamicResource ColFileName}" Width="*">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding Symbol}" FontWeight="Bold" FontSize="13.5" Foreground="{DynamicResource PrimaryBrush}"
-                                                           HorizontalAlignment="Center" VerticalAlignment="Center" FlowDirection="LeftToRight"/>
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
+                                                    <materialDesign:PackIcon Kind="FileDocumentOutline" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                    <TextBlock Text="{Binding OriginalFileName}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" FlowDirection="LeftToRight" TextTrimming="CharacterEllipsis"/>
+                                                </StackPanel>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
 
-                                    <!-- النشاط الإشعاعي (Activity) -->
-                                    <DataGridTemplateColumn Header="النشاط الحالي (Activity)" Width="1.5*">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding ActivityDisplay}" FontWeight="Bold" FontSize="13.5" Foreground="{DynamicResource TextPrimary}"
-                                                           HorizontalAlignment="Center" VerticalAlignment="Center" FlowDirection="LeftToRight"/>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
+                                    <!-- تاريخ الإرفاق -->
+                                    <DataGridTextColumn Header="{DynamicResource ColAttachedAt}" Binding="{Binding AttachedAtFormatted}" Width="160" ElementStyle="{StaticResource CenterAligned}"/>
 
-                                    <!-- الوحدة (Unit) -->
-                                    <DataGridTemplateColumn Header="الوحدة (Unit)" Width="*">
+                                    <!-- أُرفق بواسطة -->
+                                    <DataGridTextColumn Header="{DynamicResource ColAttachedBy}" Binding="{Binding AttachedBy}" Width="150" ElementStyle="{StaticResource SubtleCenterAligned}"/>
+
+                                    <!-- أزرار الإجراءات (فتح، تنزيل، حذف) -->
+                                    <DataGridTemplateColumn Header="{DynamicResource ColActions}" Width="150">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding UnitSymbol}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource TextSecondary}"
-                                                           HorizontalAlignment="Center" VerticalAlignment="Center" FlowDirection="LeftToRight"/>
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                    <!-- زر الفتح -->
+                                                    <Button Command="{Binding DataContext.OpenCertificateCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}"
+                                                            Style="{StaticResource MaterialDesignToolButton}"
+                                                            Height="32" Width="32" Padding="0" Margin="2,0"
+                                                            Foreground="{DynamicResource PrimaryBrush}"
+                                                            ToolTip="{DynamicResource BtnOpenCertificate}">
+                                                        <materialDesign:PackIcon Kind="EyeOutline" Width="18" Height="18"/>
+                                                    </Button>
+
+                                                    <!-- زر التنزيل -->
+                                                    <Button Command="{Binding DataContext.DownloadCertificateCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}"
+                                                            Style="{StaticResource MaterialDesignToolButton}"
+                                                            Height="32" Width="32" Padding="0" Margin="2,0"
+                                                            Foreground="{DynamicResource PrimaryBrush}"
+                                                            ToolTip="{DynamicResource BtnDownloadCertificate}">
+                                                        <materialDesign:PackIcon Kind="DownloadOutline" Width="18" Height="18"/>
+                                                    </Button>
+
+                                                    <!-- زر الحذف -->
+                                                    <Button Command="{Binding DataContext.DeleteCertificateCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}"
+                                                            Style="{StaticResource MaterialDesignToolButton}"
+                                                            Height="32" Width="32" Padding="0" Margin="2,0"
+                                                            Foreground="{DynamicResource DangerBrush}"
+                                                            ToolTip="{DynamicResource BtnDeleteCertificate}">
+                                                        <materialDesign:PackIcon Kind="TrashCanOutline" Width="18" Height="18"/>
+                                                    </Button>
+                                                </StackPanel>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
                                 </DataGrid.Columns>
                             </DataGrid>
-                        </Border>
-                    </StackPanel>
-                </Border>
 
-                <!-- ─── بطاقة معدل الجرعة الإشعاعية (Dose Rate Card) ─── -->
-                <Border Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="18,16" Margin="0,0,0,14"
-                        BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.06" Color="#000000"/>
-                    </Border.Effect>
-
-                    <StackPanel>
-                        <!-- عنوان البطاقة -->
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                            <materialDesign:PackIcon Kind="Radiation" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="معدل الجرعة الإشعاعية التقديري عند 1 متر" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                        </StackPanel>
-
-                        <!-- البانر الرئيسي لمعدل الجرعة -->
-                        <Border Background="#121F5A66" CornerRadius="8" Padding="16,12" BorderBrush="#251F5A66" BorderThickness="1">
-                            <StackPanel>
-                                <DockPanel LastChildFill="False">
-                                    <StackPanel DockPanel.Dock="Right">
-                                        <TextBlock Text="القيمة الإجمالية عند 1 متر:" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" FontWeight="Medium"/>
-                                        <TextBlock Text="{Binding DisplayDoseRate}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"
-                                                   Margin="0,4,0,0" FlowDirection="LeftToRight" TextAlignment="Right"/>
-                                    </StackPanel>
-                                </DockPanel>
-
-                                <!-- الوحدات المكافئة -->
-                                <TextBlock Text="{Binding EquivalentDoseRatesDisplay}" FontSize="12" Foreground="{DynamicResource TextSecondary}"
-                                           Margin="0,6,0,0" FlowDirection="LeftToRight" TextAlignment="Right"
-                                           Visibility="{Binding HasContributingIsotopes, Converter={StaticResource BoolToVis}}"/>
-
-                                <!-- تنبيه تحذيري (في حال N/A ألفا/بيتا أو بيانات غير مسجلة) -->
-                                <Border Background="#1CE0A93E" BorderBrush="{DynamicResource WarningBrush}" BorderThickness="1" CornerRadius="6"
-                                        Padding="10,8" Margin="0,10,0,0"
-                                        Visibility="{Binding HasDoseRateWarning, Converter={StaticResource BoolToVis}}">
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <materialDesign:PackIcon Kind="AlertCircleOutline" Width="18" Height="18" Foreground="{DynamicResource WarningBrush}" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding DoseRateWarningText}" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource WarningBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </Border>
+                            <!-- حالة فارغة عند عدم وجود شهادات -->
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20"
+                                        Visibility="{Binding HasCertificates, Converter={StaticResource InverseBoolToVis}}">
+                                <materialDesign:PackIcon Kind="FileDocumentMultipleOutline" Width="56" Height="56" Foreground="{DynamicResource TextSecondary}" Opacity="0.4" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                                <TextBlock Text="{DynamicResource EmptyCertificates}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource EmptyCertificatesSubtitle}" FontSize="13" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,6,0,0"/>
                             </StackPanel>
-                        </Border>
-
-                        <!-- جدول مصغر لتفصيل مساهمة النظائر (إن وجدت مساهمات) -->
-                        <StackPanel Margin="0,12,0,0" Visibility="{Binding HasDoseRateContributions, Converter={StaticResource BoolToVis}}">
-                            <TextBlock Text="تفصيل مساهمة النظائر:" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,8"/>
-                            <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" ClipToBounds="True" Background="{DynamicResource InputBackground}">
-                                <DataGrid ItemsSource="{Binding DoseRateContributions}" Style="{StaticResource ModernDataGrid}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column">
-                                    <DataGrid.Columns>
-                                        <!-- النظير -->
-                                        <DataGridTemplateColumn Header="النظير (Isotope)" Width="*">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding Symbol}" FontWeight="Bold" FontSize="12.5" Foreground="{DynamicResource PrimaryBrush}"
-                                                               HorizontalAlignment="Center" VerticalAlignment="Center" FlowDirection="LeftToRight"/>
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
-
-                                        <!-- ثابت غاما -->
-                                        <DataGridTemplateColumn Header="ثابت غاما (Γ)" Width="*">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding GammaConstantDisplay}" FontSize="12" Foreground="{DynamicResource TextSecondary}"
-                                                               HorizontalAlignment="Center" VerticalAlignment="Center" FlowDirection="LeftToRight"/>
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
-
-                                        <!-- المساهمة التقديرية -->
-                                        <DataGridTemplateColumn Header="المساهمة التقديرية" Width="1.2*">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding ContributionDisplay}" FontWeight="Bold" FontSize="12.5" Foreground="{DynamicResource PrimaryBrush}"
-                                                               HorizontalAlignment="Center" VerticalAlignment="Center" FlowDirection="LeftToRight"/>
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
-
-                                        <!-- الحالة -->
-                                        <DataGridTemplateColumn Header="الحالة" Width="1.4*">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding StatusText}" FontSize="12" FontWeight="Medium"
-                                                               HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                        <TextBlock.Style>
-                                                            <Style TargetType="TextBlock">
-                                                                <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding IsWarning}" Value="True">
-                                                                        <Setter Property="Foreground" Value="{DynamicResource WarningBrush}"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </TextBlock.Style>
-                                                    </TextBlock>
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
-                                    </DataGrid.Columns>
-                                </DataGrid>
-                            </Border>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-
-                <!-- ─── بطاقة الملاحظات (Notes Card) ─── -->
-                <Border Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="18,14"
-                        BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
-                        Visibility="{Binding HasNotes, Converter={StaticResource BoolToVis}}">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.06" Color="#000000"/>
-                    </Border.Effect>
-
-                    <StackPanel>
-                        <!-- عنوان الملاحظات -->
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <materialDesign:PackIcon Kind="NoteTextOutline" Width="18" Height="18" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource LabelNotes}" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                        </StackPanel>
-
-                        <!-- محتوى الملاحظات -->
-                        <Border Background="{DynamicResource InputBackground}" CornerRadius="6" Padding="12,10" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
-                            <TextBlock Text="{Binding Notes}" FontSize="13" TextWrapping="Wrap" LineHeight="20" Foreground="{DynamicResource TextPrimary}"/>
-                        </Border>
-                    </StackPanel>
-                </Border>
-
-            </StackPanel>
-        </ScrollViewer>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
 
         <!-- ════════ 3. Footer (زر الإغلاق) ════════ -->
         <DockPanel Grid.Row="2" Margin="0,16,0,0" LastChildFill="False">

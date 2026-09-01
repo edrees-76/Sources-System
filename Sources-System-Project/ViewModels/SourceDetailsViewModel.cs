@@ -1,10 +1,14 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Sources.Helpers;
 using Sources.Models;
+using Sources.Services;
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Microsoft.Win32;
 
 namespace Sources.ViewModels;
 
@@ -36,7 +40,12 @@ public class SourceDetailsDoseContributionItem
 /// </summary>
 public partial class SourceDetailsViewModel : ObservableObject
 {
+    private readonly ISourceCertificateService? _certificateService;
+    private readonly IUserService? _userService;
+
     public Source Source { get; }
+
+    [ObservableProperty] private int _selectedTabIndex = 0;
 
     // ── 1. الرأس (Header) ──
     public string SourceCode => Source.SourceCode;
@@ -78,9 +87,18 @@ public partial class SourceDetailsViewModel : ObservableObject
     public string? Notes => Source.Notes;
     public bool HasNotes => !string.IsNullOrWhiteSpace(Source.Notes) && Source.Notes.Trim() != "N/A" && Source.Notes.Trim() != "—";
 
-    public SourceDetailsViewModel(Source source)
+    // ── 6. تبويب الشهادات والمستندات ──
+    public ObservableCollection<SourceCertificate> Certificates { get; } = new();
+    [ObservableProperty] private bool _hasCertificates;
+
+    public SourceDetailsViewModel(
+        Source source,
+        ISourceCertificateService? certificateService = null,
+        IUserService? userService = null)
     {
         Source = source ?? throw new ArgumentNullException(nameof(source));
+        _certificateService = certificateService ?? (App.ServiceProvider?.GetService(typeof(ISourceCertificateService)) as ISourceCertificateService);
+        _userService = userService ?? (App.ServiceProvider?.GetService(typeof(IUserService)) as IUserService);
 
         // معالجة صورة المصدر
         if (!string.IsNullOrWhiteSpace(source.ImagePath))
@@ -199,13 +217,164 @@ public partial class SourceDetailsViewModel : ObservableObject
         {
             EquivalentDoseRatesDisplay = string.Empty;
         }
+
+        // تحميل شهادات المصدر
+        LoadCertificates();
     }
 
-    private static string FormatActivity(double value)
+    public void LoadCertificates()
     {
-        if (value == 0) return "0";
-        if (Math.Abs(value) >= 1e7 || Math.Abs(value) < 0.0001)
-            return value.ToString("E4");
-        return (value % 1 == 0) ? value.ToString("#,##0") : value.ToString("#,##0.0000");
+        Certificates.Clear();
+        if (_certificateService != null)
+        {
+            try
+            {
+                var list = _certificateService.GetCertificates(Source.Id, "Standard");
+                foreach (var cert in list)
+                {
+                    Certificates.Add(cert);
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("SourceDetailsViewModel: Failed to load certificates", ex);
+            }
+        }
+        HasCertificates = Certificates.Count > 0;
+    }
+
+    [RelayCommand]
+    private void AttachCertificate()
+    {
+        try
+        {
+            var dialog = new OpenFileDialog
+            {
+                Title = TranslationHelper.GetString("BtnAttachCertificate") ?? "إرفاق شهادة أو مستند",
+                Filter = "كل الملفات (*.*)|*.*|ملفات PDF (*.pdf)|*.pdf|مستندات Word (*.docx;*.doc)|*.docx;*.doc|صور (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg",
+                Multiselect = false
+            };
+
+            if (dialog.ShowDialog() != true) return;
+
+            if (_certificateService == null)
+            {
+                DialogHelper.ShowError("خدمة الشهادات غير متوفرة", "خطأ");
+                return;
+            }
+
+            var attachedBy = _userService?.CurrentUser?.FullName ?? "مدير النظام";
+            _certificateService.AttachCertificate(Source.Id, "Standard", dialog.FileName, attachedBy);
+            LoadCertificates();
+
+            DialogHelper.ShowInfo(
+                TranslationHelper.GetString("MsgCertificateAttachedSuccess") ?? "تم إرفاق الشهادة بنجاح.",
+                TranslationHelper.GetString("TabCertificates") ?? "الشهادات");
+        }
+        catch (Exception ex)
+        {
+            LoggerService.LogError("SourceDetailsViewModel: Failed to attach certificate", ex);
+            DialogHelper.ShowError($"تعذر إرفاق الشهادة: {ex.Message}", "خطأ");
+        }
+    }
+
+    [RelayCommand]
+    private void OpenCertificate(SourceCertificate? cert)
+    {
+        if (cert == null || _certificateService == null) return;
+
+        try
+        {
+            var fullPath = Path.Combine(_certificateService.GetCertificatesFolder(), cert.StoredFileName);
+            if (!File.Exists(fullPath))
+            {
+                DialogHelper.ShowWarning("ملف الشهادة غير موجود على القرص.", "تنبيه");
+                return;
+            }
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = fullPath,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            LoggerService.LogError("SourceDetailsViewModel: Failed to open certificate", ex);
+            DialogHelper.ShowError($"تعذر فتح الشهادة: {ex.Message}", "خطأ");
+        }
+    }
+
+    [RelayCommand]
+    private void DownloadCertificate(SourceCertificate? cert)
+    {
+        if (cert == null || _certificateService == null) return;
+
+        try
+        {
+            var ext = Path.GetExtension(cert.OriginalFileName);
+            var dialog = new SaveFileDialog
+            {
+                Title = TranslationHelper.GetString("BtnDownloadCertificate") ?? "تنزيل نسخة من الشهادة",
+                FileName = cert.OriginalFileName,
+                Filter = !string.IsNullOrEmpty(ext) ? $"ملف (*{ext})|*{ext}|كل الملفات (*.*)|*.*" : "كل الملفات (*.*)|*.*"
+            };
+
+            if (dialog.ShowDialog() != true) return;
+
+            var success = _certificateService.DownloadCertificate(cert.Id, dialog.FileName);
+            if (success)
+            {
+                DialogHelper.ShowInfo(
+                    TranslationHelper.GetString("MsgCertificateDownloadedSuccess") ?? "تم تنزيل نسخة من الشهادة بنجاح.",
+                    TranslationHelper.GetString("TabCertificates") ?? "الشهادات");
+            }
+            else
+            {
+                DialogHelper.ShowError("تعذر تنزيل الشهادة. تأكد من وجود الملف الأصلي.", "خطأ");
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggerService.LogError("SourceDetailsViewModel: Failed to download certificate", ex);
+            DialogHelper.ShowError($"تعذر تنزيل الشهادة: {ex.Message}", "خطأ");
+        }
+    }
+
+    [RelayCommand]
+    private void DeleteCertificate(SourceCertificate? cert)
+    {
+        if (cert == null || _certificateService == null) return;
+
+        var confirmed = DialogHelper.ShowConfirmation(
+            TranslationHelper.GetString("MsgConfirmDeleteCertificate") ?? "هل أنت متأكد من حذف هذه الشهادة نهائياً؟",
+            TranslationHelper.GetString("BtnDeleteCertificate") ?? "حذف الشهادة");
+
+        if (!confirmed) return;
+
+        try
+        {
+            var deletedBy = _userService?.CurrentUser?.FullName ?? "مدير النظام";
+            _certificateService.DeleteCertificate(cert.Id, deletedBy);
+            LoadCertificates();
+
+            DialogHelper.ShowInfo(
+                TranslationHelper.GetString("MsgCertificateDeletedSuccess") ?? "تم حذف الشهادة بنجاح.",
+                TranslationHelper.GetString("TabCertificates") ?? "الشهادات");
+        }
+        catch (Exception ex)
+        {
+            LoggerService.LogError("SourceDetailsViewModel: Failed to delete certificate", ex);
+            DialogHelper.ShowError($"تعذر حذف الشهادة: {ex.Message}", "خطأ");
+        }
+    }
+
+    private string FormatActivity(double? value)
+    {
+        if (!value.HasValue) return "0";
+        if (value.Value == 0) return "0";
+        if (Math.Abs(value.Value) >= 1e7 || (Math.Abs(value.Value) < 0.0001 && value.Value != 0))
+            return value.Value.ToString("E2");
+        return (value.Value % 1 == 0) ? value.Value.ToString("#,##0") : value.Value.ToString("N4");
     }
 }

@@ -202,7 +202,9 @@ public partial class SettingsViewModel : ObservableObject
             {
                 if (!Directory.Exists(folder)) continue;
 
-                var files = Directory.GetFiles(folder, "*_backup_*.db")
+                var files = Directory.GetFiles(folder, "*.*")
+                    .Where(f => (f.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".db", StringComparison.OrdinalIgnoreCase))
+                                && Path.GetFileName(f).Contains("_backup_", StringComparison.OrdinalIgnoreCase))
                     .Select(f => new FileInfo(f))
                     .OrderByDescending(f => f.CreationTime)
                     .ToList();
@@ -340,7 +342,7 @@ public partial class SettingsViewModel : ObservableObject
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
             Title = TranslationHelper.GetString("RestoreBackupTitle"),
-            Filter = "Database files (*.db)|*.db",
+            Filter = "ملفات النسخ الاحتياطي (*.zip;*.db)|*.zip;*.db|Zip Archives (*.zip)|*.zip|Database files (*.db)|*.db",
             InitialDirectory = Directory.Exists(BackupPath) ? BackupPath : string.Empty
         };
 

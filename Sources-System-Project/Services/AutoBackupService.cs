@@ -147,7 +147,9 @@ public class AutoBackupService : IAutoBackupService, IDisposable
             {
                 if (!Directory.Exists(folder)) continue;
 
-                var files = Directory.GetFiles(folder, "*_backup_*.db")
+                var files = Directory.GetFiles(folder, "*.*")
+                    .Where(f => (f.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".db", StringComparison.OrdinalIgnoreCase))
+                                && Path.GetFileName(f).Contains("_backup_", StringComparison.OrdinalIgnoreCase))
                     .Select(f => new FileInfo(f))
                     .OrderByDescending(f => f.CreationTime)
                     .ToList();

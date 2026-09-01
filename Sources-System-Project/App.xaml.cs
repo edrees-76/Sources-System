@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Windows;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -71,6 +72,9 @@ public partial class App : Application
                 db.InitializeDatabase();
             }
 
+            // إنشاء مجلد الشهادات تلقائياً
+            Directory.CreateDirectory(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Certificates"));
+
             // تطبيق الإعدادات المحفوظة
             ApplyTheme(SettingsHelper.IsDarkMode);
             ApplyAccentColor(SettingsHelper.AccentColor);
@@ -132,6 +136,7 @@ public partial class App : Application
         services.AddTransient<IGlobalSearchService, GlobalSearchService>();
         services.AddTransient<INeutronSourceTypeService, NeutronSourceTypeService>();
         services.AddTransient<INeutronSourceService, NeutronSourceService>();
+        services.AddSingleton<ISourceCertificateService, SourceCertificateService>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();

@@ -28,6 +28,7 @@ public class AppDbContext : DbContext
     public DbSet<LeakTestRecord> LeakTestRecords { get; set; } = null!;
     public DbSet<NeutronSourceType> NeutronSourceTypes { get; set; } = null!;
     public DbSet<NeutronSource> NeutronSources { get; set; } = null!;
+    public DbSet<SourceCertificate> SourceCertificates { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
@@ -317,6 +318,22 @@ public class AppDbContext : DbContext
         try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_NeutronSources_LocationId ON NeutronSources(LocationId);"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_NeutronSources_Status ON NeutronSources(Status);"; cmd.ExecuteNonQuery(); } catch { }
         try { cmd.CommandText = "CREATE UNIQUE INDEX IF NOT EXISTS IX_NeutronSources_SourceCode ON NeutronSources(SourceCode) WHERE IsDeleted = 0;"; cmd.ExecuteNonQuery(); } catch { }
+
+        // ─── مرحلة 10: شهادات ومستندات المصادر (Source Certificates) ───
+        cmd.CommandText = @"
+            CREATE TABLE IF NOT EXISTS SourceCertificates (
+                Id TEXT PRIMARY KEY NOT NULL,
+                SourceId TEXT NOT NULL,
+                SourceType TEXT NOT NULL DEFAULT 'Standard',
+                StoredFileName TEXT NOT NULL,
+                OriginalFileName TEXT NOT NULL,
+                AttachedAt TEXT NOT NULL,
+                AttachedBy TEXT NOT NULL
+            );";
+        cmd.ExecuteNonQuery();
+
+        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_SourceCertificates_SourceId ON SourceCertificates(SourceId);"; cmd.ExecuteNonQuery(); } catch { }
+        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_SourceCertificates_SourceType ON SourceCertificates(SourceType);"; cmd.ExecuteNonQuery(); } catch { }
 
         conn.Close();
     }

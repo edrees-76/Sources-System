@@ -1287,6 +1287,26 @@
     <!-- Location Details Updates for Neutron Sources -->
     <system:String x:Key="HeaderLocationNeutronSources">المصادر النيترونية في هذا الموقع</system:String>
     <system:String x:Key="HeaderLocationStandardSources">المصادر المشعة النشطة</system:String>
+
+    <!-- Source Certificates -->
+    <system:String x:Key="TabDetails">التفاصيل</system:String>
+    <system:String x:Key="TabCertificates">الشهادات</system:String>
+    <system:String x:Key="BtnAttachCertificate">إرفاق شهادة</system:String>
+    <system:String x:Key="BtnOpenCertificate">فتح</system:String>
+    <system:String x:Key="BtnDownloadCertificate">تنزيل</system:String>
+    <system:String x:Key="BtnDeleteCertificate">حذف</system:String>
+    <system:String x:Key="EmptyCertificates">لا توجد شهادات مرفقة</system:String>
+    <system:String x:Key="EmptyCertificatesSubtitle">يمكنك إرفاق ملفات الشهادات والتقارير بصيغ مختلفة (PDF، Word، صور...)</system:String>
+    <system:String x:Key="ColFileName">اسم الملف الأصلي</system:String>
+    <system:String x:Key="ColAttachedAt">تاريخ الإرفاق</system:String>
+    <system:String x:Key="ColAttachedBy">أُرفق بواسطة</system:String>
+    <system:String x:Key="CardSourceCertificates">الشهادات والمستندات</system:String>
+    <system:String x:Key="BtnManageCertificates">إدارة الشهادات</system:String>
+    <system:String x:Key="CertificatesTipInEdit">يمكنك إرفاق شهادات المصدر بعد حفظه من نافذة التفاصيل</system:String>
+    <system:String x:Key="MsgConfirmDeleteCertificate">هل أنت متأكد من حذف هذه الشهادة نهائياً؟</system:String>
+    <system:String x:Key="MsgCertificateAttachedSuccess">تم إرفاق الشهادة بنجاح.</system:String>
+    <system:String x:Key="MsgCertificateDeletedSuccess">تم حذف الشهادة بنجاح.</system:String>
+    <system:String x:Key="MsgCertificateDownloadedSuccess">تم تنزيل نسخة من الشهادة بنجاح.</system:String>
 </ResourceDictionary>
 
 

@@ -1018,3 +1018,29 @@ public class NeutronSource
     public string EmissionRateFormatted => DisplayEmissionRate;
 }
 
+// ─── شهادات ومستندات المصادر ───
+public class SourceCertificate
+{
+    [Key]
+    public Guid Id { get; set; } = Guid.NewGuid();
+
+    public Guid SourceId { get; set; } // يقبل Id من Sources أو NeutronSources
+
+    [MaxLength(50)]
+    public string SourceType { get; set; } = "Standard"; // "Standard" أو "Neutron"
+
+    [Required, MaxLength(260)]
+    public string StoredFileName { get; set; } = string.Empty; // GUID + extension
+
+    [Required, MaxLength(260)]
+    public string OriginalFileName { get; set; } = string.Empty; // اسم الملف الأصلي للعرض
+
+    public DateTime AttachedAt { get; set; } = DateTime.Now;
+
+    [MaxLength(100)]
+    public string AttachedBy { get; set; } = string.Empty;
+
+    [NotMapped]
+    public string AttachedAtFormatted => AttachedAt.ToString("yyyy/MM/dd HH:mm");
+}
+

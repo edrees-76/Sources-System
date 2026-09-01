@@ -1290,6 +1290,26 @@
     <!-- Location Details Updates for Neutron Sources -->
     <system:String x:Key="HeaderLocationNeutronSources">Neutron Sources at this Location</system:String>
     <system:String x:Key="HeaderLocationStandardSources">Active Radioactive Sources</system:String>
+
+    <!-- Source Certificates -->
+    <system:String x:Key="TabDetails">Details</system:String>
+    <system:String x:Key="TabCertificates">Certificates</system:String>
+    <system:String x:Key="BtnAttachCertificate">Attach Certificate</system:String>
+    <system:String x:Key="BtnOpenCertificate">Open</system:String>
+    <system:String x:Key="BtnDownloadCertificate">Download</system:String>
+    <system:String x:Key="BtnDeleteCertificate">Delete</system:String>
+    <system:String x:Key="EmptyCertificates">No attached certificates</system:String>
+    <system:String x:Key="EmptyCertificatesSubtitle">You can attach certificate files and reports in various formats (PDF, Word, images...)</system:String>
+    <system:String x:Key="ColFileName">Original File Name</system:String>
+    <system:String x:Key="ColAttachedAt">Attached At</system:String>
+    <system:String x:Key="ColAttachedBy">Attached By</system:String>
+    <system:String x:Key="CardSourceCertificates">Certificates &amp; Documents</system:String>
+    <system:String x:Key="BtnManageCertificates">Manage Certificates</system:String>
+    <system:String x:Key="CertificatesTipInEdit">You can attach source certificates from the details window after saving</system:String>
+    <system:String x:Key="MsgConfirmDeleteCertificate">Are you sure you want to permanently delete this certificate?</system:String>
+    <system:String x:Key="MsgCertificateAttachedSuccess">Certificate attached successfully.</system:String>
+    <system:String x:Key="MsgCertificateDeletedSuccess">Certificate deleted successfully.</system:String>
+    <system:String x:Key="MsgCertificateDownloadedSuccess">A copy of the certificate was downloaded successfully.</system:String>
 </ResourceDictionary>
 
 

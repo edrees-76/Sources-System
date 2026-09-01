@@ -805,6 +805,43 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     }
 
     [RelayCommand]
+    private void ManageCertificates()
+    {
+        if (IsNew) return;
+
+        if (IsNeutronForm && SelectedNeutronSource != null)
+        {
+            var userService = App.ServiceProvider?.GetService(typeof(IUserService)) as IUserService;
+            var certService = App.ServiceProvider?.GetService(typeof(ISourceCertificateService)) as ISourceCertificateService;
+            var vm = new NeutronSourceDetailsViewModel(SelectedNeutronSource, userService, certService)
+            {
+                SelectedTabIndex = 1
+            };
+            var win = new NeutronSourceDetailsWindow(vm);
+            if (System.Windows.Application.Current?.MainWindow != null && System.Windows.Application.Current.MainWindow.IsVisible)
+            {
+                win.Owner = System.Windows.Application.Current.MainWindow;
+            }
+            win.ShowDialog();
+        }
+        else if (SelectedSource != null)
+        {
+            var certService = App.ServiceProvider?.GetService(typeof(ISourceCertificateService)) as ISourceCertificateService;
+            var userService = App.ServiceProvider?.GetService(typeof(IUserService)) as IUserService;
+            var vm = new SourceDetailsViewModel(SelectedSource, certService, userService)
+            {
+                SelectedTabIndex = 1
+            };
+            var win = new SourceDetailsWindow(vm);
+            if (System.Windows.Application.Current?.MainWindow != null && System.Windows.Application.Current.MainWindow.IsVisible)
+            {
+                win.Owner = System.Windows.Application.Current.MainWindow;
+            }
+            win.ShowDialog();
+        }
+    }
+
+    [RelayCommand]
     private async Task SaveAsync()
     {
         try

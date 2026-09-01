@@ -1,6 +1,10 @@
 using System;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Win32;
 using Sources.Helpers;
 using Sources.Models;
 using Sources.Services;
@@ -13,13 +17,24 @@ namespace Sources.ViewModels;
 public partial class NeutronSourceDetailsViewModel : ObservableObject
 {
     private readonly IUserService? _userService;
+    private readonly ISourceCertificateService? _certificateService;
 
     [ObservableProperty] private NeutronSource _neutronSource;
+    [ObservableProperty] private int _selectedTabIndex = 0;
 
-    public NeutronSourceDetailsViewModel(NeutronSource source, IUserService? userService = null)
+    public ObservableCollection<SourceCertificate> Certificates { get; } = new();
+    [ObservableProperty] private bool _hasCertificates;
+
+    public NeutronSourceDetailsViewModel(
+        NeutronSource source,
+        IUserService? userService = null,
+        ISourceCertificateService? certificateService = null)
     {
         _neutronSource = source ?? throw new ArgumentNullException(nameof(source));
         _userService = userService ?? (App.ServiceProvider?.GetService(typeof(IUserService)) as IUserService);
+        _certificateService = certificateService ?? (App.ServiceProvider?.GetService(typeof(ISourceCertificateService)) as ISourceCertificateService);
+
+        LoadCertificates();
     }
 
     public string SourceCode => NeutronSource.SourceCode;
@@ -73,6 +88,153 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
             }
             catch { }
             return NeutronSource.AddedBy.Value.ToString();
+        }
+    }
+
+    public void LoadCertificates()
+    {
+        Certificates.Clear();
+        if (_certificateService != null)
+        {
+            try
+            {
+                var list = _certificateService.GetCertificates(NeutronSource.Id, "Neutron");
+                foreach (var cert in list)
+                {
+                    Certificates.Add(cert);
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("NeutronSourceDetailsViewModel: Failed to load certificates", ex);
+            }
+        }
+        HasCertificates = Certificates.Count > 0;
+    }
+
+    [RelayCommand]
+    private void AttachCertificate()
+    {
+        try
+        {
+            var dialog = new OpenFileDialog
+            {
+                Title = TranslationHelper.GetString("BtnAttachCertificate") ?? "إرفاق شهادة أو مستند",
+                Filter = "كل الملفات (*.*)|*.*|ملفات PDF (*.pdf)|*.pdf|مستندات Word (*.docx;*.doc)|*.docx;*.doc|صور (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg",
+                Multiselect = false
+            };
+
+            if (dialog.ShowDialog() != true) return;
+
+            if (_certificateService == null)
+            {
+                DialogHelper.ShowError("خدمة الشهادات غير متوفرة", "خطأ");
+                return;
+            }
+
+            var attachedBy = _userService?.CurrentUser?.FullName ?? "مدير النظام";
+            _certificateService.AttachCertificate(NeutronSource.Id, "Neutron", dialog.FileName, attachedBy);
+            LoadCertificates();
+
+            DialogHelper.ShowInfo(
+                TranslationHelper.GetString("MsgCertificateAttachedSuccess") ?? "تم إرفاق الشهادة بنجاح.",
+                TranslationHelper.GetString("TabCertificates") ?? "الشهادات");
+        }
+        catch (Exception ex)
+        {
+            LoggerService.LogError("NeutronSourceDetailsViewModel: Failed to attach certificate", ex);
+            DialogHelper.ShowError($"تعذر إرفاق الشهادة: {ex.Message}", "خطأ");
+        }
+    }
+
+    [RelayCommand]
+    private void OpenCertificate(SourceCertificate? cert)
+    {
+        if (cert == null || _certificateService == null) return;
+
+        try
+        {
+            var fullPath = Path.Combine(_certificateService.GetCertificatesFolder(), cert.StoredFileName);
+            if (!File.Exists(fullPath))
+            {
+                DialogHelper.ShowWarning("ملف الشهادة غير موجود على القرص.", "تنبيه");
+                return;
+            }
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = fullPath,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            LoggerService.LogError("NeutronSourceDetailsViewModel: Failed to open certificate", ex);
+            DialogHelper.ShowError($"تعذر فتح الشهادة: {ex.Message}", "خطأ");
+        }
+    }
+
+    [RelayCommand]
+    private void DownloadCertificate(SourceCertificate? cert)
+    {
+        if (cert == null || _certificateService == null) return;
+
+        try
+        {
+            var ext = Path.GetExtension(cert.OriginalFileName);
+            var dialog = new SaveFileDialog
+            {
+                Title = TranslationHelper.GetString("BtnDownloadCertificate") ?? "تنزيل نسخة من الشهادة",
+                FileName = cert.OriginalFileName,
+                Filter = !string.IsNullOrEmpty(ext) ? $"ملف (*{ext})|*{ext}|كل الملفات (*.*)|*.*" : "كل الملفات (*.*)|*.*"
+            };
+
+            if (dialog.ShowDialog() != true) return;
+
+            var success = _certificateService.DownloadCertificate(cert.Id, dialog.FileName);
+            if (success)
+            {
+                DialogHelper.ShowInfo(
+                    TranslationHelper.GetString("MsgCertificateDownloadedSuccess") ?? "تم تنزيل نسخة من الشهادة بنجاح.",
+                    TranslationHelper.GetString("TabCertificates") ?? "الشهادات");
+            }
+            else
+            {
+                DialogHelper.ShowError("تعذر تنزيل الشهادة. تأكد من وجود الملف الأصلي.", "خطأ");
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggerService.LogError("NeutronSourceDetailsViewModel: Failed to download certificate", ex);
+            DialogHelper.ShowError($"تعذر تنزيل الشهادة: {ex.Message}", "خطأ");
+        }
+    }
+
+    [RelayCommand]
+    private void DeleteCertificate(SourceCertificate? cert)
+    {
+        if (cert == null || _certificateService == null) return;
+
+        var confirmed = DialogHelper.ShowConfirmation(
+            TranslationHelper.GetString("MsgConfirmDeleteCertificate") ?? "هل أنت متأكد من حذف هذه الشهادة نهائياً؟",
+            TranslationHelper.GetString("BtnDeleteCertificate") ?? "حذف الشهادة");
+
+        if (!confirmed) return;
+
+        try
+        {
+            var deletedBy = _userService?.CurrentUser?.FullName ?? "مدير النظام";
+            _certificateService.DeleteCertificate(cert.Id, deletedBy);
+            LoadCertificates();
+
+            DialogHelper.ShowInfo(
+                TranslationHelper.GetString("MsgCertificateDeletedSuccess") ?? "تم حذف الشهادة بنجاح.",
+                TranslationHelper.GetString("TabCertificates") ?? "الشهادات");
+        }
+        catch (Exception ex)
+        {
+            LoggerService.LogError("NeutronSourceDetailsViewModel: Failed to delete certificate", ex);
+            DialogHelper.ShowError($"تعذر حذف الشهادة: {ex.Message}", "خطأ");
         }
     }
 }

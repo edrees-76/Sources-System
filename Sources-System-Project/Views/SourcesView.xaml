@@ -1950,7 +1950,36 @@
                                     </StackPanel>
                                 </Border>
 
-                                <!-- بطاقة فرعية 3: الملاحظات الإضافية -->
+                                <!-- بطاقة فرعية 3: الشهادات والمستندات -->
+                                <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Margin="0,0,0,14" Background="{DynamicResource CardBackground}">
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.04" Color="#000000"/>
+                                    </Border.Effect>
+                                    <StackPanel>
+                                        <Border Background="#121F5A66" CornerRadius="8,8,0,0" Padding="16,10" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="FileDocumentMultipleOutline" Width="16" Height="16" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                <TextBlock Text="{DynamicResource CardSourceCertificates}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <StackPanel Margin="16,14">
+                                            <TextBlock Text="{DynamicResource CertificatesTipInEdit}" FontSize="12" FontFamily="Segoe UI" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                                            
+                                            <!-- زر إدارة الشهادات يظهر فقط عند تعديل مصدر موجود -->
+                                            <Button Command="{Binding ManageCertificatesCommand}"
+                                                    Visibility="{Binding IsNew, Converter={StaticResource InverseBoolToVis}}"
+                                                    Style="{DynamicResource PrimaryButton}"
+                                                    Height="38" HorizontalAlignment="Left" Padding="16,0">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <materialDesign:PackIcon Kind="Paperclip" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{DynamicResource BtnManageCertificates}" VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold"/>
+                                                </StackPanel>
+                                            </Button>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- بطاقة فرعية 4: الملاحظات الإضافية -->
                                 <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Background="{DynamicResource CardBackground}">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.04" Color="#000000"/>
