@@ -218,7 +218,7 @@ public class SourceCertificateServiceTests : IClassFixture<SqliteInMemoryFixture
         {
             conn.Open();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "CREATE TABLE Info (Val TEXT); INSERT INTO Info VALUES ('CURRENT_STATE');";
+            cmd.CommandText = "CREATE TABLE Info (Val TEXT); INSERT INTO Info VALUES ('CURRENT_STATE'); CREATE TABLE IF NOT EXISTS \"__EFMigrationsHistory\" (\"MigrationId\" TEXT NOT NULL PRIMARY KEY, \"ProductVersion\" TEXT NOT NULL); INSERT INTO \"__EFMigrationsHistory\" VALUES ('20260901112320_InitialSchema', '8.0.12');";
             cmd.ExecuteNonQuery();
         }
 
@@ -227,7 +227,7 @@ public class SourceCertificateServiceTests : IClassFixture<SqliteInMemoryFixture
         {
             conn.Open();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "CREATE TABLE Info (Val TEXT); INSERT INTO Info VALUES ('RESTORED_LEGACY_STATE');";
+            cmd.CommandText = "CREATE TABLE Info (Val TEXT); INSERT INTO Info VALUES ('RESTORED_LEGACY_STATE'); CREATE TABLE IF NOT EXISTS \"__EFMigrationsHistory\" (\"MigrationId\" TEXT NOT NULL PRIMARY KEY, \"ProductVersion\" TEXT NOT NULL); INSERT INTO \"__EFMigrationsHistory\" VALUES ('20260901112320_InitialSchema', '8.0.12');";
             cmd.ExecuteNonQuery();
         }
         SqliteConnection.ClearAllPools();
@@ -280,7 +280,7 @@ public class SourceCertificateServiceTests : IClassFixture<SqliteInMemoryFixture
         {
             conn.Open();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "CREATE TABLE Info (Val TEXT); INSERT INTO Info VALUES ('FROM_ZIP_BACKUP');";
+            cmd.CommandText = "CREATE TABLE Info (Val TEXT); INSERT INTO Info VALUES ('FROM_ZIP_BACKUP'); CREATE TABLE IF NOT EXISTS \"__EFMigrationsHistory\" (\"MigrationId\" TEXT NOT NULL PRIMARY KEY, \"ProductVersion\" TEXT NOT NULL); INSERT INTO \"__EFMigrationsHistory\" VALUES ('20260901112320_InitialSchema', '8.0.12');";
             cmd.ExecuteNonQuery();
         }
         SqliteConnection.ClearAllPools();

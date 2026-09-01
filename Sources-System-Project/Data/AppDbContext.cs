@@ -61,280 +61,21 @@ public class AppDbContext : DbContext
 
     public void InitializeDatabase()
     {
-        Database.EnsureCreated();
-        MigrateSchema();
+        Database.Migrate();
+        ApplyPragmas();
         SeedData();
     }
 
     /// <summary>
-    /// ترحيل المخطط: إضافة الأعمدة والجداول الجديدة بدون حذف البيانات
+    /// تطبيق إعدادات WAL ومهلة الانتظار لقاعدة بيانات SQLite
     /// </summary>
-    private void MigrateSchema()
+    private void ApplyPragmas()
     {
         var conn = Database.GetDbConnection();
         conn.Open();
         using var cmd = conn.CreateCommand();
-
-        // تفعيل نمط WAL وضبط مهلة الانتظار 5 ثوانٍ
         cmd.CommandText = "PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;";
         cmd.ExecuteNonQuery();
-
-        // إضافة جدول SourceIsotopes إذا لم يكن موجوداً
-        cmd.CommandText = @"
-            CREATE TABLE IF NOT EXISTS SourceIsotopes (
-                Id TEXT PRIMARY KEY NOT NULL,
-                SourceId TEXT NOT NULL,
-                RadioisotopeId TEXT NOT NULL,
-                InitialActivityValue REAL,
-                ActivityUnitId TEXT,
-                CurrentActivityValue REAL,
-                CalibrationDate TEXT,
-                Notes TEXT,
-                FOREIGN KEY (SourceId) REFERENCES Sources(Id) ON DELETE CASCADE,
-                FOREIGN KEY (RadioisotopeId) REFERENCES Radioisotopes(Id) ON DELETE RESTRICT,
-                FOREIGN KEY (ActivityUnitId) REFERENCES ActivityUnits(Id) ON DELETE RESTRICT
-            );";
-        cmd.ExecuteNonQuery();
-
-        // إضافة عمود HasDetailedIsotopes إلى Sources إذا لم يكن موجوداً
-        try
-        {
-            cmd.CommandText = "ALTER TABLE Sources ADD COLUMN HasDetailedIsotopes INTEGER NOT NULL DEFAULT 0;";
-            cmd.ExecuteNonQuery();
-        }
-        catch { /* العمود موجود بالفعل */ }
-
-        // إضافة عمود ImagePath إلى Sources إذا لم يكن موجوداً
-        try
-        {
-            cmd.CommandText = "ALTER TABLE Sources ADD COLUMN ImagePath TEXT;";
-            cmd.ExecuteNonQuery();
-        }
-        catch { /* العمود موجود بالفعل */ }
-
-        // ─── مرحلة 2: حقول الأمان (RBAC) ───
-        try { cmd.CommandText = "ALTER TABLE Users ADD COLUMN FailedLoginAttempts INTEGER NOT NULL DEFAULT 0;"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "ALTER TABLE Users ADD COLUMN LockoutEnd TEXT;"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "ALTER TABLE Users ADD COLUMN LastLoginDate TEXT;"; cmd.ExecuteNonQuery(); } catch { }
-
-        // ─── مرحلة 3: صلاحيات الدور ───
-        try { cmd.CommandText = "ALTER TABLE Roles ADD COLUMN Permissions TEXT;"; cmd.ExecuteNonQuery(); } catch { }
-
-        // ─── مرحلة 3b: صلاحيات المستخدم التفصيلية ───
-        try { cmd.CommandText = "ALTER TABLE Users ADD COLUMN Permissions TEXT;"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "ALTER TABLE Users ADD COLUMN IsEditor INTEGER NOT NULL DEFAULT 1;"; cmd.ExecuteNonQuery(); } catch { }
-
-        // ─── مرحلة 4: سجل التدقيق المُوسع ───
-        try { cmd.CommandText = "ALTER TABLE AuditLogs ADD COLUMN OldValues TEXT;"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "ALTER TABLE AuditLogs ADD COLUMN NewValues TEXT;"; cmd.ExecuteNonQuery(); } catch { }
-
-        // ─── مرحلة 5: جدول التنبيهات الذكية ───
-        cmd.CommandText = @"
-            CREATE TABLE IF NOT EXISTS AlertNotifications (
-                Id TEXT PRIMARY KEY NOT NULL,
-                AlertType TEXT NOT NULL,
-                Severity TEXT NOT NULL DEFAULT 'Warning',
-                Message TEXT NOT NULL,
-                SourceId TEXT,
-                CreatedAt TEXT NOT NULL,
-                IsRead INTEGER NOT NULL DEFAULT 0,
-                IsDismissed INTEGER NOT NULL DEFAULT 0,
-                FOREIGN KEY (SourceId) REFERENCES Sources(Id) ON DELETE SET NULL
-            );";
-        cmd.ExecuteNonQuery();
-
-        // ─── جدول إعدادات النظام ───
-        cmd.CommandText = @"
-            CREATE TABLE IF NOT EXISTS AppSettings (
-                Key TEXT PRIMARY KEY NOT NULL,
-                Value TEXT NOT NULL,
-                Description TEXT
-            );";
-        cmd.ExecuteNonQuery();
-
-        // ─── فهارس الأداء ───
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_Sources_Status ON Sources(Status);"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_Sources_CalibrationDate ON Sources(CalibrationDate);"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_AuditLogs_ActionDate ON AuditLogs(ActionDate);"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_AuditLogs_UserId ON AuditLogs(UserId);"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_AlertNotifications_IsRead ON AlertNotifications(IsRead);"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "DELETE FROM AlertNotifications WHERE AlertType = 'CalibrationDue' OR Message LIKE '%معايرة%';"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "DELETE FROM AppSettings WHERE Key = 'CalibrationThresholdDays';"; cmd.ExecuteNonQuery(); } catch { }
-
-        // ─── مرحلة 7: جدول استعارة المصادر ───
-        cmd.CommandText = @"
-            CREATE TABLE IF NOT EXISTS BorrowRequests (
-                Id TEXT PRIMARY KEY NOT NULL,
-                SourceId TEXT NOT NULL,
-                BorrowerUserId TEXT,
-                ApproverUserId TEXT,
-                ReturnedByUserId TEXT,
-                Purpose TEXT NOT NULL,
-                RequestDate TEXT NOT NULL,
-                ExpectedReturnDate TEXT NOT NULL,
-                ActualReturnDate TEXT,
-                ApprovalDate TEXT,
-                DeliveryDate TEXT,
-                Status TEXT NOT NULL DEFAULT 'Pending',
-                RejectionReason TEXT,
-                Notes TEXT,
-                FOREIGN KEY (SourceId) REFERENCES Sources(Id) ON DELETE CASCADE,
-                FOREIGN KEY (BorrowerUserId) REFERENCES Users(Id) ON DELETE RESTRICT,
-                FOREIGN KEY (ApproverUserId) REFERENCES Users(Id) ON DELETE SET NULL,
-                FOREIGN KEY (ReturnedByUserId) REFERENCES Users(Id) ON DELETE SET NULL
-            );";
-        cmd.ExecuteNonQuery();
-
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_BorrowRequests_Status ON BorrowRequests(Status);"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_BorrowRequests_SourceId ON BorrowRequests(SourceId);"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "CREATE UNIQUE INDEX IF NOT EXISTS IX_BorrowRequests_SourceId_Active ON BorrowRequests(SourceId) WHERE Status IN ('Delivered', 'Overdue');"; cmd.ExecuteNonQuery(); } catch { }
-
-        // إضافة عمود BorrowerName إذا لم يكن موجوداً
-        try { cmd.CommandText = "ALTER TABLE BorrowRequests ADD COLUMN BorrowerName TEXT NOT NULL DEFAULT '';"; cmd.ExecuteNonQuery(); } catch { }
-
-
-        // ─── مرحلة 6: الحذف الناعم (Soft Delete) وفهارس إضافية ───
-        try { cmd.CommandText = "ALTER TABLE Sources ADD COLUMN IsDeleted INTEGER NOT NULL DEFAULT 0;"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "ALTER TABLE Locations ADD COLUMN IsDeleted INTEGER NOT NULL DEFAULT 0;"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "ALTER TABLE Users ADD COLUMN IsDeleted INTEGER NOT NULL DEFAULT 0;"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "ALTER TABLE Radioisotopes ADD COLUMN IsDeleted INTEGER NOT NULL DEFAULT 0;"; cmd.ExecuteNonQuery(); } catch { }
-        
-        try { cmd.CommandText = "ALTER TABLE Radioisotopes ADD COLUMN EnglishNotes TEXT;"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "ALTER TABLE Radioisotopes ADD COLUMN GammaConstant REAL;"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "ALTER TABLE Sources ADD COLUMN AddedBy TEXT;"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "ALTER TABLE Sources ADD COLUMN DeletedAt TEXT;"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "ALTER TABLE Sources ADD COLUMN DeletedBy TEXT;"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "ALTER TABLE Locations ADD COLUMN DeletedAt TEXT;"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "ALTER TABLE Locations ADD COLUMN DeletedBy TEXT;"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "ALTER TABLE Users ADD COLUMN DeletedAt TEXT;"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "ALTER TABLE Users ADD COLUMN DeletedBy TEXT;"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "ALTER TABLE Radioisotopes ADD COLUMN DeletedAt TEXT;"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "ALTER TABLE Radioisotopes ADD COLUMN DeletedBy TEXT;"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "ALTER TABLE Radioisotopes ADD COLUMN AddedBy TEXT;"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "ALTER TABLE Locations ADD COLUMN AddedBy TEXT;"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "ALTER TABLE BorrowRequests ADD COLUMN AddedBy TEXT;"; cmd.ExecuteNonQuery(); } catch { }
-
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_Sources_IsDeleted ON Sources(IsDeleted);"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_Locations_IsDeleted ON Locations(IsDeleted);"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_Users_IsDeleted ON Users(IsDeleted);"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_Radioisotopes_IsDeleted ON Radioisotopes(IsDeleted);"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_Sources_SerialNumber ON Sources(SerialNumber);"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "CREATE UNIQUE INDEX IF NOT EXISTS IX_Locations_LocationName ON Locations(LocationName) WHERE IsDeleted = 0;"; cmd.ExecuteNonQuery(); } catch { }
-
-        // ─── جدول تاريخ تنقلات المصادر بين المواقع ───
-        cmd.CommandText = @"
-            CREATE TABLE IF NOT EXISTS SourceLocationHistories (
-                Id TEXT PRIMARY KEY NOT NULL,
-                SourceId TEXT NOT NULL,
-                LocationId TEXT,
-                PreviousLocationId TEXT,
-                MovedAt TEXT NOT NULL,
-                FOREIGN KEY (SourceId) REFERENCES Sources(Id) ON DELETE CASCADE,
-                FOREIGN KEY (LocationId) REFERENCES Locations(Id) ON DELETE SET NULL,
-                FOREIGN KEY (PreviousLocationId) REFERENCES Locations(Id) ON DELETE SET NULL
-            );";
-        cmd.ExecuteNonQuery();
-
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_SourceLocationHistories_SourceId ON SourceLocationHistories(SourceId);"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_SourceLocationHistories_LocationId ON SourceLocationHistories(LocationId);"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_SourceLocationHistories_MovedAt ON SourceLocationHistories(MovedAt);"; cmd.ExecuteNonQuery(); } catch { }
-
-        // ─── مرحلة 8: اختبارات التسرب الدوري والمسح الإشعاعي (Leak/Wipe Tests) ───
-        try { cmd.CommandText = "ALTER TABLE Sources ADD COLUMN IsSealed INTEGER NOT NULL DEFAULT 1;"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_Sources_IsSealed ON Sources(IsSealed);"; cmd.ExecuteNonQuery(); } catch { }
-
-        cmd.CommandText = @"
-            CREATE TABLE IF NOT EXISTS LeakTestRecords (
-                Id TEXT PRIMARY KEY NOT NULL,
-                SourceId TEXT NOT NULL,
-                TestDate TEXT NOT NULL,
-                NextDueDate TEXT NOT NULL,
-                Result TEXT NOT NULL DEFAULT 'Pass',
-                MeasuredActivityBq REAL,
-                PerformedByUserId TEXT,
-                InspectorName TEXT,
-                CertificateNumber TEXT,
-                Notes TEXT,
-                CreatedAt TEXT NOT NULL,
-                FOREIGN KEY (SourceId) REFERENCES Sources(Id) ON DELETE CASCADE,
-                FOREIGN KEY (PerformedByUserId) REFERENCES Users(Id) ON DELETE SET NULL
-            );";
-        cmd.ExecuteNonQuery();
-
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_LeakTestRecords_SourceId ON LeakTestRecords(SourceId);"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_LeakTestRecords_NextDueDate ON LeakTestRecords(NextDueDate);"; cmd.ExecuteNonQuery(); } catch { }
-
-        // ─── مرحلة 9: المصادر النيترونية والأنواع المرجعية (Neutron Sources) ───
-        cmd.CommandText = @"
-            CREATE TABLE IF NOT EXISTS NeutronSourceTypes (
-                Id TEXT PRIMARY KEY NOT NULL,
-                Code TEXT NOT NULL,
-                NameEn TEXT NOT NULL,
-                NameAr TEXT NOT NULL,
-                ReactionType TEXT NOT NULL,
-                TargetMaterial TEXT,
-                ParentNuclide TEXT,
-                HalfLife REAL NOT NULL,
-                HalfLifeUnit TEXT NOT NULL DEFAULT 'years',
-                AverageNeutronEnergyMeV REAL,
-                TypicalNeutronYield REAL,
-                Notes TEXT,
-                IsDeleted INTEGER NOT NULL DEFAULT 0,
-                DeletedAt TEXT,
-                DeletedBy TEXT,
-                AddedBy TEXT,
-                CreatedAt TEXT NOT NULL,
-                FOREIGN KEY (DeletedBy) REFERENCES Users(Id) ON DELETE SET NULL
-            );";
-        cmd.ExecuteNonQuery();
-
-        cmd.CommandText = @"
-            CREATE TABLE IF NOT EXISTS NeutronSources (
-                Id TEXT PRIMARY KEY NOT NULL,
-                SourceCode TEXT NOT NULL,
-                SerialNumber TEXT,
-                NeutronSourceTypeId TEXT NOT NULL,
-                LocationId TEXT,
-                EmissionRate REAL NOT NULL,
-                RelativeExpandedUncertaintyPercent REAL,
-                CalibrationDate TEXT,
-                Status TEXT NOT NULL DEFAULT 'Storage',
-                Notes TEXT,
-                IsDeleted INTEGER NOT NULL DEFAULT 0,
-                DeletedAt TEXT,
-                DeletedBy TEXT,
-                AddedBy TEXT,
-                CreatedAt TEXT NOT NULL,
-                FOREIGN KEY (NeutronSourceTypeId) REFERENCES NeutronSourceTypes(Id) ON DELETE RESTRICT,
-                FOREIGN KEY (LocationId) REFERENCES Locations(Id) ON DELETE SET NULL,
-                FOREIGN KEY (DeletedBy) REFERENCES Users(Id) ON DELETE SET NULL
-            );";
-        cmd.ExecuteNonQuery();
-
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_NeutronSourceTypes_IsDeleted ON NeutronSourceTypes(IsDeleted);"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "CREATE UNIQUE INDEX IF NOT EXISTS IX_NeutronSourceTypes_Code ON NeutronSourceTypes(Code) WHERE IsDeleted = 0;"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_NeutronSources_IsDeleted ON NeutronSources(IsDeleted);"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_NeutronSources_NeutronSourceTypeId ON NeutronSources(NeutronSourceTypeId);"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_NeutronSources_LocationId ON NeutronSources(LocationId);"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_NeutronSources_Status ON NeutronSources(Status);"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "CREATE UNIQUE INDEX IF NOT EXISTS IX_NeutronSources_SourceCode ON NeutronSources(SourceCode) WHERE IsDeleted = 0;"; cmd.ExecuteNonQuery(); } catch { }
-
-        // ─── مرحلة 10: شهادات ومستندات المصادر (Source Certificates) ───
-        cmd.CommandText = @"
-            CREATE TABLE IF NOT EXISTS SourceCertificates (
-                Id TEXT PRIMARY KEY NOT NULL,
-                SourceId TEXT NOT NULL,
-                SourceType TEXT NOT NULL DEFAULT 'Standard',
-                StoredFileName TEXT NOT NULL,
-                OriginalFileName TEXT NOT NULL,
-                AttachedAt TEXT NOT NULL,
-                AttachedBy TEXT NOT NULL
-            );";
-        cmd.ExecuteNonQuery();
-
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_SourceCertificates_SourceId ON SourceCertificates(SourceId);"; cmd.ExecuteNonQuery(); } catch { }
-        try { cmd.CommandText = "CREATE INDEX IF NOT EXISTS IX_SourceCertificates_SourceType ON SourceCertificates(SourceType);"; cmd.ExecuteNonQuery(); } catch { }
-
         conn.Close();
     }
 
@@ -583,7 +324,7 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // ─── Source relationships ───
+        // ─── Source relationships & Indexes ───
         modelBuilder.Entity<Source>(entity =>
         {
             entity.HasOne(s => s.Radioisotope)
@@ -612,7 +353,15 @@ public class AppDbContext : DbContext
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            // كود المصدر معرّف دائم لجسم مشع خاضع للرقابة ولا يُعاد استخدامه بعد الحذف الناعم حفاظاً على سلامة سجل الحيازة والتدقيق
             entity.HasIndex(s => s.SourceCode).IsUnique();
+
+            // فهارس الأداء للمصادر
+            entity.HasIndex(s => s.Status);
+            entity.HasIndex(s => s.CalibrationDate);
+            entity.HasIndex(s => s.IsDeleted);
+            entity.HasIndex(s => s.SerialNumber);
+            entity.HasIndex(s => s.IsSealed);
         });
 
         // ─── Location relationships & Unique Index ───
@@ -627,9 +376,11 @@ public class AppDbContext : DbContext
             entity.HasIndex(l => l.LocationName)
                 .HasFilter("IsDeleted = 0")
                 .IsUnique();
+
+            entity.HasIndex(l => l.IsDeleted);
         });
 
-        // ─── Radioisotope relationships ───
+        // ─── Radioisotope relationships & Indexes ───
         modelBuilder.Entity<Radioisotope>(entity =>
         {
             entity.HasOne(r => r.DeletedByUser)
@@ -637,9 +388,11 @@ public class AppDbContext : DbContext
                 .HasForeignKey(r => r.DeletedBy)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(r => r.IsDeleted);
         });
 
-        // ─── BorrowRequest relationships ───
+        // ─── BorrowRequest relationships & Indexes ───
         modelBuilder.Entity<BorrowRequest>(entity =>
         {
             entity.HasOne(b => b.Source)
@@ -666,12 +419,17 @@ public class AppDbContext : DbContext
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            // فهرس المفتاح الخارجي العادي + الفهرس الفريد المفلتر للطلبات النشطة
+            entity.HasIndex(b => b.SourceId).HasDatabaseName("IX_BorrowRequests_SourceId");
             entity.HasIndex(b => b.SourceId)
+                .HasDatabaseName("IX_BorrowRequests_SourceId_Active")
                 .HasFilter("Status IN ('Delivered', 'Overdue')")
                 .IsUnique();
+
+            entity.HasIndex(b => b.Status);
         });
 
-        // ─── User relationships ───
+        // ─── User relationships & Indexes ───
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasOne(u => u.Role)
@@ -688,15 +446,31 @@ public class AppDbContext : DbContext
             entity.HasIndex(u => u.Username)
                 .HasFilter("IsDeleted = 0")
                 .IsUnique();
+
+            entity.HasIndex(u => u.IsDeleted);
         });
 
-        // ─── AuditLog relationships ───
+        // ─── AuditLog relationships & Indexes ───
         modelBuilder.Entity<AuditLog>(entity =>
         {
             entity.HasOne(a => a.User)
                 .WithMany(u => u.AuditLogs)
                 .HasForeignKey(a => a.UserId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(a => a.ActionDate);
+        });
+
+        // ─── AlertNotification relationships & Indexes ───
+        modelBuilder.Entity<AlertNotification>(entity =>
+        {
+            entity.HasOne(n => n.Source)
+                .WithMany()
+                .HasForeignKey(n => n.SourceId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(n => n.IsRead);
         });
 
         // ─── GammaLine relationships & Performance indexing ───
@@ -777,7 +551,10 @@ public class AppDbContext : DbContext
         // ─── NeutronSourceType & NeutronSource relationships & indexing ───
         modelBuilder.Entity<NeutronSourceType>(entity =>
         {
-            entity.HasIndex(t => t.Code);
+            entity.HasIndex(t => t.Code)
+                .HasDatabaseName("IX_NeutronSourceTypes_Code")
+                .HasFilter("IsDeleted = 0")
+                .IsUnique();
             entity.HasIndex(t => t.IsDeleted);
 
             entity.HasOne(t => t.DeletedByUser)
@@ -806,11 +583,21 @@ public class AppDbContext : DbContext
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            entity.HasIndex(n => n.SourceCode);
+            entity.HasIndex(n => n.SourceCode)
+                .HasDatabaseName("IX_NeutronSources_SourceCode")
+                .HasFilter("IsDeleted = 0")
+                .IsUnique();
             entity.HasIndex(n => n.SerialNumber);
             entity.HasIndex(n => n.LocationId);
             entity.HasIndex(n => n.Status);
             entity.HasIndex(n => n.IsDeleted);
+        });
+
+        // ─── SourceCertificate indexing ───
+        modelBuilder.Entity<SourceCertificate>(entity =>
+        {
+            entity.HasIndex(c => c.SourceId);
+            entity.HasIndex(c => c.SourceType);
         });
 
         // ─── Global Query Filters (Soft Delete) ───

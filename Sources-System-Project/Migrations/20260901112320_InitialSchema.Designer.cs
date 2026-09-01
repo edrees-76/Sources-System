@@ -11,8 +11,8 @@ using Sources.Data;
 namespace Sources.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260830180722_AddNeutronSourcesInfrastructure")]
-    partial class AddNeutronSourcesInfrastructure
+    [Migration("20260901112320_InitialSchema")]
+    partial class InitialSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -81,6 +81,8 @@ namespace Sources.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("IsRead");
+
                     b.HasIndex("SourceId");
 
                     b.ToTable("AlertNotifications");
@@ -137,6 +139,8 @@ namespace Sources.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ActionDate");
 
                     b.HasIndex("UserId");
 
@@ -210,7 +214,10 @@ namespace Sources.Migrations
 
                     b.HasIndex("SourceId")
                         .IsUnique()
+                        .HasDatabaseName("IX_BorrowRequests_SourceId_Active")
                         .HasFilter("Status IN ('Delivered', 'Overdue')");
+
+                    b.HasIndex("Status");
 
                     b.ToTable("BorrowRequests");
                 });
@@ -336,6 +343,8 @@ namespace Sources.Migrations
 
                     b.HasIndex("DeletedBy");
 
+                    b.HasIndex("IsDeleted");
+
                     b.HasIndex("LocationName")
                         .IsUnique()
                         .HasFilter("IsDeleted = 0");
@@ -408,7 +417,10 @@ namespace Sources.Migrations
 
                     b.HasIndex("SerialNumber");
 
-                    b.HasIndex("SourceCode");
+                    b.HasIndex("SourceCode")
+                        .IsUnique()
+                        .HasDatabaseName("IX_NeutronSources_SourceCode")
+                        .HasFilter("IsDeleted = 0");
 
                     b.HasIndex("Status");
 
@@ -483,7 +495,10 @@ namespace Sources.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Code");
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("IX_NeutronSourceTypes_Code")
+                        .HasFilter("IsDeleted = 0");
 
                     b.HasIndex("DeletedBy");
 
@@ -561,6 +576,8 @@ namespace Sources.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("DeletedBy");
+
+                    b.HasIndex("IsDeleted");
 
                     b.ToTable("Radioisotopes");
                 });
@@ -665,20 +682,71 @@ namespace Sources.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CalibrationDate");
+
                     b.HasIndex("CurrentActivityUnitId");
 
                     b.HasIndex("DeletedBy");
 
                     b.HasIndex("InitialActivityUnitId");
 
+                    b.HasIndex("IsDeleted");
+
+                    b.HasIndex("IsSealed");
+
                     b.HasIndex("LocationId");
 
                     b.HasIndex("RadioisotopeId");
 
+                    b.HasIndex("SerialNumber");
+
                     b.HasIndex("SourceCode")
                         .IsUnique();
 
+                    b.HasIndex("Status");
+
                     b.ToTable("Sources");
+                });
+
+            modelBuilder.Entity("Sources.Models.SourceCertificate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("AttachedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AttachedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("SourceId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SourceType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("StoredFileName")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SourceId");
+
+                    b.HasIndex("SourceType");
+
+                    b.ToTable("SourceCertificates");
                 });
 
             modelBuilder.Entity("Sources.Models.SourceIsotope", b =>
@@ -811,6 +879,8 @@ namespace Sources.Migrations
 
                     b.HasIndex("DeletedBy");
 
+                    b.HasIndex("IsDeleted");
+
                     b.HasIndex("RoleId");
 
                     b.HasIndex("Username")
@@ -824,7 +894,8 @@ namespace Sources.Migrations
                 {
                     b.HasOne("Sources.Models.Source", "Source")
                         .WithMany()
-                        .HasForeignKey("SourceId");
+                        .HasForeignKey("SourceId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Source");
                 });

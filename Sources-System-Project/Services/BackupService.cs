@@ -232,6 +232,64 @@ public class BackupService : IBackupService
 
             Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
 
+            // 2. التحقق من توافق المخطط عبر فحص جدول __EFMigrationsHistory بـ SQLite مباشر
+            bool isCompatible = false;
+            try
+            {
+                var connStr = new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder
+                {
+                    DataSource = _dbPath,
+                    Mode = Microsoft.Data.Sqlite.SqliteOpenMode.ReadOnly,
+                    DefaultTimeout = 5
+                }.ToString();
+
+                using (var conn = new Microsoft.Data.Sqlite.SqliteConnection(connStr))
+                {
+                    conn.Open();
+                    using var cmd = conn.CreateCommand();
+                    cmd.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='__EFMigrationsHistory';";
+                    var tableCount = Convert.ToInt64(cmd.ExecuteScalar());
+                    if (tableCount > 0)
+                    {
+                        cmd.CommandText = "SELECT COUNT(*) FROM \"__EFMigrationsHistory\" WHERE \"MigrationId\" LIKE '%InitialSchema%';";
+                        var migrationCount = Convert.ToInt64(cmd.ExecuteScalar());
+                        isCompatible = migrationCount > 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogWarning($"فشل فحص توافق المخطط في النسخة المستعادة: {ex.Message}");
+                isCompatible = false;
+            }
+
+            Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+
+            if (!isCompatible)
+            {
+                // استرجاع النسخة الوقائية السابقة لقاعدة البيانات
+                if (File.Exists(safetyBackupDb))
+                {
+                    File.Copy(safetyBackupDb, _dbPath, overwrite: true);
+                }
+
+                // استرجاع النسخة الوقائية السابقة لمجلد الشهادات
+                if (safetyCertDir != null && Directory.Exists(safetyCertDir))
+                {
+                    if (Directory.Exists(_certificatesFolder))
+                    {
+                        try { Directory.Delete(_certificatesFolder, recursive: true); } catch { }
+                    }
+                    CopyDirectory(safetyCertDir, _certificatesFolder);
+                }
+
+                Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+
+                string incompatibleMsg = "النسخة الاحتياطية أُنشئت بإصدار أقدم من المنظومة وبنية قاعدة البيانات تغيّرت، ولا يمكن استعادتها.";
+                LoggerService.LogWarning(incompatibleMsg);
+                return (false, incompatibleMsg);
+            }
+
             // بعد نجاح الاستعادة الكاملة بدون أخطاء: حذف مجلد النسخة الاحتياطية المؤقتة للشهادات
             if (safetyCertDir != null && Directory.Exists(safetyCertDir))
             {

@@ -29,7 +29,7 @@ public class BackupServiceTests : IDisposable
         _sut = new BackupService(_dbPath, _backupDir);
     }
 
-    private void CreateValidSqliteDatabase(string path, string tableName = "Sources", string sampleData = "SRC-TEST-001")
+    private void CreateValidSqliteDatabase(string path, string tableName = "Sources", string sampleData = "SRC-TEST-001", bool includeInitialSchemaMigration = true)
     {
         SqliteConnection.ClearAllPools();
         if (File.Exists(path)) File.Delete(path);
@@ -37,6 +37,10 @@ public class BackupServiceTests : IDisposable
         conn.Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $"PRAGMA journal_mode=WAL; CREATE TABLE IF NOT EXISTS {tableName} (Id INTEGER PRIMARY KEY, Code TEXT); INSERT INTO {tableName} (Code) VALUES ('{sampleData}');";
+        if (includeInitialSchemaMigration)
+        {
+            cmd.CommandText += " CREATE TABLE IF NOT EXISTS \"__EFMigrationsHistory\" (\"MigrationId\" TEXT NOT NULL PRIMARY KEY, \"ProductVersion\" TEXT NOT NULL); INSERT OR REPLACE INTO \"__EFMigrationsHistory\" VALUES ('20260901112320_InitialSchema', '8.0.12');";
+        }
         cmd.ExecuteNonQuery();
         conn.Close();
     }
@@ -259,16 +263,61 @@ public class BackupServiceTests : IDisposable
     }
 
     [Fact]
+    public void RestoreBackup_CompatibleBackupWithInitialSchema_RestoresSuccessfully()
+    {
+        // Arrange
+        CreateValidSqliteDatabase(_dbPath, "Sources", "CURRENT_DB_DATA", includeInitialSchemaMigration: true);
+
+        var backupFilePath = Path.Combine(_backupDir, "SOURCES_backup_compatible.db");
+        CreateValidSqliteDatabase(backupFilePath, "Sources", "BACKUP_COMPATIBLE_DATA", includeInitialSchemaMigration: true);
+
+        // Act
+        var result = _sut.RestoreBackup(backupFilePath);
+
+        // Assert
+        Assert.True(result.Success, result.Message);
+        Assert.Contains("تمت الاستعادة بنجاح", result.Message);
+
+        using var conn = new SqliteConnection($"Data Source={_dbPath}");
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT Code FROM Sources LIMIT 1;";
+        Assert.Equal("BACKUP_COMPATIBLE_DATA", cmd.ExecuteScalar()?.ToString());
+    }
+
+    [Fact]
+    public void RestoreBackup_IncompatibleLegacyBackupWithoutMigrationsHistory_RejectsAndRestoresSafetyBackup()
+    {
+        // Arrange
+        CreateValidSqliteDatabase(_dbPath, "Sources", "ORIGINAL_SAFE_DATA", includeInitialSchemaMigration: true);
+
+        // Incompatible legacy backup without __EFMigrationsHistory
+        var legacyBackupPath = Path.Combine(_backupDir, "SOURCES_backup_legacy.db");
+        CreateValidSqliteDatabase(legacyBackupPath, "Sources", "LEGACY_DATA", includeInitialSchemaMigration: false);
+
+        // Act
+        var result = _sut.RestoreBackup(legacyBackupPath);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Contains("النسخة الاحتياطية أُنشئت بإصدار أقدم من المنظومة", result.Message);
+
+        // Verify that original database was restored from safety backup
+        using var conn = new SqliteConnection($"Data Source={_dbPath}");
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT Code FROM Sources LIMIT 1;";
+        Assert.Equal("ORIGINAL_SAFE_DATA", cmd.ExecuteScalar()?.ToString());
+    }
+
+    [Fact]
     public void RestoreBackup_ValidBackupFile_CreatesPreRestoreSafetyBackupAndRestoresDatabase()
     {
         // Arrange
-        var originalData = Encoding.UTF8.GetBytes("ORIGINAL_DATABASE_STATE");
-        var restoredData = Encoding.UTF8.GetBytes("RESTORED_DATABASE_STATE");
-
-        File.WriteAllBytes(_dbPath, originalData);
+        CreateValidSqliteDatabase(_dbPath, "Sources", "ORIGINAL_DATABASE_STATE", includeInitialSchemaMigration: true);
 
         var backupFilePath = Path.Combine(_backupDir, "SOURCES_backup_2026-08-16_12-00-00.db");
-        File.WriteAllBytes(backupFilePath, restoredData);
+        CreateValidSqliteDatabase(backupFilePath, "Sources", "RESTORED_DATABASE_STATE", includeInitialSchemaMigration: true);
 
         // Act
         var result = _sut.RestoreBackup(backupFilePath);
@@ -278,15 +327,15 @@ public class BackupServiceTests : IDisposable
         Assert.Contains("تمت الاستعادة بنجاح", result.Message);
 
         // Verify restored content
-        var currentDbBytes = File.ReadAllBytes(_dbPath);
-        Assert.Equal(restoredData, currentDbBytes);
+        using var conn = new SqliteConnection($"Data Source={_dbPath}");
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT Code FROM Sources LIMIT 1;";
+        Assert.Equal("RESTORED_DATABASE_STATE", cmd.ExecuteScalar()?.ToString());
 
         // Verify pre_restore safety backup was created in backup directory
         var safetyFiles = Directory.GetFiles(_backupDir, "SOURCES_pre_restore_*.db");
         Assert.Single(safetyFiles);
-
-        var safetyBytes = File.ReadAllBytes(safetyFiles[0]);
-        Assert.Equal(originalData, safetyBytes);
     }
 
     [Fact]
@@ -308,9 +357,8 @@ public class BackupServiceTests : IDisposable
     {
         // Arrange
         if (File.Exists(_dbPath)) File.Delete(_dbPath);
-        var restoredData = Encoding.UTF8.GetBytes("RESTORE_NO_EXISTING_DB");
         var backupFilePath = Path.Combine(_backupDir, "SOURCES_backup_restore_test.db");
-        File.WriteAllBytes(backupFilePath, restoredData);
+        CreateValidSqliteDatabase(backupFilePath, "Sources", "RESTORE_NO_EXISTING_DB", includeInitialSchemaMigration: true);
 
         // Act
         var result = _sut.RestoreBackup(backupFilePath);
@@ -318,7 +366,12 @@ public class BackupServiceTests : IDisposable
         // Assert
         Assert.True(result.Success);
         Assert.True(File.Exists(_dbPath));
-        Assert.Equal(restoredData, File.ReadAllBytes(_dbPath));
+
+        using var conn = new SqliteConnection($"Data Source={_dbPath}");
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT Code FROM Sources LIMIT 1;";
+        Assert.Equal("RESTORE_NO_EXISTING_DB", cmd.ExecuteScalar()?.ToString());
     }
 
     [Fact]

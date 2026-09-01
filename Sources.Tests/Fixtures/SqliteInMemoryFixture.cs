@@ -32,9 +32,9 @@ public class SqliteInMemoryFixture : IDisposable
 
         ContextFactory = new TestDbContextFactory(Options);
 
-        // إنشاء الجداول والمخطط في الذاكرة
+        // إنشاء الجداول والمخطط في الذاكرة عبر EF Migrations
         using var context = CreateContext();
-        context.Database.EnsureCreated();
+        context.Database.Migrate();
     }
 
     public AppDbContext CreateContext() => new AppDbContext(Options);
