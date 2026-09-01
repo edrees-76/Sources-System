@@ -864,5 +864,39 @@ public class NeutronSourcesUITests : IDisposable
         var detailsVm = new NeutronSourceDetailsViewModel(source);
         Assert.Equal("1.1×10⁷ n/s", detailsVm.EmissionRateFormatted);
     }
+
+    [Theory]
+    [InlineData("1.1×1000000", 1100000.0, 1.1)]
+    [InlineData("5x1000", 5000.0, 5.0)]
+    [InlineData("1.1x1000000", 1100000.0, 1.1)]
+    [InlineData("2*500000", 1000000.0, 2.0)]
+    public void ScientificNotationParser_ExplicitMultiplicationWithoutExponent_ParsesCorrectlyAndNotSilentTruncation(
+        string input, double expectedValue, double faultySilentValue)
+    {
+        // Act
+        bool success = ScientificNotationParser.TryParse(input, out double result);
+
+        // Assert
+        Assert.True(success, $"Parsing failed for: {input}");
+        Assert.Equal(expectedValue, result);
+        Assert.NotEqual(faultySilentValue, result);
+    }
+
+    [Theory]
+    [InlineData("1.1x10^7", 11000000.0)]
+    [InlineData("1.1X10^7", 11000000.0)]
+    [InlineData("1.1×10^7", 11000000.0)]
+    [InlineData("1.1×10⁷", 11000000.0)]
+    [InlineData("10^7", 10000000.0)]
+    [InlineData("10⁷", 10000000.0)]
+    public void ScientificNotationParser_MandatoryExponentSymbol_ParsesCorrectly(string input, double expected)
+    {
+        // Act
+        bool success = ScientificNotationParser.TryParse(input, out double result);
+
+        // Assert
+        Assert.True(success, $"Parsing failed for: {input}");
+        Assert.Equal(expected, result);
+    }
 }
 

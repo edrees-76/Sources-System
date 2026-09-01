@@ -727,13 +727,14 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         if (!DialogHelper.ShowConfirmation(confirmMsg, confirmTitle)) return;
 
         var result = _neutronSourceService?.Delete(target.Id) ?? (false, "خدمة المصادر النيترونية غير متاحة");
-        ShowMessage(result.Message);
         if (!result.Success)
         {
-            DialogHelper.ShowError(result.Message);
+            ShowMessage(result.Message);
         }
         else
         {
+            Message = result.Message;
+            HasMessage = true;
             await LoadNeutronDataAsync();
             WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
         }
@@ -881,13 +882,18 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                     ? (_neutronSourceService?.Create(neutronSource) ?? (false, "خدمة المصادر النيترونية غير متاحة"))
                     : (_neutronSourceService?.Update(neutronSource) ?? (false, "خدمة المصادر النيترونية غير متاحة"));
 
-                ShowMessage(neutronResult.Message);
                 if (neutronResult.Success)
                 {
+                    Message = neutronResult.Message;
+                    HasMessage = true;
                     IsEditing = false;
                     DialogHelper.ShowInfo(neutronResult.Message, TranslationHelper.GetString("TitleSuccess") ?? "نجاح العملية");
                     await LoadNeutronDataAsync();
                     WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
+                }
+                else
+                {
+                    ShowMessage(neutronResult.Message);
                 }
                 return;
             }
@@ -1023,14 +1029,16 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
             }
 
             var result = IsNew ? _sourceService.CreateSource(source, isotopes) : _sourceService.UpdateSource(source, isotopes);
-            ShowMessage(result.Message);
             if (result.Success)
             {
+                Message = result.Message;
+                HasMessage = true;
                 IsEditing = false;
                 DialogHelper.ShowInfo(result.Message, "نجاح العملية");
             }
             else
             {
+                ShowMessage(result.Message);
                 return;
             }
 
@@ -1101,13 +1109,14 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         if (!DialogHelper.ShowConfirmation(confirmMsg, confirmTitle)) return;
 
         var result = _sourceService.DeleteSource(source.Id);
-        ShowMessage(result.Message);
         if (!result.Success)
         {
-            DialogHelper.ShowError(result.Message);
+            ShowMessage(result.Message);
         }
         else
         {
+            Message = result.Message;
+            HasMessage = true;
             try
             {
                 await LoadDataAsync();
