@@ -314,19 +314,19 @@
 
                                 <!-- اسم المنظومة -->
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="{DynamicResource SystemInfoName}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,6,16,6"/>
-                                <TextBlock Grid.Row="0" Grid.Column="1" Text="SOURCES - منظومة تتبع المصادر المشعة" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,6,0,6"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{DynamicResource SystemInfoNameValue}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,6,0,6"/>
 
                                 <!-- الإصدار -->
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="{DynamicResource SystemInfoVersion}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,6,16,6"/>
-                                <TextBlock Grid.Row="1" Grid.Column="1" Text="1.0.0 (Release 2026)" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,6,0,6"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{DynamicResource SystemInfoVersionValue}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,6,0,6"/>
 
                                 <!-- المعيار الدولي -->
                                 <TextBlock Grid.Row="2" Grid.Column="0" Text="{DynamicResource SystemInfoStandard}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,6,16,6"/>
                                 <TextBlock Grid.Row="2" Grid.Column="1" Text="IAEA Categorization of Radioactive Sources (RS-G-1.9)" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,6,0,6"/>
 
                                 <!-- محرك البيانات -->
-                                <TextBlock Grid.Row="3" Grid.Column="0" Text="قاعدة البيانات:" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,6,16,6"/>
-                                <TextBlock Grid.Row="3" Grid.Column="1" Text="SQLite 3 (Local AppData Storage)" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,6,0,6"/>
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="{DynamicResource SystemInfoDatabase}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,6,16,6"/>
+                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{DynamicResource SystemInfoDatabaseValue}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,6,0,6"/>
                             </Grid>
                         </StackPanel>
                     </Border>
@@ -945,7 +945,7 @@
                                 <materialDesign:PackIcon Kind="BellAlertOutline" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <TextBlock Text="{DynamicResource AlertSettingsTitle}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                             </StackPanel>
-                            <TextBlock Text="ضبط معايير مراقبة النشاط ودورية فحص التنبيهات الآلية" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,18"/>
+                            <TextBlock Text="{DynamicResource AlertSettingsSubtitle}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,18"/>
 
                             <!-- عتبة النشاط المنخفض -->
                             <StackPanel Margin="0,0,0,16">
@@ -1002,7 +1002,7 @@
                                 <materialDesign:PackIcon Kind="FileDocumentEditOutline" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <TextBlock Text="{DynamicResource ReportHeaderSettingsTitle}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                             </StackPanel>
-                            <TextBlock Text="البيانات المعتمدة للمؤسسة والمعمل المعروضة في ترويسات ومستندات النظام" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,18"/>
+                            <TextBlock Text="{DynamicResource ReportHeaderSettingsSubtitle}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,18"/>
 
                             <!-- اسم المؤسسة -->
                             <StackPanel Margin="0,0,0,14">
@@ -1089,7 +1089,7 @@
                                         Visibility="{Binding IsStage1Passed, Converter={StaticResource BoolToVis}}">
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Kind="CheckCircleOutline" Foreground="{DynamicResource SuccessBrush}" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                                        <TextBlock Text="تم التحقق" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource SuccessBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource BadgeVerified}" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource SuccessBrush}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
                             </DockPanel>
@@ -1136,7 +1136,7 @@
                                         Visibility="{Binding IsStage2Passed, Converter={StaticResource BoolToVis}}">
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Kind="CheckCircleOutline" Foreground="{DynamicResource SuccessBrush}" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                                        <TextBlock Text="تم التحقق" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource SuccessBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource BadgeVerified}" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource SuccessBrush}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
                             </DockPanel>

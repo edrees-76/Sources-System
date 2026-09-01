@@ -183,6 +183,10 @@
     <system:String x:Key="SystemInfoName">Name:</system:String>
     <system:String x:Key="SystemInfoVersion">Version:</system:String>
     <system:String x:Key="SystemInfoStandard">Standard:</system:String>
+    <system:String x:Key="SystemInfoDatabase">Database:</system:String>
+    <system:String x:Key="SystemInfoDatabaseValue">SQLite 3 (Local AppData Storage)</system:String>
+    <system:String x:Key="SystemInfoNameValue">SOURCES - Radioactive Source Tracking System</system:String>
+    <system:String x:Key="SystemInfoVersionValue">1.0.0 (Release 2026)</system:String>
     <system:String x:Key="MsgThemeChanged">Theme changed successfully</system:String>
     <system:String x:Key="MsgLanguageChanged">Language changed successfully</system:String>
     <system:String x:Key="MsgRestartRequiredForLang">Please logout and login again (or restart the app) to fully apply layout direction changes.</system:String>
@@ -190,6 +194,7 @@
 
     <!-- System Settings Tab -->
     <system:String x:Key="AlertSettingsTitle">Smart Alert Thresholds</system:String>
+    <system:String x:Key="AlertSettingsSubtitle">Configure activity monitoring thresholds and automatic alert check frequency</system:String>
     <system:String x:Key="LabelLowActivityThreshold">Low Activity Threshold (%)</system:String>
     <system:String x:Key="DescLowActivityThreshold">Percentage of initial activity below which a source is considered low activity in reports</system:String>
     <system:String x:Key="LabelNotificationCheckInterval">Alert Check Interval (Minutes)</system:String>
@@ -197,7 +202,12 @@
     <system:String x:Key="LabelDueSoonThreshold">Due Soon Borrowing Threshold (Days)</system:String>
     <system:String x:Key="DescDueSoonThreshold">Number of days before expected return date to classify a borrow request as 'Due Soon'</system:String>
     <system:String x:Key="MsgErrDueSoonThresholdRange">Due soon threshold must be between 1 and 365 days</system:String>
+    <system:String x:Key="MsgErrLowActivityThresholdRange">Low activity threshold percentage must be between 0.1% and 100%</system:String>
+    <system:String x:Key="MsgErrNotificationIntervalRange">Notification check interval must be between 1 minute and 1440 minutes (24 hours)</system:String>
+    <system:String x:Key="MsgErrLeakTestIntervalRange">Leak test interval must be between 1 month and 120 months</system:String>
+    <system:String x:Key="MsgErrLeakTestWarningDaysRange">Leak test warning threshold must be between 1 day and 365 days</system:String>
     <system:String x:Key="ReportHeaderSettingsTitle">Facility Info &amp; Report Header</system:String>
+    <system:String x:Key="ReportHeaderSettingsSubtitle">Approved facility and laboratory details displayed on report headers and documents</system:String>
     <system:String x:Key="LabelFacilityName">Facility / Lab Name</system:String>
     <system:String x:Key="LabelFacilityAddress">Facility Address</system:String>
     <system:String x:Key="LabelTechnicalDirector">Responsible Person / Technical Director</system:String>
@@ -218,8 +228,14 @@
     <system:String x:Key="BtnVerifyPassword">Verify Password</system:String>
     <system:String x:Key="LabelResetStep3">Step 3: Final Confirmation &amp; Execution</system:String>
     <system:String x:Key="BtnExecuteFactoryReset">Execute System Factory Reset</system:String>
+    <system:String x:Key="BadgeVerified">Verified</system:String>
     <system:String x:Key="MsgErrIncorrectPhrase">Confirmation phrase does not match, please type it exactly</system:String>
     <system:String x:Key="MsgErrIncorrectAdminPassword">Incorrect password</system:String>
+    <system:String x:Key="MsgErrNoCurrentUserLoggedIn">No user is currently logged in</system:String>
+    <system:String x:Key="MsgErrAdminOnlyAction">Unauthorized: This action is restricted to System Administrators only</system:String>
+    <system:String x:Key="MsgErrCompletePreviousStages">Please complete the previous stages first</system:String>
+    <system:String x:Key="MsgErrResetServiceUnavailable">System reset service is currently unavailable</system:String>
+    <system:String x:Key="MsgBusyExecutingFactoryReset">Taking mandatory safety backup and resetting the system...</system:String>
     <system:String x:Key="MsgFactoryResetSuccess">System reset to factory defaults completed successfully and backup was created. Logging out now.</system:String>
     <system:String x:Key="MsgFactoryResetFailed">Factory reset failed: {0}</system:String>
 

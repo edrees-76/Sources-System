@@ -180,6 +180,10 @@
     <system:String x:Key="SystemInfoName">الاسم:</system:String>
     <system:String x:Key="SystemInfoVersion">الإصدار:</system:String>
     <system:String x:Key="SystemInfoStandard">المعيار:</system:String>
+    <system:String x:Key="SystemInfoDatabase">قاعدة البيانات:</system:String>
+    <system:String x:Key="SystemInfoDatabaseValue">SQLite 3 (تخزين محلي AppData)</system:String>
+    <system:String x:Key="SystemInfoNameValue">SOURCES - منظومة تتبع المصادر المشعة</system:String>
+    <system:String x:Key="SystemInfoVersionValue">1.0.0 (Release 2026)</system:String>
     <system:String x:Key="MsgThemeChanged">تم تغيير المظهر بنجاح</system:String>
     <system:String x:Key="MsgLanguageChanged">تم تغيير اللغة بنجاح</system:String>
     <system:String x:Key="MsgRestartRequiredForLang">يرجى تسجيل الخروج والدخول مرة أخرى (أو إعادة تشغيل البرنامج) لتطبيق تغييرات اتجاه الواجهة بشكل كامل.</system:String>
@@ -187,6 +191,7 @@
     
     <!-- System Settings Tab -->
     <system:String x:Key="AlertSettingsTitle">عتبات التنبيهات الذكية</system:String>
+    <system:String x:Key="AlertSettingsSubtitle">ضبط معايير مراقبة النشاط ودورية فحص التنبيهات الآلية</system:String>
     <system:String x:Key="LabelLowActivityThreshold">عتبة النشاط المنخفض (%)</system:String>
     <system:String x:Key="DescLowActivityThreshold">النسبة المئوية من النشاط الابتدائي التي يُعتبر المصدر عندها منخفض النشاط في التقارير</system:String>
     <system:String x:Key="LabelNotificationCheckInterval">دورية فحص التنبيهات (بالدقائق)</system:String>
@@ -194,7 +199,12 @@
     <system:String x:Key="LabelDueSoonThreshold">مهلة التنبيه بالاستعارات المستحقة (بالأيام)</system:String>
     <system:String x:Key="DescDueSoonThreshold">عدد الأيام قبل تاريخ الإرجاع المتوقع لتصنيف الاستعارة كـ 'مستحقة قريباً'</system:String>
     <system:String x:Key="MsgErrDueSoonThresholdRange">يجب أن تكون مهلة الاستحقاق القريب بين 1 و 365 يوماً</system:String>
+    <system:String x:Key="MsgErrLowActivityThresholdRange">يجب أن تكون نسبة عتبة النشاط بين 0.1% و 100%</system:String>
+    <system:String x:Key="MsgErrNotificationIntervalRange">يجب أن تكون فترة فحص التنبيهات بين 1 دقيقة و 1440 دقيقة (24 ساعة)</system:String>
+    <system:String x:Key="MsgErrLeakTestIntervalRange">يجب أن تكون دورية فحص التسرب بين 1 شهر و 120 شهراً</system:String>
+    <system:String x:Key="MsgErrLeakTestWarningDaysRange">يجب أن تكون مهلة التنبيه بفحص التسرب بين 1 يوم و 365 يوماً</system:String>
     <system:String x:Key="ReportHeaderSettingsTitle">بيانات المنشأة وترويسة التقارير</system:String>
+    <system:String x:Key="ReportHeaderSettingsSubtitle">البيانات المعتمدة للمؤسسة والمعمل المعروضة في ترويسات ومستندات النظام</system:String>
     <system:String x:Key="LabelFacilityName">اسم المؤسسة / المختبر</system:String>
     <system:String x:Key="LabelFacilityAddress">عنوان المنشأة</system:String>
     <system:String x:Key="LabelTechnicalDirector">المسؤول / المدير الفني</system:String>
@@ -215,8 +225,14 @@
     <system:String x:Key="BtnVerifyPassword">تحقق من كلمة المرور</system:String>
     <system:String x:Key="LabelResetStep3">المرحلة 3: التأكيد النهائي والتنفيذ</system:String>
     <system:String x:Key="BtnExecuteFactoryReset">تنفيذ إعادة ضبط المنظومة للوضع الافتراضي</system:String>
+    <system:String x:Key="BadgeVerified">تم التحقق</system:String>
     <system:String x:Key="MsgErrIncorrectPhrase">جملة التأكيد غير متطابقة، يرجى كتابتها بدقة</system:String>
     <system:String x:Key="MsgErrIncorrectAdminPassword">كلمة المرور غير صحيحة</system:String>
+    <system:String x:Key="MsgErrNoCurrentUserLoggedIn">لا يوجد مستخدم مسجل حالياً</system:String>
+    <system:String x:Key="MsgErrAdminOnlyAction">غير مصرح: هذه العملية مخصصة لمدير النظام فقط</system:String>
+    <system:String x:Key="MsgErrCompletePreviousStages">يرجى إكمال المرحلتين السابقتين أولاً</system:String>
+    <system:String x:Key="MsgErrResetServiceUnavailable">خدمة إعادة ضبط المنظومة غير متوفرة</system:String>
+    <system:String x:Key="MsgBusyExecutingFactoryReset">جاري أخذ نسخة احتياطية إجبارية وتصفير المنظومة...</system:String>
     <system:String x:Key="MsgFactoryResetSuccess">تمت إعادة ضبط المنظومة للوضع الافتراضي بنجاح وأخذ نسخة احتياطية كاملة. سيتم الآن تسجيل الخروج.</system:String>
     <system:String x:Key="MsgFactoryResetFailed">فشلت عملية إعادة ضبط المنظومة: {0}</system:String>
 

@@ -389,13 +389,13 @@ public partial class SettingsViewModel : ObservableObject
     {
         if (LowActivityThresholdPercent <= 0 || LowActivityThresholdPercent > 100)
         {
-            DialogHelper.ShowWarning("يجب أن تكون نسبة عتبة النشاط بين 0.1% و 100%", TranslationHelper.GetString("TabSystemSettings"));
+            DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrLowActivityThresholdRange"), TranslationHelper.GetString("TabSystemSettings"));
             return;
         }
 
         if (NotificationCheckIntervalMinutes < 1 || NotificationCheckIntervalMinutes > 1440)
         {
-            DialogHelper.ShowWarning("يجب أن تكون فترة فحص التنبيهات بين 1 دقيقة و 1440 دقيقة (24 ساعة)", TranslationHelper.GetString("TabSystemSettings"));
+            DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrNotificationIntervalRange"), TranslationHelper.GetString("TabSystemSettings"));
             return;
         }
 
@@ -407,13 +407,13 @@ public partial class SettingsViewModel : ObservableObject
 
         if (LeakTestIntervalMonths < 1 || LeakTestIntervalMonths > 120)
         {
-            DialogHelper.ShowWarning("يجب أن تكون دورية فحص التسرب بين 1 شهر و 120 شهراً", TranslationHelper.GetString("TabSystemSettings"));
+            DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrLeakTestIntervalRange"), TranslationHelper.GetString("TabSystemSettings"));
             return;
         }
 
         if (LeakTestWarningDaysThreshold < 1 || LeakTestWarningDaysThreshold > 365)
         {
-            DialogHelper.ShowWarning("يجب أن تكون مهلة التنبيه بفحص التسرب بين 1 يوم و 365 يوماً", TranslationHelper.GetString("TabSystemSettings"));
+            DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrLeakTestWarningDaysRange"), TranslationHelper.GetString("TabSystemSettings"));
             return;
         }
 
@@ -478,7 +478,7 @@ public partial class SettingsViewModel : ObservableObject
         if (currentUser == null)
         {
             IsStage2Passed = false;
-            DialogHelper.ShowError("لا يوجد مستخدم مسجل حالياً", TranslationHelper.GetString("TitleFactoryReset"));
+            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrNoCurrentUserLoggedIn"), TranslationHelper.GetString("TitleFactoryReset"));
             return;
         }
 
@@ -499,13 +499,13 @@ public partial class SettingsViewModel : ObservableObject
     {
         if (!IsAdmin)
         {
-            DialogHelper.ShowError("غير مصرح: هذه العملية مخصصة لمدير النظام فقط", TranslationHelper.GetString("TitleFactoryReset"));
+            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrAdminOnlyAction"), TranslationHelper.GetString("TitleFactoryReset"));
             return;
         }
 
         if (!IsStage1Passed || !IsStage2Passed)
         {
-            DialogHelper.ShowWarning("يرجى إكمال المرحلتين السابقتين أولاً", TranslationHelper.GetString("TitleFactoryReset"));
+            DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrCompletePreviousStages"), TranslationHelper.GetString("TitleFactoryReset"));
             return;
         }
 
@@ -518,12 +518,12 @@ public partial class SettingsViewModel : ObservableObject
 
         if (_resetService == null)
         {
-            DialogHelper.ShowError("خدمة إعادة ضبط المنظومة غير متوفرة", TranslationHelper.GetString("TitleFactoryReset"));
+            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrResetServiceUnavailable"), TranslationHelper.GetString("TitleFactoryReset"));
             return;
         }
 
         IsBusy = true;
-        BusyMessage = "جاري أخذ نسخة احتياطية إجبارية وتصفير المنظومة...";
+        BusyMessage = TranslationHelper.GetString("MsgBusyExecutingFactoryReset");
 
         try
         {
