@@ -854,11 +854,11 @@ public class NeutronSourcesUITests : IDisposable
 
         // Assert: Formatted display uses superscripts
         Assert.Equal("1.1×10⁷ n/s", source.DisplayEmissionRate);
-        Assert.Equal("1.1×10⁷ n/s", source.EmissionRateFormatted);
+        Assert.Equal("1.1×10⁷ n/s", source.CalibratedEmissionRateFormatted);
 
         // Details VM
         var detailsVm = new NeutronSourceDetailsViewModel(source);
-        Assert.Equal("1.1×10⁷ n/s", detailsVm.EmissionRateFormatted);
+        Assert.Equal("1.1×10⁷ n/s", detailsVm.CalibratedEmissionRateFormatted);
     }
 
     [Theory]

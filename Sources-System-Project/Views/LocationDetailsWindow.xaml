@@ -301,7 +301,7 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 <DataGridTextColumn Header="{DynamicResource HeaderRefType}" Binding="{Binding TypeCode}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
-                                <DataGridTextColumn Header="{DynamicResource HeaderEmissionRate}" Binding="{Binding EmissionRateFormatted}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource CenterAligned}"/>
+                                <DataGridTextColumn Header="{DynamicResource HeaderEmissionRate}" Binding="{Binding CalibratedEmissionRateFormatted}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource CenterAligned}"/>
                                 <DataGridTextColumn Header="{DynamicResource HeaderUncertaintyPercent}" Binding="{Binding UncertaintyFormatted}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterAligned}"/>
                                 <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterAligned}"/>
                                 <DataGridTextColumn Header="{DynamicResource ColCalibrationDate}" Binding="{Binding CalibrationDateFormatted}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>

@@ -152,12 +152,13 @@ public class ReportingServiceTests : IDisposable
 
     private List<AuditLog> CreateSampleAuditLogs()
     {
-        var user = new User { FullName = "أحمد محمد" };
+        var user = new User { Id = Guid.NewGuid(), FullName = "أحمد محمد" };
 
         return new List<AuditLog>
         {
             new()
             {
+                UserId = user.Id,
                 User = user,
                 Action = "إضافة مصدر جديد",
                 TableName = "Sources",
@@ -166,6 +167,7 @@ public class ReportingServiceTests : IDisposable
             },
             new()
             {
+                UserId = null,
                 User = null, // System automatic action
                 Action = "نسخ احتياطي تلقائي",
                 TableName = "System",
@@ -446,7 +448,7 @@ public class ReportingServiceTests : IDisposable
         Assert.Equal("المستخدم", ws.Cell(1, 2).GetString());
         Assert.Equal("أحمد محمد", ws.Cell(2, 2).GetString());
         Assert.Equal("إضافة مصدر جديد", ws.Cell(2, 3).GetString());
-        Assert.Equal("مدير النظام / تلقائي", ws.Cell(3, 2).GetString());
+        Assert.Equal("عملية تلقائية", ws.Cell(3, 2).GetString());
         Assert.Equal("نسخ احتياطي تلقائي", ws.Cell(3, 3).GetString());
     }
 
@@ -686,7 +688,7 @@ public class ReportingServiceTests : IDisposable
             Assert.Equal("-", ws.Cell(2, 2).GetString()); // Source fallback
             Assert.Equal("-", ws.Cell(2, 3).GetString()); // Borrower fallback
             Assert.Equal("-", ws.Cell(2, 4).GetString()); // Purpose fallback
-            Assert.Equal("-", ws.Cell(2, 7).GetString()); // AddedBy fallback
+            Assert.Equal("غير معروف", ws.Cell(2, 7).GetString()); // AddedBy fallback
         }
 
         var excelUserPath = GetTempFilePath("xlsx");
@@ -705,7 +707,7 @@ public class ReportingServiceTests : IDisposable
         using (var wb = new XLWorkbook(excelLogPath))
         {
             var ws = wb.Worksheet("سجل التدقيق والنشاطات");
-            Assert.Equal("مدير النظام / تلقائي", ws.Cell(2, 2).GetString()); // User fallback
+            Assert.Equal("عملية تلقائية", ws.Cell(2, 2).GetString()); // User fallback (UserId == null -> automated)
             Assert.Equal("-", ws.Cell(2, 4).GetString()); // Table fallback
             Assert.Equal("-", ws.Cell(2, 5).GetString()); // Details fallback
         }
@@ -839,6 +841,169 @@ public class ReportingServiceTests : IDisposable
         Assert.True(File.Exists(filePath));
         var fileInfo = new FileInfo(filePath);
         Assert.True(fileInfo.Length > 0);
+    }
+
+    #endregion
+
+    #region Round 98 Tests — Neutron Inventory Calibration Date & Audit Log Attribution
+
+    [Fact]
+    public async Task GenerateNeutronInventoryReportExcelAsync_UsesEmissionCalibrationDate_NotCalibrationDate()
+    {
+        // Arrange
+        var emissionDate = new DateTime(2025, 6, 15);
+        var generalCalibrationDate = new DateTime(2023, 1, 10);
+        var sources = new List<NeutronSource>
+        {
+            new()
+            {
+                SourceCode = "NS-CAL-01",
+                NeutronSourceType = new NeutronSourceType { Code = "Am-241/Be" },
+                CalibratedEmissionRate = 5.4e6,
+                RelativeExpandedUncertaintyPercent = 3.2,
+                EmissionCalibrationDate = emissionDate,
+                CalibrationDate = generalCalibrationDate,
+                Status = "InUse"
+            }
+        };
+        var filePath = GetTempFilePath("xlsx");
+
+        // Act
+        await _sut.GenerateNeutronInventoryReportExcelAsync(sources, filePath);
+
+        // Assert
+        Assert.True(File.Exists(filePath));
+        using var wb = new XLWorkbook(filePath);
+        var ws = wb.Worksheets.First();
+
+        // Header check
+        var header = ws.Cell(1, 8).GetString();
+        Assert.Equal("تاريخ معايرة الانبعاث", header);
+
+        // Value check: MUST match EmissionCalibrationDate, NOT CalibrationDate
+        var value = ws.Cell(2, 8).GetString();
+        Assert.Equal(emissionDate.ToString("yyyy-MM-dd"), value);
+        Assert.NotEqual(generalCalibrationDate.ToString("yyyy-MM-dd"), value);
+    }
+
+    [Fact]
+    public async Task GenerateNeutronInventoryReportExcelAsync_WhenEmissionCalibrationDateNull_DisplaysNotRecorded()
+    {
+        // Arrange
+        var sources = new List<NeutronSource>
+        {
+            new()
+            {
+                SourceCode = "NS-CAL-NULL",
+                NeutronSourceType = new NeutronSourceType { Code = "Cf-252" },
+                CalibratedEmissionRate = 1.2e7,
+                EmissionCalibrationDate = null,
+                CalibrationDate = new DateTime(2024, 5, 20),
+                Status = "Storage"
+            }
+        };
+        var filePath = GetTempFilePath("xlsx");
+
+        // Act
+        await _sut.GenerateNeutronInventoryReportExcelAsync(sources, filePath);
+
+        // Assert
+        Assert.True(File.Exists(filePath));
+        using var wb = new XLWorkbook(filePath);
+        var ws = wb.Worksheets.First();
+        var value = ws.Cell(2, 8).GetString();
+        Assert.Equal("غير مسجّل", value);
+    }
+
+    [Fact]
+    public async Task GenerateAuditLogsExcelAsync_FormatsActorAttribution_ForThreeCases()
+    {
+        // Arrange: 3 cases:
+        // 1. Automated process without user (UserId == null)
+        // 2. Deleted user (UserId != null, User == null)
+        // 3. Normal user (UserId != null, User != null)
+        var normalUser = new User { Id = Guid.NewGuid(), FullName = "د. طارق محمود" };
+        var logs = new List<AuditLog>
+        {
+            new()
+            {
+                UserId = null,
+                User = null,
+                Action = "SystemAutoCheck",
+                TableName = "Sources",
+                Details = "فحص دوري آلي",
+                ActionDate = DateTime.Now.AddMinutes(-30)
+            },
+            new()
+            {
+                UserId = Guid.NewGuid(),
+                User = null,
+                Action = "Delete",
+                TableName = "Locations",
+                Details = "حذف موقع",
+                ActionDate = DateTime.Now.AddMinutes(-15)
+            },
+            new()
+            {
+                UserId = normalUser.Id,
+                User = normalUser,
+                Action = "Create",
+                TableName = "NeutronSources",
+                Details = "إضافة مصدر نيتروني جديد",
+                ActionDate = DateTime.Now
+            }
+        };
+        var filePath = GetTempFilePath("xlsx");
+
+        // Act
+        await _sut.GenerateAuditLogsExcelAsync(logs, filePath);
+
+        // Assert
+        Assert.True(File.Exists(filePath));
+        using var wb = new XLWorkbook(filePath);
+        var ws = wb.Worksheets.First();
+
+        // Row 2: Automated
+        Assert.Equal("عملية تلقائية", ws.Cell(2, 2).GetString());
+
+        // Row 3: Deleted user
+        Assert.Equal("مستخدم محذوف", ws.Cell(3, 2).GetString());
+
+        // Row 4: Normal user
+        Assert.Equal("د. طارق محمود", ws.Cell(4, 2).GetString());
+    }
+
+    [Fact]
+    public async Task GenerateAuditLogsPdfAndExcelAsync_BothSucceedForIdenticalDataset()
+    {
+        // Arrange
+        var user = new User { Id = Guid.NewGuid(), FullName = "مهندس سليم" };
+        var logs = new List<AuditLog>
+        {
+            new() { UserId = null, User = null, Action = "AutoBackup", ActionDate = DateTime.Now.AddHours(-1) },
+            new() { UserId = Guid.NewGuid(), User = null, Action = "Purge", ActionDate = DateTime.Now.AddMinutes(-30) },
+            new() { UserId = user.Id, User = user, Action = "Update", ActionDate = DateTime.Now }
+        };
+        var excelPath = GetTempFilePath("xlsx");
+        var pdfPath = GetTempFilePath("pdf");
+
+        // Act
+        await _sut.GenerateAuditLogsExcelAsync(logs, excelPath);
+        await _sut.GenerateAuditLogsPdfAsync(logs, pdfPath);
+
+        // Assert
+        Assert.True(File.Exists(excelPath));
+        Assert.True(new FileInfo(excelPath).Length > 0);
+
+        Assert.True(File.Exists(pdfPath));
+        Assert.True(new FileInfo(pdfPath).Length > 0);
+
+        // Validate Excel attribution
+        using var wb = new XLWorkbook(excelPath);
+        var ws = wb.Worksheets.First();
+        Assert.Equal("عملية تلقائية", ws.Cell(2, 2).GetString());
+        Assert.Equal("مستخدم محذوف", ws.Cell(3, 2).GetString());
+        Assert.Equal("مهندس سليم", ws.Cell(4, 2).GetString());
     }
 
     #endregion

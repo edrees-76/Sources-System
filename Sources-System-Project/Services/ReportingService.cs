@@ -57,6 +57,59 @@ namespace Sources.Services
             return "لا توجد بيانات حالياً";
         }
 
+        private static string GetEmissionCalibrationDateHeader()
+        {
+            try
+            {
+                string text = TranslationHelper.GetString("ColEmissionCalibrationDate");
+                if (!string.IsNullOrEmpty(text) && text != "ColEmissionCalibrationDate")
+                    return text;
+            }
+            catch { }
+            return "تاريخ معايرة الانبعاث";
+        }
+
+        private static string GetNotRecordedText()
+        {
+            try
+            {
+                string text = TranslationHelper.GetString("TextNotRecorded");
+                if (!string.IsNullOrEmpty(text) && text != "TextNotRecorded")
+                    return text;
+            }
+            catch { }
+            return "غير مسجّل";
+        }
+
+        private static string FormatAuditLogUser(AuditLog log)
+        {
+            if (log.UserId == null)
+            {
+                try
+                {
+                    string text = TranslationHelper.GetString("AuditUserSystemAutomated");
+                    if (!string.IsNullOrEmpty(text) && text != "AuditUserSystemAutomated")
+                        return text;
+                }
+                catch { }
+                return "عملية تلقائية";
+            }
+
+            if (log.User == null)
+            {
+                try
+                {
+                    string text = TranslationHelper.GetString("AuditUserDeleted");
+                    if (!string.IsNullOrEmpty(text) && text != "AuditUserDeleted")
+                        return text;
+                }
+                catch { }
+                return "مستخدم محذوف";
+            }
+
+            return log.User.FullName;
+        }
+
         public async Task GenerateLocationsReportExcelAsync(IEnumerable<Location> locations, string filePath)
         {
             await Task.Run(() =>
@@ -91,7 +144,7 @@ namespace Sources.Services
                     worksheet.Cell(row, 5).Value = loc.Room ?? "-";
                     worksheet.Cell(row, 6).Value = loc.ResponsiblePerson ?? "-";
                     worksheet.Cell(row, 7).Value = loc.SourceCount;
-                    worksheet.Cell(row, 8).Value = loc.AddedByUser?.FullName ?? "-";
+                    worksheet.Cell(row, 8).Value = loc.AddedByName;
                     row++;
                 }
 
@@ -183,7 +236,7 @@ namespace Sources.Services
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(loc.Room ?? "-");
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(loc.ResponsiblePerson ?? "-");
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(loc.SourceCount.ToString());
-                                        table.Cell().Element(c => CellStyle(c, bg)).Text(loc.AddedByUser?.FullName ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(loc.AddedByName);
                                         i++;
                                     }
                                 }
@@ -329,7 +382,7 @@ namespace Sources.Services
                             table.Cell().Element(CellStyle).Text(source.CurrentActivityWithUnit);
                             table.Cell().Element(CellStyle).Text(source.Location?.LocationName ?? "-");
                             table.Cell().Element(CellStyle).Text(source.ArabicStatus);
-                            table.Cell().Element(CellStyle).Text(source.AddedByUser?.FullName ?? "-");
+                            table.Cell().Element(CellStyle).Text(source.AddedByName);
 
                             IContainer CellStyle(IContainer container)
                             {
@@ -379,7 +432,7 @@ namespace Sources.Services
                     worksheet.Cell(row, 4).Value = req.Purpose ?? "-";
                     worksheet.Cell(row, 5).Value = req.ExpectedReturnDate.ToString("yyyy/MM/dd");
                     worksheet.Cell(row, 6).Value = req.ArabicStatus;
-                    worksheet.Cell(row, 7).Value = req.AddedByUser?.FullName ?? "-";
+                    worksheet.Cell(row, 7).Value = req.AddedByName;
                     worksheet.Cell(row, 8).Value = req.RequestDate.ToString("yyyy/MM/dd HH:mm");
                     row++;
                 }
@@ -465,7 +518,7 @@ namespace Sources.Services
                                          table.Cell().Element(CellStyle).Text(req.Purpose ?? "-");
                                          table.Cell().Element(CellStyle).Text(req.ExpectedReturnDate.ToString("yyyy/MM/dd"));
                                          table.Cell().Element(CellStyle).Text(req.ArabicStatus);
-                                         table.Cell().Element(CellStyle).Text(req.AddedByUser?.FullName ?? "-");
+                                         table.Cell().Element(CellStyle).Text(req.AddedByName);
                                          table.Cell().Element(CellStyle).Text(req.RequestDate.ToString("yyyy/MM/dd"));
 
                                          IContainer CellStyle(IContainer container)
@@ -512,7 +565,7 @@ namespace Sources.Services
                     worksheet.Cell(row, 5).Value = source.CalibrationDate.ToString("yyyy/MM/dd");
                     worksheet.Cell(row, 6).Value = source.ArabicStatus;
                     worksheet.Cell(row, 7).Value = source.CurrentActivityWithUnit;
-                    worksheet.Cell(row, 8).Value = source.AddedByUser?.FullName ?? "-";
+                    worksheet.Cell(row, 8).Value = source.AddedByName;
                     row++;
                 }
 
@@ -590,7 +643,7 @@ namespace Sources.Services
                                     table.Cell().Element(CellStyle).Text(s.CalibrationDate.ToString("yyyy/MM/dd"));
                                     table.Cell().Element(CellStyle).Text(s.CurrentActivityWithUnit);
                                     table.Cell().Element(CellStyle).Text(s.ArabicStatus);
-                                    table.Cell().Element(CellStyle).Text(s.AddedByUser?.FullName ?? "-");
+                                    table.Cell().Element(CellStyle).Text(s.AddedByName);
 
                                     static IContainer CellStyle(IContainer container) => container.BorderBottom(1).BorderColor(Colors.Grey.Lighten3).PaddingVertical(4);
                                     i++;
@@ -655,7 +708,7 @@ namespace Sources.Services
                     wsBorrowing.Cell(row, 4).Value = req.Purpose ?? "-";
                     wsBorrowing.Cell(row, 5).Value = req.ExpectedReturnDate.ToString("yyyy/MM/dd");
                     wsBorrowing.Cell(row, 6).Value = req.ArabicStatus;
-                    wsBorrowing.Cell(row, 7).Value = req.AddedByUser?.FullName ?? "-";
+                    wsBorrowing.Cell(row, 7).Value = req.AddedByName;
                     wsBorrowing.Cell(row, 8).Value = req.RequestDate.ToString("yyyy/MM/dd HH:mm");
                     row++;
                 }
@@ -708,7 +761,7 @@ namespace Sources.Services
                     wsAlerts.Cell(row, 5).Value = s.CalibrationDate.ToString("yyyy/MM/dd");
                     wsAlerts.Cell(row, 6).Value = s.ArabicStatus;
                     wsAlerts.Cell(row, 7).Value = s.CurrentActivityWithUnit;
-                    wsAlerts.Cell(row, 8).Value = s.AddedByUser?.FullName ?? "-";
+                    wsAlerts.Cell(row, 8).Value = s.AddedByName;
                     row++;
                 }
                 wsAlerts.Columns().AdjustToContents();
@@ -987,7 +1040,7 @@ namespace Sources.Services
                 foreach (var log in logs ?? Enumerable.Empty<AuditLog>())
                 {
                     worksheet.Cell(row, 1).Value = index++;
-                    worksheet.Cell(row, 2).Value = log.User?.FullName ?? "مدير النظام / تلقائي";
+                    worksheet.Cell(row, 2).Value = FormatAuditLogUser(log);
                     worksheet.Cell(row, 3).Value = log.Action;
                     worksheet.Cell(row, 4).Value = log.TableName ?? "-";
                     worksheet.Cell(row, 5).Value = log.Details ?? "-";
@@ -1056,7 +1109,7 @@ namespace Sources.Services
                                     {
                                         var bg = i % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(i.ToString());
-                                        table.Cell().Element(c => CellStyle(c, bg)).Text(log.User?.FullName ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(FormatAuditLogUser(log));
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(log.Action);
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(log.TableName ?? "-");
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(log.Details ?? "-");
@@ -1373,7 +1426,7 @@ namespace Sources.Services
                 worksheet.RightToLeft = true;
 
                 // Headers
-                string[] headers = { "#", "رقم المصدر", "النوع المرجعي", "معدل الانبعاث المُعاير (n/s)", "عدم اليقين %", "الموقع", "الحالة", "تاريخ المعايرة" };
+                string[] headers = { "#", "رقم المصدر", "النوع المرجعي", "معدل الانبعاث المُعاير (n/s)", "عدم اليقين %", "الموقع", "الحالة", GetEmissionCalibrationDateHeader() };
                 for (int i = 0; i < headers.Length; i++)
                 {
                     worksheet.Cell(1, i + 1).Value = headers[i];
@@ -1402,7 +1455,7 @@ namespace Sources.Services
                     }
                     worksheet.Cell(row, 6).Value = s.Location?.LocationName ?? "غير محدد";
                     worksheet.Cell(row, 7).Value = s.ArabicStatus;
-                    worksheet.Cell(row, 8).Value = s.CalibrationDate?.ToString("yyyy-MM-dd") ?? "-";
+                    worksheet.Cell(row, 8).Value = s.EmissionCalibrationDate.HasValue ? s.EmissionCalibrationDate.Value.ToString("yyyy-MM-dd") : GetNotRecordedText();
                     row++;
                 }
 
@@ -1444,7 +1497,7 @@ namespace Sources.Services
                                     columns.RelativeColumn(1.5f);// Uncertainty
                                     columns.RelativeColumn(2);   // Location
                                     columns.RelativeColumn(1.5f);// Status
-                                    columns.RelativeColumn(2);   // Calibration Date
+                                    columns.RelativeColumn(2);   // Emission Calibration Date
                                 });
 
                                 table.Header(h =>
@@ -1456,7 +1509,7 @@ namespace Sources.Services
                                     h.Cell().Element(HeaderStyle).Text("عدم اليقين");
                                     h.Cell().Element(HeaderStyle).Text("الموقع");
                                     h.Cell().Element(HeaderStyle).Text("الحالة");
-                                    h.Cell().Element(HeaderStyle).Text("تاريخ المعايرة");
+                                    h.Cell().Element(HeaderStyle).Text(GetEmissionCalibrationDateHeader());
 
                                     static IContainer HeaderStyle(IContainer c) => c.Background(Colors.Teal.Darken2).PaddingVertical(6).AlignCenter().DefaultTextStyle(x => x.SemiBold().FontColor(Colors.White));
                                 });
@@ -1478,7 +1531,7 @@ namespace Sources.Services
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(s.RelativeExpandedUncertaintyPercent.HasValue ? $"{s.RelativeExpandedUncertaintyPercent:N1}%" : "-");
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(s.Location?.LocationName ?? "-");
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(s.ArabicStatus);
-                                        table.Cell().Element(c => CellStyle(c, bg)).Text(s.CalibrationDate?.ToString("yyyy/MM/dd") ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(s.EmissionCalibrationDate.HasValue ? s.EmissionCalibrationDate.Value.ToString("yyyy/MM/dd") : GetNotRecordedText());
                                         i++;
                                     }
                                 }

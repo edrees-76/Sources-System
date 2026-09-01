@@ -52,8 +52,7 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
     public string EnergyDisplay => NeutronSource.NeutronSourceType?.MeanNeutronEnergyMeV.HasValue == true ? $"{NeutronSource.NeutronSourceType.MeanNeutronEnergyMeV.Value:N2} MeV" : "-";
 
     // ─── معدل الانبعاث المُعاير ومعدل الانبعاث الحالي وحقول الشهادة ───
-    public string CalibratedEmissionRateFormatted => NeutronSource.EmissionRateFormatted;
-    public string EmissionRateFormatted => CalibratedEmissionRateFormatted; // للتوافق العكسي
+    public string CalibratedEmissionRateFormatted => NeutronSource.CalibratedEmissionRateFormatted;
 
     public string EmissionCalibrationDateFormatted => NeutronSource.EmissionCalibrationDate.HasValue 
         ? NeutronSource.EmissionCalibrationDate.Value.ToString("yyyy/MM/dd") 
@@ -120,7 +119,6 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
     public string StatusColor => NeutronSource.StatusColor;
     public string Notes => !string.IsNullOrWhiteSpace(NeutronSource.Notes) ? NeutronSource.Notes : "-";
     public string CreatedAtFormatted => NeutronSource.CreatedAt.ToString("yyyy/MM/dd HH:mm");
-    public string UpdatedAtFormatted => "-";
     
     public string AddedByName => NeutronSource.AddedByName;
 

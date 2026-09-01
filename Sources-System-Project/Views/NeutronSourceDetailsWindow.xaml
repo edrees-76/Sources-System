@@ -249,11 +249,6 @@
                                     <TextBlock Text="{DynamicResource DetailLabelAddedBy}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                                     <TextBlock Text="{Binding AddedByName}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
                                 </StackPanel>
-
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Text="{DynamicResource DetailLabelUpdatedAt}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
-                                    <TextBlock Text="{Binding UpdatedAtFormatted}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
-                                </StackPanel>
                             </Grid>
                         </Border>
                     </StackPanel>

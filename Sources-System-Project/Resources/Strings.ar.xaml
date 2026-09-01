@@ -413,6 +413,7 @@
     <system:String x:Key="ColStorageLocation">موقع التخزين</system:String>
     <system:String x:Key="ColSourceStatus">حالة المصدر</system:String>
     <system:String x:Key="ColCalibrationDate">تاريخ المعايرة / الصنع</system:String>
+    <system:String x:Key="ColEmissionCalibrationDate">تاريخ معايرة الانبعاث</system:String>
     <system:String x:Key="ColActions">إجراءات</system:String>
     <system:String x:Key="ToolTipViewDetails">عرض التفاصيل</system:String>
     <system:String x:Key="AddSourceTitle">☢️ إضافة مصدر جديد</system:String>
@@ -506,6 +507,8 @@
     <system:String x:Key="AuditFieldName">الحقل / البيان</system:String>
     <system:String x:Key="AuditNoChanges">لا توجد تفاصيل مقارنة JSON مسجلة لهذه العملية.</system:String>
     <system:String x:Key="AuditRecordInfo">معلومات السجل والعملية</system:String>
+    <system:String x:Key="AuditUserSystemAutomated">عملية تلقائية</system:String>
+    <system:String x:Key="AuditUserDeleted">مستخدم محذوف</system:String>
 
     <!-- تبويب الأدوار والصلاحيات -->
     <system:String x:Key="RolesOverviewTitle">نظرة عامة على أدوار وصلاحيات النظام</system:String>

@@ -416,6 +416,7 @@
     <system:String x:Key="ColStorageLocation">Storage Location</system:String>
     <system:String x:Key="ColSourceStatus">Source Status</system:String>
     <system:String x:Key="ColCalibrationDate">Calibration / Mfg Date</system:String>
+    <system:String x:Key="ColEmissionCalibrationDate">Emission Calibration Date</system:String>
     <system:String x:Key="ColActions">Actions</system:String>
     <system:String x:Key="ToolTipViewDetails">View Details</system:String>
     <system:String x:Key="AddSourceTitle">☢️ Add New Source</system:String>
@@ -509,6 +510,8 @@
     <system:String x:Key="AuditFieldName">Field / Property</system:String>
     <system:String x:Key="AuditNoChanges">No recorded JSON diff details for this operation.</system:String>
     <system:String x:Key="AuditRecordInfo">Record &amp; Operation Info</system:String>
+    <system:String x:Key="AuditUserSystemAutomated">Automated System Process</system:String>
+    <system:String x:Key="AuditUserDeleted">Deleted User</system:String>
 
     <!-- Roles & Permissions Tab -->
     <system:String x:Key="RolesOverviewTitle">System Roles &amp; Permissions Overview</system:String>

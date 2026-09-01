@@ -1077,7 +1077,7 @@ public class NeutronSource
     public string DisplayEmissionRate => $"{ScientificNotationParser.FormatScientific(CalibratedEmissionRate)} n/s";
 
     [NotMapped]
-    public string EmissionRateFormatted => DisplayEmissionRate;
+    public string CalibratedEmissionRateFormatted => DisplayEmissionRate;
 }
 
 // ─── شهادات ومستندات المصادر ───

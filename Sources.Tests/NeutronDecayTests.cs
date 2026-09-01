@@ -256,7 +256,7 @@ public class NeutronDecayTests
         var vm = new NeutronSourceDetailsViewModel(source, decayService: _decayService);
 
         // Assert
-        Assert.Equal(source.EmissionRateFormatted, vm.CalibratedEmissionRateFormatted);
+        Assert.Equal(source.CalibratedEmissionRateFormatted, vm.CalibratedEmissionRateFormatted);
         Assert.Contains("CERT-2024-001", vm.CalibrationReferenceDisplay);
         Assert.Equal("1.045", vm.AnisotropyFactorDisplay);
         Assert.True(vm.IsCurrentEmissionRateCalculated);

@@ -771,7 +771,7 @@
                             <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColCode}" Binding="{Binding SourceCode}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColNeutronType}" Binding="{Binding TypeCode}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
-                            <DataGridTextColumn Header="{DynamicResource ColEmissionRate}" Binding="{Binding EmissionRateFormatted}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColEmissionRate}" Binding="{Binding CalibratedEmissionRateFormatted}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColUncertainty}" Binding="{Binding RelativeUncertainty}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="Auto" MinWidth="95" ElementStyle="{StaticResource CenterAligned}"/>
