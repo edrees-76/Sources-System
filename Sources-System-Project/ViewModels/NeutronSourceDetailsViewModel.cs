@@ -57,21 +57,52 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
 
     public string EmissionCalibrationDateFormatted => NeutronSource.EmissionCalibrationDate.HasValue 
         ? NeutronSource.EmissionCalibrationDate.Value.ToString("yyyy/MM/dd") 
-        : "تاريخ المعايرة غير مسجّل";
+        : (TranslationHelper.GetString("TextCalibrationDateNotRecorded") ?? "تاريخ المعايرة غير مسجّل");
 
     public string CalibrationDateFormatted => NeutronSource.CalibrationDate?.ToString("yyyy/MM/dd") ?? "-";
 
     public NeutronDecayResult DecayResult => _decayService.CalculateCurrentEmissionRate(NeutronSource);
-    public string CurrentEmissionRateDisplay => DecayResult.DisplayRate;
+    
+    public string CurrentEmissionRateDisplay
+    {
+        get
+        {
+            var result = DecayResult;
+            if (result.IsCalculated && result.CurrentEmissionRate.HasValue)
+            {
+                return $"{ScientificNotationParser.FormatScientific(result.CurrentEmissionRate.Value)} n/s";
+            }
+
+            return result.Status switch
+            {
+                NeutronDecayCalculationStatus.MissingCalibrationDate => 
+                    TranslationHelper.GetString("DecayStatusMissingCalibrationDate") ?? "غير محسوب — تاريخ المعايرة غير مسجّل",
+                NeutronDecayCalculationStatus.MissingSourceType => 
+                    TranslationHelper.GetString("DecayStatusMissingSourceType") ?? "غير محسوب — بيانات نوع المصدر غير متوفرة",
+                NeutronDecayCalculationStatus.MissingSource => 
+                    TranslationHelper.GetString("DecayStatusMissingSource") ?? "غير محسوب — بيانات المصدر غير متوفرة",
+                NeutronDecayCalculationStatus.InvalidHalfLife => 
+                    TranslationHelper.GetString("DecayStatusInvalidHalfLife") ?? "غير محسوب — نصف العمر غير صالح",
+                NeutronDecayCalculationStatus.UnsupportedHalfLifeUnit => 
+                    TranslationHelper.GetString("DecayStatusUnsupportedHalfLifeUnit") ?? "غير محسوب — وحدة نصف العمر غير مدعومة",
+                NeutronDecayCalculationStatus.CalculationDatePrecedesCalibrationDate => 
+                    TranslationHelper.GetString("DecayStatusDatePrecedesCalibration") ?? "غير محسوب — تاريخ الحساب يسبق تاريخ المعايرة",
+                NeutronDecayCalculationStatus.InvalidCalibratedRate => 
+                    TranslationHelper.GetString("DecayStatusInvalidCalibratedRate") ?? "غير محسوب — معدل الانبعاث المُعاير غير صالح",
+                _ => TranslationHelper.GetString("DecayStatusMissingCalibrationDate") ?? "غير محسوب — تاريخ المعايرة غير مسجّل"
+            };
+        }
+    }
+
     public bool IsCurrentEmissionRateCalculated => DecayResult.IsCalculated;
 
     public string CalibrationReferenceDisplay => !string.IsNullOrWhiteSpace(NeutronSource.CalibrationReference) 
         ? NeutronSource.CalibrationReference 
-        : "غير مسجّل";
+        : (TranslationHelper.GetString("TextNotRecorded") ?? "غير مسجّل");
 
     public string AnisotropyFactorDisplay => NeutronSource.AnisotropyFactor.HasValue 
         ? NeutronSource.AnisotropyFactor.Value.ToString("F3") 
-        : "غير مقاس";
+        : (TranslationHelper.GetString("TextNotMeasured") ?? "غير مقاس");
 
     public string UncertaintyFormatted => NeutronSource.RelativeExpandedUncertaintyPercent.HasValue ? $"{NeutronSource.RelativeExpandedUncertaintyPercent.Value:N1}%" : "-";
     public string LocationDisplay => NeutronSource.Location?.LocationName ?? (TranslationHelper.GetString("TextUnspecified") ?? "غير محدد");

@@ -1,5 +1,4 @@
 using System;
-using Sources.Helpers;
 using Sources.Models;
 
 namespace Sources.Services;
@@ -10,7 +9,7 @@ namespace Sources.Services;
 /// </summary>
 public class NeutronDecayCalculationService : INeutronDecayCalculationService
 {
-    // الثابت المعتمد لطول السنة المدارية/الاستوائية بالأيام
+    // الثابت المعتمد لطول السنة بالأيام (365.2422 يوماً)
     public const double DaysPerYear = 365.2422;
     public const double SecondsPerDay = 86400.0;
     public const double SecondsPerYear = DaysPerYear * SecondsPerDay;
@@ -32,10 +31,8 @@ public class NeutronDecayCalculationService : INeutronDecayCalculationService
         {
             return new NeutronDecayResult
             {
-                Status = NeutronDecayCalculationStatus.MissingSourceType,
-                StatusText = "غير محسوب — بيانات المصدر غير متوفرة",
-                CurrentEmissionRate = null,
-                DisplayRate = "غير محسوب — بيانات المصدر غير متوفرة"
+                Status = NeutronDecayCalculationStatus.MissingSource,
+                CurrentEmissionRate = null
             };
         }
 
@@ -44,9 +41,7 @@ public class NeutronDecayCalculationService : INeutronDecayCalculationService
             return new NeutronDecayResult
             {
                 Status = NeutronDecayCalculationStatus.MissingSourceType,
-                StatusText = "غير محسوب — بيانات نوع المصدر غير متوفرة",
-                CurrentEmissionRate = null,
-                DisplayRate = "غير محسوب — بيانات نوع المصدر غير متوفرة"
+                CurrentEmissionRate = null
             };
         }
 
@@ -74,9 +69,7 @@ public class NeutronDecayCalculationService : INeutronDecayCalculationService
             return new NeutronDecayResult
             {
                 Status = NeutronDecayCalculationStatus.MissingCalibrationDate,
-                StatusText = "غير محسوب — تاريخ المعايرة غير مسجّل",
-                CurrentEmissionRate = null,
-                DisplayRate = "غير محسوب — تاريخ المعايرة غير مسجّل"
+                CurrentEmissionRate = null
             };
         }
 
@@ -86,9 +79,7 @@ public class NeutronDecayCalculationService : INeutronDecayCalculationService
             return new NeutronDecayResult
             {
                 Status = NeutronDecayCalculationStatus.CalculationDatePrecedesCalibrationDate,
-                StatusText = "غير محسوب — تاريخ الحساب يسبق تاريخ المعايرة",
-                CurrentEmissionRate = null,
-                DisplayRate = "غير محسوب — تاريخ الحساب يسبق تاريخ المعايرة"
+                CurrentEmissionRate = null
             };
         }
 
@@ -98,9 +89,7 @@ public class NeutronDecayCalculationService : INeutronDecayCalculationService
             return new NeutronDecayResult
             {
                 Status = NeutronDecayCalculationStatus.InvalidCalibratedRate,
-                StatusText = "غير محسوب — معدل الانبعاث المُعاير غير صالح",
-                CurrentEmissionRate = null,
-                DisplayRate = "غير محسوب — معدل الانبعاث المُعاير غير صالح"
+                CurrentEmissionRate = null
             };
         }
 
@@ -110,9 +99,7 @@ public class NeutronDecayCalculationService : INeutronDecayCalculationService
             return new NeutronDecayResult
             {
                 Status = NeutronDecayCalculationStatus.InvalidHalfLife,
-                StatusText = "غير محسوب — نصف العمر غير صالح",
-                CurrentEmissionRate = null,
-                DisplayRate = "غير محسوب — نصف العمر غير صالح"
+                CurrentEmissionRate = null
             };
         }
 
@@ -122,9 +109,7 @@ public class NeutronDecayCalculationService : INeutronDecayCalculationService
             return new NeutronDecayResult
             {
                 Status = NeutronDecayCalculationStatus.UnsupportedHalfLifeUnit,
-                StatusText = "غير محسوب — وحدة نصف العمر غير مدعومة",
-                CurrentEmissionRate = null,
-                DisplayRate = "غير محسوب — وحدة نصف العمر غير مدعومة"
+                CurrentEmissionRate = null
             };
         }
 
@@ -138,9 +123,7 @@ public class NeutronDecayCalculationService : INeutronDecayCalculationService
         return new NeutronDecayResult
         {
             Status = NeutronDecayCalculationStatus.Calculated,
-            StatusText = "محسوب",
-            CurrentEmissionRate = currentRate,
-            DisplayRate = $"{ScientificNotationParser.FormatScientific(currentRate)} n/s"
+            CurrentEmissionRate = currentRate
         };
     }
 

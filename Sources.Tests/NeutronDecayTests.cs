@@ -125,8 +125,6 @@ public class NeutronDecayTests
         Assert.False(result.IsCalculated);
         Assert.Equal(NeutronDecayCalculationStatus.MissingCalibrationDate, result.Status);
         Assert.Null(result.CurrentEmissionRate);
-        Assert.Contains("غير محسوب", result.StatusText);
-        Assert.Contains("تاريخ المعايرة غير مسجّل", result.StatusText);
 
         // التأكيد الصريح: النتيجة لا تساوي القيمة المعايرة
         Assert.NotEqual(source.CalibratedEmissionRate, result.CurrentEmissionRate ?? 0.0);
@@ -172,7 +170,6 @@ public class NeutronDecayTests
         Assert.False(result.IsCalculated);
         Assert.Equal(NeutronDecayCalculationStatus.MissingSourceType, result.Status);
         Assert.Null(result.CurrentEmissionRate);
-        Assert.Contains("غير محسوب", result.StatusText);
     }
 
     [Fact]
@@ -210,7 +207,28 @@ public class NeutronDecayTests
         Assert.False(result.IsCalculated);
         Assert.Equal(NeutronDecayCalculationStatus.CalculationDatePrecedesCalibrationDate, result.Status);
         Assert.Null(result.CurrentEmissionRate);
-        Assert.Contains("يسبق", result.StatusText);
+    }
+
+    [Fact]
+    public void CalibratedEmissionRate_ZeroOrNegative_ReturnsUncalculated_WithNullRate()
+    {
+        // Arrange: Zero or negative calibrated rate
+        DateTime calDate = new DateTime(2024, 1, 1);
+        DateTime calcDate = new DateTime(2026, 1, 1);
+
+        // Act - Zero rate
+        var resultZero = _decayService.CalculateEmissionRate(0.0, 2.645, "years", calDate, calcDate);
+        // Act - Negative rate
+        var resultNeg = _decayService.CalculateEmissionRate(-1.0e6, 2.645, "years", calDate, calcDate);
+
+        // Assert
+        Assert.False(resultZero.IsCalculated);
+        Assert.Equal(NeutronDecayCalculationStatus.InvalidCalibratedRate, resultZero.Status);
+        Assert.Null(resultZero.CurrentEmissionRate);
+
+        Assert.False(resultNeg.IsCalculated);
+        Assert.Equal(NeutronDecayCalculationStatus.InvalidCalibratedRate, resultNeg.Status);
+        Assert.Null(resultNeg.CurrentEmissionRate);
     }
 
     [Fact]
@@ -268,6 +286,7 @@ public class NeutronDecayTests
         Assert.Equal("غير مسجّل", vm.CalibrationReferenceDisplay);
         Assert.Equal("غير مقاس", vm.AnisotropyFactorDisplay);
         Assert.False(vm.IsCurrentEmissionRateCalculated);
-        Assert.Contains("غير محسوب — تاريخ المعايرة غير مسجّل", vm.CurrentEmissionRateDisplay);
+        Assert.Contains("غير محسوب", vm.CurrentEmissionRateDisplay);
+        Assert.Contains("تاريخ المعايرة غير مسجّل", vm.CurrentEmissionRateDisplay);
     }
 }

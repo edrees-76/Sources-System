@@ -11,6 +11,7 @@ public enum NeutronDecayCalculationStatus
     Calculated,
     MissingCalibrationDate,
     MissingSourceType,
+    MissingSource,
     InvalidHalfLife,
     UnsupportedHalfLifeUnit,
     CalculationDatePrecedesCalibrationDate,
@@ -25,8 +26,6 @@ public class NeutronDecayResult
     public bool IsCalculated => Status == NeutronDecayCalculationStatus.Calculated;
     public NeutronDecayCalculationStatus Status { get; set; }
     public double? CurrentEmissionRate { get; set; }
-    public string StatusText { get; set; } = string.Empty;
-    public string DisplayRate { get; set; } = string.Empty;
 }
 
 /// <summary>

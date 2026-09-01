@@ -1272,6 +1272,18 @@
     <system:String x:Key="DetailLabelAddedBy">Added By:</system:String>
     <system:String x:Key="DetailLabelUpdatedAt">Last Updated:</system:String>
 
+    <!-- Neutron Decay Status Messages & Field Fallbacks -->
+    <system:String x:Key="DecayStatusMissingCalibrationDate">Uncalculated — calibration date not recorded</system:String>
+    <system:String x:Key="DecayStatusMissingSourceType">Uncalculated — source type data unavailable</system:String>
+    <system:String x:Key="DecayStatusMissingSource">Uncalculated — source data unavailable</system:String>
+    <system:String x:Key="DecayStatusInvalidHalfLife">Uncalculated — invalid half-life</system:String>
+    <system:String x:Key="DecayStatusUnsupportedHalfLifeUnit">Uncalculated — unsupported half-life unit</system:String>
+    <system:String x:Key="DecayStatusDatePrecedesCalibration">Uncalculated — calculation date precedes calibration date</system:String>
+    <system:String x:Key="DecayStatusInvalidCalibratedRate">Uncalculated — invalid calibrated emission rate</system:String>
+    <system:String x:Key="TextCalibrationDateNotRecorded">Calibration date not recorded</system:String>
+    <system:String x:Key="TextNotRecorded">Not recorded</system:String>
+    <system:String x:Key="TextNotMeasured">Not measured</system:String>
+
     <!-- Neutron Reference Types Window -->
     <system:String x:Key="TitleNeutronSourceTypes">Reference Neutron Types</system:String>
     <system:String x:Key="SubtitleNeutronTypes">Reference types and nuclear parameters for standard neutron sources</system:String>

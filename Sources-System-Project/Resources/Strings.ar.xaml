@@ -1269,6 +1269,18 @@
     <system:String x:Key="DetailLabelAddedBy">أُضيف بواسطة:</system:String>
     <system:String x:Key="DetailLabelUpdatedAt">آخر تحديث:</system:String>
 
+    <!-- Neutron Decay Status Messages & Field Fallbacks -->
+    <system:String x:Key="DecayStatusMissingCalibrationDate">غير محسوب — تاريخ المعايرة غير مسجّل</system:String>
+    <system:String x:Key="DecayStatusMissingSourceType">غير محسوب — بيانات نوع المصدر غير متوفرة</system:String>
+    <system:String x:Key="DecayStatusMissingSource">غير محسوب — بيانات المصدر غير متوفرة</system:String>
+    <system:String x:Key="DecayStatusInvalidHalfLife">غير محسوب — نصف العمر غير صالح</system:String>
+    <system:String x:Key="DecayStatusUnsupportedHalfLifeUnit">غير محسوب — وحدة نصف العمر غير مدعومة</system:String>
+    <system:String x:Key="DecayStatusDatePrecedesCalibration">غير محسوب — تاريخ الحساب يسبق تاريخ المعايرة</system:String>
+    <system:String x:Key="DecayStatusInvalidCalibratedRate">غير محسوب — معدل الانبعاث المُعاير غير صالح</system:String>
+    <system:String x:Key="TextCalibrationDateNotRecorded">تاريخ المعايرة غير مسجّل</system:String>
+    <system:String x:Key="TextNotRecorded">غير مسجّل</system:String>
+    <system:String x:Key="TextNotMeasured">غير مقاس</system:String>
+
     <!-- Neutron Reference Types Window -->
     <system:String x:Key="TitleNeutronSourceTypes">الأنواع النيترونية المرجعية</system:String>
     <system:String x:Key="SubtitleNeutronTypes">الأنواع المرجعية والخصائص النووية للمصادر النيترونية القياسية</system:String>
