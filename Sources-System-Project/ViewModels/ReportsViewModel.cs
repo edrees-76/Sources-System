@@ -224,6 +224,7 @@ public partial class ReportsViewModel : ObservableObject
                 .AsNoTracking()
                 .Include(s => s.Location)
                 .Include(s => s.Radioisotope)
+                .Include(s => s.AddedByUser)
                 .Include(s => s.SourceIsotopes).ThenInclude(si => si.Radioisotope)
                 .Include(s => s.SourceIsotopes).ThenInclude(si => si.ActivityUnit)
                 .Include(s => s.InitialActivityUnit)

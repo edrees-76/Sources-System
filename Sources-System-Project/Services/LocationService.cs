@@ -23,7 +23,11 @@ public class LocationService : ILocationService
     public List<Location> GetAll()
     {
         using var db = _dbFactory.CreateDbContext();
-        var locations = db.Locations.AsNoTracking().OrderBy(l => l.LocationName).ToList();
+        var locations = db.Locations
+            .AsNoTracking()
+            .Include(l => l.AddedByUser)
+            .OrderBy(l => l.LocationName)
+            .ToList();
 
         var counts = db.Sources
             .AsNoTracking()
@@ -43,7 +47,7 @@ public class LocationService : ILocationService
     public Location? GetById(Guid id)
     {
         using var db = _dbFactory.CreateDbContext();
-        var location = db.Locations.Find(id);
+        var location = db.Locations.Include(l => l.AddedByUser).FirstOrDefault(l => l.Id == id);
         if (location != null)
         {
             location.SourceCount = db.Sources.Count(s => s.LocationId == id);
@@ -63,7 +67,10 @@ public class LocationService : ILocationService
             return (false, "اسم الموقع موجود بالفعل");
 
         item.LocationName = trimmedName;
-        item.AddedBy = _userService.CurrentUser?.FullName;
+        var addedByUserId = _userService.CurrentUser?.Id;
+        item.AddedBy = (addedByUserId.HasValue && db.Users.Any(u => u.Id == addedByUserId.Value))
+            ? addedByUserId.Value
+            : null;
         db.Locations.Add(item);
         db.SaveChanges();
         _auditService.Log("Create", "Locations", item.Id, $"إضافة موقع: {item.LocationName}");

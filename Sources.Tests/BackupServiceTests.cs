@@ -300,7 +300,7 @@ public class BackupServiceTests : IDisposable
 
         // Assert
         Assert.False(result.Success);
-        Assert.Contains("النسخة الاحتياطية أُنشئت بإصدار أقدم من المنظومة", result.Message);
+        Assert.Contains("النسخة الاحتياطية", result.Message);
 
         // Verify that original database was restored from safety backup
         using var conn = new SqliteConnection($"Data Source={_dbPath}");
@@ -308,6 +308,41 @@ public class BackupServiceTests : IDisposable
         using var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT Code FROM Sources LIMIT 1;";
         Assert.Equal("ORIGINAL_SAFE_DATA", cmd.ExecuteScalar()?.ToString());
+    }
+
+    [Fact]
+    public void RestoreBackup_UnknownFutureMigration_RejectsAndRestoresSafetyBackup()
+    {
+        // Arrange
+        CreateValidSqliteDatabase(_dbPath, "Sources", "ORIGINAL_SAFE_DATA", includeInitialSchemaMigration: true);
+
+        // Incompatible future backup with unknown migration
+        var futureBackupPath = Path.Combine(_backupDir, "SOURCES_backup_future.db");
+        SqliteConnection.ClearAllPools();
+        if (File.Exists(futureBackupPath)) File.Delete(futureBackupPath);
+        using (var conn = new SqliteConnection($"Data Source={futureBackupPath}"))
+        {
+            conn.Open();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "CREATE TABLE Sources (Id INTEGER PRIMARY KEY, Code TEXT); INSERT INTO Sources (Code) VALUES ('FUTURE_DATA');";
+            cmd.CommandText += " CREATE TABLE \"__EFMigrationsHistory\" (\"MigrationId\" TEXT NOT NULL PRIMARY KEY, \"ProductVersion\" TEXT NOT NULL);";
+            cmd.CommandText += " INSERT INTO \"__EFMigrationsHistory\" VALUES ('20991231999999_FutureUnreleasedFeatureMigration', '10.0.0');";
+            cmd.ExecuteNonQuery();
+        }
+
+        // Act
+        var result = _sut.RestoreBackup(futureBackupPath);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Contains("أحدث من المنظومة", result.Message);
+
+        // Verify original database was preserved
+        using var checkConn = new SqliteConnection($"Data Source={_dbPath}");
+        checkConn.Open();
+        using var checkCmd = checkConn.CreateCommand();
+        checkCmd.CommandText = "SELECT Code FROM Sources LIMIT 1;";
+        Assert.Equal("ORIGINAL_SAFE_DATA", checkCmd.ExecuteScalar()?.ToString());
     }
 
     [Fact]

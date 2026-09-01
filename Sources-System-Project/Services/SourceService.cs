@@ -32,6 +32,7 @@ public class SourceService : ISourceService
             .Include(s => s.InitialActivityUnit)
             .Include(s => s.CurrentActivityUnit)
             .Include(s => s.Location)
+            .Include(s => s.AddedByUser)
             .Include(s => s.SourceIsotopes).ThenInclude(si => si.Radioisotope)
             .Include(s => s.SourceIsotopes).ThenInclude(si => si.ActivityUnit)
             .OrderBy(s => s.SourceCode)
@@ -49,6 +50,7 @@ public class SourceService : ISourceService
             .Include(s => s.InitialActivityUnit)
             .Include(s => s.CurrentActivityUnit)
             .Include(s => s.Location)
+            .Include(s => s.AddedByUser)
             .Include(s => s.SourceIsotopes).ThenInclude(si => si.Radioisotope)
             .Include(s => s.SourceIsotopes).ThenInclude(si => si.ActivityUnit)
             .FirstOrDefault(s => s.Id == id);
@@ -98,7 +100,10 @@ public class SourceService : ISourceService
         // حساب النشاط الحالي
         CalculateSourceCurrentActivityInMemory(source, isotopesDict, unitsDict);
 
-        source.AddedBy = _userService.CurrentUser?.FullName ?? "غير معروف";
+        var addedByUserId = _userService.CurrentUser?.Id;
+        source.AddedBy = (addedByUserId.HasValue && db.Users.Any(u => u.Id == addedByUserId.Value))
+            ? addedByUserId.Value
+            : null;
 
         db.Sources.Add(source);
         if (source.LocationId.HasValue)
@@ -275,6 +280,7 @@ public class SourceService : ISourceService
             .Include(s => s.CurrentActivityUnit)
             .Include(s => s.Location)
             .Include(s => s.DeletedByUser)
+            .Include(s => s.AddedByUser)
             .Include(s => s.SourceIsotopes).ThenInclude(si => si.Radioisotope)
             .Include(s => s.SourceIsotopes).ThenInclude(si => si.ActivityUnit)
             .Where(s => s.IsDeleted)

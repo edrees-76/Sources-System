@@ -34,16 +34,28 @@
 | **10** | `AlertNotifications` | `IX_AlertNotifications_IsRead` | يُنشأ فهرس أداء: `CREATE INDEX IF NOT EXISTS IX_AlertNotifications_IsRead ON AlertNotifications(IsRead)` | غير معرّف في `OnModelCreating` أو `ModelSnapshot` | استعلام جلب التنبيهات غير المقروءة سيمسح الجدول كاملاً بدون الفهرس. |
 | **11** | `BorrowRequests` | `IX_BorrowRequests_Status` | يُنشأ فهرس أداء: `CREATE INDEX IF NOT EXISTS IX_BorrowRequests_Status ON BorrowRequests(Status)` | غير معرّف في `OnModelCreating` أو `ModelSnapshot` | استعلامات تصنيف طلبات الاستعارة (معلقة، متأخرة، مسلّمة) تصبح أبطأ. |
 | **12** | `BorrowRequests` | `IX_BorrowRequests_SourceId` | يُنشأ فهرسان: فهرس عادي `IX_BorrowRequests_SourceId` وفهرس فريد مفلتر `IX_BorrowRequests_SourceId_Active` (`WHERE Status IN ('Delivered', 'Overdue')`) | يُعرّف فهرس واحد فريد مفلتر باسم `IX_BorrowRequests_SourceId` | في نموذج EF، يحل الفهرس المفلتر محل فهرس المفتاح الخارجي العادي، بينما في SQL الخام يوجد فهرسان مما قد يسبب ازدواجية طفيفة في التخزين لكنه يضمن تسريع الاستعلامات العادية على المفتاح الخارجي. |
-| **13** | `NeutronSources` و `NeutronSourceTypes` | نوع العمود `AddedBy` | مُعرّف كـ `AddedBy TEXT` | في `AppDbContextModelSnapshot` مُعرّف كـ `Property<Guid?>("AddedBy")` | اختلاف في المواءمة النوعية: إذا أُدخل اسم مستخدم كنص في `AddedBy`، فإن قراءته كـ `Guid?` في EF Core ستتسبب في خطأ تحويل عند إلغاء التسلسل. |
+| **13** | الكيانات الستة (`Sources`, `Locations`, `Radioisotopes`, `BorrowRequests`, `NeutronSources`, `NeutronSourceTypes`) | نوع العمود `AddedBy` والعلاقة `AddedByUser` | **تم الإغلاق والتوحيد في الجولة 95** على `Guid?` مع قيد مفتاح خارجي `SetNull` وفهرس لكل جدول وخاصية `[NotMapped] AddedByName`. | **مطابق تماماً** في `OnModelCreating` وترحيل `20260901133004_UnifyAddedByToGuid` و `AppDbContextModelSnapshot`. | تم القضاء على الانحراف بالكامل، وتوحيد منطق تسجيل المستخدم المنشئ مع معالجة البيانات القائمة وحماية التوافق. |
 
 ---
 
-## 3. التوصيات الفنية للجولات القادمة (Technical Recommendations)
+## 3. التحديثات المنجزة (Resolved Items)
 
-> [!IMPORTANT]
-> هذا التقرير للتوثيق فقط دون إجراء أي تعديل على كود `AppDbContext.cs` أو مجلد `Migrations/` في الجولة الحالية، التزاماً بنطاق العمل.
+### الجولة 95: توحيد `AddedBy` إلى `Guid?` مع قيد المفتاح الخارجي
+- **الكيانات المشمولة:** `Source`, `Location`, `Radioisotope`, `BorrowRequest`, `NeutronSource`, `NeutronSourceType`.
+- **النمط الموحد:**
+  - `public Guid? AddedBy { get; set; }`
+  - `[ForeignKey(nameof(AddedBy))] public User? AddedByUser { get; set; }`
+  - `[NotMapped] public string AddedByName => AddedByUser?.FullName ?? "غير معروف";`
+- **التهيئة والترحيل:** إضافة علاقة `AddedByUser` مع `IsRequired(false)` و `OnDelete(DeleteBehavior.SetNull)` وفهارس `IX_*_AddedBy`. تم إنشاء الترحيل `20260901133004_UnifyAddedByToGuid` وترحيل البيانات القائمة برمجياً.
+- **استثناء `SourceCertificate.AttachedBy`:** يظل `string?` لكونه يعبر عن نص الوصف/جهة الإرفاق وليس المستخدم المنشئ للنظام.
+- **تشديد فحص التوافق في `BackupService`:** مقارنة ترحيلات `__EFMigrationsHistory` في النسخة الاحتياطية بالمخطط المعتمد للمنظومة لرفض النسخ المستقبلية المجهولة أو القديمة الخالية من سجل الترحيلات بأمان.
+- **تغيير سلوك مرئي في `DeletionsViewModel`:** كان حقل `DeletedByName` يعرض اسم مُضيف السجل كقيمة احتياطية حين يكون القائم بالحذف مجهولاً، في `Source` و `Location` و `Radioisotope`. أُزيلت هذه الاحتياطية وصار يُعرض `"-"`، لأن عرض اسم المُضيف تحت لافتة "حُذف بواسطة" إسناد كاذب في سجل التدقيق.
 
-عند التخطيط لمعالجة هذا الانحراف في جولات لاحقة، يُوصى بما يلي:
-1. **تحديث `OnModelCreating`:** لمطابقة الفهارس الفريدة المفلترة لـ `NeutronSources.SourceCode` و `NeutronSourceTypes.Code` و `Sources.SourceCode` وفهارس الأداء.
+---
+
+## 4. التوصيات الفنية للجولات القادمة (Technical Recommendations)
+
+عند التخطيط لمعالجة باقي الانحرافات في جولات لاحقة، يُوصى بما يلي:
+1. **تحديث `OnModelCreating`:** لمطابقة الفهارس الفريدة المفلترة لـ `NeutronSources.SourceCode` و `NeutronSourceTypes.Code` وفهارس الأداء.
 2. **إضافة تهيئة `SourceCertificates` إلى `OnModelCreating`:** وتوليد Migration رسمي لها لضمان تزامن `AppDbContextModelSnapshot`.
-3. **توحيد نوع الحقل `AddedBy`:** في الكيانات والنماذج ليكون إما `string?` (اسم المستخدم) أو `Guid?` (معرّف المستخدم) بشكل متسق في كل الجداول.
+3. **الجولة 96 القادمة:** استكمال تحديث الـ ViewModels والـ XAML لعرض `AddedByName` في باقي الواجهات والنوافذ.

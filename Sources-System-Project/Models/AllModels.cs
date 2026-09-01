@@ -51,7 +51,13 @@ public class Radioisotope
     public Guid? DeletedBy { get; set; }
     [ForeignKey(nameof(DeletedBy))]
     public User? DeletedByUser { get; set; }
-    public string? AddedBy { get; set; }
+
+    public Guid? AddedBy { get; set; }
+    [ForeignKey(nameof(AddedBy))]
+    public User? AddedByUser { get; set; }
+
+    [NotMapped]
+    public string AddedByName => AddedByUser?.FullName ?? "غير معروف";
 
     [NotMapped]
     public string DisplayNotes
@@ -251,7 +257,13 @@ public class Source
     public Guid? DeletedBy { get; set; }
     [ForeignKey(nameof(DeletedBy))]
     public User? DeletedByUser { get; set; }
-    public string? AddedBy { get; set; }
+
+    public Guid? AddedBy { get; set; }
+    [ForeignKey(nameof(AddedBy))]
+    public User? AddedByUser { get; set; }
+
+    [NotMapped]
+    public string AddedByName => AddedByUser?.FullName ?? "غير معروف";
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
@@ -586,7 +598,13 @@ public class Location
     public Guid? DeletedBy { get; set; }
     [ForeignKey(nameof(DeletedBy))]
     public User? DeletedByUser { get; set; }
-    public string? AddedBy { get; set; }
+
+    public Guid? AddedBy { get; set; }
+    [ForeignKey(nameof(AddedBy))]
+    public User? AddedByUser { get; set; }
+
+    [NotMapped]
+    public string AddedByName => AddedByUser?.FullName ?? "غير معروف";
 
     /// <summary>عدد المصادر المرتبطة حالياً بهذا الموقع</summary>
     [NotMapped]
@@ -663,7 +681,12 @@ public class BorrowRequest
 
     public string? RejectionReason { get; set; }
     public string? Notes { get; set; }
-    public string? AddedBy { get; set; }
+    public Guid? AddedBy { get; set; }
+    [ForeignKey(nameof(AddedBy))]
+    public User? AddedByUser { get; set; }
+
+    [NotMapped]
+    public string AddedByName => AddedByUser?.FullName ?? "غير معروف";
 
     /// <summary>الحالة بالعربية</summary>
     [NotMapped]
@@ -942,6 +965,12 @@ public class NeutronSourceType
     public User? DeletedByUser { get; set; }
 
     public Guid? AddedBy { get; set; }
+    [ForeignKey(nameof(AddedBy))]
+    public User? AddedByUser { get; set; }
+
+    [NotMapped]
+    public string AddedByName => AddedByUser?.FullName ?? "غير معروف";
+
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public ICollection<NeutronSource> NeutronSources { get; set; } = new List<NeutronSource>();
@@ -986,6 +1015,12 @@ public class NeutronSource
     public User? DeletedByUser { get; set; }
 
     public Guid? AddedBy { get; set; }
+    [ForeignKey(nameof(AddedBy))]
+    public User? AddedByUser { get; set; }
+
+    [NotMapped]
+    public string AddedByName => AddedByUser?.FullName ?? "غير معروف";
+
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     [NotMapped]

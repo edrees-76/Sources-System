@@ -49,6 +49,8 @@ public class ReportingServiceTests : IDisposable
         var unit = new ActivityUnit { UnitName = "MegaBecquerel", UnitSymbol = "MBq", ConversionToBq = 1e6 };
         var isotope = new Radioisotope { Name = "Cesium-137", Symbol = "Cs-137", HalfLife = 11000, HalfLifeUnit = "days" };
         var location = new Location { LocationName = "مختبر الفيزياء النووية", Building = "المبنى الرئيسي", Room = "101" };
+        var adder1 = new User { Id = Guid.NewGuid(), FullName = "أحمد محمد", Username = "ahmed" };
+        var adder2 = new User { Id = Guid.NewGuid(), FullName = "سارة علي", Username = "sara" };
 
         return new List<Source>
         {
@@ -63,7 +65,8 @@ public class ReportingServiceTests : IDisposable
                 CalibrationDate = DateTime.Now.AddMonths(-6),
                 Location = location,
                 Status = "InUse",
-                AddedBy = "أحمد محمد"
+                AddedBy = adder1.Id,
+                AddedByUser = adder1
             },
             new()
             {
@@ -76,7 +79,8 @@ public class ReportingServiceTests : IDisposable
                 CalibrationDate = DateTime.Now.AddYears(-1),
                 Location = location,
                 Status = "Storage",
-                AddedBy = "سارة علي"
+                AddedBy = adder2.Id,
+                AddedByUser = adder2
             }
         };
     }
@@ -85,6 +89,8 @@ public class ReportingServiceTests : IDisposable
     {
         source ??= CreateSampleSources().First();
         var user = new User { FullName = "د. خالد السعيد", Username = "khaled" };
+        var borrowAdder1 = new User { Id = Guid.NewGuid(), FullName = "أمين المستودع", Username = "keeper" };
+        var borrowAdder2 = new User { Id = Guid.NewGuid(), FullName = "مدير المختبر", Username = "manager" };
 
         return new List<BorrowRequest>
         {
@@ -97,7 +103,8 @@ public class ReportingServiceTests : IDisposable
                 RequestDate = DateTime.Now.AddDays(-5),
                 ExpectedReturnDate = DateTime.Now.AddDays(10),
                 Status = "Approved",
-                AddedBy = "أمين المستودع"
+                AddedBy = borrowAdder1.Id,
+                AddedByUser = borrowAdder1
             },
             new()
             {
@@ -107,7 +114,8 @@ public class ReportingServiceTests : IDisposable
                 RequestDate = DateTime.Now.AddDays(-2),
                 ExpectedReturnDate = DateTime.Now.AddDays(5),
                 Status = "Pending",
-                AddedBy = "مدير المختبر"
+                AddedBy = borrowAdder2.Id,
+                AddedByUser = borrowAdder2
             }
         };
     }

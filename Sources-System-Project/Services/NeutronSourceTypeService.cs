@@ -29,6 +29,7 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
         using var db = _dbFactory.CreateDbContext();
         return db.NeutronSourceTypes
             .AsNoTracking()
+            .Include(t => t.AddedByUser)
             .OrderBy(t => t.Code)
             .ToList();
     }
@@ -41,6 +42,7 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
             .IgnoreQueryFilters()
             .AsNoTracking()
             .Include(t => t.DeletedByUser)
+            .Include(t => t.AddedByUser)
             .Where(t => t.IsDeleted)
             .OrderByDescending(t => t.DeletedAt)
             .ToList();
@@ -50,7 +52,7 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
     public NeutronSourceType? GetById(Guid id)
     {
         using var db = _dbFactory.CreateDbContext();
-        return db.NeutronSourceTypes.Find(id);
+        return db.NeutronSourceTypes.Include(t => t.AddedByUser).FirstOrDefault(t => t.Id == id);
     }
 
     /// <summary>إنشاء نوع مصدر نيتروني جديد</summary>
@@ -68,7 +70,10 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
             return (false, "رمز نوع المصدر موجود بالفعل");
 
         item.Code = trimmedCode;
-        item.AddedBy = _userService.CurrentUser?.Id;
+        var addedByUserId = _userService.CurrentUser?.Id;
+        item.AddedBy = (addedByUserId.HasValue && db.Users.Any(u => u.Id == addedByUserId.Value))
+            ? addedByUserId.Value
+            : null;
         item.CreatedAt = DateTime.Now;
 
         db.NeutronSourceTypes.Add(item);

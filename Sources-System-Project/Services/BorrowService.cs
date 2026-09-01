@@ -40,6 +40,7 @@ public class BorrowService : IBorrowService
             .Include(b => b.BorrowerUser)
             .Include(b => b.ApproverUser)
             .Include(b => b.ReturnedByUser)
+            .Include(b => b.AddedByUser)
             .OrderByDescending(b => b.RequestDate)
             .ThenBy(b => b.Source != null ? b.Source.SourceCode : string.Empty)
             .ToList();
@@ -59,6 +60,7 @@ public class BorrowService : IBorrowService
             .Include(b => b.BorrowerUser)
             .Include(b => b.ApproverUser)
             .Include(b => b.ReturnedByUser)
+            .Include(b => b.AddedByUser)
             .Where(b => b.SourceId == sourceId)
             .OrderByDescending(b => b.RequestDate)
             .ThenBy(b => b.Source != null ? b.Source.SourceCode : string.Empty)
@@ -77,6 +79,7 @@ public class BorrowService : IBorrowService
             .Include(b => b.Source).ThenInclude(s => s!.SourceIsotopes).ThenInclude(si => si.Radioisotope)
             .Include(b => b.Source).ThenInclude(s => s!.SourceIsotopes).ThenInclude(si => si.ActivityUnit)
             .Include(b => b.BorrowerUser)
+            .Include(b => b.AddedByUser)
             .Where(b => b.Status == "Pending")
             .OrderByDescending(b => b.RequestDate)
             .ToList();
@@ -100,6 +103,7 @@ public class BorrowService : IBorrowService
             .Include(b => b.Source).ThenInclude(s => s!.SourceIsotopes).ThenInclude(si => si.Radioisotope)
             .Include(b => b.Source).ThenInclude(s => s!.SourceIsotopes).ThenInclude(si => si.ActivityUnit)
             .Include(b => b.BorrowerUser)
+            .Include(b => b.AddedByUser)
             .Where(b => b.Status == "Overdue")
             .OrderByDescending(b => b.RequestDate)
             .ToList();
@@ -138,7 +142,10 @@ public class BorrowService : IBorrowService
             request.RequestDate = DateTime.Now;
             request.ApprovalDate = DateTime.Now;
             request.DeliveryDate = DateTime.Now;
-            request.AddedBy = _userService.CurrentUser?.FullName;
+            var addedByUserId = _userService.CurrentUser?.Id;
+            request.AddedBy = (addedByUserId.HasValue && db.Users.Any(u => u.Id == addedByUserId.Value))
+                ? addedByUserId.Value
+                : null;
             
             // نحن هنا نفترض أن المشغل الحالي قد تم تعيينه في View Model أو نتركه كمُنفّذ
             // تحديث حالة المصدر إلى "قيد الاستخدام"

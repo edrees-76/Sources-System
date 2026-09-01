@@ -27,7 +27,7 @@ public class LocationRow
     public string? Building => Location.Building;
     public string? Room => Location.Room;
     public string? ResponsiblePerson => Location.ResponsiblePerson;
-    public string? AddedBy => Location.AddedBy;
+    public string? AddedByName => Location.AddedByName;
     public int SourceCount => Location.SourceCount;
 }
 

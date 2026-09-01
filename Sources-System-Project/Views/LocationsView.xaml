@@ -99,7 +99,7 @@
                         <DataGridTextColumn Header="{DynamicResource ColResponsible}" Binding="{Binding ResponsiblePerson, TargetNullValue='—'}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterAligned}"/>
 
                         <!-- أضيف بواسطة -->
-                        <DataGridTextColumn Header="{DynamicResource ColAddedBy}" Binding="{Binding AddedBy, TargetNullValue='—'}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource SubtleCenterAligned}"/>
+                        <DataGridTextColumn Header="{DynamicResource ColAddedBy}" Binding="{Binding AddedByName}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource SubtleCenterAligned}"/>
 
                         <!-- عمود الإجراءات -->
                         <DataGridTemplateColumn Header="{DynamicResource ColActions}" Width="120">

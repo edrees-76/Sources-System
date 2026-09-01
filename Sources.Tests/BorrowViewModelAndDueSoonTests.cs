@@ -424,7 +424,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
 
         Assert.NotNull(capturedReq1);
         Assert.Equal(registeredUser.Id, capturedReq1.BorrowerUserId);
-        Assert.Equal("أمين المخزن المشغل", capturedReq1.AddedBy);
+        Assert.Null(capturedReq1.AddedBy); // AddedBy يُعين داخل خدمة BorrowService.CreateRequest حصراً
 
         // Case 2: Borrower is external / non-registered text
         vm.IsEditing = true;
@@ -442,7 +442,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         Assert.NotNull(capturedReq2);
         Assert.Null(capturedReq2.BorrowerUserId); // ليس مسجلاً
         Assert.Equal("جهة خارجية غير مسجلة", capturedReq2.BorrowerName);
-        Assert.Equal("أمين المخزن المشغل", capturedReq2.AddedBy);
+        Assert.Null(capturedReq2.AddedBy);
     }
 
     #endregion

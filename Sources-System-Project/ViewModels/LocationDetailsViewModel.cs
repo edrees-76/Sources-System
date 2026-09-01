@@ -25,7 +25,7 @@ public partial class LocationDetailsViewModel : ObservableObject
     public string? Building => Location.Building;
     public string? Room => Location.Room;
     public string? ResponsiblePerson => Location.ResponsiblePerson;
-    public string? AddedBy => Location.AddedBy;
+    public string? AddedByName => Location.AddedByName;
 
     [ObservableProperty]
     private ObservableCollection<LocationSourceRow> _filteredSources = new();

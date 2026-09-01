@@ -31,6 +31,7 @@ public class NeutronSourceService : INeutronSourceService
             .AsNoTracking()
             .Include(n => n.NeutronSourceType)
             .Include(n => n.Location)
+            .Include(n => n.AddedByUser)
             .OrderBy(n => n.SourceCode)
             .ToList();
     }
@@ -45,6 +46,7 @@ public class NeutronSourceService : INeutronSourceService
             .Include(n => n.NeutronSourceType)
             .Include(n => n.Location)
             .Include(n => n.DeletedByUser)
+            .Include(n => n.AddedByUser)
             .Where(n => n.IsDeleted)
             .OrderByDescending(n => n.DeletedAt)
             .ToList();
@@ -57,6 +59,7 @@ public class NeutronSourceService : INeutronSourceService
         return db.NeutronSources
             .Include(n => n.NeutronSourceType)
             .Include(n => n.Location)
+            .Include(n => n.AddedByUser)
             .FirstOrDefault(n => n.Id == id);
     }
 
@@ -69,6 +72,7 @@ public class NeutronSourceService : INeutronSourceService
         return db.NeutronSources
             .Include(n => n.NeutronSourceType)
             .Include(n => n.Location)
+            .Include(n => n.AddedByUser)
             .FirstOrDefault(n => n.SourceCode.ToLower() == lowerCode);
     }
 
@@ -80,6 +84,7 @@ public class NeutronSourceService : INeutronSourceService
             .AsNoTracking()
             .Include(n => n.NeutronSourceType)
             .Include(n => n.Location)
+            .Include(n => n.AddedByUser)
             .Where(n => n.LocationId == locationId)
             .OrderBy(n => n.SourceCode)
             .ToList();
@@ -116,7 +121,10 @@ public class NeutronSourceService : INeutronSourceService
         item.SourceCode = trimmedCode;
         item.SerialNumber = item.SerialNumber?.Trim();
         item.Status = string.IsNullOrWhiteSpace(item.Status) ? "Storage" : item.Status.Trim();
-        item.AddedBy = _userService.CurrentUser?.Id;
+        var addedByUserId = _userService.CurrentUser?.Id;
+        item.AddedBy = (addedByUserId.HasValue && db.Users.Any(u => u.Id == addedByUserId.Value))
+            ? addedByUserId.Value
+            : null;
         item.CreatedAt = DateTime.Now;
 
         db.NeutronSources.Add(item);

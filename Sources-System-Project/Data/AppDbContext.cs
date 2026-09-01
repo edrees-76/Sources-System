@@ -353,6 +353,12 @@ public class AppDbContext : DbContext
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            entity.HasOne(s => s.AddedByUser)
+                .WithMany()
+                .HasForeignKey(s => s.AddedBy)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
             // كود المصدر معرّف دائم لجسم مشع خاضع للرقابة ولا يُعاد استخدامه بعد الحذف الناعم حفاظاً على سلامة سجل الحيازة والتدقيق
             entity.HasIndex(s => s.SourceCode).IsUnique();
 
@@ -373,6 +379,12 @@ public class AppDbContext : DbContext
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            entity.HasOne(l => l.AddedByUser)
+                .WithMany()
+                .HasForeignKey(l => l.AddedBy)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
             entity.HasIndex(l => l.LocationName)
                 .HasFilter("IsDeleted = 0")
                 .IsUnique();
@@ -386,6 +398,12 @@ public class AppDbContext : DbContext
             entity.HasOne(r => r.DeletedByUser)
                 .WithMany()
                 .HasForeignKey(r => r.DeletedBy)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(r => r.AddedByUser)
+                .WithMany()
+                .HasForeignKey(r => r.AddedBy)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
 
@@ -416,6 +434,12 @@ public class AppDbContext : DbContext
             entity.HasOne(b => b.ReturnedByUser)
                 .WithMany()
                 .HasForeignKey(b => b.ReturnedByUserId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(b => b.AddedByUser)
+                .WithMany()
+                .HasForeignKey(b => b.AddedBy)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
 
@@ -562,6 +586,12 @@ public class AppDbContext : DbContext
                 .HasForeignKey(t => t.DeletedBy)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(t => t.AddedByUser)
+                .WithMany()
+                .HasForeignKey(t => t.AddedBy)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<NeutronSource>(entity =>
@@ -580,6 +610,12 @@ public class AppDbContext : DbContext
             entity.HasOne(n => n.DeletedByUser)
                 .WithMany()
                 .HasForeignKey(n => n.DeletedBy)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(n => n.AddedByUser)
+                .WithMany()
+                .HasForeignKey(n => n.AddedBy)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
 

@@ -234,8 +234,18 @@ public class BackupService : IBackupService
 
             // 2. التحقق من توافق المخطط عبر فحص جدول __EFMigrationsHistory بـ SQLite مباشر
             bool isCompatible = false;
+            string? incompatibleReason = null;
             try
             {
+                var knownMigrations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                using (var appDb = new AppDbContext())
+                {
+                    foreach (var m in Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.GetMigrations(appDb.Database))
+                    {
+                        knownMigrations.Add(m);
+                    }
+                }
+
                 var connStr = new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder
                 {
                     DataSource = _dbPath,
@@ -251,15 +261,44 @@ public class BackupService : IBackupService
                     var tableCount = Convert.ToInt64(cmd.ExecuteScalar());
                     if (tableCount > 0)
                     {
-                        cmd.CommandText = "SELECT COUNT(*) FROM \"__EFMigrationsHistory\" WHERE \"MigrationId\" LIKE '%InitialSchema%';";
-                        var migrationCount = Convert.ToInt64(cmd.ExecuteScalar());
-                        isCompatible = migrationCount > 0;
+                        cmd.CommandText = "SELECT \"MigrationId\" FROM \"__EFMigrationsHistory\";";
+                        using var reader = cmd.ExecuteReader();
+                        var restoredMigrations = new List<string>();
+                        while (reader.Read())
+                        {
+                            restoredMigrations.Add(reader.GetString(0));
+                        }
+
+                        if (restoredMigrations.Count == 0)
+                        {
+                            incompatibleReason = "النسخة الاحتياطية لا تحتوي على أي سجل ترحيلات معتمد، ولا يمكن استعادتها.";
+                            isCompatible = false;
+                        }
+                        else
+                        {
+                            var unknownMigrations = restoredMigrations.Where(m => !knownMigrations.Contains(m)).ToList();
+                            if (unknownMigrations.Any())
+                            {
+                                incompatibleReason = $"النسخة الاحتياطية أُنشئت بإصدار أحدث من المنظومة وتحتوي على ترحيلات غير معروفة ({string.Join(", ", unknownMigrations)})، ولا يمكن استعادتها بهذا الإصدار.";
+                                isCompatible = false;
+                            }
+                            else
+                            {
+                                isCompatible = true;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        incompatibleReason = "النسخة الاحتياطية غير صالحة ولا تحتوي على جدول ترحيلات المنظومة.";
+                        isCompatible = false;
                     }
                 }
             }
             catch (Exception ex)
             {
                 LoggerService.LogWarning($"فشل فحص توافق المخطط في النسخة المستعادة: {ex.Message}");
+                incompatibleReason = $"فشل التحقق من توافق النسخة الاحتياطية: {ex.Message}";
                 isCompatible = false;
             }
 
@@ -285,7 +324,7 @@ public class BackupService : IBackupService
 
                 Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
 
-                string incompatibleMsg = "النسخة الاحتياطية أُنشئت بإصدار أقدم من المنظومة وبنية قاعدة البيانات تغيّرت، ولا يمكن استعادتها.";
+                string incompatibleMsg = incompatibleReason ?? "النسخة الاحتياطية غير متوافقة مع بنية قاعدة البيانات الحالية، ولا يمكن استعادتها.";
                 LoggerService.LogWarning(incompatibleMsg);
                 return (false, incompatibleMsg);
             }

@@ -25,7 +25,24 @@ public class LocationServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
         _fixture.ResetDatabase();
 
         _fakeAuditService = new FakeAuditService();
-        _fakeUserService = new FakeUserService();
+        var role = new Role { Id = Guid.NewGuid(), RoleName = "مدير النظام" };
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            FullName = "مستخدم اختباري",
+            Username = "testuser",
+            RoleId = role.Id,
+            IsActive = true
+        };
+        _fakeUserService = new FakeUserService(user);
+
+        using (var db = _fixture.CreateContext())
+        {
+            db.Roles.Add(role);
+            db.Users.Add(user);
+            db.SaveChanges();
+        }
+
         _sut = new LocationService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService);
     }
 
@@ -121,14 +138,22 @@ public class LocationServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
     public void Create_ValidLocation_WithCurrentUser_SavesSuccessfullyAndSetsAddedByAndLogsAudit()
     {
         // Arrange
-        _fakeUserService.CurrentUser = new User
+        var role = new Role { Id = Guid.NewGuid(), RoleName = "TestRole" };
+        var testUser = new User
         {
             Id = Guid.NewGuid(),
             FullName = "د. أحمد علي",
             Username = "ahmed",
             IsActive = true,
-            RoleId = Guid.NewGuid()
+            RoleId = role.Id
         };
+        using (var db = _fixture.CreateContext())
+        {
+            db.Roles.Add(role);
+            db.Users.Add(testUser);
+            db.SaveChanges();
+        }
+        _fakeUserService.CurrentUser = testUser;
 
         var location = new Location
         {
@@ -151,7 +176,7 @@ public class LocationServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
             var saved = db.Locations.Find(location.Id);
             Assert.NotNull(saved);
             Assert.Equal("المستودع الرئيسي", saved!.LocationName);
-            Assert.Equal("د. أحمد علي", saved.AddedBy);
+            Assert.Equal(_fakeUserService.CurrentUser!.Id, saved.AddedBy);
         }
 
         Assert.Single(_fakeAuditService.LoggedEntries);
@@ -280,7 +305,7 @@ public class LocationServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
             Building = "المبنى 1",
             Room = "101",
             ResponsiblePerson = "أحمد",
-            AddedBy = "المسؤول الأول"
+            AddedBy = _fakeUserService.CurrentUser!.Id
         };
 
         using (var db = _fixture.CreateContext())
@@ -315,7 +340,7 @@ public class LocationServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
             Assert.Equal("المبنى 2", updated.Building);
             Assert.Equal("202", updated.Room);
             Assert.Equal("خالد", updated.ResponsiblePerson);
-            Assert.Equal("المسؤول الأول", updated.AddedBy); // AddedBy should remain unchanged
+            Assert.Equal(_fakeUserService.CurrentUser!.Id, updated.AddedBy); // AddedBy should remain unchanged
         }
 
         Assert.Single(_fakeAuditService.LoggedEntries);

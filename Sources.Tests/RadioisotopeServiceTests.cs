@@ -25,7 +25,24 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
         _fixture.ResetDatabase();
 
         _fakeAuditService = new FakeAuditService();
-        _fakeUserService = new FakeUserService();
+        var role = new Role { Id = Guid.NewGuid(), RoleName = "مدير النظام" };
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            FullName = "مستخدم اختباري",
+            Username = "testuser",
+            RoleId = role.Id,
+            IsActive = true
+        };
+        _fakeUserService = new FakeUserService(user);
+
+        using (var db = _fixture.CreateContext())
+        {
+            db.Roles.Add(role);
+            db.Users.Add(user);
+            db.SaveChanges();
+        }
+
         _sut = new RadioisotopeService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService);
     }
 
@@ -158,7 +175,23 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
     public void Create_WithValidData_Succeeds_SetsAddedBy_AndLogsAudit()
     {
         // Arrange
-        _fakeUserService.CurrentUser = new User { FullName = "علي أحمد" };
+        var role = new Role { Id = Guid.NewGuid(), RoleName = "TestRole" };
+        var testUser = new User
+        {
+            Id = Guid.NewGuid(),
+            FullName = "علي أحمد",
+            Username = "ali_ahmed",
+            RoleId = role.Id,
+            IsActive = true
+        };
+        using (var db = _fixture.CreateContext())
+        {
+            db.Roles.Add(role);
+            db.Users.Add(testUser);
+            db.SaveChanges();
+        }
+        _fakeUserService.CurrentUser = testUser;
+
         var item = new Radioisotope
         {
             Symbol = "Co-60",
@@ -184,11 +217,12 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
 
         using (var db = _fixture.CreateContext())
         {
-            var saved = db.Radioisotopes.FirstOrDefault(r => r.Symbol == "Co-60");
+            var saved = db.Radioisotopes.Include(r => r.AddedByUser).FirstOrDefault(r => r.Symbol == "Co-60");
             Assert.NotNull(saved);
             Assert.Equal("Cobalt-60", saved.Name);
             Assert.Equal("كوبالت-60", saved.ArabicName);
-            Assert.Equal("علي أحمد", saved.AddedBy);
+            Assert.Equal(_fakeUserService.CurrentUser!.Id, saved.AddedBy);
+            Assert.Equal(_fakeUserService.CurrentUser!.FullName, saved.AddedByName);
             Assert.False(saved.IsDeleted);
         }
 
@@ -220,7 +254,8 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
         using var db = _fixture.CreateContext();
         var saved = db.Radioisotopes.FirstOrDefault(r => r.Symbol == "Co-60");
         Assert.NotNull(saved);
-        Assert.Equal("غير معروف", saved.AddedBy);
+        Assert.Null(saved.AddedBy);
+        Assert.Equal("غير معروف", saved.AddedByName);
     }
 
     [Fact]

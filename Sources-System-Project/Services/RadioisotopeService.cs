@@ -24,13 +24,17 @@ public class RadioisotopeService : IRadioisotopeService
     public List<Radioisotope> GetAll()
     {
         using var db = _dbFactory.CreateDbContext();
-        return db.Radioisotopes.OrderBy(r => r.Name).ToList();
+        return db.Radioisotopes
+            .AsNoTracking()
+            .Include(r => r.AddedByUser)
+            .OrderBy(r => r.Name)
+            .ToList();
     }
 
     public Radioisotope? GetById(Guid id)
     {
         using var db = _dbFactory.CreateDbContext();
-        return db.Radioisotopes.Find(id);
+        return db.Radioisotopes.Include(r => r.AddedByUser).FirstOrDefault(r => r.Id == id);
     }
 
     public (bool Success, string Message) Create(Radioisotope item)
@@ -46,7 +50,10 @@ public class RadioisotopeService : IRadioisotopeService
         if (string.IsNullOrEmpty(item.ArabicName))
             item.ArabicName = IsotopeHelper.GetArabicNameFromSymbol(item.Symbol);
 
-        item.AddedBy = _userService.CurrentUser?.FullName ?? "غير معروف";
+        var addedByUserId = _userService.CurrentUser?.Id;
+        item.AddedBy = (addedByUserId.HasValue && db.Users.Any(u => u.Id == addedByUserId.Value))
+            ? addedByUserId.Value
+            : null;
 
         db.Radioisotopes.Add(item);
         db.SaveChanges();

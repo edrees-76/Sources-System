@@ -222,7 +222,7 @@
                             <DataGridTextColumn Header="{DynamicResource ColGammaConstant}" Binding="{Binding GammaConstant, StringFormat=\{0:0.####\}, TargetNullValue='—'}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
 
                             <!-- 9. أضيف بواسطة -->
-                            <DataGridTextColumn Header="{DynamicResource ColAddedBy}" Binding="{Binding AddedBy}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColAddedBy}" Binding="{Binding AddedByName}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
 
                             <!-- 9. ملاحظات مع TextTrimming و ToolTip -->
                             <DataGridTemplateColumn Header="{DynamicResource ColNotes}" Width="Auto" MinWidth="140">

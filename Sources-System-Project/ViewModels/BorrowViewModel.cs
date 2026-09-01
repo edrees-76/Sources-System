@@ -39,7 +39,7 @@ public class BorrowRequestRow
     public string Status => Request.Status;
     public string ArabicStatus => Request.ArabicStatus;
     public string? Notes => Request.Notes;
-    public string? AddedBy => Request.AddedBy;
+    public string? AddedByName => Request.AddedByName;
 }
 
 public sealed partial class BorrowViewModel : ObservableObject, IEditableViewModel, IDisposable
@@ -419,8 +419,7 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
             BorrowerUserId = matchedUser?.Id,
             Purpose = NewPurpose.Trim(),
             ExpectedReturnDate = NewExpectedReturnDate,
-            Notes = string.IsNullOrWhiteSpace(NewNotes) ? null : NewNotes.Trim(),
-            AddedBy = _userService.CurrentUser?.FullName ?? "النظام"
+            Notes = string.IsNullOrWhiteSpace(NewNotes) ? null : NewNotes.Trim()
         };
 
         var result = _borrowService.CreateRequest(req);

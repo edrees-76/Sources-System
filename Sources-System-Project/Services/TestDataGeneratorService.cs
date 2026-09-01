@@ -50,7 +50,7 @@ public static class TestDataGeneratorService
 
             try
             {
-                var currentUser = userService?.CurrentUser?.FullName ?? "مدير النظام (Debug)";
+                var currentUserId = userService?.CurrentUser?.Id ?? db.Users.Select(u => (Guid?)u.Id).FirstOrDefault();
 
                 // ─────────────────────────────────────────────────────────────
                 // 1. المواقع (Locations) — إجمالي 20 موقعاً
@@ -88,7 +88,7 @@ public static class TestDataGeneratorService
                     var match = existingLocations.FirstOrDefault(l => l.LocationName == cand.LocationName);
                     if (match == null)
                     {
-                        cand.AddedBy = currentUser;
+                        cand.AddedBy = currentUserId;
                         db.Locations.Add(cand);
                         existingLocations.Add(cand);
                         addedLocationsCount++;
@@ -166,7 +166,7 @@ public static class TestDataGeneratorService
                         Manufacturer = GetRandomManufacturer(random),
                         Model = $"MOD-{random.Next(100, 999)}",
                         LocationId = location.Id,
-                        AddedBy = currentUser,
+                        AddedBy = currentUserId,
                         CreatedAt = DateTime.Now.AddDays(-random.Next(10, 365 * 2))
                     };
 
@@ -407,7 +407,7 @@ public static class TestDataGeneratorService
                         ExpectedReturnDate = expDate,
                         ActualReturnDate = actDate,
                         Status = "Returned",
-                        AddedBy = currentUser,
+                        AddedBy = currentUserId,
                         Notes = "تم الإرجاع بحالة سليمة ومطابقة القياسات."
                     };
                     generatedBorrowRequests.Add(req);
@@ -444,7 +444,7 @@ public static class TestDataGeneratorService
                         ExpectedReturnDate = expDate,
                         ActualReturnDate = null,
                         Status = "Delivered",
-                        AddedBy = currentUser,
+                        AddedBy = currentUserId,
                         Notes = "استعارة جارية قيد العمل بالمختبر."
                     };
                     generatedBorrowRequests.Add(req);
@@ -478,7 +478,7 @@ public static class TestDataGeneratorService
                         ExpectedReturnDate = expDate,
                         ActualReturnDate = null,
                         Status = "Overdue",
-                        AddedBy = currentUser,
+                        AddedBy = currentUserId,
                         Notes = "تنبيه: تجاوز موعد الإرجاع المحدد، تم التواصل مع المستعير."
                     };
                     generatedBorrowRequests.Add(req);
@@ -506,7 +506,7 @@ public static class TestDataGeneratorService
                         ExpectedReturnDate = DateTime.Today.AddDays(random.Next(7, 20)),
                         ActualReturnDate = null,
                         Status = isApproved ? "Approved" : "Pending",
-                        AddedBy = currentUser,
+                        AddedBy = currentUserId,
                         Notes = isApproved ? "تمت الموافقة وفي انتظار تسليم المصدر للمستعير." : "طلب استعارة جديد بانتظار اعتماد المشرف."
                     };
                     generatedBorrowRequests.Add(req);

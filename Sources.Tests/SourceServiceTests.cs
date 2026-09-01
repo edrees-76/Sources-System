@@ -38,13 +38,15 @@ public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         _auditService = new FakeAuditService();
         _userService = new FakeUserService();
 
+        SeedCommonData();
+
+        _userService.CurrentUser = _testUser;
+
         _sourceService = new SourceService(
             _fixture.ContextFactory,
             _decayService,
             _auditService,
             _userService);
-
-        SeedCommonData();
     }
 
     public void Dispose()
@@ -109,7 +111,8 @@ public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         Assert.Equal("تم إضافة المصدر بنجاح", result.Message);
         Assert.NotNull(created);
         Assert.Equal("SRC-SRV-001", created.SourceCode);
-        Assert.Equal(_userService.CurrentUser!.FullName, created.AddedBy);
+        Assert.Equal(_userService.CurrentUser!.Id, created.AddedBy);
+        Assert.Equal(_userService.CurrentUser!.FullName, created.AddedByName);
         Assert.True(created.CurrentActivityValue > 0);
         Assert.True(created.CurrentActivityValue <= created.InitialActivityValue);
 

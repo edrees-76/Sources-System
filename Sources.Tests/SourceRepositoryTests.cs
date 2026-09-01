@@ -50,6 +50,15 @@ public class SourceRepositoryTests : IClassFixture<SqliteInMemoryFixture>, IDisp
     {
         using var context = _fixture.CreateContext();
 
+        if (_userService.CurrentUser != null)
+        {
+            var roleId = _userService.CurrentUser.RoleId != Guid.Empty ? _userService.CurrentUser.RoleId : Guid.NewGuid();
+            var role = new Role { Id = roleId, RoleName = "مدير المصادر" };
+            _userService.CurrentUser.RoleId = role.Id;
+            context.Roles.Add(role);
+            context.Users.Add(_userService.CurrentUser);
+        }
+
         _isoCs137 = TestDataBuilder.CreateRadioisotope("Cs-137", "Cesium-137", 30.08, "years", 661.7);
         _isoCo60 = TestDataBuilder.CreateRadioisotope("Co-60", "Cobalt-60", 5.27, "years", 1332.5);
         _isoAm241 = TestDataBuilder.CreateRadioisotope("Am-241", "Americium-241", 432.2, "years", 59.54);
@@ -95,7 +104,8 @@ public class SourceRepositoryTests : IClassFixture<SqliteInMemoryFixture>, IDisp
         Assert.Equal(_isoCs137.Id, retrieved.RadioisotopeId);
         Assert.Equal(_testLocation.Id, retrieved.LocationId);
         Assert.Equal(50000.0, retrieved.InitialActivityValue);
-        Assert.Equal(_userService.CurrentUser!.FullName, retrieved.AddedBy);
+        Assert.Equal(_userService.CurrentUser!.Id, retrieved.AddedBy);
+        Assert.Equal(_userService.CurrentUser!.FullName, retrieved.AddedByName);
 
         // التحقق من تسجيل العملية في الـ Audit Log
         Assert.Contains(_auditService.LoggedEntries, log =>

@@ -91,7 +91,7 @@ namespace Sources.Services
                     worksheet.Cell(row, 5).Value = loc.Room ?? "-";
                     worksheet.Cell(row, 6).Value = loc.ResponsiblePerson ?? "-";
                     worksheet.Cell(row, 7).Value = loc.SourceCount;
-                    worksheet.Cell(row, 8).Value = loc.AddedBy ?? "-";
+                    worksheet.Cell(row, 8).Value = loc.AddedByUser?.FullName ?? "-";
                     row++;
                 }
 
@@ -183,7 +183,7 @@ namespace Sources.Services
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(loc.Room ?? "-");
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(loc.ResponsiblePerson ?? "-");
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(loc.SourceCount.ToString());
-                                        table.Cell().Element(c => CellStyle(c, bg)).Text(loc.AddedBy ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(loc.AddedByUser?.FullName ?? "-");
                                         i++;
                                     }
                                 }
@@ -227,7 +227,7 @@ namespace Sources.Services
                     worksheet.Cell(row, 4).Value = source.CurrentActivityWithUnit;
                     worksheet.Cell(row, 5).Value = source.Location?.LocationName ?? "غير محدد";
                     worksheet.Cell(row, 6).Value = source.ArabicStatus;
-                    worksheet.Cell(row, 7).Value = source.AddedBy ?? "غير معروف";
+                    worksheet.Cell(row, 7).Value = source.AddedByName;
                     row++;
                 }
 
@@ -329,7 +329,7 @@ namespace Sources.Services
                             table.Cell().Element(CellStyle).Text(source.CurrentActivityWithUnit);
                             table.Cell().Element(CellStyle).Text(source.Location?.LocationName ?? "-");
                             table.Cell().Element(CellStyle).Text(source.ArabicStatus);
-                            table.Cell().Element(CellStyle).Text(source.AddedBy ?? "-");
+                            table.Cell().Element(CellStyle).Text(source.AddedByUser?.FullName ?? "-");
 
                             IContainer CellStyle(IContainer container)
                             {
@@ -379,7 +379,7 @@ namespace Sources.Services
                     worksheet.Cell(row, 4).Value = req.Purpose ?? "-";
                     worksheet.Cell(row, 5).Value = req.ExpectedReturnDate.ToString("yyyy/MM/dd");
                     worksheet.Cell(row, 6).Value = req.ArabicStatus;
-                    worksheet.Cell(row, 7).Value = req.AddedBy ?? "-";
+                    worksheet.Cell(row, 7).Value = req.AddedByUser?.FullName ?? "-";
                     worksheet.Cell(row, 8).Value = req.RequestDate.ToString("yyyy/MM/dd HH:mm");
                     row++;
                 }
@@ -465,7 +465,7 @@ namespace Sources.Services
                                          table.Cell().Element(CellStyle).Text(req.Purpose ?? "-");
                                          table.Cell().Element(CellStyle).Text(req.ExpectedReturnDate.ToString("yyyy/MM/dd"));
                                          table.Cell().Element(CellStyle).Text(req.ArabicStatus);
-                                         table.Cell().Element(CellStyle).Text(req.AddedBy ?? "-");
+                                         table.Cell().Element(CellStyle).Text(req.AddedByUser?.FullName ?? "-");
                                          table.Cell().Element(CellStyle).Text(req.RequestDate.ToString("yyyy/MM/dd"));
 
                                          IContainer CellStyle(IContainer container)
@@ -512,7 +512,7 @@ namespace Sources.Services
                     worksheet.Cell(row, 5).Value = source.CalibrationDate.ToString("yyyy/MM/dd");
                     worksheet.Cell(row, 6).Value = source.ArabicStatus;
                     worksheet.Cell(row, 7).Value = source.CurrentActivityWithUnit;
-                    worksheet.Cell(row, 8).Value = source.AddedBy ?? "-";
+                    worksheet.Cell(row, 8).Value = source.AddedByUser?.FullName ?? "-";
                     row++;
                 }
 
@@ -590,7 +590,7 @@ namespace Sources.Services
                                     table.Cell().Element(CellStyle).Text(s.CalibrationDate.ToString("yyyy/MM/dd"));
                                     table.Cell().Element(CellStyle).Text(s.CurrentActivityWithUnit);
                                     table.Cell().Element(CellStyle).Text(s.ArabicStatus);
-                                    table.Cell().Element(CellStyle).Text(s.AddedBy ?? "-");
+                                    table.Cell().Element(CellStyle).Text(s.AddedByUser?.FullName ?? "-");
 
                                     static IContainer CellStyle(IContainer container) => container.BorderBottom(1).BorderColor(Colors.Grey.Lighten3).PaddingVertical(4);
                                     i++;
@@ -630,7 +630,7 @@ namespace Sources.Services
                     wsInventory.Cell(row, 4).Value = s.CurrentActivityWithUnit;
                     wsInventory.Cell(row, 5).Value = s.Location?.LocationName ?? "غير محدد";
                     wsInventory.Cell(row, 6).Value = s.ArabicStatus;
-                    wsInventory.Cell(row, 7).Value = s.AddedBy ?? "غير معروف";
+                    wsInventory.Cell(row, 7).Value = s.AddedByName;
                     row++;
                 }
                 wsInventory.Columns().AdjustToContents();
@@ -655,7 +655,7 @@ namespace Sources.Services
                     wsBorrowing.Cell(row, 4).Value = req.Purpose ?? "-";
                     wsBorrowing.Cell(row, 5).Value = req.ExpectedReturnDate.ToString("yyyy/MM/dd");
                     wsBorrowing.Cell(row, 6).Value = req.ArabicStatus;
-                    wsBorrowing.Cell(row, 7).Value = req.AddedBy ?? "-";
+                    wsBorrowing.Cell(row, 7).Value = req.AddedByUser?.FullName ?? "-";
                     wsBorrowing.Cell(row, 8).Value = req.RequestDate.ToString("yyyy/MM/dd HH:mm");
                     row++;
                 }
@@ -681,7 +681,7 @@ namespace Sources.Services
                     wsLowAct.Cell(row, 4).Value = s.CurrentActivityWithUnit;
                     wsLowAct.Cell(row, 5).Value = s.Location?.LocationName ?? "غير محدد";
                     wsLowAct.Cell(row, 6).Value = s.ArabicStatus;
-                    wsLowAct.Cell(row, 7).Value = s.AddedBy ?? "غير معروف";
+                    wsLowAct.Cell(row, 7).Value = s.AddedByName;
                     row++;
                 }
                 wsLowAct.Columns().AdjustToContents();
@@ -708,7 +708,7 @@ namespace Sources.Services
                     wsAlerts.Cell(row, 5).Value = s.CalibrationDate.ToString("yyyy/MM/dd");
                     wsAlerts.Cell(row, 6).Value = s.ArabicStatus;
                     wsAlerts.Cell(row, 7).Value = s.CurrentActivityWithUnit;
-                    wsAlerts.Cell(row, 8).Value = s.AddedBy ?? "-";
+                    wsAlerts.Cell(row, 8).Value = s.AddedByUser?.FullName ?? "-";
                     row++;
                 }
                 wsAlerts.Columns().AdjustToContents();

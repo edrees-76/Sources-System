@@ -108,7 +108,8 @@ public class SourceBorrowOverdueAuditReportE2ETests : IClassFixture<SqliteInMemo
         var storedSource = _sourceService.GetSourceById(source.Id);
         Assert.NotNull(storedSource);
         Assert.Equal("Storage", storedSource.Status);
-        Assert.Equal(_testUser.FullName, storedSource.AddedBy);
+        Assert.Equal(_testUser.Id, storedSource.AddedBy);
+        Assert.Equal(_testUser.FullName, storedSource.AddedByName);
 
         // التحقق من تسجيل تدقيق إنشاء المصدر
         var initialAuditLogs = _auditService.GetAuditLogs(pageSize: 10, actionFilter: "Create");
@@ -135,7 +136,8 @@ public class SourceBorrowOverdueAuditReportE2ETests : IClassFixture<SqliteInMemo
         var requestsForSource = _borrowService.GetBySource(source.Id);
         Assert.Single(requestsForSource);
         Assert.Equal("Delivered", requestsForSource[0].Status);
-        Assert.Equal(_testUser.FullName, requestsForSource[0].AddedBy);
+        Assert.Equal(_testUser.Id, requestsForSource[0].AddedBy);
+        Assert.Equal(_testUser.FullName, requestsForSource[0].AddedByName);
 
         // التحقق من تسجيل تدقيق الاستعارة
         var afterBorrowAuditLogs = _auditService.GetAuditLogs(pageSize: 20);

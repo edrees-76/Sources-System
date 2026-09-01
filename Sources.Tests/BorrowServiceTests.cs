@@ -116,7 +116,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             ExpectedReturnDate = expectedReturnDate ?? DateTime.Now.AddDays(7),
             ActualReturnDate = actualReturnDate,
             Notes = notes,
-            AddedBy = "أحمد أمين العهدة"
+            AddedBy = _testUser.Id
         };
 
         db.BorrowRequests.Add(req);
@@ -154,7 +154,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         var createdReq = db.BorrowRequests.FirstOrDefault(b => b.SourceId == source.Id);
         Assert.NotNull(createdReq);
         Assert.Equal("Delivered", createdReq.Status);
-        Assert.Equal(_testUser.FullName, createdReq.AddedBy);
+        Assert.Equal(_testUser.Id, createdReq.AddedBy);
         Assert.NotNull(createdReq.ApprovalDate);
         Assert.NotNull(createdReq.DeliveryDate);
 
