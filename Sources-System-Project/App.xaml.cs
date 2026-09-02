@@ -143,6 +143,7 @@ public partial class App : Application
         services.AddTransient<INeutronSourceTypeService, NeutronSourceTypeService>();
         services.AddTransient<INeutronSourceService, NeutronSourceService>();
         services.AddSingleton<ISourceCertificateService, SourceCertificateService>();
+        services.AddSingleton<IClipboardService, ClipboardService>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();

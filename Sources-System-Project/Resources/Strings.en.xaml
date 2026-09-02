@@ -1366,6 +1366,13 @@
     <system:String x:Key="MsgExportPdfSuccess">Report exported to PDF successfully.</system:String>
     <system:String x:Key="MsgExportExcelSuccess">Data exported to Excel successfully.</system:String>
     <system:String x:Key="NavAbout">About System</system:String>
+
+    <!-- Round 107 Direct Failure Feedback -->
+    <system:String x:Key="CalcCopyFailedTitle">Copy Failed</system:String>
+    <system:String x:Key="CalcCopyFailed">Could not copy the result to the clipboard. Another application may be using it. Please try again shortly.</system:String>
+    <system:String x:Key="FileOpenFailedTitle">Cannot Open File</system:String>
+    <system:String x:Key="FileOpenFailed">The file could not be opened automatically. You can open it manually from:</system:String>
+    <system:String x:Key="FileNotFound">The file was not found at the specified path:</system:String>
 </ResourceDictionary>
 
 

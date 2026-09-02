@@ -20,6 +20,7 @@ public partial class ActivityCalculatorViewModel : ObservableObject
 {
     private readonly IRadioisotopeService _isotopeService;
     private readonly IDecayCalculationService _decayService;
+    private readonly IClipboardService _clipboard;
 
     // ─── أوضاع الحاسبة ───
     // 0: حساب النشاط الحالي/المستقبلي، 1: حساب الزمن لنشاط مستهدف
@@ -107,10 +108,11 @@ public partial class ActivityCalculatorViewModel : ObservableObject
         "Bq", "kBq", "MBq", "GBq", "TBq", "Ci", "mCi", "µCi"
     };
 
-    public ActivityCalculatorViewModel(IRadioisotopeService isotopeService, IDecayCalculationService decayService)
+    public ActivityCalculatorViewModel(IRadioisotopeService isotopeService, IDecayCalculationService decayService, IClipboardService? clipboard = null)
     {
         _isotopeService = isotopeService;
         _decayService = decayService;
+        _clipboard = clipboard ?? new ClipboardService();
         InitChartAxes();
         LoadIsotopes();
     }
@@ -472,9 +474,15 @@ public partial class ActivityCalculatorViewModel : ObservableObject
                     copyData += $"\n{TranslationHelper.GetString("CalcResultDoseRate") ?? "معدل الجرعة الإشعاعية"}: {DoseRateAtDistanceMSvText} | {DoseRateAtDistanceMremText} ({DoseRateDistanceText})";
                 }
 
-                System.Windows.Clipboard.SetText(copyData);
+                _clipboard.SetText(copyData);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("تعذّر نسخ نتيجة الحاسبة إلى الحافظة", ex);
+                DialogHelper.ShowError(
+                    TranslationHelper.GetString("CalcCopyFailed") ?? "تعذّر نسخ النتيجة إلى الحافظة. قد يكون تطبيق آخر يستعملها الآن. أعد المحاولة بعد قليل.",
+                    TranslationHelper.GetString("CalcCopyFailedTitle") ?? "تعذّر النسخ");
+            }
         }
     }
 

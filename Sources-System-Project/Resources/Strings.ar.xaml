@@ -1365,6 +1365,13 @@
     <system:String x:Key="BtnAdd">إضافة</system:String>
     <system:String x:Key="BtnDelete">حذف</system:String>
     <system:String x:Key="BtnEdit">تعديل</system:String>
+
+    <!-- Round 107 Direct Failure Feedback -->
+    <system:String x:Key="CalcCopyFailedTitle">تعذّر النسخ</system:String>
+    <system:String x:Key="CalcCopyFailed">تعذّر نسخ النتيجة إلى الحافظة. قد يكون تطبيق آخر يستعملها الآن. أعد المحاولة بعد قليل.</system:String>
+    <system:String x:Key="FileOpenFailedTitle">تعذّر فتح الملف</system:String>
+    <system:String x:Key="FileOpenFailed">تعذّر فتح الملف تلقائياً. يمكنك فتحه يدوياً من المسار:</system:String>
+    <system:String x:Key="FileNotFound">الملف غير موجود في المسار المحدد:</system:String>
 </ResourceDictionary>
 
 
