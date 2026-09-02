@@ -99,6 +99,22 @@ public class AppDbContext : DbContext
         if (ucurie != null) ucurie.UnitSymbol = "µCi";
         else ActivityUnits.Add(new ActivityUnit { UnitName = "Microcurie", UnitSymbol = "µCi", ConversionToBq = 3.7e4, Description = "1 µCi = 3.7 × 10⁴ Bq" });
 
+        var kbecquerel = units.FirstOrDefault(u => u.UnitName == "Kilobecquerel");
+        if (kbecquerel != null) kbecquerel.UnitSymbol = "kBq";
+        else ActivityUnits.Add(new ActivityUnit { UnitName = "Kilobecquerel", UnitSymbol = "kBq", ConversionToBq = 1e3, Description = "1 kBq = 10³ Bq" });
+
+        var mbecquerel = units.FirstOrDefault(u => u.UnitName == "Megabecquerel");
+        if (mbecquerel != null) mbecquerel.UnitSymbol = "MBq";
+        else ActivityUnits.Add(new ActivityUnit { UnitName = "Megabecquerel", UnitSymbol = "MBq", ConversionToBq = 1e6, Description = "1 MBq = 10⁶ Bq" });
+
+        var gbecquerel = units.FirstOrDefault(u => u.UnitName == "Gigabecquerel");
+        if (gbecquerel != null) gbecquerel.UnitSymbol = "GBq";
+        else ActivityUnits.Add(new ActivityUnit { UnitName = "Gigabecquerel", UnitSymbol = "GBq", ConversionToBq = 1e9, Description = "1 GBq = 10⁹ Bq" });
+
+        var tbecquerel = units.FirstOrDefault(u => u.UnitName == "Terabecquerel");
+        if (tbecquerel != null) tbecquerel.UnitSymbol = "TBq";
+        else ActivityUnits.Add(new ActivityUnit { UnitName = "Terabecquerel", UnitSymbol = "TBq", ConversionToBq = 1e12, Description = "1 TBq = 10¹² Bq" });
+
         SaveChanges();
 
         // ─── النظائر المشعة ───

@@ -686,7 +686,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
             });
 
             using var db = App.CreateDbContext();
-            var activityUnits = db.ActivityUnits.OrderBy(u => u.UnitName).ToList();
+            var activityUnits = db.ActivityUnits.OrderBy(u => u.ConversionToBq).ToList();
 
             var items = new List<TotalActivityItem>();
             foreach (var unit in activityUnits)
