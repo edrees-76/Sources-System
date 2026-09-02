@@ -42,7 +42,7 @@ Claude يشخّص من الكود مباشرة ← يكتب برومبت الت�
 
 ---
 
-## الجولات المنجزة حديثاً (كلها مدفوعة وCI أخضر)
+## الجولات المنجزة حديثاً (مدفوعة وCI أخضر ما لم يُذكر خلاف ذلك)
 
 - **89** (`0c1a810`) — إصلاح القبول الصامت في `ScientificNotationParser`: `"11,000x2"` كان يُحسب 22 بدل 22000. + إنشاء `docs/schema-drift-report.md` بـ 12 بند انحراف.
 - **90** (`449fb3e`) — **الأهم:** توحيد آلية المخطط على EF Migrations. حُذفت `MigrateSchema()` بالكامل (مئات أسطر SQL خام داخل `catch {}` صامت)، و`EnsureCreated()` استُبدل بـ `Database.Migrate()`، وولِّدت `InitialSchema` نظيفة، وحُمِيت `RestoreBackup` من النسخ غير المتوافقة عبر فحص `__EFMigrationsHistory`، و`SqliteInMemoryFixture` صار يستخدم `Migrate()` فأصبحت الاختبارات تعمل على المخطط الحقيقي لأول مرة.
@@ -59,8 +59,10 @@ Claude يشخّص من الكود مباشرة ← يكتب برومبت الت�
 - **102** (`14c354c`) — عمود `DisplayOrder` على `ActivityUnit` بترحيل `AddActivityUnitDisplayOrder`، والترتيب صار بالنظام: `Bq, kBq, MBq, GBq, TBq, µCi, mCi, Ci`. البذر يُسند الترتيب في فرعَي التحديث والإضافة لترقية القواعد القائمة.
 - **103** — جرد شامل للكود (قراءة وتقرير فقط).
 - **104** (`2cce39e`) — إيقاف الحذف المدمّر في `SeedData`: كان يحذف كل نظير خارج قائمته، فيُسقط المنظومة عند الإقلاع بقيد مفتاح خارجي إن كان النظير مرتبطاً بمصدر. وحصر فرع التحديث في حقول البرنامج، فصارت `Notes` و `EnglishNotes` ملك المستخدم لا تُدهس.
+- **105** (`d2f1a6d`) — **غير مدفوعة بعد.** عزل مسارات القاعدة وإنهاء الابتلاع الصامت لاستيراد القاعدة القديمة. ملفان جديدان: `Data/DatabasePaths.cs` مصدراً وحيداً لمسار القاعدة ومجلد النسخ الاحتياطي والمسار القديم، و `Data/LegacyDatabaseImporter.cs` للاستيراد لمرة واحدة. الاستيراد صار ذرّياً: ملفا `-wal` و `-shm` أولاً ثم ملف القاعدة عبر ملف مؤقت و `File.Move` أخيراً، فلو فشل الأخير لا تبقى قاعدة مبتورة في الوجهة وتُعاد المحاولة في الإقلاع التالي بدل هجر بيانات الـ WAL صامتة. الفشل يرمي `LegacyDatabaseImportException` برسالة عربية تحوي المسارين، تمرّ على `catch` الإقلاع القائم فتُسجَّل وتُعرَض ويُغلق البرنامج — بدل الفتح على قاعدة فارغة بلا إشارة. `OnConfiguring` صار بلا أثر على نظام الملفات عدا ضمان وجود المجلد، وكان يُستدعى مع كل إنشاء سياق عبر `IDbContextFactory`. بانيا `BackupService` وُحّدا على `DatabasePaths`. وحُذف `scratch_missing_fallback.txt` ضمن الـ commit نفسه، وكان **متعقَّباً** خلافاً لما ورد في جرد الجولة 103. 12 اختباراً جديداً.
+- **105-ب** (`920f29a`) — **غير مدفوعة بعد.** إتمام توحيد مسارات AppData وإنهاء التوأم الصامت في `SettingsHelper`. `AutoBackupService.GetLatestBackupDate` و `SettingsViewModel.UpdateLastBackupInfo` كانا ما زالا يعيدان تركيب `LocalAppData\Sources\Backups` يدوياً، فوُحّدا على `DatabasePaths.BackupsDirectory`. و `SettingsHelper` كان يحمل العيب نفسه: `try { File.Copy(oldFile, SettingsFile); } catch { }` لنقل `settings.ini`؛ استُخرج إلى `MigrateLegacySettings(legacyFile, targetFile)` التي تُرجع نص تحذير ولا ترمي — فقدان التفضيلات لا يبرر منع الإقلاع — ويسجّله `App` عبر `SettingsHelper.MigrationWarning`. و `SettingsDir` صار `DatabasePaths.AppDataDirectory`. 5 اختبارات جديدة.
 
-**آخر حالة للاختبارات:** 942 اختباراً محلياً ناجحاً (940 في CI).  
+**آخر حالة للاختبارات:** 959 اختباراً محلياً ناجحاً (957 متوقَّعة في CI — الرقم استنتاجي ولم يُتحقق منه بعد لأن الجولتين 105 و 105-ب لم تُدفعا).  
 *سبب الفارق الثابت:* ملف `Sources.Tests/TestDataGeneratorTests.cs` محاط بالكامل بـ `#if DEBUG`، ومسار CI يبني بـ `--configuration Release` في `.github/workflows/tests.yml` فيستثني الفئة كاملة باختباريها.
 
 ---
@@ -69,14 +71,14 @@ Claude يشخّص من الكود مباشرة ← يكتب برومبت الت�
 
 سجل ما كشفه جرد الجولة 103 ولم يُعالَج بعد:
 
-1. **ابتلاع خطأ نسخ قاعدة البيانات:** `AppDbContext.OnConfiguring` سطر 48: `try { File.Copy(oldDbPath, dbPath); } catch { }` — فشل نسخ القاعدة من المسار القديم يُبتلع صامتاً، فيبدأ المستخدم بقاعدة فارغة بلا خطأ ظاهر.
-2. **نصوص مثبتة خارج الترجمة:** 56 نصاً عربياً مثبتاً في XAML خارج `DynamicResource` + 7 أعمدة `DataGrid` بعناوين ثابتة — لا تتغير عند تبديل اللغة، فالترجمة الإنجليزية غير مكتملة فعلياً. أكثرها في `BorrowView.xaml` و `SettingsView.xaml` و `SourceDetailsWindow.xaml`.
-3. **تباين ألوان الحالة:** `NeutronSource.StatusColor` يستعمل ألواناً مختلفة عن `SourceDetailsViewModel.StatusColor`.
-4. **تبعثر سلاسل الحالة:** سلاسل الحالة (`InUse`, `Storage`, `Waste`, `Transfer`) مبعثرة في 45+ موضعاً بلا `enum`. ومثلها حالات الاستعارة ونتائج اختبار التسرب.
-5. **ازدواج مصادر الحقيقة لوحدات الحاسبة:** `ActivityCalculatorViewModel` يحمل قائمة وحدات مكتوبة في الكود مستقلة عن جدول `ActivityUnits`، وله دالة `GetString` محلية صارت زائدة بعد الجولة 100.
-6. **تكرار خالي من الفائدة:** `Source.SimpleArabicStatus` نسخة حرفية مطابقة لـ `ArabicStatus`.
-7. **نقص ملء سجل التدقيق:** `AuditLog.OldValues` و `NewValues` تُملأ في 6 مواضع فقط عبر `LogWithChanges`، بينما غالبية الخدمات تستدعي `Log` بلا قيم.
-8. **ملف يتيم في المستودع:** `scratch_missing_fallback.txt` ملف ملاحظات غير متعقَّب في جذر المستودع منذ الجولة 100.
+1. **نصوص مثبتة خارج الترجمة:** 56 نصاً عربياً مثبتاً في XAML خارج `DynamicResource` + 7 أعمدة `DataGrid` بعناوين ثابتة — لا تتغير عند تبديل اللغة، فالترجمة الإنجليزية غير مكتملة فعلياً. أكثرها في `BorrowView.xaml` و `SettingsView.xaml` و `SourceDetailsWindow.xaml`.
+2. **تباين ألوان الحالة:** `NeutronSource.StatusColor` يستعمل ألواناً مختلفة عن `SourceDetailsViewModel.StatusColor`.
+3. **تبعثر سلاسل الحالة:** سلاسل الحالة (`InUse`, `Storage`, `Waste`, `Transfer`) مبعثرة في 45+ موضعاً بلا `enum`. ومثلها حالات الاستعارة ونتائج اختبار التسرب.
+4. **ازدواج مصادر الحقيقة لوحدات الحاسبة:** `ActivityCalculatorViewModel` يحمل قائمة وحدات مكتوبة في الكود مستقلة عن جدول `ActivityUnits`، وله دالة `GetString` محلية صارت زائدة بعد الجولة 100.
+5. **تكرار خالي من الفائدة:** `Source.SimpleArabicStatus` نسخة حرفية مطابقة لـ `ArabicStatus`.
+6. **نقص ملء سجل التدقيق:** `AuditLog.OldValues` و `NewValues` تُملأ في 6 مواضع فقط عبر `LogWithChanges`، بينما غالبية الخدمات تستدعي `Log` بلا قيم.
+7. **تكرار ثالث لمجلد AppData:** `LoggerService.cs` سطر 9 ما زال يبني `LocalAppData\Sources\Logs` يدوياً بدل `DatabasePaths.AppDataDirectory`. كُشف في الجولة 105-ب وأُجّل عمداً لأنه خارج نطاقها.
+8. **جرد `catch { }` في كود الإنتاج — 31 موضعاً.** أُحصيت في الجولة 105-ب. بعضها مشروع (تنظيف ملف مؤقت بعد فشل)، وبعضها يبتلع استثناءات كاملة بلا أي تسجيل: `ReportingService` (5)، `IsotopeLibraryService` (4)، `LeakTestsViewModel` (3)، `App.xaml.cs` (6 في دوال المظهر واللغة)، `RadioisotopesViewModel` (1)، `ActivityCalculatorViewModel` (1)، `LoggerService` (1)، و `BackupService` (10 أكثرها تنظيف ملفات). يحتاج تصنيفاً إلى «مشروع / يلزمه تسجيل / يلزمه إظهار للمستخدم» قبل أي تعديل، ويعادل عدة جولات لا جولة واحدة.
 
 ---
 
