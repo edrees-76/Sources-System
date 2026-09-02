@@ -134,8 +134,7 @@ public class AutoBackupService : IAutoBackupService, IDisposable
                 targetFolders.Add(backupPath);
             }
 
-            var defaultAppDataDir = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Sources", "Backups");
+            var defaultAppDataDir = Sources.Data.DatabasePaths.BackupsDirectory;
             if (Directory.Exists(defaultAppDataDir))
             {
                 targetFolders.Add(defaultAppDataDir);

@@ -1,24 +1,47 @@
 using System;
 using System.IO;
+using Sources.Data;
 
 namespace Sources.Helpers;
 
 public static class SettingsHelper
 {
-    private static readonly string SettingsDir = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Sources");
+    private static readonly string SettingsDir = DatabasePaths.AppDataDirectory;
     private static readonly string SettingsFile;
+
+    /// <summary>
+    /// رسالة تحذير إن فشل نقل ملف الإعدادات من المسار القديم. null إن نجح النقل أو لم يلزم.
+    /// يقرأها App عند الإقلاع ويسجّلها؛ ممنوع ابتلاع الفشل صامتاً.
+    /// </summary>
+    public static string? MigrationWarning { get; private set; }
 
     static SettingsHelper()
     {
         Directory.CreateDirectory(SettingsDir);
         SettingsFile = Path.Combine(SettingsDir, "settings.ini");
 
-        // Migrate: if settings exist in old location (beside exe), copy once
-        var oldFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "settings.ini");
-        if (!File.Exists(SettingsFile) && File.Exists(oldFile))
+        var legacyFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "settings.ini");
+        MigrationWarning = MigrateLegacySettings(legacyFile, SettingsFile);
+    }
+
+    /// <summary>
+    /// ينقل ملف الإعدادات القديم لمرة واحدة. يُرجع null عند النجاح أو عدم الحاجة،
+    /// ونص خطأ عند الفشل — ولا يرمي، لأن فقدان التفضيلات لا يبرر منع الإقلاع.
+    /// </summary>
+    public static string? MigrateLegacySettings(string legacyFile, string targetFile)
+    {
+        if (File.Exists(targetFile)) return null;
+        if (!File.Exists(legacyFile)) return null;
+
+        try
         {
-            try { File.Copy(oldFile, SettingsFile); } catch { }
+            File.Copy(legacyFile, targetFile);
+            return null;
+        }
+        catch (Exception ex)
+        {
+            return $"تعذّر نقل ملف الإعدادات من {legacyFile} إلى {targetFile}: {ex.Message}. " +
+                   "ستُستعمل الإعدادات الافتراضية، ولم تتأثر قاعدة البيانات.";
         }
     }
 

@@ -189,8 +189,7 @@ public partial class SettingsViewModel : ObservableObject
                 targetFolders.Add(BackupPath);
             }
 
-            var defaultAppDataDir = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Sources", "Backups");
+            var defaultAppDataDir = DatabasePaths.BackupsDirectory;
             if (Directory.Exists(defaultAppDataDir))
             {
                 targetFolders.Add(defaultAppDataDir);

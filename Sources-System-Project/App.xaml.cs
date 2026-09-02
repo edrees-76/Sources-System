@@ -82,6 +82,8 @@ public partial class App : Application
             ApplyTheme(SettingsHelper.IsDarkMode);
             ApplyAccentColor(SettingsHelper.AccentColor);
             ApplyLanguage(SettingsHelper.Language);
+            if (!string.IsNullOrEmpty(SettingsHelper.MigrationWarning))
+                LoggerService.LogWarning(SettingsHelper.MigrationWarning);
 
             // بدء خدمة النسخ الاحتياطي التلقائي في الخلفية
             ServiceProvider.GetRequiredService<IAutoBackupService>().Start();
