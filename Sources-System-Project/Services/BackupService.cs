@@ -17,24 +17,12 @@ public class BackupService : IBackupService
     private readonly string _backupDir;
     private readonly string _certificatesFolder;
 
-    public BackupService()
-    {
-        var appDataDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Sources");
-        _dbPath = Path.Combine(appDataDir, "Sources.db");
-        _backupDir = Path.Combine(appDataDir, "Backups");
-        _certificatesFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Certificates");
-
-        if (!Directory.Exists(_backupDir))
-            Directory.CreateDirectory(_backupDir);
-    }
+    public BackupService() : this(null, null, null) { }
 
     public BackupService(string? customDbPath = null, string? customBackupDir = null, string? customCertificatesFolder = null)
     {
-        var appDataDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Sources");
-        _dbPath = !string.IsNullOrEmpty(customDbPath) ? customDbPath : Path.Combine(appDataDir, "Sources.db");
-        _backupDir = !string.IsNullOrEmpty(customBackupDir) ? customBackupDir : Path.Combine(appDataDir, "Backups");
+        _dbPath = !string.IsNullOrEmpty(customDbPath) ? customDbPath : DatabasePaths.DbPath;
+        _backupDir = !string.IsNullOrEmpty(customBackupDir) ? customBackupDir : DatabasePaths.BackupsDirectory;
         _certificatesFolder = !string.IsNullOrEmpty(customCertificatesFolder)
             ? customCertificatesFolder
             : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Certificates");

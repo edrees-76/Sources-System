@@ -67,6 +67,9 @@ public partial class App : Application
 
         try
         {
+            Sources.Data.DatabasePaths.EnsureAppDataDirectory();
+            Sources.Data.LegacyDatabaseImporter.ImportIfNeeded();
+
             using (var db = CreateDbContext())
             {
                 db.InitializeDatabase();

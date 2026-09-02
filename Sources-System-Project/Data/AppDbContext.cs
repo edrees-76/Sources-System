@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Sources.Models;
 using System;
-using System.IO;
 using System.Linq;
 
 namespace Sources.Data;
@@ -34,23 +33,15 @@ public class AppDbContext : DbContext
     {
         if (!options.IsConfigured)
         {
-            // Use LocalAppData so the app doesn't need admin privileges
-            var appDataDir = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Sources");
-            Directory.CreateDirectory(appDataDir);
-            var dbPath = Path.Combine(appDataDir, "Sources.db");
-
-            // Migrate: if DB exists in old location (beside exe), copy it once
-            var oldDbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sources.db");
-            if (!File.Exists(dbPath) && File.Exists(oldDbPath))
-            {
-                try { File.Copy(oldDbPath, dbPath); } catch { }
-            }
+            // مسار LocalAppData حتى لا يحتاج البرنامج صلاحيات مدير.
+            // الاستيراد من المسار القديم مسؤولية LegacyDatabaseImporter ويُستدعى مرة واحدة عند الإقلاع؛
+            // ممنوع أي أثر على نظام الملفات هنا عدا ضمان وجود المجلد، لأن هذه الدالة
+            // تُستدعى مع كل إنشاء سياق عبر IDbContextFactory.
+            DatabasePaths.EnsureAppDataDirectory();
 
             var connStringBuilder = new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder
             {
-                DataSource = dbPath,
+                DataSource = DatabasePaths.DbPath,
                 Mode = Microsoft.Data.Sqlite.SqliteOpenMode.ReadWriteCreate,
                 DefaultTimeout = 5
             };
