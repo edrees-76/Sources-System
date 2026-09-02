@@ -484,11 +484,11 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
         var target = user ?? Selected;
         if (target == null) return;
 
-        if (!DialogHelper.ShowConfirmation(TranslationHelper.GetString("MsgConfirmUnlock"), TranslationHelper.GetString("BtnUnlockAccount")))
+        if (!DialogHelper.ShowConfirmation(TranslationHelper.GetString("MsgConfirmUnlock") ?? "هل أنت متأكد من فك قفل حساب المستخدم وتصفير عداد المحاولات الفاشلة؟", TranslationHelper.GetString("BtnUnlockAccount") ?? "فك القفل"))
             return;
 
         var r = _userService.UnlockAccount(target.Id);
-        ShowMsg(r.Success ? TranslationHelper.GetString("MsgAccountUnlocked") : r.Message);
+        ShowMsg(r.Success ? TranslationHelper.GetString("MsgAccountUnlocked") ?? "تم فك قفل الحساب بنجاح" : r.Message);
         if (r.Success)
         {
             LoadData();
@@ -633,7 +633,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
     {
         if (string.IsNullOrWhiteSpace(EditFullName) || string.IsNullOrWhiteSpace(EditUsername) || EditRoleId == null)
         {
-            ShowMsg(TranslationHelper.GetString("MsgErrFillRequired"));
+            ShowMsg(TranslationHelper.GetString("MsgErrFillRequired") ?? "الرجاء ملء جميع الحقول المطلوبة");
             return;
         }
 
@@ -643,7 +643,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
         {
             if (string.IsNullOrWhiteSpace(EditPassword))
             {
-                ShowMsg(TranslationHelper.GetString("MsgErrPasswordReq"));
+                ShowMsg(TranslationHelper.GetString("MsgErrPasswordReq") ?? "الرجاء إدخال كلمة المرور");
                 return;
             }
 

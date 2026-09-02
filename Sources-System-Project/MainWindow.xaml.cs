@@ -64,7 +64,7 @@ public partial class MainWindow : Window
         var userName = _viewModel.CurrentUserName;
         if (string.IsNullOrWhiteSpace(userName)) return;
 
-        var greeting = TranslationHelper.GetString("WelcomeGreeting");
+        var greeting = TranslationHelper.GetString("WelcomeGreeting") ?? "مرحباً";
         TxtWelcomeOverlay.Text = $"{greeting}، {userName}";
         WelcomeOverlay.Visibility = Visibility.Visible;
         WelcomeOverlay.Opacity = 1;
@@ -132,16 +132,16 @@ public partial class MainWindow : Window
             if (viewModel.CurrentView is IEditableViewModel editable && editable.IsEditing)
             {
                 DialogHelper.ShowWarning(
-                    TranslationHelper.GetString("MsgErrSavePending"),
-                    TranslationHelper.GetString("TitlePendingChanges")
+                    TranslationHelper.GetString("MsgErrSavePending") ?? "يرجى حفظ التغييرات أو إلغاؤها قبل الانتقال إلى قسم آخر.",
+                    TranslationHelper.GetString("TitlePendingChanges") ?? "تنبيه: نافذة مفتوحة"
                 );
                 e.Cancel = true;
                 return;
             }
 
             bool confirmed = DialogHelper.ShowConfirmation(
-                TranslationHelper.GetString("MsgConfirmExitPrompt"),
-                TranslationHelper.GetString("MsgConfirmExitTitle")
+                TranslationHelper.GetString("MsgConfirmExitPrompt") ?? "هل تريد الخروج من المنظومة؟",
+                TranslationHelper.GetString("MsgConfirmExitTitle") ?? "تأكيد الخروج"
             );
 
             if (!confirmed)

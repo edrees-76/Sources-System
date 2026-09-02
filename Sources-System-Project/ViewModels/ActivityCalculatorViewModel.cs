@@ -255,7 +255,7 @@ public partial class ActivityCalculatorViewModel : ObservableObject
         {
             HasError = true;
             HasInitialActivityError = true;
-            ErrorMessage = TranslationHelper.GetString("CalcErrInitialActivity");
+            ErrorMessage = TranslationHelper.GetString("CalcErrInitialActivity") ?? "يرجى إدخال نشاط ابتدائي رقمي موجب صحيح.";
             return;
         }
 
@@ -265,7 +265,7 @@ public partial class ActivityCalculatorViewModel : ObservableObject
         {
             HasError = true;
             HasHalfLifeError = true;
-            ErrorMessage = TranslationHelper.GetString("CalcErrHalfLife");
+            ErrorMessage = TranslationHelper.GetString("CalcErrHalfLife") ?? "يرجى إدخال نصف عمر رقمي موجب صحيح.";
             return;
         }
 
@@ -281,7 +281,7 @@ public partial class ActivityCalculatorViewModel : ObservableObject
             {
                 HasError = true;
                 HasDateOrderError = true;
-                ErrorMessage = TranslationHelper.GetString("CalcErrDateOrder");
+                ErrorMessage = TranslationHelper.GetString("CalcErrDateOrder") ?? "تاريخ الحساب يجب أن يكون بعد تاريخ المعايرة.";
                 return;
             }
 
@@ -322,7 +322,7 @@ public partial class ActivityCalculatorViewModel : ObservableObject
             {
                 HasError = true;
                 HasTargetActivityError = true;
-                ErrorMessage = TranslationHelper.GetString("CalcErrTargetActivity");
+                ErrorMessage = TranslationHelper.GetString("CalcErrTargetActivity") ?? "يرجى إدخال نشاط مستهدف رقمي موجب صحيح.";
                 return;
             }
 
@@ -331,7 +331,7 @@ public partial class ActivityCalculatorViewModel : ObservableObject
             {
                 HasError = true;
                 HasTargetActivityError = true;
-                ErrorMessage = TranslationHelper.GetString("CalcErrTargetGreater");
+                ErrorMessage = TranslationHelper.GetString("CalcErrTargetGreater") ?? "النشاط المستهدف يجب أن يكون أقل من النشاط الابتدائي.";
                 return;
             }
 
@@ -464,12 +464,12 @@ public partial class ActivityCalculatorViewModel : ObservableObject
             try
             {
                 string copyData = IsActivityMode
-                    ? $"{TranslationHelper.GetString("CalcResultActivity")}: {ResultActivityText}\n{TranslationHelper.GetString("CalcResultRemainingPercent")}: {RemainingPercentText}\n{TranslationHelper.GetString("CalcResultElapsed")}: {ElapsedTimeText}"
-                    : $"{TranslationHelper.GetString("CalcResultRequiredTime")}: {RequiredTimeText}\n{TranslationHelper.GetString("CalcResultTargetDate")}: {TargetEstimatedDateText}\n{TranslationHelper.GetString("CalcResultRemainingPercent")}: {RemainingPercentText}";
+                    ? $"{TranslationHelper.GetString("CalcResultActivity") ?? "النشاط المحسوب A(t)"}: {ResultActivityText}\n{TranslationHelper.GetString("CalcResultRemainingPercent") ?? "النشاط المتبقي"}: {RemainingPercentText}\n{TranslationHelper.GetString("CalcResultElapsed") ?? "الفترة المنقضية"}: {ElapsedTimeText}"
+                    : $"{TranslationHelper.GetString("CalcResultRequiredTime") ?? "الزمن اللازم للوصول"}: {RequiredTimeText}\n{TranslationHelper.GetString("CalcResultTargetDate") ?? "التاريخ المتوقع"}: {TargetEstimatedDateText}\n{TranslationHelper.GetString("CalcResultRemainingPercent") ?? "النشاط المتبقي"}: {RemainingPercentText}";
 
                 if (HasDoseRateResult)
                 {
-                    copyData += $"\n{TranslationHelper.GetString("CalcResultDoseRate")}: {DoseRateAtDistanceMSvText} | {DoseRateAtDistanceMremText} ({DoseRateDistanceText})";
+                    copyData += $"\n{TranslationHelper.GetString("CalcResultDoseRate") ?? "معدل الجرعة الإشعاعية"}: {DoseRateAtDistanceMSvText} | {DoseRateAtDistanceMremText} ({DoseRateDistanceText})";
                 }
 
                 System.Windows.Clipboard.SetText(copyData);
@@ -557,8 +557,8 @@ public partial class ActivityCalculatorViewModel : ObservableObject
 
             var legendList = new ObservableCollection<LegendItem>
             {
-                new LegendItem { Label = TranslationHelper.GetString("CalcChartLegendCurve"), Color = "#1976D2" },
-                new LegendItem { Label = TranslationHelper.GetString("CalcChartLegendCurrent"), Color = "#D32F2F" }
+                new LegendItem { Label = TranslationHelper.GetString("CalcChartLegendCurve") ?? "منحنى الاضمحلال", Color = "#1976D2" },
+                new LegendItem { Label = TranslationHelper.GetString("CalcChartLegendCurrent") ?? "النقطة المحسوبة", Color = "#D32F2F" }
             };
             ChartLegendItems = legendList;
             HasChartData = true;

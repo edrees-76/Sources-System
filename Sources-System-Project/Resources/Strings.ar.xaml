@@ -1353,6 +1353,18 @@
     <system:String x:Key="MsgCertificateDeletedSuccess">تم حذف الشهادة بنجاح.</system:String>
     <system:String x:Key="MsgCertificateDownloadedSuccess">تم تنزيل نسخة من الشهادة بنجاح.</system:String>
     <system:String x:Key="BtnAttachCertNow">إرفاق شهادة الآن؟</system:String>
+
+    <!-- Round 100 Fallback & Missing Keys -->
+    <system:String x:Key="MsgErrFieldReq">هذا الحقل مطلوب</system:String>
+    <system:String x:Key="MsgErrPositiveNumberRequired">يجب أن تكون القيمة رقماً موجباً أكبر من الصفر</system:String>
+    <system:String x:Key="TextUnspecified">غير محدد</system:String>
+    <system:String x:Key="TitleSuccess">نجاح العملية</system:String>
+    <system:String x:Key="TitleWarning">تنبيه</system:String>
+    <system:String x:Key="MsgExportPdfSuccess">تم تصدير التقرير كملف PDF بنجاح.</system:String>
+    <system:String x:Key="MsgExportExcelSuccess">تم تصدير البيانات إلى ملف Excel بنجاح.</system:String>
+    <system:String x:Key="BtnAdd">إضافة</system:String>
+    <system:String x:Key="BtnDelete">حذف</system:String>
+    <system:String x:Key="BtnEdit">تعديل</system:String>
 </ResourceDictionary>
 
 

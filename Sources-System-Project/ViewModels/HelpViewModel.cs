@@ -87,8 +87,8 @@ public partial class HelpViewModel : ObservableObject
         if (!success)
         {
             DialogHelper.ShowWarning(
-                TranslationHelper.GetString("MsgErrOpenRefPdf"),
-                TranslationHelper.GetString("TitleReferencePdf")
+                TranslationHelper.GetString("MsgErrOpenRefPdf") ?? "تعذر فتح ملف المرجع الأصلي. تأكد من وجود ملف 14724519.pdf وتوفر برنامج لقراءة ملفات PDF على جهازك.",
+                TranslationHelper.GetString("TitleReferencePdf") ?? "الملف المرجعي ORNL"
             );
         }
     }

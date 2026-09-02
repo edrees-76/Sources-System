@@ -188,7 +188,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public void DismissNotification(Sources.Models.AlertNotification notification)
     {
         if (notification == null) return;
-        if (DialogHelper.ShowConfirmation(TranslationHelper.GetString("MsgConfirmDismissAlert"), TranslationHelper.GetString("TitleDismissAlert")))
+        if (DialogHelper.ShowConfirmation(TranslationHelper.GetString("MsgConfirmDismissAlert") ?? "هل أنت متأكد من رغبتك في إخفاء هذا التنبيه؟", TranslationHelper.GetString("TitleDismissAlert") ?? "إخفاء التنبيه"))
         {
             // Optimistic UI: إزالة التنبيه فوراً من القائمة المعروضة
             if (!notification.IsRead && UnreadNotificationsCount > 0)
@@ -264,7 +264,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         // التحقق من حالة التحرير في المنظور الحالي
         if (CurrentView is IEditableViewModel editable && editable.IsEditing)
         {
-            DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrSavePending"), TranslationHelper.GetString("TitlePendingChanges"));
+            DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrSavePending") ?? "يرجى حفظ التغييرات أو إلغاؤها قبل الانتقال إلى قسم آخر.", TranslationHelper.GetString("TitlePendingChanges") ?? "تنبيه: نافذة مفتوحة");
             return;
         }
 
@@ -334,13 +334,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
         if (CurrentView is IEditableViewModel editable && editable.IsEditing)
         {
             DialogHelper.ShowWarning(
-                TranslationHelper.GetString("MsgErrSavePending"),
-                TranslationHelper.GetString("TitlePendingChanges")
+                TranslationHelper.GetString("MsgErrSavePending") ?? "يرجى حفظ التغييرات أو إلغاؤها قبل الانتقال إلى قسم آخر.",
+                TranslationHelper.GetString("TitlePendingChanges") ?? "تنبيه: نافذة مفتوحة"
             );
             return;
         }
 
-        if (DialogHelper.ShowConfirmation(TranslationHelper.GetString("MsgConfirmLogout"), TranslationHelper.GetString("TitleLogout")))
+        if (DialogHelper.ShowConfirmation(TranslationHelper.GetString("MsgConfirmLogout") ?? "هل أنت متأكد أنك تريد تسجيل الخروج؟", TranslationHelper.GetString("TitleLogout") ?? "تأكيد الخروج"))
         {
             ForceLogout();
         }

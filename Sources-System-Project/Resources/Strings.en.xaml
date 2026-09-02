@@ -1356,6 +1356,16 @@
     <system:String x:Key="MsgCertificateDeletedSuccess">Certificate deleted successfully.</system:String>
     <system:String x:Key="MsgCertificateDownloadedSuccess">A copy of the certificate was downloaded successfully.</system:String>
     <system:String x:Key="BtnAttachCertNow">Attach Certificate Now?</system:String>
+
+    <!-- Round 100 Fallback & Missing Keys -->
+    <system:String x:Key="MsgErrFieldReq">This field is required</system:String>
+    <system:String x:Key="MsgErrPositiveNumberRequired">The value must be a positive number greater than zero</system:String>
+    <system:String x:Key="TextUnspecified">Unspecified</system:String>
+    <system:String x:Key="TitleSuccess">Success</system:String>
+    <system:String x:Key="TitleWarning">Warning</system:String>
+    <system:String x:Key="MsgExportPdfSuccess">Report exported to PDF successfully.</system:String>
+    <system:String x:Key="MsgExportExcelSuccess">Data exported to Excel successfully.</system:String>
+    <system:String x:Key="NavAbout">About System</system:String>
 </ResourceDictionary>
 
 

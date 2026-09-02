@@ -404,7 +404,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         // تنبيه المستخدم إذا لم توجد نتائج بعد البحث
         if (Sources.Count == 0 && !string.IsNullOrWhiteSpace(SearchText))
         {
-            DialogHelper.ShowInfo(TranslationHelper.GetString("MsgNoSearchSource"), TranslationHelper.GetString("TitleSearchResult"));
+            DialogHelper.ShowInfo(TranslationHelper.GetString("MsgNoSearchSource") ?? "لا يوجد مصدر مشع مطابق لعملية البحث.", TranslationHelper.GetString("TitleSearchResult") ?? "نتيجة البحث");
         }
 
         Radioisotopes = new ObservableCollection<Radioisotope>(_isotopeService.GetAll());
@@ -559,7 +559,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
 
         if (DeletedSources.Count == 0 && !string.IsNullOrWhiteSpace(SearchText))
         {
-            DialogHelper.ShowInfo(TranslationHelper.GetString("MsgNoSearchSource"), TranslationHelper.GetString("TitleSearchResult"));
+            DialogHelper.ShowInfo(TranslationHelper.GetString("MsgNoSearchSource") ?? "لا يوجد مصدر مشع مطابق لعملية البحث.", TranslationHelper.GetString("TitleSearchResult") ?? "نتيجة البحث");
         }
     }
 
@@ -880,7 +880,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
             {
                 if (string.IsNullOrWhiteSpace(EditSourceCode))
                 {
-                    ShowMessage(TranslationHelper.GetString("MsgErrSourceCodeReq"));
+                    ShowMessage(TranslationHelper.GetString("MsgErrSourceCodeReq") ?? "الرجاء إدخال رقم/كود المصدر (Source Code).");
                     return;
                 }
                 if (EditNeutronTypeId == null)
@@ -912,12 +912,12 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
 
                 if (EditCalibrationDate == default)
                 {
-                    ShowMessage(TranslationHelper.GetString("MsgErrCalibrationDateReq"));
+                    ShowMessage(TranslationHelper.GetString("MsgErrCalibrationDateReq") ?? "الرجاء إدخال تاريخ المعايرة (Calibration Date).");
                     return;
                 }
                 if (EditCalibrationDate.Date > DateTime.Today)
                 {
-                    ShowMessage(TranslationHelper.GetString("MsgErrCalibrationDateFuture"));
+                    ShowMessage(TranslationHelper.GetString("MsgErrCalibrationDateFuture") ?? "لا يمكن أن يكون تاريخ المعايرة في المستقبل.");
                     return;
                 }
                 if (EditEmissionCalibrationDate.HasValue && EditEmissionCalibrationDate.Value.Date > DateTime.Today)
@@ -935,12 +935,12 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                 }
                 if (EditLocationId == null)
                 {
-                    ShowMessage(TranslationHelper.GetString("MsgErrLocationReq"));
+                    ShowMessage(TranslationHelper.GetString("MsgErrLocationReq") ?? "الرجاء إختيار موقع المصدر (Location).");
                     return;
                 }
                 if (string.IsNullOrWhiteSpace(EditStatus))
                 {
-                    ShowMessage(TranslationHelper.GetString("MsgErrStatusReq"));
+                    ShowMessage(TranslationHelper.GetString("MsgErrStatusReq") ?? "الرجاء إختيار حالة المصدر (Status).");
                     return;
                 }
 
@@ -1013,32 +1013,32 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
             // 1. التحقق من الحقول الأساسية العامة (دائماً مطلوبة)
             if (string.IsNullOrWhiteSpace(EditSourceCode))
             {
-                ShowMessage(TranslationHelper.GetString("MsgErrSourceCodeReq"));
+                ShowMessage(TranslationHelper.GetString("MsgErrSourceCodeReq") ?? "الرجاء إدخال رقم/كود المصدر (Source Code).");
                 return;
             }
             if (EditCalibrationDate == default)
             {
-                ShowMessage(TranslationHelper.GetString("MsgErrCalibrationDateReq"));
+                ShowMessage(TranslationHelper.GetString("MsgErrCalibrationDateReq") ?? "الرجاء إدخال تاريخ المعايرة (Calibration Date).");
                 return;
             }
             if (EditCalibrationDate.Date > DateTime.Today)
             {
-                ShowMessage(TranslationHelper.GetString("MsgErrCalibrationDateFuture"));
+                ShowMessage(TranslationHelper.GetString("MsgErrCalibrationDateFuture") ?? "لا يمكن أن يكون تاريخ المعايرة في المستقبل.");
                 return;
             }
             if (EditCurrentUnitId == null)
             {
-                ShowMessage(TranslationHelper.GetString("MsgErrUnitReq"));
+                ShowMessage(TranslationHelper.GetString("MsgErrUnitReq") ?? "الرجاء إختيار وحدة العرض الحالية (Current Display Unit).");
                 return;
             }
             if (string.IsNullOrWhiteSpace(EditStatus))
             {
-                ShowMessage(TranslationHelper.GetString("MsgErrStatusReq"));
+                ShowMessage(TranslationHelper.GetString("MsgErrStatusReq") ?? "الرجاء إختيار حالة المصدر (Status).");
                 return;
             }
             if (EditLocationId == null)
             {
-                ShowMessage(TranslationHelper.GetString("MsgErrLocationReq"));
+                ShowMessage(TranslationHelper.GetString("MsgErrLocationReq") ?? "الرجاء إختيار موقع المصدر (Location).");
                 return;
             }
 
@@ -1059,7 +1059,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                 var originalSource = _sourceService.GetSourceById(_editingId.Value) ?? SelectedSource;
                 if (originalSource?.SourceIsotopes != null && originalSource.SourceIsotopes.Count > 1)
                 {
-                    ShowMessage(TranslationHelper.GetString("MsgErrCannotDisableMultiIsotope"));
+                    ShowMessage(TranslationHelper.GetString("MsgErrCannotDisableMultiIsotope") ?? "لا يمكن التحويل لمصدر ذو نظير واحد بينما توجد أكثر من نظير محفوظ لهذا المصدر. الرجاء حذف النظائر الزائدة أولاً من قائمة الخليط.");
                     return;
                 }
             }
@@ -1070,17 +1070,17 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                 // مصدر مفرد
                 if (EditRadioisotopeId == null)
                 {
-                    ShowMessage(TranslationHelper.GetString("MsgErrIsotopeReq"));
+                    ShowMessage(TranslationHelper.GetString("MsgErrIsotopeReq") ?? "الرجاء اختيار النظير المشع للمصدر.");
                     return;
                 }
                 if (string.IsNullOrWhiteSpace(EditInitialActivityText) || EditInitialActivity <= 0)
                 {
-                    ShowMessage(TranslationHelper.GetString("MsgErrInitialActivityReq"));
+                    ShowMessage(TranslationHelper.GetString("MsgErrInitialActivityReq") ?? "الرجاء إدخال قيمة 'النشاط الابتدائي' والتأكد من أنها قيمة صحيحة وموجبة.");
                     return;
                 }
                 if (EditInitialUnitId == null)
                 {
-                    ShowMessage(TranslationHelper.GetString("MsgErrInitialUnitReq"));
+                    ShowMessage(TranslationHelper.GetString("MsgErrInitialUnitReq") ?? "الرجاء اختيار 'وحدة النشاط الابتدائي'.");
                     return;
                 }
             }
@@ -1089,22 +1089,22 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                 // مصدر متعدد النظائر (خليط)
                 if (!IsotopeEntries.Any())
                 {
-                    ShowMessage(TranslationHelper.GetString("MsgErrMixIsotopeReq"));
+                    ShowMessage(TranslationHelper.GetString("MsgErrMixIsotopeReq") ?? "الرجاء إضافة نظير واحد على الأقل للخليط.");
                     return;
                 }
                 if (IsotopeEntries.Any(e => e.RadioisotopeId == null))
                 {
-                    ShowMessage(TranslationHelper.GetString("MsgErrMixIsotopeItemReq"));
+                    ShowMessage(TranslationHelper.GetString("MsgErrMixIsotopeItemReq") ?? "الرجاء اختيار النظير لكل صف في قائمة نظائر الخليط.");
                     return;
                 }
                 if (IsotopeEntries.Any(e => string.IsNullOrWhiteSpace(e.InitialActivityText) || e.InitialActivity <= 0))
                 {
-                    ShowMessage(TranslationHelper.GetString("MsgErrMixActivityReq"));
+                    ShowMessage(TranslationHelper.GetString("MsgErrMixActivityReq") ?? "الرجاء تعبئة قيمة 'النشاط' الإشعاعي لكل نظير في الخليط والتأكد من أنها موجبة.");
                     return;
                 }
                 if (IsotopeEntries.Any(e => e.ActivityUnitId == null))
                 {
-                    ShowMessage(TranslationHelper.GetString("MsgErrMixUnitReq"));
+                    ShowMessage(TranslationHelper.GetString("MsgErrMixUnitReq") ?? "الرجاء اختيار 'الوحدة' لكل نظير في الخليط.");
                     return;
                 }
             }
@@ -1326,7 +1326,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         var openFileDialog = new OpenFileDialog
         {
             Filter = "Image Files (*.jpg;*.jpeg;*.png;*.bmp)|*.jpg;*.jpeg;*.png;*.bmp",
-            Title = TranslationHelper.GetString("TitleSelectImage")
+            Title = TranslationHelper.GetString("TitleSelectImage") ?? "اختر صورة للمصدر"
         };
 
         if (openFileDialog.ShowDialog() == true)

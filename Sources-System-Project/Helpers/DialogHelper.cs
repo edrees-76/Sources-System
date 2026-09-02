@@ -17,7 +17,7 @@ namespace Sources.Helpers
             if (IsTestMode || Application.Current?.Dispatcher == null) return;
             Application.Current.Dispatcher.Invoke(() =>
             {
-                var finalTitle = title ?? TranslationHelper.GetString("AlertTitle");
+                var finalTitle = title ?? TranslationHelper.GetString("AlertTitle") ?? "تنبيه";
                 var dialog = new AlertDialog(message, finalTitle, "Info", imagePath: imagePath);
                 if (Application.Current.MainWindow != null && Application.Current.MainWindow != dialog)
                 {
@@ -34,7 +34,7 @@ namespace Sources.Helpers
             if (IsTestMode || Application.Current?.Dispatcher == null) return;
             Application.Current.Dispatcher.Invoke(() =>
             {
-                var finalTitle = title ?? TranslationHelper.GetString("AlertWarning");
+                var finalTitle = title ?? TranslationHelper.GetString("AlertWarning") ?? "تحذير";
                 var dialog = new AlertDialog(message, finalTitle, "Warning");
                 if (Application.Current.MainWindow != null && Application.Current.MainWindow != dialog)
                 {
@@ -51,7 +51,7 @@ namespace Sources.Helpers
             if (IsTestMode || Application.Current?.Dispatcher == null) return;
             Application.Current.Dispatcher.Invoke(() =>
             {
-                var finalTitle = title ?? TranslationHelper.GetString("AlertError");
+                var finalTitle = title ?? TranslationHelper.GetString("AlertError") ?? "خطأ";
                 var dialog = new AlertDialog(message, finalTitle, "Error");
                 if (Application.Current.MainWindow != null && Application.Current.MainWindow != dialog)
                 {
@@ -70,7 +70,7 @@ namespace Sources.Helpers
             bool result = false;
             Application.Current.Dispatcher.Invoke(() =>
             {
-                var finalTitle = title ?? TranslationHelper.GetString("AlertConfirmation");
+                var finalTitle = title ?? TranslationHelper.GetString("AlertConfirmation") ?? "تأكيد";
                 var dialog = new AlertDialog(message, finalTitle, "Question", isQuestion: true);
                 if (Application.Current.MainWindow != null && Application.Current.MainWindow != dialog)
                 {
@@ -93,7 +93,7 @@ namespace Sources.Helpers
             AlertDialog.AlertResult result = AlertDialog.AlertResult.OK;
             Application.Current.Dispatcher.Invoke(() =>
             {
-                var finalTitle = title ?? TranslationHelper.GetString("AlertTitle");
+                var finalTitle = title ?? TranslationHelper.GetString("AlertTitle") ?? "تنبيه";
                 var dialog = new AlertDialog(message, finalTitle, "Info", extraButtonText: extraButtonText);
                 if (Application.Current.MainWindow != null && Application.Current.MainWindow != dialog)
                 {

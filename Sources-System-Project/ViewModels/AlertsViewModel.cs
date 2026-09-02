@@ -54,14 +54,14 @@ public class AlertRow
 
     public string SeverityLabel => Severity switch
     {
-        "Critical" => TranslationHelper.GetString("LabelCritical"),
-        "Warning" => TranslationHelper.GetString("LabelWarning"),
+        "Critical" => TranslationHelper.GetString("LabelCritical") ?? "حرج ≥ 6 T½",
+        "Warning" => TranslationHelper.GetString("LabelWarning") ?? "تحذير 5–6 T½",
         _ => Severity
     };
 
     public string StatusDisplay => IsDismissed
-        ? TranslationHelper.GetString("StatusDismissed")
-        : (IsRead ? TranslationHelper.GetString("StatusRead") : TranslationHelper.GetString("StatusUnread"));
+        ? TranslationHelper.GetString("StatusDismissed") ?? "مخفي"
+        : (IsRead ? TranslationHelper.GetString("StatusRead") ?? "مقروء" : TranslationHelper.GetString("StatusUnread") ?? "غير مقروء");
 }
 
 public partial class AlertsViewModel : ObservableObject, IDisposable
@@ -209,7 +209,7 @@ public partial class AlertsViewModel : ObservableObject, IDisposable
     {
         _alertService.GenerateAlerts();
         LoadData();
-        ShowMessage(TranslationHelper.GetString("MsgAlertsRefreshed"));
+        ShowMessage(TranslationHelper.GetString("MsgAlertsRefreshed") ?? "تم إعادة فحص وتحديث التنبيهات بنجاح");
     }
 
     partial void OnSearchTextChanged(string value) => ApplyFiltersAndPagination();

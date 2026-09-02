@@ -228,12 +228,12 @@ public partial class SettingsViewModel : ObservableObject
             }
             else
             {
-                LastBackupInfo = TranslationHelper.GetString("NoBackupsYet");
+                LastBackupInfo = TranslationHelper.GetString("NoBackupsYet") ?? "لا توجد نسخ احتياطية بعد";
             }
         }
         catch
         {
-            LastBackupInfo = TranslationHelper.GetString("NoBackupsYet");
+            LastBackupInfo = TranslationHelper.GetString("NoBackupsYet") ?? "لا توجد نسخ احتياطية بعد";
         }
     }
 
@@ -246,8 +246,8 @@ public partial class SettingsViewModel : ObservableObject
         App.ApplyLanguage("ar");
         
         DialogHelper.ShowInfo(
-            TranslationHelper.GetString("MsgRestartRequiredForLang"), 
-            TranslationHelper.GetString("TitleLanguageChange"));
+            TranslationHelper.GetString("MsgRestartRequiredForLang") ?? "يرجى تسجيل الخروج والدخول مرة أخرى (أو إعادة تشغيل البرنامج) لتطبيق تغييرات اتجاه الواجهة بشكل كامل.", 
+            TranslationHelper.GetString("TitleLanguageChange") ?? "تغيير لغة الواجهة");
     }
 
     [RelayCommand]
@@ -258,8 +258,8 @@ public partial class SettingsViewModel : ObservableObject
         App.ApplyLanguage("en");
         
         DialogHelper.ShowInfo(
-            TranslationHelper.GetString("MsgRestartRequiredForLang"), 
-            TranslationHelper.GetString("TitleLanguageChange"));
+            TranslationHelper.GetString("MsgRestartRequiredForLang") ?? "يرجى تسجيل الخروج والدخول مرة أخرى (أو إعادة تشغيل البرنامج) لتطبيق تغييرات اتجاه الواجهة بشكل كامل.", 
+            TranslationHelper.GetString("TitleLanguageChange") ?? "تغيير لغة الواجهة");
     }
 
     // ─── أوامر النسخ الاحتياطي ───
@@ -268,7 +268,7 @@ public partial class SettingsViewModel : ObservableObject
     {
         var dialog = new Microsoft.Win32.OpenFolderDialog
         {
-            Title = TranslationHelper.GetString("BrowseBackupTitle"),
+            Title = TranslationHelper.GetString("BrowseBackupTitle") ?? "اختر مجلد الحفظ الاحتياطي",
             InitialDirectory = Directory.Exists(BackupPath) ? BackupPath : string.Empty
         };
 
@@ -289,8 +289,8 @@ public partial class SettingsViewModel : ObservableObject
         _autoBackupService?.TriggerImmediateCheck();
 
         DialogHelper.ShowInfo(
-            TranslationHelper.GetString("MsgSettingsSaved"),
-            TranslationHelper.GetString("TabBackup"));
+            TranslationHelper.GetString("MsgSettingsSaved") ?? "تم حفظ الإعدادات بنجاح",
+            TranslationHelper.GetString("TabBackup") ?? "النسخ الاحتياطي");
     }
 
     [RelayCommand]
@@ -299,13 +299,13 @@ public partial class SettingsViewModel : ObservableObject
         if (string.IsNullOrWhiteSpace(BackupPath))
         {
             DialogHelper.ShowWarning(
-                TranslationHelper.GetString("MsgSelectBackupPath"),
-                TranslationHelper.GetString("BackupTitle"));
+                TranslationHelper.GetString("MsgSelectBackupPath") ?? "يرجى تحديد مسار الحفظ أولاً",
+                TranslationHelper.GetString("BackupTitle") ?? "النسخ الاحتياطي");
             return;
         }
 
         IsBusy = true;
-        BusyMessage = TranslationHelper.GetString("MsgCreatingBackup");
+        BusyMessage = TranslationHelper.GetString("MsgCreatingBackup") ?? "جاري إنشاء نسخة احتياطية...";
 
         try
         {
@@ -316,19 +316,19 @@ public partial class SettingsViewModel : ObservableObject
                 // حفظ المسار في الإعدادات تلقائياً بعد نجاح النسخ
                 _settingsService.SaveSetting("BackupPath", BackupPath);
                 UpdateLastBackupInfo();
-                DialogHelper.ShowInfo(result.Message, TranslationHelper.GetString("BackupTitle"));
+                DialogHelper.ShowInfo(result.Message, TranslationHelper.GetString("BackupTitle") ?? "النسخ الاحتياطي");
             }
             else
             {
-                DialogHelper.ShowError(result.Message, TranslationHelper.GetString("BackupTitle"));
+                DialogHelper.ShowError(result.Message, TranslationHelper.GetString("BackupTitle") ?? "النسخ الاحتياطي");
             }
         }
         catch (Exception ex)
         {
             LoggerService.LogError("Manual backup failed", ex);
             DialogHelper.ShowError(
-                TranslationHelper.GetString("MsgBackupError"),
-                TranslationHelper.GetString("BackupTitle"));
+                TranslationHelper.GetString("MsgBackupError") ?? "حدث خطأ غير متوقع أثناء النسخ الاحتياطي",
+                TranslationHelper.GetString("BackupTitle") ?? "النسخ الاحتياطي");
         }
         finally
         {
@@ -341,7 +341,7 @@ public partial class SettingsViewModel : ObservableObject
     {
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
-            Title = TranslationHelper.GetString("RestoreBackupTitle"),
+            Title = TranslationHelper.GetString("RestoreBackupTitle") ?? "استعادة نسخة احتياطية",
             Filter = "ملفات النسخ الاحتياطي (*.zip;*.db)|*.zip;*.db|Zip Archives (*.zip)|*.zip|Database files (*.db)|*.db",
             InitialDirectory = Directory.Exists(BackupPath) ? BackupPath : string.Empty
         };
@@ -349,13 +349,13 @@ public partial class SettingsViewModel : ObservableObject
         if (dialog.ShowDialog() != true) return;
 
         var confirmed = DialogHelper.ShowConfirmation(
-            TranslationHelper.GetString("MsgRestoreWarning"),
-            TranslationHelper.GetString("RestoreBackupTitle"));
+            TranslationHelper.GetString("MsgRestoreWarning") ?? "تحذير: ستقوم هذه العملية باستبدال جميع البيانات الحالية ببيانات النسخة الاحتياطية المختارة. هل أنت متأكد من الاستمرار؟",
+            TranslationHelper.GetString("RestoreBackupTitle") ?? "استعادة نسخة احتياطية");
 
         if (!confirmed) return;
 
         IsBusy = true;
-        BusyMessage = TranslationHelper.GetString("MsgRestoringBackup");
+        BusyMessage = TranslationHelper.GetString("MsgRestoringBackup") ?? "جاري استعادة النسخة الاحتياطية...";
 
         try
         {
@@ -363,19 +363,19 @@ public partial class SettingsViewModel : ObservableObject
 
             if (result.Success)
             {
-                DialogHelper.ShowInfo(result.Message, TranslationHelper.GetString("RestoreBackupTitle"));
+                DialogHelper.ShowInfo(result.Message, TranslationHelper.GetString("RestoreBackupTitle") ?? "استعادة نسخة احتياطية");
             }
             else
             {
-                DialogHelper.ShowError(result.Message, TranslationHelper.GetString("RestoreBackupTitle"));
+                DialogHelper.ShowError(result.Message, TranslationHelper.GetString("RestoreBackupTitle") ?? "استعادة نسخة احتياطية");
             }
         }
         catch (Exception ex)
         {
             LoggerService.LogError("Restore backup failed", ex);
             DialogHelper.ShowError(
-                TranslationHelper.GetString("MsgRestoreError"),
-                TranslationHelper.GetString("RestoreBackupTitle"));
+                TranslationHelper.GetString("MsgRestoreError") ?? "حدث خطأ أثناء الاستعادة",
+                TranslationHelper.GetString("RestoreBackupTitle") ?? "استعادة نسخة احتياطية");
         }
         finally
         {
@@ -389,31 +389,31 @@ public partial class SettingsViewModel : ObservableObject
     {
         if (LowActivityThresholdPercent <= 0 || LowActivityThresholdPercent > 100)
         {
-            DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrLowActivityThresholdRange"), TranslationHelper.GetString("TabSystemSettings"));
+            DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrLowActivityThresholdRange") ?? "يجب أن تكون نسبة عتبة النشاط بين 0.1% و 100%", TranslationHelper.GetString("TabSystemSettings") ?? "إعدادات النظام");
             return;
         }
 
         if (NotificationCheckIntervalMinutes < 1 || NotificationCheckIntervalMinutes > 1440)
         {
-            DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrNotificationIntervalRange"), TranslationHelper.GetString("TabSystemSettings"));
+            DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrNotificationIntervalRange") ?? "يجب أن تكون فترة فحص التنبيهات بين 1 دقيقة و 1440 دقيقة (24 ساعة)", TranslationHelper.GetString("TabSystemSettings") ?? "إعدادات النظام");
             return;
         }
 
         if (DueSoonDaysThreshold < 1 || DueSoonDaysThreshold > 365)
         {
-            DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrDueSoonThresholdRange"), TranslationHelper.GetString("TabSystemSettings"));
+            DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrDueSoonThresholdRange") ?? "يجب أن تكون مهلة الاستحقاق القريب بين 1 و 365 يوماً", TranslationHelper.GetString("TabSystemSettings") ?? "إعدادات النظام");
             return;
         }
 
         if (LeakTestIntervalMonths < 1 || LeakTestIntervalMonths > 120)
         {
-            DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrLeakTestIntervalRange"), TranslationHelper.GetString("TabSystemSettings"));
+            DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrLeakTestIntervalRange") ?? "يجب أن تكون دورية فحص التسرب بين 1 شهر و 120 شهراً", TranslationHelper.GetString("TabSystemSettings") ?? "إعدادات النظام");
             return;
         }
 
         if (LeakTestWarningDaysThreshold < 1 || LeakTestWarningDaysThreshold > 365)
         {
-            DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrLeakTestWarningDaysRange"), TranslationHelper.GetString("TabSystemSettings"));
+            DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrLeakTestWarningDaysRange") ?? "يجب أن تكون مهلة التنبيه بفحص التسرب بين 1 يوم و 365 يوماً", TranslationHelper.GetString("TabSystemSettings") ?? "إعدادات النظام");
             return;
         }
 
@@ -433,8 +433,8 @@ public partial class SettingsViewModel : ObservableObject
         }
 
         DialogHelper.ShowInfo(
-            TranslationHelper.GetString("MsgSystemSettingsSaved"),
-            TranslationHelper.GetString("TabSystemSettings"));
+            TranslationHelper.GetString("MsgSystemSettingsSaved") ?? "تم حفظ إعدادات النظام بنجاح",
+            TranslationHelper.GetString("TabSystemSettings") ?? "إعدادات النظام");
     }
 
     // ─── أوامر الوضع الافتراضي (Factory Reset) ───
@@ -455,8 +455,8 @@ public partial class SettingsViewModel : ObservableObject
         {
             IsStage1Passed = false;
             DialogHelper.ShowWarning(
-                TranslationHelper.GetString("MsgErrIncorrectPhrase"),
-                TranslationHelper.GetString("TitleFactoryReset"));
+                TranslationHelper.GetString("MsgErrIncorrectPhrase") ?? "جملة التأكيد غير متطابقة، يرجى كتابتها بدقة",
+                TranslationHelper.GetString("TitleFactoryReset") ?? "إعادة ضبط المنظومة");
             return;
         }
 
@@ -469,8 +469,8 @@ public partial class SettingsViewModel : ObservableObject
         if (!IsStage1Passed)
         {
             DialogHelper.ShowWarning(
-                TranslationHelper.GetString("MsgErrIncorrectPhrase"),
-                TranslationHelper.GetString("TitleFactoryReset"));
+                TranslationHelper.GetString("MsgErrIncorrectPhrase") ?? "جملة التأكيد غير متطابقة، يرجى كتابتها بدقة",
+                TranslationHelper.GetString("TitleFactoryReset") ?? "إعادة ضبط المنظومة");
             return;
         }
 
@@ -478,7 +478,7 @@ public partial class SettingsViewModel : ObservableObject
         if (currentUser == null)
         {
             IsStage2Passed = false;
-            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrNoCurrentUserLoggedIn"), TranslationHelper.GetString("TitleFactoryReset"));
+            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrNoCurrentUserLoggedIn") ?? "لا يوجد مستخدم مسجل حالياً", TranslationHelper.GetString("TitleFactoryReset") ?? "إعادة ضبط المنظومة");
             return;
         }
 
@@ -486,8 +486,8 @@ public partial class SettingsViewModel : ObservableObject
         {
             IsStage2Passed = false;
             DialogHelper.ShowWarning(
-                TranslationHelper.GetString("MsgErrIncorrectAdminPassword"),
-                TranslationHelper.GetString("TitleFactoryReset"));
+                TranslationHelper.GetString("MsgErrIncorrectAdminPassword") ?? "كلمة المرور غير صحيحة",
+                TranslationHelper.GetString("TitleFactoryReset") ?? "إعادة ضبط المنظومة");
             return;
         }
 
@@ -499,31 +499,31 @@ public partial class SettingsViewModel : ObservableObject
     {
         if (!IsAdmin)
         {
-            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrAdminOnlyAction"), TranslationHelper.GetString("TitleFactoryReset"));
+            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrAdminOnlyAction") ?? "غير مصرح: هذه العملية مخصصة لمدير النظام فقط", TranslationHelper.GetString("TitleFactoryReset") ?? "إعادة ضبط المنظومة");
             return;
         }
 
         if (!IsStage1Passed || !IsStage2Passed)
         {
-            DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrCompletePreviousStages"), TranslationHelper.GetString("TitleFactoryReset"));
+            DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrCompletePreviousStages") ?? "يرجى إكمال المرحلتين السابقتين أولاً", TranslationHelper.GetString("TitleFactoryReset") ?? "إعادة ضبط المنظومة");
             return;
         }
 
         if (!DialogHelper.ShowConfirmation(
-            TranslationHelper.GetString("MsgFactoryResetWarningDescription"),
-            TranslationHelper.GetString("TitleFactoryResetWarning")))
+            TranslationHelper.GetString("MsgFactoryResetWarningDescription") ?? "هذه العملية تقوم بمسح كامل لا رجعة فيه لكافة المصادر المشعة، طلبات الاستعارة، المواقع، وسجلات التدقيق، مع إعادة إعدادات النظام للوضع الافتراضي. سيتم الإبقاء فقط على حسابات المستخدمين ومكتبة النظائر، وسيتم أخذ نسخة احتياطية إجبارية تلقائياً قبل التصفير.",
+            TranslationHelper.GetString("TitleFactoryResetWarning") ?? "تحذير أمني شديد الخطورة"))
         {
             return;
         }
 
         if (_resetService == null)
         {
-            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrResetServiceUnavailable"), TranslationHelper.GetString("TitleFactoryReset"));
+            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrResetServiceUnavailable") ?? "خدمة إعادة ضبط المنظومة غير متوفرة", TranslationHelper.GetString("TitleFactoryReset") ?? "إعادة ضبط المنظومة");
             return;
         }
 
         IsBusy = true;
-        BusyMessage = TranslationHelper.GetString("MsgBusyExecutingFactoryReset");
+        BusyMessage = TranslationHelper.GetString("MsgBusyExecutingFactoryReset") ?? "جاري أخذ نسخة احتياطية إجبارية وتصفير المنظومة...";
 
         try
         {
@@ -532,8 +532,8 @@ public partial class SettingsViewModel : ObservableObject
             if (result.Success)
             {
                 DialogHelper.ShowInfo(
-                    TranslationHelper.GetString("MsgFactoryResetSuccess"),
-                    TranslationHelper.GetString("TitleFactoryReset"));
+                    TranslationHelper.GetString("MsgFactoryResetSuccess") ?? "تمت إعادة ضبط المنظومة للوضع الافتراضي بنجاح وأخذ نسخة احتياطية كاملة. سيتم الآن تسجيل الخروج.",
+                    TranslationHelper.GetString("TitleFactoryReset") ?? "إعادة ضبط المنظومة");
 
                 // تسجيل الخروج القسري عبر MainViewModel
                 if (App.ServiceProvider?.GetService(typeof(MainViewModel)) is MainViewModel mainVm)
@@ -544,15 +544,15 @@ public partial class SettingsViewModel : ObservableObject
             else
             {
                 DialogHelper.ShowError(
-                    string.Format(TranslationHelper.GetString("MsgFactoryResetFailed"), result.Message),
-                    TranslationHelper.GetString("TitleFactoryReset"));
+                    string.Format(TranslationHelper.GetString("MsgFactoryResetFailed") ?? "فشلت عملية إعادة ضبط المنظومة: {0}", result.Message),
+                    TranslationHelper.GetString("TitleFactoryReset") ?? "إعادة ضبط المنظومة");
             }
         }
         catch (Exception ex)
         {
             DialogHelper.ShowError(
-                string.Format(TranslationHelper.GetString("MsgFactoryResetFailed"), ex.Message),
-                TranslationHelper.GetString("TitleFactoryReset"));
+                string.Format(TranslationHelper.GetString("MsgFactoryResetFailed") ?? "فشلت عملية إعادة ضبط المنظومة: {0}", ex.Message),
+                TranslationHelper.GetString("TitleFactoryReset") ?? "إعادة ضبط المنظومة");
         }
         finally
         {

@@ -398,11 +398,11 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         // تعبئة Legend الفئات الرقابية (البند 6)
         CategoryLegend = new ObservableCollection<CategoryBadgeInfo>(new[]
         {
-            new CategoryBadgeInfo { Category = 1, Color = GetCategoryColor(1), Label = TranslationHelper.GetString("Category1Label") },
-            new CategoryBadgeInfo { Category = 2, Color = GetCategoryColor(2), Label = TranslationHelper.GetString("Category2Label") },
-            new CategoryBadgeInfo { Category = 3, Color = GetCategoryColor(3), Label = TranslationHelper.GetString("Category3Label") },
-            new CategoryBadgeInfo { Category = 4, Color = GetCategoryColor(4), Label = TranslationHelper.GetString("Category4Label") },
-            new CategoryBadgeInfo { Category = 5, Color = GetCategoryColor(5), Label = TranslationHelper.GetString("Category5Label") },
+            new CategoryBadgeInfo { Category = 1, Color = GetCategoryColor(1), Label = TranslationHelper.GetString("Category1Label") ?? "فئة 1 — خطر عالي جداً" },
+            new CategoryBadgeInfo { Category = 2, Color = GetCategoryColor(2), Label = TranslationHelper.GetString("Category2Label") ?? "فئة 2 — خطر عالي" },
+            new CategoryBadgeInfo { Category = 3, Color = GetCategoryColor(3), Label = TranslationHelper.GetString("Category3Label") ?? "فئة 3 — خطر متوسط" },
+            new CategoryBadgeInfo { Category = 4, Color = GetCategoryColor(4), Label = TranslationHelper.GetString("Category4Label") ?? "فئة 4 — خطر منخفض" },
+            new CategoryBadgeInfo { Category = 5, Color = GetCategoryColor(5), Label = TranslationHelper.GetString("Category5Label") ?? "فئة 5 — خطر طفيف" },
         });
     }
 
@@ -601,7 +601,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         }
         catch (Exception ex)
         {
-            LoggerService.LogError(TranslationHelper.GetString("MsgErrDashboardLoad"), ex);
+            LoggerService.LogError(TranslationHelper.GetString("MsgErrDashboardLoad") ?? "خطأ في تحميل لوحة التحكم", ex);
         }
     }
 
@@ -893,7 +893,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
             Source = s
         }).ToList();
 
-        SidePanelTitle = $"{TranslationHelper.GetString("DrilldownTitle")} ({HistogramBins[binIndex].Label} Bq)";
+        SidePanelTitle = $"{TranslationHelper.GetString("DrilldownTitle") ?? "المصادر في النطاق"} ({HistogramBins[binIndex].Label} Bq)";
         SidePanelSources = new ObservableCollection<DashboardSourceRow>(rows);
         SidePanelShowSources = true;
         IsSidePanelOpen = true;
@@ -958,7 +958,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
             .ToList();
 
         // Top-10 + Others
-        string othersLabel = TranslationHelper.GetString("LabelOthers");
+        string othersLabel = TranslationHelper.GetString("LabelOthers") ?? "أخرى";
         var topPlusOthers = ComputeTopNPlusOthers(byIsotope, 10, othersLabel);
 
         HasEnoughIsotopeData = topPlusOthers.Count >= 2;
@@ -1070,7 +1070,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
             .ToList();
 
         // Top-10 + Others
-        string othersLabel = TranslationHelper.GetString("LabelOthers");
+        string othersLabel = TranslationHelper.GetString("LabelOthers") ?? "أخرى";
         var topPlusOthers = ComputeTopNPlusOthers(locationGroups, 10, othersLabel);
 
         HasEnoughLocationData = topPlusOthers.Count >= 2;
@@ -1188,7 +1188,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     [RelayCommand]
     public void ShowAllIsotopes()
     {
-        SidePanelTitle = TranslationHelper.GetString("AllIsotopesTitle");
+        SidePanelTitle = TranslationHelper.GetString("AllIsotopesTitle") ?? "جميع النظائر المشعة";
         SidePanelDistribution = new ObservableCollection<DistributionRow>(
             _allIsotopeData.Select(x => new DistributionRow
             {
@@ -1204,7 +1204,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     [RelayCommand]
     public void ShowAllLocations()
     {
-        SidePanelTitle = TranslationHelper.GetString("AllLocationsTitle");
+        SidePanelTitle = TranslationHelper.GetString("AllLocationsTitle") ?? "جميع مواقع التخزين";
         SidePanelDistribution = new ObservableCollection<DistributionRow>(
             _allLocationData.Select(x => new DistributionRow
             {
@@ -1507,8 +1507,8 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
 
                     DecayLegendItems = new ObservableCollection<LegendItem>
                     {
-                        new LegendItem { Label = TranslationHelper.GetString("CalcChartLegendCurve"), Color = "#1F5A66" },
-                        new LegendItem { Label = TranslationHelper.GetString("CalcChartLegendCurrent"), Color = "#C25B4A" }
+                        new LegendItem { Label = TranslationHelper.GetString("CalcChartLegendCurve") ?? "منحنى الاضمحلال", Color = "#1F5A66" },
+                        new LegendItem { Label = TranslationHelper.GetString("CalcChartLegendCurrent") ?? "النقطة المحسوبة", Color = "#C25B4A" }
                     };
                 }
             }

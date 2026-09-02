@@ -175,7 +175,7 @@ public partial class LocationsViewModel : ObservableObject, IEditableViewModel
     [RelayCommand]
     private void Save()
     {
-        if (string.IsNullOrWhiteSpace(EditName)) { ShowMsg(TranslationHelper.GetString("MsgErrLocationNameReq")); return; }
+        if (string.IsNullOrWhiteSpace(EditName)) { ShowMsg(TranslationHelper.GetString("MsgErrLocationNameReq") ?? "الرجاء إدخال اسم الموقع"); return; }
         var item = new Location
         {
             Id = IsNew ? Guid.NewGuid() : _editingId!.Value,
@@ -310,7 +310,7 @@ public partial class LocationsViewModel : ObservableObject, IEditableViewModel
                 var list = Locations.Select(lr => lr.Location).ToList();
                 await _reportingService.GenerateLocationsReportPdfAsync(list, sfd.FileName);
                 FileHelper.OpenFile(sfd.FileName);
-                DialogHelper.ShowInfo(TranslationHelper.GetString("MsgExportSuccess") ?? "تم تصدير التقرير كملف PDF بنجاح.");
+                DialogHelper.ShowInfo(TranslationHelper.GetString("MsgExportPdfSuccess") ?? "تم تصدير التقرير كملف PDF بنجاح.");
             }
             catch (Exception ex)
             {
@@ -335,7 +335,7 @@ public partial class LocationsViewModel : ObservableObject, IEditableViewModel
                 var list = Locations.Select(lr => lr.Location).ToList();
                 await _reportingService.GenerateLocationsReportExcelAsync(list, sfd.FileName);
                 FileHelper.OpenFile(sfd.FileName);
-                DialogHelper.ShowInfo(TranslationHelper.GetString("MsgExportSuccess") ?? "تم تصدير البيانات إلى ملف Excel بنجاح.");
+                DialogHelper.ShowInfo(TranslationHelper.GetString("MsgExportExcelSuccess") ?? "تم تصدير البيانات إلى ملف Excel بنجاح.");
             }
             catch (Exception ex)
             {

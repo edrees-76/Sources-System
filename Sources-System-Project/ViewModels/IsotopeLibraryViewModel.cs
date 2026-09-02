@@ -146,8 +146,8 @@ public partial class IsotopeLibraryViewModel : ObservableObject
         if (!success)
         {
             DialogHelper.ShowWarning(
-                TranslationHelper.GetString("MsgErrOpenRefPdf"),
-                TranslationHelper.GetString("TitleReferencePdf")
+                TranslationHelper.GetString("MsgErrOpenRefPdf") ?? "تعذر فتح ملف المرجع الأصلي. تأكد من وجود ملف 14724519.pdf وتوفر برنامج لقراءة ملفات PDF على جهازك.",
+                TranslationHelper.GetString("TitleReferencePdf") ?? "الملف المرجعي ORNL"
             );
         }
     }
@@ -159,8 +159,8 @@ public partial class IsotopeLibraryViewModel : ObservableObject
         if (!success)
         {
             DialogHelper.ShowWarning(
-                TranslationHelper.GetString("MsgErrOpenRefPdf"),
-                TranslationHelper.GetString("TitleReferencePdf")
+                TranslationHelper.GetString("MsgErrOpenRefPdf") ?? "تعذر فتح ملف المرجع الأصلي. تأكد من وجود ملف 14724519.pdf وتوفر برنامج لقراءة ملفات PDF على جهازك.",
+                TranslationHelper.GetString("TitleReferencePdf") ?? "الملف المرجعي ORNL"
             );
         }
     }
@@ -172,8 +172,8 @@ public partial class IsotopeLibraryViewModel : ObservableObject
         if (!success)
         {
             DialogHelper.ShowWarning(
-                TranslationHelper.GetString("MsgErrOpenIcrpPdf"),
-                TranslationHelper.GetString("TitleIcrpPdf")
+                TranslationHelper.GetString("MsgErrOpenIcrpPdf") ?? "تعذر فتح ملف مرجع ICRP 107. تأكد من وجود ملف ANIB_38_3.pdf وتوفر برنامج لقراءة ملفات PDF على جهازك.",
+                TranslationHelper.GetString("TitleIcrpPdf") ?? "مرجع ICRP 107"
             );
         }
     }
@@ -191,8 +191,8 @@ public partial class IsotopeLibraryViewModel : ObservableObject
             {
                 System.Windows.Clipboard.SetText(text);
                 DialogHelper.ShowInfo(
-                    TranslationHelper.GetString("MsgCopyDetailsSuccess"),
-                    TranslationHelper.GetString("TitleCopySuccess")
+                    TranslationHelper.GetString("MsgCopyDetailsSuccess") ?? "تم نسخ كافة بيانات النظير إلى الحافظة بنجاح.",
+                    TranslationHelper.GetString("TitleCopySuccess") ?? "تم النسخ"
                 );
             }
             catch (Exception ex)
@@ -234,8 +234,8 @@ public partial class IsotopeLibraryViewModel : ObservableObject
         {
             System.Windows.Clipboard.SetText(s.Trim());
             DialogHelper.ShowInfo(
-                TranslationHelper.GetString("MsgCopyValueSuccess"),
-                TranslationHelper.GetString("TitleCopySuccess")
+                TranslationHelper.GetString("MsgCopyValueSuccess") ?? "تم نسخ القيمة إلى الحافظة بنجاح.",
+                TranslationHelper.GetString("TitleCopySuccess") ?? "تم النسخ"
             );
         }
         catch (Exception ex)

@@ -261,7 +261,7 @@ public partial class RadioisotopesViewModel : ObservableObject, IEditableViewMod
     {
         if (string.IsNullOrWhiteSpace(EditName) || string.IsNullOrWhiteSpace(EditSymbol))
         {
-            ShowMsg(Helpers.TranslationHelper.GetString("MsgErrFillRequired")); return;
+            ShowMsg(Helpers.TranslationHelper.GetString("MsgErrFillRequired") ?? "الرجاء ملء جميع الحقول المطلوبة"); return;
         }
 
         if (!string.IsNullOrWhiteSpace(EditGammaConstantText))

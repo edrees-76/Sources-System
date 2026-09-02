@@ -804,7 +804,7 @@ public class Role
     public string? Permissions { get; set; }
 
     [NotMapped]
-    public string DisplayName => Sources.Helpers.TranslationHelper.GetString(RoleName == "مدير النظام" ? "RoleAdmin" : "RoleUser");
+    public string DisplayName => Sources.Helpers.TranslationHelper.GetString(RoleName == "مدير النظام" ? "RoleAdmin" : "RoleUser") ?? (RoleName == "مدير النظام" ? "مدير النظام" : "مستخدم عادي");
 
     // Navigation
     public ICollection<User> Users { get; set; } = new List<User>();

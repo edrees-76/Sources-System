@@ -262,7 +262,7 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
     {
         if (SelectedSourceForNew == null || string.IsNullOrWhiteSpace(NewBorrowerName) || string.IsNullOrWhiteSpace(NewPurpose))
         {
-            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrStep1Incomplete"));
+            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrStep1Incomplete") ?? "الرجاء اختيار المصدر وتحديد اسم المستعير والغرض للمتابعة.");
             return;
         }
         CurrentStep = 2;
@@ -298,37 +298,47 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
     public void LoadAvailableSources()
     {
         if (_dbFactory == null) return;
-        using var db = _dbFactory.CreateDbContext();
-        var candidateSources = db.Sources
-            .AsNoTracking()
-            .Include(s => s.SourceIsotopes)
-                .ThenInclude(si => si.Radioisotope)
-            .Include(s => s.SourceIsotopes)
-                .ThenInclude(si => si.ActivityUnit)
-            .Include(s => s.Location)
-            .Include(s => s.Radioisotope)
-            .Include(s => s.InitialActivityUnit)
-            .Where(s => !s.IsDeleted && s.Status == "Storage")
-            .OrderBy(s => s.SourceCode)
-            .ToList();
+        try
+        {
+            using var db = _dbFactory.CreateDbContext();
+            var candidateSources = db.Sources
+                .AsNoTracking()
+                .Include(s => s.SourceIsotopes)
+                    .ThenInclude(si => si.Radioisotope)
+                .Include(s => s.SourceIsotopes)
+                    .ThenInclude(si => si.ActivityUnit)
+                .Include(s => s.Location)
+                .Include(s => s.Radioisotope)
+                .Include(s => s.InitialActivityUnit)
+                .Where(s => !s.IsDeleted && s.Status == "Storage")
+                .OrderBy(s => s.SourceCode)
+                .ToList();
 
-        var sourceIds = candidateSources.Select(s => s.Id).ToList();
-        var allTests = db.LeakTestRecords
-            .AsNoTracking()
-            .Where(r => sourceIds.Contains(r.SourceId))
-            .ToList();
+            var sourceIds = candidateSources.Select(s => s.Id).ToList();
+            var allTests = db.LeakTestRecords
+                .AsNoTracking()
+                .Where(r => sourceIds.Contains(r.SourceId))
+                .ToList();
 
-        var failedSourceIds = allTests
-            .GroupBy(r => r.SourceId)
-            .Select(g => g.OrderByDescending(r => r.TestDate).ThenByDescending(r => r.CreatedAt).FirstOrDefault())
-            .Where(r => r != null && r.Result == "Fail")
-            .Select(r => r!.SourceId)
-            .ToHashSet();
+            var failedSourceIds = allTests
+                .GroupBy(r => r.SourceId)
+                .Select(g => g.OrderByDescending(r => r.TestDate).ThenByDescending(r => r.CreatedAt).FirstOrDefault())
+                .Where(r => r != null && r.Result == "Fail")
+                .Select(r => r!.SourceId)
+                .ToHashSet();
 
-        var sources = candidateSources.Where(s => !failedSourceIds.Contains(s.Id)).ToList();
+            var sources = candidateSources.Where(s => !failedSourceIds.Contains(s.Id)).ToList();
 
-        AvailableSources.Clear();
-        foreach (var s in sources) AvailableSources.Add(s);
+            AvailableSources.Clear();
+            foreach (var s in sources)
+            {
+                AvailableSources.Add(s);
+            }
+        }
+        catch
+        {
+            // Ignore db exceptions from disposed test contexts during messenger events
+        }
     }
 
     private void LoadAvailableBorrowers(Guid? borrowerUserId)
@@ -387,24 +397,24 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
     {
         if (SelectedSourceForNew == null || string.IsNullOrWhiteSpace(NewBorrowerName) || string.IsNullOrWhiteSpace(NewPurpose))
         {
-            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrStep1Incomplete"));
+            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrStep1Incomplete") ?? "الرجاء اختيار المصدر وتحديد اسم المستعير والغرض للمتابعة.");
             return;
         }
 
         if (NewExpectedReturnDate.Date < DateTime.Today)
         {
-            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrExpectedReturnPast"));
+            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrExpectedReturnPast") ?? "تاريخ الإرجاع المتوقع لا يمكن أن يكون في الماضي.");
             return;
         }
 
         if (NewExpectedReturnDate.Date > DateTime.Today.AddYears(2))
         {
-            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrExpectedReturnTooFar"));
+            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrExpectedReturnTooFar") ?? "تاريخ الإرجاع المتوقع بعيد جداً (الحد الأقصى هو سنتان من اليوم).");
             return;
         }
 
         string confirmMsg = $"سيتم تسليم المصدر (\u2066{SelectedSourceForNew.SourceCode}\u2069) إلى (\u2066{NewBorrowerName}\u2069).\nهل أنت متأكد من المتابعة؟";
-        if (!DialogHelper.ShowConfirmation(confirmMsg, TranslationHelper.GetString("AddNewBorrowRequestTitle")))
+        if (!DialogHelper.ShowConfirmation(confirmMsg, TranslationHelper.GetString("AddNewBorrowRequestTitle") ?? "طلب استعارة مصدر جديد"))
             return;
 
         // محاولة مطابقة المستعير مع مستخدم مسجل بالنظام، وإلا يبقى null ويُعتمد على BorrowerName
@@ -443,19 +453,19 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
         if (SelectedRequest == null) return;
         if (SelectedReturnedBy == null)
         {
-            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrRecipientRequired"));
+            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrRecipientRequired") ?? "الرجاء تحديد من قام باستلام/إرجاع المصدر.");
             return;
         }
 
         if (NewActualReturnDate.Date < SelectedRequest.RequestDate.Date)
         {
-            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrActualReturnBeforeRequest"));
+            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrActualReturnBeforeRequest") ?? "تاريخ الإرجاع الفعلي لا يمكن أن يسبق تاريخ الاستعارة.");
             return;
         }
 
         if (NewActualReturnDate.Date > DateTime.Today)
         {
-            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrActualReturnFuture"));
+            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrActualReturnFuture") ?? "لا يمكن أن يكون تاريخ الإرجاع الفعلي في المستقبل.");
             return;
         }
 

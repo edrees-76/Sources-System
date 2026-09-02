@@ -292,7 +292,7 @@ public partial class LocationDetailsViewModel : ObservableObject
                 string title = $"تقرير مصادر الموقع: {LocationName}";
                 await _reportingService.GenerateInventoryReportPdfAsync(list, sfd.FileName, title);
                 FileHelper.OpenFile(sfd.FileName);
-                DialogHelper.ShowInfo(TranslationHelper.GetString("MsgExportSuccess") ?? "تم تصدير التقرير كملف PDF بنجاح.");
+                DialogHelper.ShowInfo(TranslationHelper.GetString("MsgExportPdfSuccess") ?? "تم تصدير التقرير كملف PDF بنجاح.");
             }
             catch (Exception ex)
             {
@@ -319,7 +319,7 @@ public partial class LocationDetailsViewModel : ObservableObject
                 string title = $"تقرير مصادر الموقع: {LocationName}";
                 await _reportingService.GenerateInventoryReportExcelAsync(list, sfd.FileName, title);
                 FileHelper.OpenFile(sfd.FileName);
-                DialogHelper.ShowInfo(TranslationHelper.GetString("MsgExportSuccess") ?? "تم تصدير البيانات إلى ملف Excel بنجاح.");
+                DialogHelper.ShowInfo(TranslationHelper.GetString("MsgExportExcelSuccess") ?? "تم تصدير البيانات إلى ملف Excel بنجاح.");
             }
             catch (Exception ex)
             {

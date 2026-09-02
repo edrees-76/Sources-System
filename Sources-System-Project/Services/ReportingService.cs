@@ -49,7 +49,7 @@ namespace Sources.Services
         {
             try
             {
-                string text = TranslationHelper.GetString("LabelNoDataAvailable");
+                string text = TranslationHelper.GetString("LabelNoDataAvailable") ?? "لا توجد بيانات حالياً";
                 if (!string.IsNullOrEmpty(text) && text != "LabelNoDataAvailable")
                     return text;
             }
@@ -61,7 +61,7 @@ namespace Sources.Services
         {
             try
             {
-                string text = TranslationHelper.GetString("ColEmissionCalibrationDate");
+                string text = TranslationHelper.GetString("ColEmissionCalibrationDate") ?? "تاريخ معايرة الانبعاث";
                 if (!string.IsNullOrEmpty(text) && text != "ColEmissionCalibrationDate")
                     return text;
             }
@@ -73,7 +73,7 @@ namespace Sources.Services
         {
             try
             {
-                string text = TranslationHelper.GetString("TextNotRecorded");
+                string text = TranslationHelper.GetString("TextNotRecorded") ?? "غير مسجّل";
                 if (!string.IsNullOrEmpty(text) && text != "TextNotRecorded")
                     return text;
             }
@@ -87,7 +87,7 @@ namespace Sources.Services
             {
                 try
                 {
-                    string text = TranslationHelper.GetString("AuditUserSystemAutomated");
+                    string text = TranslationHelper.GetString("AuditUserSystemAutomated") ?? "عملية تلقائية";
                     if (!string.IsNullOrEmpty(text) && text != "AuditUserSystemAutomated")
                         return text;
                 }
@@ -99,7 +99,7 @@ namespace Sources.Services
             {
                 try
                 {
-                    string text = TranslationHelper.GetString("AuditUserDeleted");
+                    string text = TranslationHelper.GetString("AuditUserDeleted") ?? "مستخدم محذوف";
                     if (!string.IsNullOrEmpty(text) && text != "AuditUserDeleted")
                         return text;
                 }

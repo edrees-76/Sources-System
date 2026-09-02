@@ -31,8 +31,8 @@ public partial class IsotopeDetailsWindow : Window
             {
                 Clipboard.SetText(text);
                 DialogHelper.ShowInfo(
-                    TranslationHelper.GetString("MsgCopyDetailsSuccess"),
-                    TranslationHelper.GetString("TitleCopySuccess")
+                    TranslationHelper.GetString("MsgCopyDetailsSuccess") ?? "تم نسخ كافة بيانات النظير إلى الحافظة بنجاح.",
+                    TranslationHelper.GetString("TitleCopySuccess") ?? "تم النسخ"
                 );
             }
             catch (Exception ex)
@@ -57,8 +57,8 @@ public partial class IsotopeDetailsWindow : Window
         if (!success)
         {
             DialogHelper.ShowWarning(
-                TranslationHelper.GetString(_entry.IsOrnlSource ? "MsgErrOpenRefPdf" : "MsgErrOpenIcrpPdf"),
-                TranslationHelper.GetString(_entry.IsOrnlSource ? "TitleReferencePdf" : "TitleIcrpPdf")
+                TranslationHelper.GetString(_entry.IsOrnlSource ? "MsgErrOpenRefPdf" : "MsgErrOpenIcrpPdf") ?? (_entry.IsOrnlSource ? "تعذر فتح ملف المرجع" : "تعذر فتح تقرير ICRP"),
+                TranslationHelper.GetString(_entry.IsOrnlSource ? "TitleReferencePdf" : "TitleIcrpPdf") ?? (_entry.IsOrnlSource ? "مرجع النظير" : "تقرير ICRP")
             );
         }
     }
@@ -74,8 +74,8 @@ public partial class IsotopeDetailsWindow : Window
             {
                 Clipboard.SetText(value.Trim());
                 DialogHelper.ShowInfo(
-                    TranslationHelper.GetString("MsgCopyValueSuccess"),
-                    TranslationHelper.GetString("TitleCopySuccess")
+                    TranslationHelper.GetString("MsgCopyValueSuccess") ?? "تم نسخ القيمة إلى الحافظة بنجاح.",
+                    TranslationHelper.GetString("TitleCopySuccess") ?? "تم النسخ"
                 );
             }
             catch (Exception ex)
