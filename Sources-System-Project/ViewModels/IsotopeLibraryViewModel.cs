@@ -13,6 +13,7 @@ namespace Sources.ViewModels;
 public partial class IsotopeLibraryViewModel : ObservableObject
 {
     private readonly IIsotopeLibraryService _libraryService;
+    private readonly IClipboardService _clipboard;
 
     [ObservableProperty]
     private string _searchText = string.Empty;
@@ -49,9 +50,10 @@ public partial class IsotopeLibraryViewModel : ObservableObject
     [ObservableProperty]
     private int _resultsCount;
 
-    public IsotopeLibraryViewModel(IIsotopeLibraryService libraryService)
+    public IsotopeLibraryViewModel(IIsotopeLibraryService libraryService, IClipboardService? clipboard = null)
     {
         _libraryService = libraryService;
+        _clipboard = clipboard ?? new ClipboardService();
         _ = InitializeAsync();
     }
 
@@ -187,18 +189,11 @@ public partial class IsotopeLibraryViewModel : ObservableObject
         var text = target.GetFormattedDetailsText();
         if (!string.IsNullOrWhiteSpace(text))
         {
-            try
-            {
-                System.Windows.Clipboard.SetText(text);
-                DialogHelper.ShowInfo(
-                    TranslationHelper.GetString("MsgCopyDetailsSuccess") ?? "تم نسخ كافة بيانات النظير إلى الحافظة بنجاح.",
-                    TranslationHelper.GetString("TitleCopySuccess") ?? "تم النسخ"
-                );
-            }
-            catch (Exception ex)
-            {
-                LoggerService.LogError("IsotopeLibraryViewModel: Failed to copy to clipboard", ex);
-            }
+            ClipboardCopyHelper.CopyWithFeedback(
+                _clipboard, text,
+                TranslationHelper.GetString("MsgCopyDetailsSuccess") ?? "تم نسخ كافة بيانات النظير إلى الحافظة بنجاح.",
+                TranslationHelper.GetString("TitleCopySuccess") ?? "تم النسخ",
+                "IsotopeLibraryViewModel.CopyDetails");
         }
     }
 
@@ -230,17 +225,10 @@ public partial class IsotopeLibraryViewModel : ObservableObject
         var s = value.ToString();
         if (string.IsNullOrWhiteSpace(s) || s == "—") return;
 
-        try
-        {
-            System.Windows.Clipboard.SetText(s.Trim());
-            DialogHelper.ShowInfo(
-                TranslationHelper.GetString("MsgCopyValueSuccess") ?? "تم نسخ القيمة إلى الحافظة بنجاح.",
-                TranslationHelper.GetString("TitleCopySuccess") ?? "تم النسخ"
-            );
-        }
-        catch (Exception ex)
-        {
-            LoggerService.LogError("IsotopeLibraryViewModel: Failed to copy value to clipboard", ex);
-        }
+        ClipboardCopyHelper.CopyWithFeedback(
+            _clipboard, s.Trim(),
+            TranslationHelper.GetString("MsgCopyValueSuccess") ?? "تم نسخ القيمة إلى الحافظة بنجاح.",
+            TranslationHelper.GetString("TitleCopySuccess") ?? "تم النسخ",
+            "IsotopeLibraryViewModel.CopyValue");
     }
 }

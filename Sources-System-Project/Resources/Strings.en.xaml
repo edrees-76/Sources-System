@@ -1373,6 +1373,10 @@
     <system:String x:Key="FileOpenFailedTitle">Cannot Open File</system:String>
     <system:String x:Key="FileOpenFailed">The file could not be opened automatically. You can open it manually from:</system:String>
     <system:String x:Key="FileNotFound">The file was not found at the specified path:</system:String>
+
+    <!-- Round 107-B Direct Failure Feedback for Clipboard Copy -->
+    <system:String x:Key="ClipboardCopyFailedTitle">Copy Failed</system:String>
+    <system:String x:Key="ClipboardCopyFailed">Could not copy to the clipboard. Another application may be using it. Please try again shortly.</system:String>
 </ResourceDictionary>
 
 

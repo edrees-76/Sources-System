@@ -1372,6 +1372,10 @@
     <system:String x:Key="FileOpenFailedTitle">تعذّر فتح الملف</system:String>
     <system:String x:Key="FileOpenFailed">تعذّر فتح الملف تلقائياً. يمكنك فتحه يدوياً من المسار:</system:String>
     <system:String x:Key="FileNotFound">الملف غير موجود في المسار المحدد:</system:String>
+
+    <!-- Round 107-B Direct Failure Feedback for Clipboard Copy -->
+    <system:String x:Key="ClipboardCopyFailedTitle">تعذّر النسخ</system:String>
+    <system:String x:Key="ClipboardCopyFailed">تعذّر النسخ إلى الحافظة. قد يكون تطبيق آخر يستعملها الآن. أعد المحاولة بعد قليل.</system:String>
 </ResourceDictionary>
 
 
