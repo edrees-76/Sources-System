@@ -9,6 +9,9 @@ namespace Sources.Services;
 
 public class AutoBackupService : IAutoBackupService, IDisposable
 {
+    /// <summary>مفتاح تاريخ آخر نسخة تلقائية ناجحة. يُعتمد عليه حين يتعذّر مسح مجلد النسخ.</summary>
+    private const string LastAutoBackupKey = "LastAutoBackupAt";
+
     private readonly IBackupService _backupService;
     private readonly ISystemSettingsService _settingsService;
     private System.Timers.Timer? _timer;
@@ -78,16 +81,40 @@ public class AutoBackupService : IAutoBackupService, IDisposable
 
             var scan = BackupFolderScanner.ScanLatest(BuildTargetFolders(backupPath));
 
-            if (scan.Outcome == BackupScanOutcome.ScanFailed)
+            // التاريخ المحفوظ سجلّ المنظومة عن نفسها، والممسوح استنتاج من القرص.
+            // يُؤخذ الأحدث: فلو تعذّرت قراءة المجلد الذي تُكتب فيه النسخ بقي المحفوظ يتقدم،
+            // فلا تتكرر النسخة كل دورة، ولا ينقطع النسخ حين يفشل المسح.
+            DateTime? recordedLast = null;
+            var recordedText = _settingsService.GetSetting(LastAutoBackupKey, string.Empty);
+            if (!string.IsNullOrWhiteSpace(recordedText)
+                && DateTime.TryParse(recordedText, System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.RoundtripKind, out var parsedRecorded))
+            {
+                recordedLast = parsedRecorded;
+            }
+
+            DateTime? lastBackupDate = scan.Latest;
+            if (recordedLast.HasValue && (!lastBackupDate.HasValue || recordedLast.Value > lastBackupDate.Value))
+            {
+                lastBackupDate = recordedLast;
+            }
+
+            if (scan.Outcome == BackupScanOutcome.ScanFailed && !lastBackupDate.HasValue)
             {
                 LoggerService.LogWarning(
-                    "فحص النسخ الاحتياطي التلقائي: تعذّر مسح مجلد النسخ ولم يُعثر على أي نسخة، فتُخطّى هذه الدورة. " +
+                    "فحص النسخ الاحتياطي التلقائي: تعذّر مسح مجلد النسخ ولا يوجد تاريخ نسخة محفوظ، فتُخطّى هذه الدورة. " +
                     "لا تُنفَّذ نسخة على الشك تفادياً لتكرارها كل دورة. راجع صلاحيات المجلد أو اتصال القرص. " +
                     $"مسار النسخ المحفوظ: {(string.IsNullOrWhiteSpace(backupPath) ? Sources.Data.DatabasePaths.BackupsDirectory : backupPath)}");
                 return;
             }
 
-            var lastBackupDate = scan.Latest;
+            if (scan.Outcome == BackupScanOutcome.ScanFailed)
+            {
+                LoggerService.LogWarning(
+                    "فحص النسخ الاحتياطي التلقائي: تعذّر مسح مجلد النسخ، وسيُعتمد تاريخ آخر نسخة المحفوظ في الإعدادات " +
+                    $"({lastBackupDate:yyyy-MM-dd HH:mm:ss}). راجع صلاحيات المجلد أو اتصال القرص.");
+            }
+
             var shouldBackup = !lastBackupDate.HasValue || (DateTime.Now - lastBackupDate.Value) >= requiredInterval;
 
             var elapsedText = lastBackupDate.HasValue
@@ -107,6 +134,7 @@ public class AutoBackupService : IAutoBackupService, IDisposable
                 if (result.Success)
                 {
                     LoggerService.LogInfo($"نجح النسخ الاحتياطي التلقائي بنجاح: {result.BackupPath}");
+                    _settingsService.SaveSetting(LastAutoBackupKey, DateTime.Now.ToString("o", System.Globalization.CultureInfo.InvariantCulture));
                     
                     try
                     {

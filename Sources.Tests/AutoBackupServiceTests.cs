@@ -19,6 +19,12 @@ public class AutoBackupServiceTests : IDisposable
         _mockBackupService = new Mock<IBackupService>(MockBehavior.Strict);
         _mockSettingsService = new Mock<ISystemSettingsService>(MockBehavior.Strict);
 
+        _mockSettingsService
+            .Setup(s => s.GetSetting("LastAutoBackupAt", string.Empty))
+            .Returns(string.Empty);
+        _mockSettingsService
+            .Setup(s => s.SaveSetting("LastAutoBackupAt", It.IsAny<string>()));
+
         _testTempDir = Path.Combine(Path.GetTempPath(), "Sources_AutoBackupTests_" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_testTempDir);
     }

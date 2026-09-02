@@ -51,9 +51,10 @@ public class SystemSettingsService : ISystemSettingsService
             // التسجيل مرة واحدة لكل مفتاح: الدالة تُستدعى في كل دورة فحص فيغرق السجل.
             if (_corruptedKeys.TryAdd(key, 0))
             {
+                var loggedValue = value.Length > 50 ? value.Substring(0, 50) + "…" : value;
                 LoggerService.LogWarning(
                     $"قيمة الإعداد «{key}» المخزَّنة في قاعدة البيانات تالفة وتعذّر تحويلها إلى {typeof(T).Name}: " +
-                    $"القيمة «{value}»، السبب: {ex.Message}. سيُستعمل الافتراضي {defaultValue} حتى تُصحَّح. " +
+                    $"القيمة «{loggedValue}»، السبب: {ex.Message}. سيُستعمل الافتراضي {defaultValue} حتى تُصحَّح. " +
                     "تنبيه: بعض هذه الإعدادات عتبات سلامة، فقد تختلف القيمة العاملة عمّا يظنه المسؤول.");
             }
             return defaultValue;
