@@ -1376,6 +1376,9 @@
     <!-- Round 107-B Direct Failure Feedback for Clipboard Copy -->
     <system:String x:Key="ClipboardCopyFailedTitle">تعذّر النسخ</system:String>
     <system:String x:Key="ClipboardCopyFailed">تعذّر النسخ إلى الحافظة. قد يكون تطبيق آخر يستعملها الآن. أعد المحاولة بعد قليل.</system:String>
+
+    <!-- Round 109 Finite Numeric Input Validation -->
+    <system:String x:Key="MsgErrInvalidUncertainty">نسبة عدم اليقين يجب أن تكون رقماً موجباً أو صفراً</system:String>
 </ResourceDictionary>
 
 

@@ -30,9 +30,13 @@ public partial class IsotopeEntryViewModel : ObservableObject
 
     partial void OnInitialActivityTextChanged(string value)
     {
-        if (double.TryParse(value, out double result))
+        if (NumericInputParser.TryParseFinite(value, out double result))
         {
             InitialActivity = result;
+        }
+        else
+        {
+            InitialActivity = 0;
         }
     }
 
@@ -197,7 +201,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     partial void OnEditRelativeUncertaintyTextChanged(string value)
     {
         string clean = value.Replace("%", "").Trim();
-        if (double.TryParse(clean, out double result))
+        if (NumericInputParser.TryParseFinite(clean, out double result))
         {
             EditRelativeUncertaintyPercent = result;
         }
@@ -214,8 +218,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
             EditAnisotropyFactor = null;
             return;
         }
-        if (double.TryParse(value.Trim(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double result) ||
-            double.TryParse(value.Trim(), out result))
+        if (NumericInputParser.TryParseFinite(value.Trim(), out double result))
         {
             EditAnisotropyFactor = result;
         }
@@ -227,9 +230,13 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
 
     partial void OnEditInitialActivityTextChanged(string value)
     {
-        if (double.TryParse(value, out double result))
+        if (NumericInputParser.TryParseFinite(value, out double result))
         {
             EditInitialActivity = result;
+        }
+        else
+        {
+            EditInitialActivity = 0;
         }
     }
     [ObservableProperty] private string _editNotes = string.Empty;
@@ -927,9 +934,20 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                 }
                 if (!string.IsNullOrWhiteSpace(EditAnisotropyFactorText))
                 {
-                    if (EditAnisotropyFactor == null || EditAnisotropyFactor.Value <= 0)
+                    if (EditAnisotropyFactor == null || !double.IsFinite(EditAnisotropyFactor.Value) || EditAnisotropyFactor.Value <= 0)
                     {
                         ShowMessage(TranslationHelper.GetString("MsgErrInvalidAnisotropyFactor") ?? "معامل اللاتماثل الزاوي يجب أن يكون رقماً أكبر من صفر");
+                        return;
+                    }
+                }
+                if (!string.IsNullOrWhiteSpace(EditRelativeUncertaintyText))
+                {
+                    if (EditRelativeUncertaintyPercent == null
+                        || !double.IsFinite(EditRelativeUncertaintyPercent.Value)
+                        || EditRelativeUncertaintyPercent.Value < 0)
+                    {
+                        ShowMessage(TranslationHelper.GetString("MsgErrInvalidUncertainty")
+                            ?? "نسبة عدم اليقين يجب أن تكون رقماً موجباً أو صفراً");
                         return;
                     }
                 }
@@ -1073,7 +1091,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                     ShowMessage(TranslationHelper.GetString("MsgErrIsotopeReq") ?? "الرجاء اختيار النظير المشع للمصدر.");
                     return;
                 }
-                if (string.IsNullOrWhiteSpace(EditInitialActivityText) || EditInitialActivity <= 0)
+                if (string.IsNullOrWhiteSpace(EditInitialActivityText) || !double.IsFinite(EditInitialActivity) || EditInitialActivity <= 0)
                 {
                     ShowMessage(TranslationHelper.GetString("MsgErrInitialActivityReq") ?? "الرجاء إدخال قيمة 'النشاط الابتدائي' والتأكد من أنها قيمة صحيحة وموجبة.");
                     return;
@@ -1097,7 +1115,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                     ShowMessage(TranslationHelper.GetString("MsgErrMixIsotopeItemReq") ?? "الرجاء اختيار النظير لكل صف في قائمة نظائر الخليط.");
                     return;
                 }
-                if (IsotopeEntries.Any(e => string.IsNullOrWhiteSpace(e.InitialActivityText) || e.InitialActivity <= 0))
+                if (IsotopeEntries.Any(e => string.IsNullOrWhiteSpace(e.InitialActivityText) || !double.IsFinite(e.InitialActivity) || e.InitialActivity <= 0))
                 {
                     ShowMessage(TranslationHelper.GetString("MsgErrMixActivityReq") ?? "الرجاء تعبئة قيمة 'النشاط' الإشعاعي لكل نظير في الخليط والتأكد من أنها موجبة.");
                     return;

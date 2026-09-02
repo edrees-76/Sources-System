@@ -1377,6 +1377,9 @@
     <!-- Round 107-B Direct Failure Feedback for Clipboard Copy -->
     <system:String x:Key="ClipboardCopyFailedTitle">Copy Failed</system:String>
     <system:String x:Key="ClipboardCopyFailed">Could not copy to the clipboard. Another application may be using it. Please try again shortly.</system:String>
+
+    <!-- Round 109 Finite Numeric Input Validation -->
+    <system:String x:Key="MsgErrInvalidUncertainty">The uncertainty percentage must be zero or a positive number</system:String>
 </ResourceDictionary>
 
 
