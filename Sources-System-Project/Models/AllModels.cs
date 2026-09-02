@@ -193,6 +193,9 @@ public class ActivityUnit
 
     public double ConversionToBq { get; set; } // معامل التحويل إلى Bq
 
+    /// <summary>ترتيب العرض في القوائم. يُجمّع الوحدات بالنظام (بكريل ثم كوري) بدل الترتيب بالمقدار.</summary>
+    public int DisplayOrder { get; set; }
+
     public string? Description { get; set; }
 
     // Navigation

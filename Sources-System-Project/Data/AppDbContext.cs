@@ -84,36 +84,36 @@ public class AppDbContext : DbContext
         // ─── وحدات النشاط الإشعاعي ───
         var units = ActivityUnits.ToList();
         var becquerel = units.FirstOrDefault(u => u.UnitName == "Becquerel");
-        if (becquerel != null) becquerel.UnitSymbol = "Bq";
-        else ActivityUnits.Add(new ActivityUnit { UnitName = "Becquerel", UnitSymbol = "Bq", ConversionToBq = 1, Description = "الوحدة الدولية للنشاط الإشعاعي (SI)" });
+        if (becquerel != null) { becquerel.UnitSymbol = "Bq"; becquerel.DisplayOrder = 1; }
+        else ActivityUnits.Add(new ActivityUnit { UnitName = "Becquerel", UnitSymbol = "Bq", ConversionToBq = 1, DisplayOrder = 1, Description = "الوحدة الدولية للنشاط الإشعاعي (SI)" });
 
         var curie = units.FirstOrDefault(u => u.UnitName == "Curie");
-        if (curie != null) curie.UnitSymbol = "Ci";
-        else ActivityUnits.Add(new ActivityUnit { UnitName = "Curie", UnitSymbol = "Ci", ConversionToBq = 3.7e10, Description = "1 Ci = 3.7 × 10¹⁰ Bq" });
+        if (curie != null) { curie.UnitSymbol = "Ci"; curie.DisplayOrder = 8; }
+        else ActivityUnits.Add(new ActivityUnit { UnitName = "Curie", UnitSymbol = "Ci", ConversionToBq = 3.7e10, DisplayOrder = 8, Description = "1 Ci = 3.7 × 10¹⁰ Bq" });
 
         var mcurie = units.FirstOrDefault(u => u.UnitName == "Millicurie");
-        if (mcurie != null) mcurie.UnitSymbol = "mCi";
-        else ActivityUnits.Add(new ActivityUnit { UnitName = "Millicurie", UnitSymbol = "mCi", ConversionToBq = 3.7e7, Description = "1 mCi = 3.7 × 10⁷ Bq" });
+        if (mcurie != null) { mcurie.UnitSymbol = "mCi"; mcurie.DisplayOrder = 7; }
+        else ActivityUnits.Add(new ActivityUnit { UnitName = "Millicurie", UnitSymbol = "mCi", ConversionToBq = 3.7e7, DisplayOrder = 7, Description = "1 mCi = 3.7 × 10⁷ Bq" });
 
         var ucurie = units.FirstOrDefault(u => u.UnitName == "Microcurie");
-        if (ucurie != null) ucurie.UnitSymbol = "µCi";
-        else ActivityUnits.Add(new ActivityUnit { UnitName = "Microcurie", UnitSymbol = "µCi", ConversionToBq = 3.7e4, Description = "1 µCi = 3.7 × 10⁴ Bq" });
+        if (ucurie != null) { ucurie.UnitSymbol = "µCi"; ucurie.DisplayOrder = 6; }
+        else ActivityUnits.Add(new ActivityUnit { UnitName = "Microcurie", UnitSymbol = "µCi", ConversionToBq = 3.7e4, DisplayOrder = 6, Description = "1 µCi = 3.7 × 10⁴ Bq" });
 
         var kbecquerel = units.FirstOrDefault(u => u.UnitName == "Kilobecquerel");
-        if (kbecquerel != null) kbecquerel.UnitSymbol = "kBq";
-        else ActivityUnits.Add(new ActivityUnit { UnitName = "Kilobecquerel", UnitSymbol = "kBq", ConversionToBq = 1e3, Description = "1 kBq = 10³ Bq" });
+        if (kbecquerel != null) { kbecquerel.UnitSymbol = "kBq"; kbecquerel.DisplayOrder = 2; }
+        else ActivityUnits.Add(new ActivityUnit { UnitName = "Kilobecquerel", UnitSymbol = "kBq", ConversionToBq = 1e3, DisplayOrder = 2, Description = "1 kBq = 10³ Bq" });
 
         var mbecquerel = units.FirstOrDefault(u => u.UnitName == "Megabecquerel");
-        if (mbecquerel != null) mbecquerel.UnitSymbol = "MBq";
-        else ActivityUnits.Add(new ActivityUnit { UnitName = "Megabecquerel", UnitSymbol = "MBq", ConversionToBq = 1e6, Description = "1 MBq = 10⁶ Bq" });
+        if (mbecquerel != null) { mbecquerel.UnitSymbol = "MBq"; mbecquerel.DisplayOrder = 3; }
+        else ActivityUnits.Add(new ActivityUnit { UnitName = "Megabecquerel", UnitSymbol = "MBq", ConversionToBq = 1e6, DisplayOrder = 3, Description = "1 MBq = 10⁶ Bq" });
 
         var gbecquerel = units.FirstOrDefault(u => u.UnitName == "Gigabecquerel");
-        if (gbecquerel != null) gbecquerel.UnitSymbol = "GBq";
-        else ActivityUnits.Add(new ActivityUnit { UnitName = "Gigabecquerel", UnitSymbol = "GBq", ConversionToBq = 1e9, Description = "1 GBq = 10⁹ Bq" });
+        if (gbecquerel != null) { gbecquerel.UnitSymbol = "GBq"; gbecquerel.DisplayOrder = 4; }
+        else ActivityUnits.Add(new ActivityUnit { UnitName = "Gigabecquerel", UnitSymbol = "GBq", ConversionToBq = 1e9, DisplayOrder = 4, Description = "1 GBq = 10⁹ Bq" });
 
         var tbecquerel = units.FirstOrDefault(u => u.UnitName == "Terabecquerel");
-        if (tbecquerel != null) tbecquerel.UnitSymbol = "TBq";
-        else ActivityUnits.Add(new ActivityUnit { UnitName = "Terabecquerel", UnitSymbol = "TBq", ConversionToBq = 1e12, Description = "1 TBq = 10¹² Bq" });
+        if (tbecquerel != null) { tbecquerel.UnitSymbol = "TBq"; tbecquerel.DisplayOrder = 5; }
+        else ActivityUnits.Add(new ActivityUnit { UnitName = "Terabecquerel", UnitSymbol = "TBq", ConversionToBq = 1e12, DisplayOrder = 5, Description = "1 TBq = 10¹² Bq" });
 
         SaveChanges();
 

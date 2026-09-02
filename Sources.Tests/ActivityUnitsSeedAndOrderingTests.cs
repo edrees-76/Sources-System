@@ -3,6 +3,8 @@ using System.IO;
 using System.Linq;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Sources.Data;
 using Sources.Models;
 using Xunit;
@@ -130,7 +132,7 @@ public class ActivityUnitsSeedAndOrderingTests : IDisposable
     }
 
     [Fact]
-    public void Test4_ActivityUnits_OrderByConversionToBq_ReturnsExpectedSequence()
+    public void Test4_ActivityUnits_OrderByDisplayOrder_ReturnsExpectedSequence()
     {
         // Arrange & Act
         using (var db = new AppDbContext(_options))
@@ -142,11 +144,11 @@ public class ActivityUnitsSeedAndOrderingTests : IDisposable
         using (var db = new AppDbContext(_options))
         {
             var orderedSymbols = db.ActivityUnits
-                .OrderBy(u => u.ConversionToBq)
+                .OrderBy(u => u.DisplayOrder)
                 .Select(u => u.UnitSymbol)
                 .ToList();
 
-            var expected = new[] { "Bq", "kBq", "µCi", "MBq", "mCi", "GBq", "Ci", "TBq" };
+            var expected = new[] { "Bq", "kBq", "MBq", "GBq", "TBq", "µCi", "mCi", "Ci" };
             Assert.Equal(expected, orderedSymbols);
         }
     }
@@ -208,6 +210,109 @@ public class ActivityUnitsSeedAndOrderingTests : IDisposable
             Assert.Equal("Ci", source.InitialActivityUnit!.UnitSymbol);
             Assert.Equal("Curie", source.InitialActivityUnit.UnitName);
             Assert.Equal(3.7e10, source.InitialActivityUnit.ConversionToBq);
+        }
+    }
+
+    [Fact]
+    public void Test6_SeedData_EachUnitHasCorrectNonZeroDisplayOrder()
+    {
+        // Arrange & Act
+        using (var db = new AppDbContext(_options))
+        {
+            db.InitializeDatabase();
+        }
+
+        // Assert
+        using (var db = new AppDbContext(_options))
+        {
+            var units = db.ActivityUnits.ToList();
+            Assert.Equal(8, units.Count);
+            Assert.DoesNotContain(units, u => u.DisplayOrder == 0);
+
+            Assert.Equal(1, units.First(u => u.UnitName == "Becquerel" && u.UnitSymbol == "Bq").DisplayOrder);
+            Assert.Equal(2, units.First(u => u.UnitName == "Kilobecquerel" && u.UnitSymbol == "kBq").DisplayOrder);
+            Assert.Equal(3, units.First(u => u.UnitName == "Megabecquerel" && u.UnitSymbol == "MBq").DisplayOrder);
+            Assert.Equal(4, units.First(u => u.UnitName == "Gigabecquerel" && u.UnitSymbol == "GBq").DisplayOrder);
+            Assert.Equal(5, units.First(u => u.UnitName == "Terabecquerel" && u.UnitSymbol == "TBq").DisplayOrder);
+            Assert.Equal(6, units.First(u => u.UnitName == "Microcurie" && u.UnitSymbol == "µCi").DisplayOrder);
+            Assert.Equal(7, units.First(u => u.UnitName == "Millicurie" && u.UnitSymbol == "mCi").DisplayOrder);
+            Assert.Equal(8, units.First(u => u.UnitName == "Curie" && u.UnitSymbol == "Ci").DisplayOrder);
+        }
+    }
+
+    [Fact]
+    public void Test7_UpgradeScenario_ExistingDatabaseUpgraded_AllUnitsReceiveCorrectNonZeroDisplayOrder()
+    {
+        var upgradeDbPath = Path.Combine(Path.GetTempPath(), $"sources_upgrade_test_{Guid.NewGuid():N}.db");
+        var upgradeOptions = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite($"Data Source={upgradeDbPath}")
+            .Options;
+
+        try
+        {
+            // 1. إنشاء القاعدة وترحيلها حتى ما قبل ترحيل AddActivityUnitDisplayOrder
+            using (var db = new AppDbContext(upgradeOptions))
+            {
+                var migrator = db.Database.GetService<IMigrator>();
+                migrator.Migrate("20260901184302_AddNeutronCalibrationAndDecayFields");
+
+                // إدراج وحدات النشاط بالنمط القديم بدون عمود DisplayOrder
+                var conn = db.Database.GetDbConnection();
+                conn.Open();
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = @"
+                    INSERT INTO ActivityUnits (Id, UnitName, UnitSymbol, ConversionToBq, Description)
+                    VALUES 
+                    ('" + Guid.NewGuid().ToString().ToUpper() + @"', 'Becquerel', 'Bq', 1.0, 'الوحدة الدولية'),
+                    ('" + Guid.NewGuid().ToString().ToUpper() + @"', 'Curie', 'Ci', 3.7e10, '1 Ci'),
+                    ('" + Guid.NewGuid().ToString().ToUpper() + @"', 'Millicurie', 'mCi', 3.7e7, '1 mCi'),
+                    ('" + Guid.NewGuid().ToString().ToUpper() + @"', 'Microcurie', 'µCi', 3.7e4, '1 µCi'),
+                    ('" + Guid.NewGuid().ToString().ToUpper() + @"', 'Kilobecquerel', 'kBq', 1e3, '1 kBq'),
+                    ('" + Guid.NewGuid().ToString().ToUpper() + @"', 'Megabecquerel', 'MBq', 1e6, '1 MBq'),
+                    ('" + Guid.NewGuid().ToString().ToUpper() + @"', 'Gigabecquerel', 'GBq', 1e9, '1 GBq'),
+                    ('" + Guid.NewGuid().ToString().ToUpper() + @"', 'Terabecquerel', 'TBq', 1e12, '1 TBq');
+                ";
+                cmd.ExecuteNonQuery();
+                conn.Close();
+            }
+
+            // 2. تطبيق الترحيل الأخير وتشغيل InitializeDatabase (الذي يستدعي Migrate و SeedData)
+            using (var db = new AppDbContext(upgradeOptions))
+            {
+                db.InitializeDatabase();
+            }
+
+            // 3. التحقق من أن جميع الوحدات الثماني حصلت على DisplayOrder صحيح وغير صفري
+            using (var db = new AppDbContext(upgradeOptions))
+            {
+                var units = db.ActivityUnits.OrderBy(u => u.DisplayOrder).ToList();
+                Assert.Equal(8, units.Count);
+                Assert.DoesNotContain(units, u => u.DisplayOrder == 0);
+
+                var symbolsInOrder = units.Select(u => u.UnitSymbol).ToList();
+                var expectedOrder = new[] { "Bq", "kBq", "MBq", "GBq", "TBq", "µCi", "mCi", "Ci" };
+                Assert.Equal(expectedOrder, symbolsInOrder);
+
+                Assert.Equal(1, units.First(u => u.UnitSymbol == "Bq").DisplayOrder);
+                Assert.Equal(2, units.First(u => u.UnitSymbol == "kBq").DisplayOrder);
+                Assert.Equal(3, units.First(u => u.UnitSymbol == "MBq").DisplayOrder);
+                Assert.Equal(4, units.First(u => u.UnitSymbol == "GBq").DisplayOrder);
+                Assert.Equal(5, units.First(u => u.UnitSymbol == "TBq").DisplayOrder);
+                Assert.Equal(6, units.First(u => u.UnitSymbol == "µCi").DisplayOrder);
+                Assert.Equal(7, units.First(u => u.UnitSymbol == "mCi").DisplayOrder);
+                Assert.Equal(8, units.First(u => u.UnitSymbol == "Ci").DisplayOrder);
+            }
+        }
+        finally
+        {
+            try
+            {
+                SqliteConnection.ClearAllPools();
+                if (File.Exists(upgradeDbPath)) File.Delete(upgradeDbPath);
+                if (File.Exists(upgradeDbPath + "-wal")) File.Delete(upgradeDbPath + "-wal");
+                if (File.Exists(upgradeDbPath + "-shm")) File.Delete(upgradeDbPath + "-shm");
+            }
+            catch { }
         }
     }
 }

@@ -413,7 +413,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
 
         // تحميل وحدات النشاط
         using var db = App.CreateDbContext();
-        ActivityUnits = new ObservableCollection<ActivityUnit>(db.ActivityUnits.OrderBy(u => u.ConversionToBq).ToList());
+        ActivityUnits = new ObservableCollection<ActivityUnit>(db.ActivityUnits.OrderBy(u => u.DisplayOrder).ToList());
 
         // تحديث إجمالي النشاط بجميع الوحدات (بعد تحميل الوحدات)
         UpdateTotalActivityItems();
