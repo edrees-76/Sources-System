@@ -142,15 +142,14 @@ public class AppDbContext : DbContext
             new { Symbol = "Y-88", Name = "Yttrium-88", ArabicName = "يتريوم-88", HalfLife = 106.6, HalfLifeUnit = "days", RadiationType = "Gamma", Energy = 1836.06, Yield = 0.992, Category = 5, ExemptionLimit = 1.0, Notes = "معايرة الطاقات العالية (المصادر المختلطة).", EnglishNotes = "High energy calibration (mixed sources)." }
         };
 
-        var librarySymbols = isotopeLibraryData.Select(i => i.Symbol).ToList();
-
-        // 1. تحديث أو إضافة النظائر من المكتبة الجديدة
+        // 1. تحديث أو إضافة النظائر من المكتبة المعتمدة
         foreach (var item in isotopeLibraryData)
         {
             var symbol = item.Symbol;
             var existing = Radioisotopes.FirstOrDefault(r => r.Symbol == symbol);
             if (existing != null)
             {
+                // تحديث حقول البرنامج ذات المرجع الخارجي القياسي؛ الملاحظات يملكها المستخدم فلا تُدهس
                 existing.Name = item.Name;
                 existing.ArabicName = item.ArabicName;
                 existing.HalfLife = item.HalfLife;
@@ -160,8 +159,6 @@ public class AppDbContext : DbContext
                 existing.Yield = item.Yield;
                 existing.Category = item.Category;
                 existing.ExemptionLimit = item.ExemptionLimit;
-                existing.Notes = item.Notes;
-                existing.EnglishNotes = item.EnglishNotes;
             }
             else
             {
@@ -181,13 +178,6 @@ public class AppDbContext : DbContext
                     EnglishNotes = item.EnglishNotes
                 });
             }
-        }
-
-        // 2. حذف النظائر التي لم تعد موجودة في المكتبة الجديدة (لتنظيف المنظومة)
-        var toRemove = Radioisotopes.Where(r => !librarySymbols.Contains(r.Symbol)).ToList();
-        if (toRemove.Any())
-        {
-            Radioisotopes.RemoveRange(toRemove);
         }
 
         SaveChanges();
