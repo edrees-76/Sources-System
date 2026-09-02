@@ -1649,9 +1649,9 @@
                                                 </StackPanel>
                                             </UniformGrid>
 
-                                            <StackPanel>
+                                            <UniformGrid Columns="2" Margin="0,0,0,12">
                                                 <!-- نسبة عدم اليقين -->
-                                                <StackPanel>
+                                                <StackPanel Margin="0,0,12,0">
                                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                                         <materialDesign:PackIcon Kind="PercentOutline" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                                         <TextBlock Text="{DynamicResource FieldUncertaintyPercent}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
@@ -1660,7 +1660,40 @@
                                                              Style="{StaticResource FormTextBox}"
                                                              materialDesign:HintAssist.Hint="{DynamicResource HintUncertaintyExample}"/>
                                                 </StackPanel>
-                                            </StackPanel>
+
+                                                <!-- تاريخ معايرة الانبعاث -->
+                                                <StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                        <materialDesign:PackIcon Kind="CalendarClockOutline" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                        <TextBlock Text="{DynamicResource FieldEmissionCalibrationDate}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                    </StackPanel>
+                                                    <DatePicker SelectedDate="{Binding EditEmissionCalibrationDate}" Style="{StaticResource FormDatePicker}"/>
+                                                </StackPanel>
+                                            </UniformGrid>
+
+                                            <UniformGrid Columns="2">
+                                                <!-- مرجع شهادة المعايرة -->
+                                                <StackPanel Margin="0,0,12,0">
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                        <materialDesign:PackIcon Kind="CertificateOutline" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                        <TextBlock Text="{DynamicResource FieldCalibrationReference}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                    </StackPanel>
+                                                    <TextBox Text="{Binding EditCalibrationReference, UpdateSourceTrigger=PropertyChanged}"
+                                                             Style="{StaticResource FormTextBox}"
+                                                             materialDesign:HintAssist.Hint="{DynamicResource HintCalibrationReferenceExample}"/>
+                                                </StackPanel>
+
+                                                <!-- معامل اللاتماثل الزاوي -->
+                                                <StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                        <materialDesign:PackIcon Kind="CompassOutline" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                        <TextBlock Text="{DynamicResource FieldAnisotropyFactor}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                    </StackPanel>
+                                                    <TextBox Text="{Binding EditAnisotropyFactorText, UpdateSourceTrigger=LostFocus}"
+                                                             Style="{StaticResource FormTextBox}"
+                                                             materialDesign:HintAssist.Hint="{DynamicResource HintAnisotropyFactorExample}"/>
+                                                </StackPanel>
+                                            </UniformGrid>
                                         </StackPanel>
                                     </StackPanel>
                                 </Border>

@@ -1246,6 +1246,13 @@
     <system:String x:Key="MsgErrAverageEnergyPositive">متوسط طاقة النيترونات يجب أن يكون قيمة رقمية موجبة</system:String>
     <system:String x:Key="FieldUncertaintyPercent">نسبة عدم اليقين الموسعة (k=2) %</system:String>
     <system:String x:Key="HintUncertaintyExample">مثال: 3.5</system:String>
+    <system:String x:Key="FieldEmissionCalibrationDate">تاريخ معايرة الانبعاث</system:String>
+    <system:String x:Key="FieldCalibrationReference">مرجع شهادة المعايرة</system:String>
+    <system:String x:Key="HintCalibrationReferenceExample">جهة الإصدار ورقم تقرير المعايرة</system:String>
+    <system:String x:Key="FieldAnisotropyFactor">معامل اللاتماثل الزاوي</system:String>
+    <system:String x:Key="HintAnisotropyFactorExample">يُترك فارغاً إن لم يكن مقاساً (مثال: 1.05)</system:String>
+    <system:String x:Key="MsgErrEmissionCalibrationDateFuture">تاريخ معايرة الانبعاث لا يمكن أن يكون في المستقبل</system:String>
+    <system:String x:Key="MsgErrInvalidAnisotropyFactor">معامل اللاتماثل الزاوي يجب أن يكون رقماً أكبر من صفر</system:String>
 
     <!-- Neutron Source Details Window -->
     <system:String x:Key="DetailCardNeutronIdentity">بيانات المصدر والنوع المرجعي</system:String>

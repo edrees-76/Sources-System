@@ -149,6 +149,10 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     [ObservableProperty] private string _editEmissionRateText = string.Empty;
     [ObservableProperty] private double? _editRelativeUncertaintyPercent;
     [ObservableProperty] private string _editRelativeUncertaintyText = string.Empty;
+    [ObservableProperty] private DateTime? _editEmissionCalibrationDate;
+    [ObservableProperty] private string _editCalibrationReference = string.Empty;
+    [ObservableProperty] private double? _editAnisotropyFactor;
+    [ObservableProperty] private string _editAnisotropyFactorText = string.Empty;
 
     private bool _isUpdatingEmissionRate;
 
@@ -200,6 +204,24 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         else
         {
             EditRelativeUncertaintyPercent = null;
+        }
+    }
+
+    partial void OnEditAnisotropyFactorTextChanged(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            EditAnisotropyFactor = null;
+            return;
+        }
+        if (double.TryParse(value.Trim(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double result) ||
+            double.TryParse(value.Trim(), out result))
+        {
+            EditAnisotropyFactor = result;
+        }
+        else
+        {
+            EditAnisotropyFactor = null;
         }
     }
 
@@ -660,6 +682,10 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         EditEmissionRateText = string.Empty;
         EditRelativeUncertaintyPercent = null;
         EditRelativeUncertaintyText = string.Empty;
+        EditEmissionCalibrationDate = null;
+        EditCalibrationReference = string.Empty;
+        EditAnisotropyFactor = null;
+        EditAnisotropyFactorText = string.Empty;
     }
 
     [RelayCommand]
@@ -707,6 +733,10 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         EditRelativeUncertaintyPercent = target.RelativeExpandedUncertaintyPercent;
         EditRelativeUncertaintyText = target.RelativeExpandedUncertaintyPercent?.ToString() ?? "";
         EditCalibrationDate = target.CalibrationDate ?? DateTime.Today;
+        EditEmissionCalibrationDate = target.EmissionCalibrationDate;
+        EditCalibrationReference = target.CalibrationReference ?? "";
+        EditAnisotropyFactor = target.AnisotropyFactor;
+        EditAnisotropyFactorText = target.AnisotropyFactor?.ToString() ?? "";
         EditLocationId = target.LocationId;
         EditStatus = target.Status;
         EditNotes = target.Notes ?? "";
@@ -890,6 +920,19 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                     ShowMessage(TranslationHelper.GetString("MsgErrCalibrationDateFuture"));
                     return;
                 }
+                if (EditEmissionCalibrationDate.HasValue && EditEmissionCalibrationDate.Value.Date > DateTime.Today)
+                {
+                    ShowMessage(TranslationHelper.GetString("MsgErrEmissionCalibrationDateFuture") ?? "تاريخ معايرة الانبعاث لا يمكن أن يكون في المستقبل");
+                    return;
+                }
+                if (!string.IsNullOrWhiteSpace(EditAnisotropyFactorText))
+                {
+                    if (EditAnisotropyFactor == null || EditAnisotropyFactor.Value <= 0)
+                    {
+                        ShowMessage(TranslationHelper.GetString("MsgErrInvalidAnisotropyFactor") ?? "معامل اللاتماثل الزاوي يجب أن يكون رقماً أكبر من صفر");
+                        return;
+                    }
+                }
                 if (EditLocationId == null)
                 {
                     ShowMessage(TranslationHelper.GetString("MsgErrLocationReq"));
@@ -910,6 +953,9 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                     CalibratedEmissionRate = EditEmissionRate,
                     RelativeExpandedUncertaintyPercent = EditRelativeUncertaintyPercent,
                     CalibrationDate = EditCalibrationDate,
+                    EmissionCalibrationDate = EditEmissionCalibrationDate,
+                    CalibrationReference = string.IsNullOrWhiteSpace(EditCalibrationReference) ? null : EditCalibrationReference.Trim(),
+                    AnisotropyFactor = EditAnisotropyFactor,
                     LocationId = EditLocationId,
                     Status = EditStatus,
                     Notes = EditNotes?.Trim()

@@ -1249,6 +1249,13 @@
     <system:String x:Key="MsgErrAverageEnergyPositive">Average neutron energy must be a positive number</system:String>
     <system:String x:Key="FieldUncertaintyPercent">Expanded Uncertainty (k=2) %</system:String>
     <system:String x:Key="HintUncertaintyExample">e.g. 3.5</system:String>
+    <system:String x:Key="FieldEmissionCalibrationDate">Emission Calibration Date</system:String>
+    <system:String x:Key="FieldCalibrationReference">Calibration Certificate Reference</system:String>
+    <system:String x:Key="HintCalibrationReferenceExample">Issuing body and report number</system:String>
+    <system:String x:Key="FieldAnisotropyFactor">Anisotropy Factor</system:String>
+    <system:String x:Key="HintAnisotropyFactorExample">Leave empty if not measured (e.g. 1.05)</system:String>
+    <system:String x:Key="MsgErrEmissionCalibrationDateFuture">Emission calibration date cannot be in the future</system:String>
+    <system:String x:Key="MsgErrInvalidAnisotropyFactor">Anisotropy factor must be a positive number</system:String>
 
     <!-- Neutron Source Details Window -->
     <system:String x:Key="DetailCardNeutronIdentity">Source &amp; Reference Type Information</system:String>
