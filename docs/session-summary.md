@@ -69,7 +69,7 @@ Claude يشخّص من الكود مباشرة ← يكتب برومبت الت�
 
 ## نتائج الجرد — البنود المفتوحة
 
-سجل ما كشفه جرد الجولة 103 ولم يُعالَج بعد:
+سجل البنود المكشوفة غير المعالَجة. البنود 1–6 من جرد الجولة 103، والبندان 7 و 8 كُشفا في الجولة 105-ب:
 
 1. **نصوص مثبتة خارج الترجمة:** 56 نصاً عربياً مثبتاً في XAML خارج `DynamicResource` + 7 أعمدة `DataGrid` بعناوين ثابتة — لا تتغير عند تبديل اللغة، فالترجمة الإنجليزية غير مكتملة فعلياً. أكثرها في `BorrowView.xaml` و `SettingsView.xaml` و `SourceDetailsWindow.xaml`.
 2. **تباين ألوان الحالة:** `NeutronSource.StatusColor` يستعمل ألواناً مختلفة عن `SourceDetailsViewModel.StatusColor`.
@@ -101,3 +101,5 @@ Claude يشخّص من الكود مباشرة ← يكتب برومبت الت�
 - `TranslationHelper.GetString` تُرجع `null` عند الفشل منذ الجولة 100، فالارتداد `?? "نص"` يعمل. **ممنوع** `?? key` أو `?? ""`.
 - ممنوع أي `catch` صامت في كود الإنتاج لمعالجة عيب في حزمة الاختبارات.
 - الاختبارات التي تُنشئ ViewModel مسجَّلاً في `WeakReferenceMessenger` يجب أن تتخلص منه بـ `using` وإلا تسرّب بين الاختبارات المتوازية.
+- كل مسار داخل `LocalAppData\Sources` يُؤخذ من `Sources.Data.DatabasePaths` حصراً — `AppDataDirectory` و `DbPath` و `BackupsDirectory` و `LegacyDbPath`. **ممنوع** إعادة تركيب المسار بـ `Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)` في أي ملف آخر. أُنشئ في الجولة 105 بعد ثلاثة مواضع مكررة.
+- تدرّج الفشل بحسب ما يُفقد: فقدان بيانات المستخدم (قاعدة البيانات) يوقف الإقلاع برسالة صريحة — `LegacyDatabaseImporter` يرمي؛ وفقدان التفضيلات فقط (`settings.ini`) لا يوقف الإقلاع بل يُسجَّل تحذيراً — `SettingsHelper.MigrateLegacySettings` تُرجع نصاً ولا ترمي. وفي الحالتين لا يُبتلع الفشل صامتاً.
