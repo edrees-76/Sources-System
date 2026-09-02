@@ -266,27 +266,30 @@ public class NeutronDecayTests
     [Fact]
     public void NeutronSourceDetailsViewModel_WhenCalibrationDateNull_DisplaysExplicitUncalculatedReason()
     {
-        // Arrange
-        var type = new NeutronSourceType { Code = "Cf-252", HalfLife = 2.645, HalfLifeUnit = "years" };
-        var source = new NeutronSource
+        Sources.Tests.Fixtures.WpfStaFixture.RunInSta(() =>
         {
-            SourceCode = "NS-CF-002",
-            CalibratedEmissionRate = 1.0e7,
-            EmissionCalibrationDate = null,
-            CalibrationReference = null,
-            AnisotropyFactor = null,
-            NeutronSourceType = type
-        };
+            // Arrange
+            var type = new NeutronSourceType { Code = "Cf-252", HalfLife = 2.645, HalfLifeUnit = "years" };
+            var source = new NeutronSource
+            {
+                SourceCode = "NS-CF-002",
+                CalibratedEmissionRate = 1.0e7,
+                EmissionCalibrationDate = null,
+                CalibrationReference = null,
+                AnisotropyFactor = null,
+                NeutronSourceType = type
+            };
 
-        // Act
-        var vm = new NeutronSourceDetailsViewModel(source, decayService: _decayService);
+            // Act
+            var vm = new NeutronSourceDetailsViewModel(source, decayService: _decayService);
 
-        // Assert
-        Assert.Equal("تاريخ المعايرة غير مسجّل", vm.EmissionCalibrationDateFormatted);
-        Assert.Equal("غير مسجّل", vm.CalibrationReferenceDisplay);
-        Assert.Equal("غير مقاس", vm.AnisotropyFactorDisplay);
-        Assert.False(vm.IsCurrentEmissionRateCalculated);
-        Assert.Contains("غير محسوب", vm.CurrentEmissionRateDisplay);
-        Assert.Contains("تاريخ المعايرة غير مسجّل", vm.CurrentEmissionRateDisplay);
+            // Assert
+            Assert.Equal("تاريخ المعايرة غير مسجّل", vm.EmissionCalibrationDateFormatted);
+            Assert.Equal("غير مسجّل", vm.CalibrationReferenceDisplay);
+            Assert.Equal("غير مقاس", vm.AnisotropyFactorDisplay);
+            Assert.False(vm.IsCurrentEmissionRateCalculated);
+            Assert.Contains("غير محسوب", vm.CurrentEmissionRateDisplay);
+            Assert.Contains("تاريخ المعايرة غير مسجّل", vm.CurrentEmissionRateDisplay);
+        });
     }
 }
