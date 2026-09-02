@@ -151,7 +151,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         var mockReportingService = new Mock<IReportingService>();
         var mockBorrowService = new Mock<IBorrowService>();
 
-        var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object);
+        using var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object);
 
         var testSource = new Source { Id = Guid.NewGuid(), SourceCode = "SRC-VAL-1" };
         vm.SelectedSourceForNew = testSource;
@@ -178,7 +178,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         var mockReportingService = new Mock<IReportingService>();
         var mockBorrowService = new Mock<IBorrowService>();
 
-        var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object);
+        using var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object);
 
         var request = new BorrowRequest
         {
@@ -272,7 +272,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
 
         mockBorrowService.Setup(b => b.GetAll()).Returns(testRequests);
 
-        var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object);
+        using var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object);
         await vm.LoadDataAsync();
 
         // Assert: Initial load
@@ -312,7 +312,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
 
         mockBorrowService.Setup(b => b.GetAll()).Returns(testRequests);
 
-        var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object);
+        using var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object);
         await vm.LoadDataAsync();
 
         int initialGetAllCalls = mockBorrowService.Invocations.Count(i => i.Method.Name == nameof(IBorrowService.GetAll));
@@ -373,7 +373,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
 
         mockBorrowService.Setup(b => b.GetAll()).Returns(testRequests);
 
-        var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object);
+        using var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object);
         await vm.LoadDataAsync();
 
         // Act: Filter by "قريبة الإرجاع"
@@ -404,7 +404,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         mockBorrowService.Setup(b => b.CreateRequest(It.IsAny<BorrowRequest>()))
             .Returns((true, "نجاح"));
 
-        var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object);
+        using var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object);
 
         vm.AvailableBorrowers.Add(registeredUser);
         vm.AvailableBorrowers.Add(currentUser);
@@ -477,7 +477,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         var mockUserService = new Mock<IUserService>();
         var mockReportingService = new Mock<IReportingService>();
 
-        var vm = new BorrowViewModel(_borrowService, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, _fixture.ContextFactory);
+        using var vm = new BorrowViewModel(_borrowService, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, _fixture.ContextFactory);
 
         // Act
         vm.LoadAvailableSources();
@@ -514,7 +514,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         var mockUserService = new Mock<IUserService>();
         var mockReportingService = new Mock<IReportingService>();
 
-        var vm = new BorrowViewModel(_borrowService, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, _fixture.ContextFactory);
+        using var vm = new BorrowViewModel(_borrowService, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, _fixture.ContextFactory);
 
         // Act
         vm.LoadAvailableSources();
@@ -678,7 +678,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         var mockSourceService = new Mock<ISourceService>();
         var mockReportingService = new Mock<IReportingService>();
 
-        var vm = new BorrowViewModel(
+        using var vm = new BorrowViewModel(
             _borrowService,
             mockSourceService.Object,
             _fakeUserService,

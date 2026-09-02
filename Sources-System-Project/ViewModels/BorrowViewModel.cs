@@ -298,47 +298,37 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
     public void LoadAvailableSources()
     {
         if (_dbFactory == null) return;
-        try
-        {
-            using var db = _dbFactory.CreateDbContext();
-            var candidateSources = db.Sources
-                .AsNoTracking()
-                .Include(s => s.SourceIsotopes)
-                    .ThenInclude(si => si.Radioisotope)
-                .Include(s => s.SourceIsotopes)
-                    .ThenInclude(si => si.ActivityUnit)
-                .Include(s => s.Location)
-                .Include(s => s.Radioisotope)
-                .Include(s => s.InitialActivityUnit)
-                .Where(s => !s.IsDeleted && s.Status == "Storage")
-                .OrderBy(s => s.SourceCode)
-                .ToList();
+        using var db = _dbFactory.CreateDbContext();
+        var candidateSources = db.Sources
+            .AsNoTracking()
+            .Include(s => s.SourceIsotopes)
+                .ThenInclude(si => si.Radioisotope)
+            .Include(s => s.SourceIsotopes)
+                .ThenInclude(si => si.ActivityUnit)
+            .Include(s => s.Location)
+            .Include(s => s.Radioisotope)
+            .Include(s => s.InitialActivityUnit)
+            .Where(s => !s.IsDeleted && s.Status == "Storage")
+            .OrderBy(s => s.SourceCode)
+            .ToList();
 
-            var sourceIds = candidateSources.Select(s => s.Id).ToList();
-            var allTests = db.LeakTestRecords
-                .AsNoTracking()
-                .Where(r => sourceIds.Contains(r.SourceId))
-                .ToList();
+        var sourceIds = candidateSources.Select(s => s.Id).ToList();
+        var allTests = db.LeakTestRecords
+            .AsNoTracking()
+            .Where(r => sourceIds.Contains(r.SourceId))
+            .ToList();
 
-            var failedSourceIds = allTests
-                .GroupBy(r => r.SourceId)
-                .Select(g => g.OrderByDescending(r => r.TestDate).ThenByDescending(r => r.CreatedAt).FirstOrDefault())
-                .Where(r => r != null && r.Result == "Fail")
-                .Select(r => r!.SourceId)
-                .ToHashSet();
+        var failedSourceIds = allTests
+            .GroupBy(r => r.SourceId)
+            .Select(g => g.OrderByDescending(r => r.TestDate).ThenByDescending(r => r.CreatedAt).FirstOrDefault())
+            .Where(r => r != null && r.Result == "Fail")
+            .Select(r => r!.SourceId)
+            .ToHashSet();
 
-            var sources = candidateSources.Where(s => !failedSourceIds.Contains(s.Id)).ToList();
+        var sources = candidateSources.Where(s => !failedSourceIds.Contains(s.Id)).ToList();
 
-            AvailableSources.Clear();
-            foreach (var s in sources)
-            {
-                AvailableSources.Add(s);
-            }
-        }
-        catch
-        {
-            // Ignore db exceptions from disposed test contexts during messenger events
-        }
+        AvailableSources.Clear();
+        foreach (var s in sources) AvailableSources.Add(s);
     }
 
     private void LoadAvailableBorrowers(Guid? borrowerUserId)
