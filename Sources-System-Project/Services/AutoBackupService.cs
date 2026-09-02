@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Timers;
@@ -75,7 +76,18 @@ public class AutoBackupService : IAutoBackupService, IDisposable
                 _ => TimeSpan.FromDays(1) // Default Daily
             };
 
-            var lastBackupDate = GetLatestBackupDate(backupPath);
+            var scan = BackupFolderScanner.ScanLatest(BuildTargetFolders(backupPath));
+
+            if (scan.Outcome == BackupScanOutcome.ScanFailed)
+            {
+                LoggerService.LogWarning(
+                    "فحص النسخ الاحتياطي التلقائي: تعذّر مسح مجلد النسخ ولم يُعثر على أي نسخة، فتُخطّى هذه الدورة. " +
+                    "لا تُنفَّذ نسخة على الشك تفادياً لتكرارها كل دورة. راجع صلاحيات المجلد أو اتصال القرص. " +
+                    $"مسار النسخ المحفوظ: {(string.IsNullOrWhiteSpace(backupPath) ? Sources.Data.DatabasePaths.BackupsDirectory : backupPath)}");
+                return;
+            }
+
+            var lastBackupDate = scan.Latest;
             var shouldBackup = !lastBackupDate.HasValue || (DateTime.Now - lastBackupDate.Value) >= requiredInterval;
 
             var elapsedText = lastBackupDate.HasValue
@@ -121,54 +133,19 @@ public class AutoBackupService : IAutoBackupService, IDisposable
         }
     }
 
-    private DateTime? GetLatestBackupDate(string backupPath)
+    private static List<string> BuildTargetFolders(string backupPath)
     {
-        try
+        var targetFolders = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(backupPath) && Directory.Exists(backupPath))
         {
-            var targetFolders = new System.Collections.Generic.List<string>();
-
-            if (!string.IsNullOrWhiteSpace(backupPath) && Directory.Exists(backupPath))
-            {
-                targetFolders.Add(Path.Combine(backupPath, BackupService.BackupFolderName));
-                targetFolders.Add(Path.Combine(backupPath, BackupService.LegacyBackupFolderName));
-                targetFolders.Add(backupPath);
-            }
-
-            var defaultAppDataDir = Sources.Data.DatabasePaths.BackupsDirectory;
-            if (Directory.Exists(defaultAppDataDir))
-            {
-                targetFolders.Add(defaultAppDataDir);
-            }
-
-            DateTime? latest = null;
-
-            foreach (var folder in targetFolders.Distinct())
-            {
-                if (!Directory.Exists(folder)) continue;
-
-                var files = Directory.GetFiles(folder, "*.*")
-                    .Where(f => (f.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".db", StringComparison.OrdinalIgnoreCase))
-                                && Path.GetFileName(f).Contains("_backup_", StringComparison.OrdinalIgnoreCase))
-                    .Select(f => new FileInfo(f))
-                    .OrderByDescending(f => f.CreationTime)
-                    .ToList();
-
-                if (files.Count > 0)
-                {
-                    var fileDate = files[0].CreationTime;
-                    if (!latest.HasValue || fileDate > latest.Value)
-                    {
-                        latest = fileDate;
-                    }
-                }
-            }
-
-            return latest;
+            targetFolders.Add(Path.Combine(backupPath, BackupService.BackupFolderName));
+            targetFolders.Add(Path.Combine(backupPath, BackupService.LegacyBackupFolderName));
+            targetFolders.Add(backupPath);
         }
-        catch
-        {
-            return null;
-        }
+
+        targetFolders.Add(Sources.Data.DatabasePaths.BackupsDirectory);
+        return targetFolders;
     }
 
     public void Dispose()

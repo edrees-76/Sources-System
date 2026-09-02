@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Sources.Data;
@@ -10,7 +11,10 @@ namespace Sources.Services;
 public class SystemSettingsService : ISystemSettingsService
 {
     private readonly IDbContextFactory<AppDbContext> _dbFactory;
-    private static Dictionary<string, string>? _cache;
+    private Dictionary<string, string>? _cache;
+    private readonly ConcurrentDictionary<string, byte> _corruptedKeys = new();
+
+    public IReadOnlyCollection<string> CorruptedKeys => _corruptedKeys.Keys.ToList().AsReadOnly();
 
     public SystemSettingsService(IDbContextFactory<AppDbContext> dbFactory)
     {
@@ -42,8 +46,16 @@ public class SystemSettingsService : ISystemSettingsService
             var result = Convert.ChangeType(value, typeof(T));
             return result != null ? (T)result : defaultValue;
         }
-        catch
+        catch (Exception ex)
         {
+            // التسجيل مرة واحدة لكل مفتاح: الدالة تُستدعى في كل دورة فحص فيغرق السجل.
+            if (_corruptedKeys.TryAdd(key, 0))
+            {
+                LoggerService.LogWarning(
+                    $"قيمة الإعداد «{key}» المخزَّنة في قاعدة البيانات تالفة وتعذّر تحويلها إلى {typeof(T).Name}: " +
+                    $"القيمة «{value}»، السبب: {ex.Message}. سيُستعمل الافتراضي {defaultValue} حتى تُصحَّح. " +
+                    "تنبيه: بعض هذه الإعدادات عتبات سلامة، فقد تختلف القيمة العاملة عمّا يظنه المسؤول.");
+            }
             return defaultValue;
         }
     }
@@ -62,6 +74,7 @@ public class SystemSettingsService : ISystemSettingsService
         }
         db.SaveChanges();
         _cache = null; // Invalidate cache
+        _corruptedKeys.TryRemove(key, out _);
     }
 
     public void SaveSettings(Dictionary<string, string> settings)
@@ -81,6 +94,10 @@ public class SystemSettingsService : ISystemSettingsService
         }
         db.SaveChanges();
         _cache = null;
+        foreach (var key in settings.Keys)
+        {
+            _corruptedKeys.TryRemove(key, out _);
+        }
     }
 
     public void ResetToDefaults()
@@ -91,5 +108,6 @@ public class SystemSettingsService : ISystemSettingsService
     public void ClearCache()
     {
         _cache = null;
+        _corruptedKeys.Clear();
     }
 }

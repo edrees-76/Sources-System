@@ -12,4 +12,7 @@ public interface ISystemSettingsService
     void SaveSettings(Dictionary<string, string> settings);
     void ResetToDefaults();
     void ClearCache();
+
+    /// <summary>مفاتيح الإعدادات التي تعذّر تحويل قيمتها المخزَّنة فارتُدَّ إلى الافتراضي.</summary>
+    IReadOnlyCollection<string> CorruptedKeys { get; }
 }

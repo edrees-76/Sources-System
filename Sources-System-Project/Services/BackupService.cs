@@ -309,7 +309,14 @@ public class BackupService : IBackupService
                 {
                     if (Directory.Exists(_certificatesFolder))
                     {
-                        try { Directory.Delete(_certificatesFolder, recursive: true); } catch { }
+                        try
+                        {
+                            Directory.Delete(_certificatesFolder, recursive: true);
+                        }
+                        catch (Exception ex)
+                        {
+                            LoggerService.LogWarning($"تعذّر التراجع عن مجلد الشهادات بعد فشل الاستعادة وقد تكون بقيت ملفات غير مطابقة: {_certificatesFolder}. السبب: {ex.Message}");
+                        }
                     }
                     CopyDirectory(safetyCertDir, _certificatesFolder);
                 }
@@ -324,7 +331,14 @@ public class BackupService : IBackupService
             // بعد نجاح الاستعادة الكاملة بدون أخطاء: حذف مجلد النسخة الاحتياطية المؤقتة للشهادات
             if (safetyCertDir != null && Directory.Exists(safetyCertDir))
             {
-                try { Directory.Delete(safetyCertDir, recursive: true); } catch { }
+                try
+                {
+                    Directory.Delete(safetyCertDir, recursive: true);
+                }
+                catch (Exception ex)
+                {
+                    LoggerService.LogWarning($"تعذّر حذف مجلد الأمان المؤقت للشهادات: {safetyCertDir}. السبب: {ex.Message}");
+                }
             }
 
             LoggerService.LogInfo($"تمت الاستعادة بنجاح من: {backupFilePath}");
@@ -379,10 +393,20 @@ public class BackupService : IBackupService
 
             foreach (var file in oldFiles)
             {
-                try { file.Delete(); } catch { }
+                try
+                {
+                    file.Delete();
+                }
+                catch (Exception ex)
+                {
+                    LoggerService.LogWarning($"تعذّر حذف ملف النسخة الاحتياطية القديم «{file.FullName}»: {ex.Message}");
+                }
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            LoggerService.LogError("تعذّر تنظيف النسخ الاحتياطية القديمة كلياً", ex);
+        }
     }
 
     private static void CopyDirectory(string sourceDir, string destinationDir)
