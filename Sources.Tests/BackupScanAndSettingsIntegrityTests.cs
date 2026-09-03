@@ -324,29 +324,45 @@ public class BackupScanAndSettingsIntegrityTests : IDisposable
         mockBackup.Verify(b => b.CreateBackup(emptyBackupDir), Times.Once);
     }
 
+    // انتظار إشارة بلوغ القرار بدل تأخير زمني ثابت: بدونه يمرّ Times.Never لمجرد أن الدورة الخلفية
+    // لم تبدأ. وضبط CreateBackup على المحاكي الصارم متعمَّد: بلا ضبط يرمي Moq داخل الخدمة
+    // فيبتلعه catch العام في CheckAndPerformAutoBackup ولا يبلغ الاختبار.
     [Fact]
-    public async Task AutoBackupService_WhenScanFails_DoesNotCallCreateBackup()
+    public void AutoBackupService_WhenScanFails_DoesNotCallCreateBackup()
     {
         // Arrange: مجلد محمي/غير قابل للقراءة يحاكي فشل المسح (ScanFailed)
         var lockedDir = CreateLockedDirectory(out var cleanup);
 
         try
         {
+            var decisionReachedEvent = new ManualResetEventSlim(false);
             var mockSettings = new Mock<ISystemSettingsService>(MockBehavior.Strict);
             mockSettings.Setup(s => s.GetSetting<bool>("AutoBackupEnabled", false)).Returns(true);
             mockSettings.Setup(s => s.GetSetting("AutoBackupFrequency", "Daily")).Returns("Daily");
             mockSettings.Setup(s => s.GetSetting("BackupPath", string.Empty)).Returns(lockedDir);
-            mockSettings.Setup(s => s.GetSetting("LastAutoBackupAt", string.Empty)).Returns(string.Empty);
+            mockSettings.Setup(s => s.GetSetting("LastAutoBackupAt", string.Empty))
+                .Callback(() => decisionReachedEvent.Set())
+                .Returns(string.Empty);
 
+            var backupCalledEvent = new ManualResetEventSlim(false);
             var mockBackup = new Mock<IBackupService>(MockBehavior.Strict);
+            mockBackup.Setup(b => b.CreateBackup(It.IsAny<string>()))
+                .Callback(() => backupCalledEvent.Set())
+                .Returns((false, "يجب ألا تُستدعى في هذا الاختبار", string.Empty));
+            mockBackup.Setup(b => b.CreateBackup())
+                .Callback(() => backupCalledEvent.Set())
+                .Returns((false, "يجب ألا تُستدعى في هذا الاختبار", string.Empty));
 
             using var sut = new AutoBackupService(mockBackup.Object, mockSettings.Object);
 
             // Act
             sut.TriggerImmediateCheck();
-            await Task.Delay(300);
+            Assert.True(decisionReachedEvent.Wait(TimeSpan.FromSeconds(3)),
+                "دورة الفحص لم تبلغ قراءة LastAutoBackupAt، فتوكيد Times.Never التالي بلا معنى.");
 
             // Assert
+            Assert.False(backupCalledEvent.Wait(TimeSpan.FromMilliseconds(500)),
+                "CreateBackup لا يجب أن يُستدعى في هذه الحالة.");
             mockBackup.Verify(b => b.CreateBackup(It.IsAny<string>()), Times.Never);
             mockBackup.Verify(b => b.CreateBackup(), Times.Never);
         }
@@ -357,7 +373,7 @@ public class BackupScanAndSettingsIntegrityTests : IDisposable
     }
 
     [Fact]
-    public async Task AutoBackup_WhenScanFailsButRecordedDateIsRecent_DoesNotCallCreateBackup()
+    public void AutoBackup_WhenScanFailsButRecordedDateIsRecent_DoesNotCallCreateBackup()
     {
         // Arrange: المسح يفشل ولكن التاريخ المحفوظ حديث (قبل ساعة) ⇒ لا نسخة (منع العاصفة)
         var lockedDir = CreateLockedDirectory(out var cleanup);
@@ -366,21 +382,34 @@ public class BackupScanAndSettingsIntegrityTests : IDisposable
         {
             var recentRecorded = DateTime.Now.AddHours(-1).ToString("o", System.Globalization.CultureInfo.InvariantCulture);
 
+            var decisionReachedEvent = new ManualResetEventSlim(false);
             var mockSettings = new Mock<ISystemSettingsService>(MockBehavior.Strict);
             mockSettings.Setup(s => s.GetSetting<bool>("AutoBackupEnabled", false)).Returns(true);
             mockSettings.Setup(s => s.GetSetting("AutoBackupFrequency", "Daily")).Returns("Daily");
             mockSettings.Setup(s => s.GetSetting("BackupPath", string.Empty)).Returns(lockedDir);
-            mockSettings.Setup(s => s.GetSetting("LastAutoBackupAt", string.Empty)).Returns(recentRecorded);
+            mockSettings.Setup(s => s.GetSetting("LastAutoBackupAt", string.Empty))
+                .Callback(() => decisionReachedEvent.Set())
+                .Returns(recentRecorded);
 
+            var backupCalledEvent = new ManualResetEventSlim(false);
             var mockBackup = new Mock<IBackupService>(MockBehavior.Strict);
+            mockBackup.Setup(b => b.CreateBackup(It.IsAny<string>()))
+                .Callback(() => backupCalledEvent.Set())
+                .Returns((false, "يجب ألا تُستدعى في هذا الاختبار", string.Empty));
+            mockBackup.Setup(b => b.CreateBackup())
+                .Callback(() => backupCalledEvent.Set())
+                .Returns((false, "يجب ألا تُستدعى في هذا الاختبار", string.Empty));
 
             using var sut = new AutoBackupService(mockBackup.Object, mockSettings.Object);
 
             // Act
             sut.TriggerImmediateCheck();
-            await Task.Delay(300);
+            Assert.True(decisionReachedEvent.Wait(TimeSpan.FromSeconds(3)),
+                "دورة الفحص لم تبلغ قراءة LastAutoBackupAt، فتوكيد Times.Never التالي بلا معنى.");
 
             // Assert
+            Assert.False(backupCalledEvent.Wait(TimeSpan.FromMilliseconds(500)),
+                "CreateBackup لا يجب أن يُستدعى في هذه الحالة.");
             mockBackup.Verify(b => b.CreateBackup(It.IsAny<string>()), Times.Never);
             mockBackup.Verify(b => b.CreateBackup(), Times.Never);
         }
@@ -431,28 +460,41 @@ public class BackupScanAndSettingsIntegrityTests : IDisposable
     }
 
     [Fact]
-    public async Task AutoBackup_WhenScanFailsAndNoRecordedDate_DoesNotCallCreateBackup()
+    public void AutoBackup_WhenScanFailsAndNoRecordedDate_DoesNotCallCreateBackup()
     {
         // Arrange: المسح يفشل ولا يوجد تاريخ محفوظ ⇒ تخطي الدورة دون إنشاء نسخة (السلوك المعتمد في الجولة 108)
         var lockedDir = CreateLockedDirectory(out var cleanup);
 
         try
         {
+            var decisionReachedEvent = new ManualResetEventSlim(false);
             var mockSettings = new Mock<ISystemSettingsService>(MockBehavior.Strict);
             mockSettings.Setup(s => s.GetSetting<bool>("AutoBackupEnabled", false)).Returns(true);
             mockSettings.Setup(s => s.GetSetting("AutoBackupFrequency", "Daily")).Returns("Daily");
             mockSettings.Setup(s => s.GetSetting("BackupPath", string.Empty)).Returns(lockedDir);
-            mockSettings.Setup(s => s.GetSetting("LastAutoBackupAt", string.Empty)).Returns(string.Empty);
+            mockSettings.Setup(s => s.GetSetting("LastAutoBackupAt", string.Empty))
+                .Callback(() => decisionReachedEvent.Set())
+                .Returns(string.Empty);
 
+            var backupCalledEvent = new ManualResetEventSlim(false);
             var mockBackup = new Mock<IBackupService>(MockBehavior.Strict);
+            mockBackup.Setup(b => b.CreateBackup(It.IsAny<string>()))
+                .Callback(() => backupCalledEvent.Set())
+                .Returns((false, "يجب ألا تُستدعى في هذا الاختبار", string.Empty));
+            mockBackup.Setup(b => b.CreateBackup())
+                .Callback(() => backupCalledEvent.Set())
+                .Returns((false, "يجب ألا تُستدعى في هذا الاختبار", string.Empty));
 
             using var sut = new AutoBackupService(mockBackup.Object, mockSettings.Object);
 
             // Act
             sut.TriggerImmediateCheck();
-            await Task.Delay(300);
+            Assert.True(decisionReachedEvent.Wait(TimeSpan.FromSeconds(3)),
+                "دورة الفحص لم تبلغ قراءة LastAutoBackupAt، فتوكيد Times.Never التالي بلا معنى.");
 
             // Assert
+            Assert.False(backupCalledEvent.Wait(TimeSpan.FromMilliseconds(500)),
+                "CreateBackup لا يجب أن يُستدعى في هذه الحالة.");
             mockBackup.Verify(b => b.CreateBackup(It.IsAny<string>()), Times.Never);
             mockBackup.Verify(b => b.CreateBackup(), Times.Never);
         }
@@ -511,7 +553,7 @@ public class BackupScanAndSettingsIntegrityTests : IDisposable
     }
 
     [Fact]
-    public async Task AutoBackup_WhenRecordedDateNewerThanScannedDate_UsesRecordedDate()
+    public void AutoBackup_WhenRecordedDateNewerThanScannedDate_UsesRecordedDate()
     {
         // Arrange: مجلد يحوي نسخة قديمة (قبل 5 أيام) لكن التاريخ المحفوظ حديث (قبل ساعتين)
         var backupDir = Path.Combine(_testTempDir, "ScannedOld_RecordedNew_" + Guid.NewGuid().ToString("N"));
@@ -523,27 +565,40 @@ public class BackupScanAndSettingsIntegrityTests : IDisposable
 
         var recentRecorded = DateTime.Now.AddHours(-2).ToString("o", System.Globalization.CultureInfo.InvariantCulture);
 
+        var decisionReachedEvent = new ManualResetEventSlim(false);
         var mockSettings = new Mock<ISystemSettingsService>(MockBehavior.Strict);
         mockSettings.Setup(s => s.GetSetting<bool>("AutoBackupEnabled", false)).Returns(true);
         mockSettings.Setup(s => s.GetSetting("AutoBackupFrequency", "Daily")).Returns("Daily");
         mockSettings.Setup(s => s.GetSetting("BackupPath", string.Empty)).Returns(backupDir);
-        mockSettings.Setup(s => s.GetSetting("LastAutoBackupAt", string.Empty)).Returns(recentRecorded);
+        mockSettings.Setup(s => s.GetSetting("LastAutoBackupAt", string.Empty))
+            .Callback(() => decisionReachedEvent.Set())
+            .Returns(recentRecorded);
 
+        var backupCalledEvent = new ManualResetEventSlim(false);
         var mockBackup = new Mock<IBackupService>(MockBehavior.Strict);
+        mockBackup.Setup(b => b.CreateBackup(It.IsAny<string>()))
+            .Callback(() => backupCalledEvent.Set())
+            .Returns((false, "يجب ألا تُستدعى في هذا الاختبار", string.Empty));
+        mockBackup.Setup(b => b.CreateBackup())
+            .Callback(() => backupCalledEvent.Set())
+            .Returns((false, "يجب ألا تُستدعى في هذا الاختبار", string.Empty));
 
         using var sut = new AutoBackupService(mockBackup.Object, mockSettings.Object);
 
         // Act
         sut.TriggerImmediateCheck();
-        await Task.Delay(300);
+        Assert.True(decisionReachedEvent.Wait(TimeSpan.FromSeconds(3)),
+            "دورة الفحص لم تبلغ قراءة LastAutoBackupAt، فتوكيد Times.Never التالي بلا معنى.");
 
         // Assert: بما أن التاريخ المحفوظ أحدث ولم تمض 24 ساعة، لا يتم إنشاء نسخة
+        Assert.False(backupCalledEvent.Wait(TimeSpan.FromMilliseconds(500)),
+            "CreateBackup لا يجب أن يُستدعى في هذه الحالة.");
         mockBackup.Verify(b => b.CreateBackup(It.IsAny<string>()), Times.Never);
         mockBackup.Verify(b => b.CreateBackup(), Times.Never);
     }
 
     [Fact]
-    public async Task AutoBackup_WhenRecordedSettingIsCorrupt_IgnoresItAndUsesScanResult()
+    public void AutoBackup_WhenRecordedSettingIsCorrupt_IgnoresItAndUsesScanResult()
     {
         // Arrange: القيمة المحفوظة نص غير صالح كتاريخ، لكن القرص يحوي نسخة حديثة (قبل ساعتين)
         var backupDir = Path.Combine(_testTempDir, "ScannedRecent_CorruptRecorded_" + Guid.NewGuid().ToString("N"));
@@ -553,20 +608,33 @@ public class BackupScanAndSettingsIntegrityTests : IDisposable
         File.WriteAllBytes(recentFile, new byte[16]);
         File.SetCreationTime(recentFile, DateTime.Now.AddHours(-2));
 
+        var decisionReachedEvent = new ManualResetEventSlim(false);
         var mockSettings = new Mock<ISystemSettingsService>(MockBehavior.Strict);
         mockSettings.Setup(s => s.GetSetting<bool>("AutoBackupEnabled", false)).Returns(true);
         mockSettings.Setup(s => s.GetSetting("AutoBackupFrequency", "Daily")).Returns("Daily");
         mockSettings.Setup(s => s.GetSetting("BackupPath", string.Empty)).Returns(backupDir);
-        mockSettings.Setup(s => s.GetSetting("LastAutoBackupAt", string.Empty)).Returns("not-a-date");
+        mockSettings.Setup(s => s.GetSetting("LastAutoBackupAt", string.Empty))
+            .Callback(() => decisionReachedEvent.Set())
+            .Returns("not-a-date");
 
+        var backupCalledEvent = new ManualResetEventSlim(false);
         var mockBackup = new Mock<IBackupService>(MockBehavior.Strict);
+        mockBackup.Setup(b => b.CreateBackup(It.IsAny<string>()))
+            .Callback(() => backupCalledEvent.Set())
+            .Returns((false, "يجب ألا تُستدعى في هذا الاختبار", string.Empty));
+        mockBackup.Setup(b => b.CreateBackup())
+            .Callback(() => backupCalledEvent.Set())
+            .Returns((false, "يجب ألا تُستدعى في هذا الاختبار", string.Empty));
 
         using var sut = new AutoBackupService(mockBackup.Object, mockSettings.Object);
 
         // Act & Assert (Should not throw and should use scan result)
         sut.TriggerImmediateCheck();
-        await Task.Delay(300);
+        Assert.True(decisionReachedEvent.Wait(TimeSpan.FromSeconds(3)),
+            "دورة الفحص لم تبلغ قراءة LastAutoBackupAt، فتوكيد Times.Never التالي بلا معنى.");
 
+        Assert.False(backupCalledEvent.Wait(TimeSpan.FromMilliseconds(500)),
+            "CreateBackup لا يجب أن يُستدعى في هذه الحالة.");
         mockBackup.Verify(b => b.CreateBackup(It.IsAny<string>()), Times.Never);
         mockBackup.Verify(b => b.CreateBackup(), Times.Never);
     }
@@ -666,7 +734,7 @@ public class BackupScanAndSettingsIntegrityTests : IDisposable
     }
 
     [Fact]
-    public async Task AutoBackup_WhenRecordedDateIsWithinClockSkewTolerance_IsHonoredAndSkipsBackup()
+    public void AutoBackup_WhenRecordedDateIsWithinClockSkewTolerance_IsHonoredAndSkipsBackup()
     {
         // Arrange: التاريخ المحفوظ +1 دقيقة في المستقبل (ضمن سماح 5 دقائق)، والمجلد فارغ
         var backupDir = Path.Combine(_testTempDir, "SkewTolerance_" + Guid.NewGuid().ToString("N"));
@@ -674,21 +742,34 @@ public class BackupScanAndSettingsIntegrityTests : IDisposable
 
         var nearFutureRecorded = DateTime.Now.AddMinutes(1).ToString("o", System.Globalization.CultureInfo.InvariantCulture);
 
+        var decisionReachedEvent = new ManualResetEventSlim(false);
         var mockSettings = new Mock<ISystemSettingsService>(MockBehavior.Strict);
         mockSettings.Setup(s => s.GetSetting<bool>("AutoBackupEnabled", false)).Returns(true);
         mockSettings.Setup(s => s.GetSetting("AutoBackupFrequency", "Daily")).Returns("Daily");
         mockSettings.Setup(s => s.GetSetting("BackupPath", string.Empty)).Returns(backupDir);
-        mockSettings.Setup(s => s.GetSetting("LastAutoBackupAt", string.Empty)).Returns(nearFutureRecorded);
+        mockSettings.Setup(s => s.GetSetting("LastAutoBackupAt", string.Empty))
+            .Callback(() => decisionReachedEvent.Set())
+            .Returns(nearFutureRecorded);
 
+        var backupCalledEvent = new ManualResetEventSlim(false);
         var mockBackup = new Mock<IBackupService>(MockBehavior.Strict);
+        mockBackup.Setup(b => b.CreateBackup(It.IsAny<string>()))
+            .Callback(() => backupCalledEvent.Set())
+            .Returns((false, "يجب ألا تُستدعى في هذا الاختبار", string.Empty));
+        mockBackup.Setup(b => b.CreateBackup())
+            .Callback(() => backupCalledEvent.Set())
+            .Returns((false, "يجب ألا تُستدعى في هذا الاختبار", string.Empty));
 
         using var sut = new AutoBackupService(mockBackup.Object, mockSettings.Object);
 
         // Act
         sut.TriggerImmediateCheck();
-        await Task.Delay(300);
+        Assert.True(decisionReachedEvent.Wait(TimeSpan.FromSeconds(3)),
+            "دورة الفحص لم تبلغ قراءة LastAutoBackupAt، فتوكيد Times.Never التالي بلا معنى.");
 
         // Assert: انحراف الساعة الطفيف يُقبل ولا يُلغى، والفاصل اليومي لم يحن، فلا يتم إنشاء نسخة
+        Assert.False(backupCalledEvent.Wait(TimeSpan.FromMilliseconds(500)),
+            "CreateBackup لا يجب أن يُستدعى في هذه الحالة.");
         mockBackup.Verify(b => b.CreateBackup(It.IsAny<string>()), Times.Never);
         mockBackup.Verify(b => b.CreateBackup(), Times.Never);
     }
