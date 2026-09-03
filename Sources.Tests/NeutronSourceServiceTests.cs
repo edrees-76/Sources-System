@@ -423,4 +423,123 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
             Assert.Null(db.Locations.Find(locId)); // Soft deleted
         }
     }
+
+    #region Future CalibrationDate & EmissionCalibrationDate Validation Tests
+
+    [Fact]
+    public void Create_WithFutureCalibrationDate_ReturnsFalseWithErrorMessage()
+    {
+        // Arrange
+        var typeId = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Am-241/Be", NameEn = "Americium-Beryllium", HalfLife = 432.2 });
+            db.SaveChanges();
+        }
+
+        var item = new NeutronSource
+        {
+            SourceCode = "NS-FUT-CAL",
+            NeutronSourceTypeId = typeId,
+            CalibratedEmissionRate = 1e6,
+            CalibrationDate = DateTime.Today.AddDays(1)
+        };
+
+        // Act
+        var result = _sut.Create(item);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("لا يمكن أن يكون تاريخ المعايرة في المستقبل.", result.Message);
+    }
+
+    [Fact]
+    public void Create_WithFutureEmissionCalibrationDate_ReturnsFalseWithErrorMessage()
+    {
+        // Arrange
+        var typeId = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Am-241/Be", NameEn = "Americium-Beryllium", HalfLife = 432.2 });
+            db.SaveChanges();
+        }
+
+        var item = new NeutronSource
+        {
+            SourceCode = "NS-FUT-EMIS",
+            NeutronSourceTypeId = typeId,
+            CalibratedEmissionRate = 1e6,
+            EmissionCalibrationDate = DateTime.Today.AddDays(2)
+        };
+
+        // Act
+        var result = _sut.Create(item);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("تاريخ معايرة الانبعاث لا يمكن أن يكون في المستقبل", result.Message);
+    }
+
+    [Fact]
+    public void Update_WithFutureCalibrationDate_ReturnsFalseWithErrorMessage()
+    {
+        // Arrange
+        var typeId = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Cf-252", NameEn = "Californium-252", HalfLife = 2.645 });
+            db.SaveChanges();
+        }
+
+        var item = new NeutronSource
+        {
+            SourceCode = "NS-UPD-FUT-CAL",
+            NeutronSourceTypeId = typeId,
+            CalibratedEmissionRate = 1e6,
+            CalibrationDate = DateTime.Today.AddDays(-10)
+        };
+        var createResult = _sut.Create(item);
+        Assert.True(createResult.Success);
+
+        // Act
+        item.CalibrationDate = DateTime.Today.AddDays(3);
+        var updateResult = _sut.Update(item);
+
+        // Assert
+        Assert.False(updateResult.Success);
+        Assert.Equal("لا يمكن أن يكون تاريخ المعايرة في المستقبل.", updateResult.Message);
+    }
+
+    [Fact]
+    public void Update_WithFutureEmissionCalibrationDate_ReturnsFalseWithErrorMessage()
+    {
+        // Arrange
+        var typeId = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Cf-252", NameEn = "Californium-252", HalfLife = 2.645 });
+            db.SaveChanges();
+        }
+
+        var item = new NeutronSource
+        {
+            SourceCode = "NS-UPD-FUT-EMIS",
+            NeutronSourceTypeId = typeId,
+            CalibratedEmissionRate = 1e6,
+            EmissionCalibrationDate = DateTime.Today.AddDays(-10)
+        };
+        var createResult = _sut.Create(item);
+        Assert.True(createResult.Success);
+
+        // Act
+        item.EmissionCalibrationDate = DateTime.Today.AddDays(4);
+        var updateResult = _sut.Update(item);
+
+        // Assert
+        Assert.False(updateResult.Success);
+        Assert.Equal("تاريخ معايرة الانبعاث لا يمكن أن يكون في المستقبل", updateResult.Message);
+    }
+
+    #endregion
 }
+

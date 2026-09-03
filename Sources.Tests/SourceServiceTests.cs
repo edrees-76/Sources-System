@@ -1115,4 +1115,51 @@ public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
     }
 
     #endregion
+
+    #region Future CalibrationDate Validation Tests
+
+    [Fact]
+    public void CreateSource_WithFutureCalibrationDate_ReturnsFalseWithErrorMessage()
+    {
+        // Arrange
+        var source = TestDataBuilder.CreateSource(
+            _isoCs137,
+            _unitBq,
+            _testLocation,
+            sourceCode: "SRC-FUTURE-CALIB",
+            calibrationDate: DateTime.Today.AddDays(1));
+
+        // Act
+        var result = _sourceService.CreateSource(source);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("لا يمكن أن يكون تاريخ المعايرة في المستقبل.", result.Message);
+    }
+
+    [Fact]
+    public void UpdateSource_WithFutureCalibrationDate_ReturnsFalseWithErrorMessage()
+    {
+        // Arrange: create valid source first
+        var source = TestDataBuilder.CreateSource(
+            _isoCs137,
+            _unitBq,
+            _testLocation,
+            sourceCode: "SRC-UPD-FUTURE-CAL",
+            calibrationDate: DateTime.Today.AddDays(-10));
+
+        var createResult = _sourceService.CreateSource(source);
+        Assert.True(createResult.Success);
+
+        // Act: modify calibration date to future
+        source.CalibrationDate = DateTime.Today.AddDays(5);
+        var updateResult = _sourceService.UpdateSource(source);
+
+        // Assert
+        Assert.False(updateResult.Success);
+        Assert.Equal("لا يمكن أن يكون تاريخ المعايرة في المستقبل.", updateResult.Message);
+    }
+
+    #endregion
 }
+

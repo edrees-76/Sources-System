@@ -110,6 +110,10 @@ public class NeutronSourceService : INeutronSourceService
             return (false, TranslationHelper.GetString("MsgErrInvalidAnisotropyFactorFinite") ?? "معامل اللاتماثل الزاوي غير صالح (يجب أن يكون رقماً منتهياً)");
         if (item.RelativeExpandedUncertaintyPercent.HasValue && !double.IsFinite(item.RelativeExpandedUncertaintyPercent.Value))
             return (false, TranslationHelper.GetString("MsgErrInvalidUncertaintyFinite") ?? "نسبة عدم اليقين غير صالحة (يجب أن تكون رقماً منتهياً)");
+        if (item.CalibrationDate.HasValue && item.CalibrationDate.Value.Date > DateTime.Today)
+            return (false, TranslationHelper.GetString("MsgErrCalibrationDateFuture") ?? "لا يمكن أن يكون تاريخ المعايرة في المستقبل.");
+        if (item.EmissionCalibrationDate.HasValue && item.EmissionCalibrationDate.Value.Date > DateTime.Today)
+            return (false, TranslationHelper.GetString("MsgErrEmissionCalibrationDateFuture") ?? "تاريخ معايرة الانبعاث لا يمكن أن يكون في المستقبل");
         if (item.NeutronSourceTypeId == Guid.Empty) return (false, "نوع المصدر النيتروني مطلوب");
 
         using var db = _dbFactory.CreateDbContext();
@@ -153,6 +157,10 @@ public class NeutronSourceService : INeutronSourceService
             return (false, TranslationHelper.GetString("MsgErrInvalidAnisotropyFactorFinite") ?? "معامل اللاتماثل الزاوي غير صالح (يجب أن يكون رقماً منتهياً)");
         if (item.RelativeExpandedUncertaintyPercent.HasValue && !double.IsFinite(item.RelativeExpandedUncertaintyPercent.Value))
             return (false, TranslationHelper.GetString("MsgErrInvalidUncertaintyFinite") ?? "نسبة عدم اليقين غير صالحة (يجب أن تكون رقماً منتهياً)");
+        if (item.CalibrationDate.HasValue && item.CalibrationDate.Value.Date > DateTime.Today)
+            return (false, TranslationHelper.GetString("MsgErrCalibrationDateFuture") ?? "لا يمكن أن يكون تاريخ المعايرة في المستقبل.");
+        if (item.EmissionCalibrationDate.HasValue && item.EmissionCalibrationDate.Value.Date > DateTime.Today)
+            return (false, TranslationHelper.GetString("MsgErrEmissionCalibrationDateFuture") ?? "تاريخ معايرة الانبعاث لا يمكن أن يكون في المستقبل");
         if (item.NeutronSourceTypeId == Guid.Empty) return (false, "نوع المصدر النيتروني مطلوب");
 
         using var db = _dbFactory.CreateDbContext();

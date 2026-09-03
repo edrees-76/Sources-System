@@ -71,10 +71,14 @@ public class SourceService : ISourceService
         if (source == null) return (false, "بيانات المصدر غير صالحة");
         if (!double.IsFinite(source.InitialActivityValue))
             return (false, TranslationHelper.GetString("MsgErrInvalidInitialActivityFinite") ?? "قيمة النشاط الابتدائي غير صالحة (يجب أن تكون رقماً منتهياً)");
-        if (source.InitialActivityValue <= 0 && (isotopes == null || !isotopes.Any()))
+        if (source.InitialActivityValue <= 0 && (isotopes == null || !isotopes.Any()) && !source.SourceIsotopes.Any())
             return (false, "قيمة النشاط الابتدائي يجب أن تكون أكبر من صفر");
         if (isotopes != null && isotopes.Any(si => si.InitialActivityValue.HasValue && !double.IsFinite(si.InitialActivityValue.Value)))
             return (false, TranslationHelper.GetString("MsgErrInvalidIsotopeActivityFinite") ?? "قيمة النشاط لنظير الخليط غير صالحة (يجب أن تكون رقماً منتهياً)");
+        if (source.SourceIsotopes != null && source.SourceIsotopes.Any(si => si.InitialActivityValue.HasValue && !double.IsFinite(si.InitialActivityValue.Value)))
+            return (false, TranslationHelper.GetString("MsgErrInvalidIsotopeActivityFinite") ?? "قيمة النشاط لنظير الخليط غير صالحة (يجب أن تكون رقماً منتهياً)");
+        if (source.CalibrationDate.Date > DateTime.Today)
+            return (false, TranslationHelper.GetString("MsgErrCalibrationDateFuture") ?? "لا يمكن أن يكون تاريخ المعايرة في المستقبل.");
 
         using var db = _dbFactory.CreateDbContext();
         var trimmedCode = source.SourceCode?.Trim() ?? string.Empty;
@@ -97,6 +101,7 @@ public class SourceService : ISourceService
         if (isotopes != null && isotopes.Count > 0)
         {
             source.HasDetailedIsotopes = true;
+            source.SourceIsotopes ??= new List<SourceIsotope>();
             foreach (var si in isotopes)
             {
                 si.SourceId = source.Id;
@@ -140,6 +145,10 @@ public class SourceService : ISourceService
             return (false, "قيمة النشاط الابتدائي يجب أن تكون أكبر من صفر");
         if (isotopes != null && isotopes.Any(si => si.InitialActivityValue.HasValue && !double.IsFinite(si.InitialActivityValue.Value)))
             return (false, TranslationHelper.GetString("MsgErrInvalidIsotopeActivityFinite") ?? "قيمة النشاط لنظير الخليط غير صالحة (يجب أن تكون رقماً منتهياً)");
+        if (source.SourceIsotopes != null && source.SourceIsotopes.Any(si => si.InitialActivityValue.HasValue && !double.IsFinite(si.InitialActivityValue.Value)))
+            return (false, TranslationHelper.GetString("MsgErrInvalidIsotopeActivityFinite") ?? "قيمة النشاط لنظير الخليط غير صالحة (يجب أن تكون رقماً منتهياً)");
+        if (source.CalibrationDate.Date > DateTime.Today)
+            return (false, TranslationHelper.GetString("MsgErrCalibrationDateFuture") ?? "لا يمكن أن يكون تاريخ المعايرة في المستقبل.");
 
         using var db = _dbFactory.CreateDbContext();
         var existing = db.Sources.Include(s => s.SourceIsotopes).FirstOrDefault(s => s.Id == source.Id);
@@ -327,6 +336,13 @@ public class SourceService : ISourceService
 
         if (source == null) return (false, "المصدر غير موجود");
         if (!source.IsDeleted) return (false, "المصدر غير محذوف أصلاً");
+
+        // التحقق من عدم وجود مصدر نشط آخر بنفس الكود
+        var lowerCode = source.SourceCode?.Trim().ToLower() ?? string.Empty;
+        if (db.Sources.Any(s => s.Id != id && s.SourceCode.ToLower() == lowerCode))
+        {
+            return (false, $"لا يمكن استرجاع المصدر لوجود مصدر نشط آخر بنفس الكود ({source.SourceCode})");
+        }
 
         // فحص الموقع: إذا كان للمصدر موقع أصلي، تحقق هل الموقع محذوف
         if (source.LocationId.HasValue)

@@ -1397,7 +1397,7 @@
     <system:String x:Key="MsgErrInvalidIsotopeActivityFinite">قيمة النشاط لنظير الخليط غير صالحة (يجب أن تكون رقماً منتهياً)</system:String>
     <system:String x:Key="MsgErrInvalidMeasuredActivityFinite">قيمة النشاط المقاس غير صالحة (يجب أن تكون رقماً منتهياً)</system:String>
     <system:String x:Key="MsgErrInvalidMeanNeutronEnergyFinite">قيمة متوسط طاقة النيوترونات غير صالحة (يجب أن تكون رقماً منتهياً)</system:String>
-    <system:String x:Key="MsgErrInvalidAmbientDoseConversionFinite">قيمة معامل تحويل التدفق غير صالحة (يجب أن تكون رقماً منتهياً)</system:String>
+    <system:String x:Key="MsgErrInvalidAmbientDoseConversionFinite">قيمة معامل تحويل التدفق إلى الجرعة المحيطية غير صالحة (يجب أن تكون رقماً منتهياً)</system:String>
 </ResourceDictionary>
 
 

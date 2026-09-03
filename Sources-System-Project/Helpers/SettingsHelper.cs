@@ -30,16 +30,44 @@ public static class SettingsHelper
     /// </summary>
     public static string? MigrateLegacySettings(string legacyFile, string targetFile)
     {
-        if (File.Exists(targetFile)) return null;
-        if (!File.Exists(legacyFile)) return null;
+        var pendingFlag = targetFile + ".pending";
+
+        if (!File.Exists(legacyFile))
+        {
+            if (File.Exists(pendingFlag))
+            {
+                try { File.Delete(pendingFlag); } catch { }
+            }
+            return null;
+        }
+
+        // إذا كان الملف الهدف موجوداً ولا يوجد ترحيل معلّق، لا يلزم الترحيل
+        if (File.Exists(targetFile) && !File.Exists(pendingFlag))
+        {
+            return null;
+        }
 
         try
         {
-            File.Copy(legacyFile, targetFile);
+            File.Copy(legacyFile, targetFile, overwrite: true);
+            if (File.Exists(pendingFlag))
+            {
+                try { File.Delete(pendingFlag); } catch { }
+            }
             return null;
         }
         catch (Exception ex)
         {
+            // إبقاء علم الترحيل المعلّق قائماً إن فشل النسخ، وعدم مسحه إلا بعد نجاح مؤكد للنسخ
+            try
+            {
+                if (!File.Exists(pendingFlag))
+                {
+                    File.WriteAllText(pendingFlag, legacyFile);
+                }
+            }
+            catch { }
+
             return $"تعذّر نقل ملف الإعدادات من {legacyFile} إلى {targetFile}: {ex.Message}. " +
                    "ستُستعمل الإعدادات الافتراضية، ولم تتأثر قاعدة البيانات.";
         }
@@ -135,6 +163,11 @@ public static class SettingsHelper
         if (File.Exists(SettingsFile))
         {
             try { File.Delete(SettingsFile); } catch { }
+        }
+        var pendingFlag = SettingsFile + ".pending";
+        if (File.Exists(pendingFlag))
+        {
+            try { File.Delete(pendingFlag); } catch { }
         }
     }
 
