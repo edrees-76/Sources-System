@@ -49,10 +49,11 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
     private readonly IUserService _userService;
     private readonly IReportingService _reportingService;
     private readonly IDbContextFactory<AppDbContext>? _dbFactory;
+    private readonly IMessenger _messenger;
 
     public void Dispose()
     {
-        WeakReferenceMessenger.Default.UnregisterAll(this);
+        _messenger.UnregisterAll(this);
     }
 
     // ─── مجموعات البيانات ───
@@ -142,8 +143,10 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
         ISourceService sourceService, 
         IUserService userService, 
         IReportingService reportingService,
-        IDbContextFactory<AppDbContext>? dbFactory = null)
+        IDbContextFactory<AppDbContext>? dbFactory = null,
+        IMessenger? messenger = null)
     {
+        _messenger = messenger ?? WeakReferenceMessenger.Default;
         _borrowService = borrowService;
         _sourceService = sourceService;
         _userService = userService;
@@ -151,7 +154,7 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
         _dbFactory = dbFactory ?? (App.ServiceProvider?.GetService(typeof(IDbContextFactory<AppDbContext>)) as IDbContextFactory<AppDbContext>);
 
         // الاستماع لرسالة تحديث المصادر لتحديث قائمة المصادر المتاحة تلقائياً
-        WeakReferenceMessenger.Default.Register<SourcesUpdatedMessage>(this, (r, m) =>
+        _messenger.Register<SourcesUpdatedMessage>(this, (r, m) =>
         {
             RunOnUI(() =>
             {
