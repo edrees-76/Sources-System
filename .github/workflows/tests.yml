@@ -6,10 +6,18 @@ on:
   pull_request:
     branches: [ main ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-test:
     name: Build and Test
     runs-on: windows-latest
+    # الوظيفة كاملة تنتهي عادةً في ثلاث دقائق. عُلِّقت خطوة الاختبارات مرتين على عدّاء
+    # GitHub (التشغيل 98، والمحاولة الأولى من 99) على كود مرّ أخضر قبلها وبعدها،
+    # فبلا مهلة تبقى الوظيفة معلَّقة حتى الحد الافتراضي (ست ساعات) وتحرق الحصة.
+    timeout-minutes: 20
 
     steps:
       - name: Checkout Code
@@ -27,4 +35,5 @@ jobs:
         run: dotnet build Sources.sln --configuration Release --no-restore
 
       - name: Run Unit Tests
+        timeout-minutes: 10
         run: dotnet test Sources.Tests/Sources.Tests.csproj --configuration Release --no-build --logger "console;verbosity=detailed"
