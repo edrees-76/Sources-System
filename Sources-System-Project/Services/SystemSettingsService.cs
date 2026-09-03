@@ -5,6 +5,7 @@ using System.Linq;
 using Sources.Data;
 using Sources.Models;
 using Microsoft.EntityFrameworkCore;
+using Sources.Helpers;
 
 namespace Sources.Services;
 
@@ -51,7 +52,7 @@ public class SystemSettingsService : ISystemSettingsService
             // التسجيل مرة واحدة لكل مفتاح: الدالة تُستدعى في كل دورة فحص فيغرق السجل.
             if (_corruptedKeys.TryAdd(key, 0))
             {
-                var loggedValue = value.Length > 50 ? value.Substring(0, 50) + "…" : value;
+                var loggedValue = LogTextHelper.Truncate(value);
                 LoggerService.LogWarning(
                     $"قيمة الإعداد «{key}» المخزَّنة في قاعدة البيانات تالفة وتعذّر تحويلها إلى {typeof(T).Name}: " +
                     $"القيمة «{loggedValue}»، السبب: {ex.Message}. سيُستعمل الافتراضي {defaultValue} حتى تُصحَّح. " +

@@ -10,6 +10,12 @@ namespace Sources.Helpers;
 /// </summary>
 public static class ClipboardCopyHelper
 {
+    /// <summary>نص الارتداد حين يتعذّر العثور على مورد الترجمة. مصدر واحد يشير إليه الإنتاج والاختبار.</summary>
+    public const string FallbackFailureMessage =
+        "تعذّر النسخ إلى الحافظة. قد يكون تطبيق آخر يستعملها الآن. أعد المحاولة بعد قليل.";
+
+    public const string FallbackFailureTitle = "تعذّر النسخ";
+
     /// <summary>يُرجع true عند نجاح النسخ. لا يرمي أبداً.</summary>
     public static bool CopyWithFeedback(
         IClipboardService clipboard,
@@ -30,9 +36,8 @@ public static class ClipboardCopyHelper
         {
             LoggerService.LogError($"تعذّر النسخ إلى الحافظة: {context}", ex);
             DialogHelper.ShowError(
-                TranslationHelper.GetString("ClipboardCopyFailed")
-                    ?? "تعذّر النسخ إلى الحافظة. قد يكون تطبيق آخر يستعملها الآن. أعد المحاولة بعد قليل.",
-                TranslationHelper.GetString("ClipboardCopyFailedTitle") ?? "تعذّر النسخ");
+                TranslationHelper.GetString("ClipboardCopyFailed") ?? FallbackFailureMessage,
+                TranslationHelper.GetString("ClipboardCopyFailedTitle") ?? FallbackFailureTitle);
             return false;
         }
     }

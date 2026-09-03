@@ -495,6 +495,7 @@ public class BackupScanAndSettingsIntegrityTests : IDisposable
         using var sut = new AutoBackupService(mockBackup.Object, mockSettings.Object);
 
         // Act
+        var beforeAct = DateTime.Now;
         sut.TriggerImmediateCheck();
         var wasCalled = saveCalledEvent.Wait(TimeSpan.FromSeconds(3));
 
@@ -504,7 +505,9 @@ public class BackupScanAndSettingsIntegrityTests : IDisposable
         Assert.NotNull(savedSettingValue);
         Assert.True(DateTime.TryParse(savedSettingValue, System.Globalization.CultureInfo.InvariantCulture,
             System.Globalization.DateTimeStyles.RoundtripKind, out var parsed), "Saved date must be valid round-trip DateTime string.");
-        Assert.True((DateTime.Now - parsed).TotalMinutes < 2, "Saved date should be current timestamp.");
+        // توكيد محدود الطرفين: التوكيد القديم كان يمرّ على أي تاريخ مستقبلي لأن الفرق يصير سالباً،
+        // والتاريخ المستقبلي في LastAutoBackupAt يوقف النسخ التلقائي (أُصلح في هذه الجولة).
+        Assert.InRange(parsed, beforeAct.AddSeconds(-1), DateTime.Now.AddSeconds(1));
     }
 
     [Fact]
@@ -568,8 +571,9 @@ public class BackupScanAndSettingsIntegrityTests : IDisposable
         mockBackup.Verify(b => b.CreateBackup(), Times.Never);
     }
 
+    // الاقتطاع نفسه غير قابل للملاحظة من هنا لأنه يقع داخل نص يُمرَّر إلى LoggerService؛ تغطيته في LogTextHelperTests.
     [Fact]
-    public void GetSetting_WhenCorruptValueIsVeryLong_TruncatesValueInWarning()
+    public void GetSetting_WhenCorruptValueIsVeryLong_RecordsCorruptedKeyWithoutThrowing()
     {
         // Arrange: قيمة تالفة بطول 200 حرف
         var sut = new SystemSettingsService(_fixture.ContextFactory);
@@ -585,6 +589,146 @@ public class BackupScanAndSettingsIntegrityTests : IDisposable
 
         Assert.Null(ex);
         Assert.Contains("LongCorruptKey", sut.CorruptedKeys);
+    }
+
+    [Fact]
+    public void AutoBackup_WhenRecordedDateIsInFuture_IgnoresItAndCreatesBackup()
+    {
+        // Arrange: تاريخ محفوظ في المستقبل (+2 يوم) وملف نسخة قديم (قبل 5 أيام) والجدولة يومية
+        var backupDir = Path.Combine(_testTempDir, "FutureRecorded_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(backupDir);
+
+        var oldFile = Path.Combine(backupDir, "SOURCES_backup_2026-08-20_10-00-00.zip");
+        File.WriteAllBytes(oldFile, new byte[16]);
+        File.SetCreationTime(oldFile, DateTime.Now.AddDays(-5));
+
+        var futureRecorded = DateTime.Now.AddDays(2).ToString("o", System.Globalization.CultureInfo.InvariantCulture);
+
+        var mockSettings = new Mock<ISystemSettingsService>(MockBehavior.Strict);
+        mockSettings.Setup(s => s.GetSetting<bool>("AutoBackupEnabled", false)).Returns(true);
+        mockSettings.Setup(s => s.GetSetting("AutoBackupFrequency", "Daily")).Returns("Daily");
+        mockSettings.Setup(s => s.GetSetting("BackupPath", string.Empty)).Returns(backupDir);
+        mockSettings.Setup(s => s.GetSetting("LastAutoBackupAt", string.Empty)).Returns(futureRecorded);
+        mockSettings.Setup(s => s.SaveSetting("LastAutoBackupAt", It.IsAny<string>()));
+
+        var backupCalledEvent = new ManualResetEventSlim(false);
+        var mockBackup = new Mock<IBackupService>(MockBehavior.Strict);
+        mockBackup
+            .Setup(b => b.CreateBackup(backupDir))
+            .Returns((true, "نجح النسخ", Path.Combine(backupDir, "SOURCES_backup_new.zip")))
+            .Callback(() => backupCalledEvent.Set());
+
+        using var sut = new AutoBackupService(mockBackup.Object, mockSettings.Object);
+
+        // Act
+        sut.TriggerImmediateCheck();
+        var wasCalled = backupCalledEvent.Wait(TimeSpan.FromSeconds(3));
+
+        // Assert: التاريخ المستقبلي يُهمل والنسخة القديمة تتجاوز الفاصل، فتُنشأ نسخة جديدة
+        Assert.True(wasCalled, "CreateBackup should be called once when recorded date is in future.");
+        mockBackup.Verify(b => b.CreateBackup(backupDir), Times.Once);
+    }
+
+    [Fact]
+    public void AutoBackup_WhenScannedFileTimestampIsInFuture_IgnoresItAndCreatesBackup()
+    {
+        // Arrange: لا تاريخ محفوظ، والقرص يحوي ملف نسخة بختم زمني في المستقبل (+2 يوم)
+        var backupDir = Path.Combine(_testTempDir, "FutureScanned_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(backupDir);
+
+        var futureFile = Path.Combine(backupDir, "SOURCES_backup_2026-09-05_10-00-00.zip");
+        File.WriteAllBytes(futureFile, new byte[16]);
+        File.SetCreationTime(futureFile, DateTime.Now.AddDays(2));
+
+        var mockSettings = new Mock<ISystemSettingsService>(MockBehavior.Strict);
+        mockSettings.Setup(s => s.GetSetting<bool>("AutoBackupEnabled", false)).Returns(true);
+        mockSettings.Setup(s => s.GetSetting("AutoBackupFrequency", "Daily")).Returns("Daily");
+        mockSettings.Setup(s => s.GetSetting("BackupPath", string.Empty)).Returns(backupDir);
+        mockSettings.Setup(s => s.GetSetting("LastAutoBackupAt", string.Empty)).Returns(string.Empty);
+        mockSettings.Setup(s => s.SaveSetting("LastAutoBackupAt", It.IsAny<string>()));
+
+        var backupCalledEvent = new ManualResetEventSlim(false);
+        var mockBackup = new Mock<IBackupService>(MockBehavior.Strict);
+        mockBackup
+            .Setup(b => b.CreateBackup(backupDir))
+            .Returns((true, "نجح النسخ", Path.Combine(backupDir, "SOURCES_backup_new.zip")))
+            .Callback(() => backupCalledEvent.Set());
+
+        using var sut = new AutoBackupService(mockBackup.Object, mockSettings.Object);
+
+        // Act
+        sut.TriggerImmediateCheck();
+        var wasCalled = backupCalledEvent.Wait(TimeSpan.FromSeconds(3));
+
+        // Assert: التاريخ الممسوح في المستقبل يُهمل فيُعتبر أنه لا نسخ سابقة، وتُنشأ نسخة
+        Assert.True(wasCalled, "CreateBackup should be called once when scanned timestamp is in future.");
+        mockBackup.Verify(b => b.CreateBackup(backupDir), Times.Once);
+    }
+
+    [Fact]
+    public async Task AutoBackup_WhenRecordedDateIsWithinClockSkewTolerance_IsHonoredAndSkipsBackup()
+    {
+        // Arrange: التاريخ المحفوظ +1 دقيقة في المستقبل (ضمن سماح 5 دقائق)، والمجلد فارغ
+        var backupDir = Path.Combine(_testTempDir, "SkewTolerance_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(backupDir);
+
+        var nearFutureRecorded = DateTime.Now.AddMinutes(1).ToString("o", System.Globalization.CultureInfo.InvariantCulture);
+
+        var mockSettings = new Mock<ISystemSettingsService>(MockBehavior.Strict);
+        mockSettings.Setup(s => s.GetSetting<bool>("AutoBackupEnabled", false)).Returns(true);
+        mockSettings.Setup(s => s.GetSetting("AutoBackupFrequency", "Daily")).Returns("Daily");
+        mockSettings.Setup(s => s.GetSetting("BackupPath", string.Empty)).Returns(backupDir);
+        mockSettings.Setup(s => s.GetSetting("LastAutoBackupAt", string.Empty)).Returns(nearFutureRecorded);
+
+        var mockBackup = new Mock<IBackupService>(MockBehavior.Strict);
+
+        using var sut = new AutoBackupService(mockBackup.Object, mockSettings.Object);
+
+        // Act
+        sut.TriggerImmediateCheck();
+        await Task.Delay(300);
+
+        // Assert: انحراف الساعة الطفيف يُقبل ولا يُلغى، والفاصل اليومي لم يحن، فلا يتم إنشاء نسخة
+        mockBackup.Verify(b => b.CreateBackup(It.IsAny<string>()), Times.Never);
+        mockBackup.Verify(b => b.CreateBackup(), Times.Never);
+    }
+
+    [Fact]
+    public void AutoBackup_WhenBothRecordedAndScannedAreInFuture_CreatesBackup()
+    {
+        // Arrange: كِلا التاريخين (المحفوظ في الإعدادات والممسوح من المجلد) يقعان في المستقبل (+2 يوم)
+        var backupDir = Path.Combine(_testTempDir, "BothFuture_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(backupDir);
+
+        var futureFile = Path.Combine(backupDir, "SOURCES_backup_2026-09-05_10-00-00.zip");
+        File.WriteAllBytes(futureFile, new byte[16]);
+        File.SetCreationTime(futureFile, DateTime.Now.AddDays(2));
+
+        var futureRecorded = DateTime.Now.AddDays(2).ToString("o", System.Globalization.CultureInfo.InvariantCulture);
+
+        var mockSettings = new Mock<ISystemSettingsService>(MockBehavior.Strict);
+        mockSettings.Setup(s => s.GetSetting<bool>("AutoBackupEnabled", false)).Returns(true);
+        mockSettings.Setup(s => s.GetSetting("AutoBackupFrequency", "Daily")).Returns("Daily");
+        mockSettings.Setup(s => s.GetSetting("BackupPath", string.Empty)).Returns(backupDir);
+        mockSettings.Setup(s => s.GetSetting("LastAutoBackupAt", string.Empty)).Returns(futureRecorded);
+        mockSettings.Setup(s => s.SaveSetting("LastAutoBackupAt", It.IsAny<string>()));
+
+        var backupCalledEvent = new ManualResetEventSlim(false);
+        var mockBackup = new Mock<IBackupService>(MockBehavior.Strict);
+        mockBackup
+            .Setup(b => b.CreateBackup(backupDir))
+            .Returns((true, "نجح النسخ", Path.Combine(backupDir, "SOURCES_backup_new.zip")))
+            .Callback(() => backupCalledEvent.Set());
+
+        using var sut = new AutoBackupService(mockBackup.Object, mockSettings.Object);
+
+        // Act
+        sut.TriggerImmediateCheck();
+        var wasCalled = backupCalledEvent.Wait(TimeSpan.FromSeconds(3));
+
+        // Assert: كِلا التاريخين المستقبليين يُهملان، وتُنشأ نسخة احتياطية
+        Assert.True(wasCalled, "CreateBackup should be called once when both dates are in future.");
+        mockBackup.Verify(b => b.CreateBackup(backupDir), Times.Once);
     }
 
     private string CreateLockedDirectory(out Action cleanup)

@@ -12,6 +12,9 @@ public class AutoBackupService : IAutoBackupService, IDisposable
     /// <summary>مفتاح تاريخ آخر نسخة تلقائية ناجحة. يُعتمد عليه حين يتعذّر مسح مجلد النسخ.</summary>
     private const string LastAutoBackupKey = "LastAutoBackupAt";
 
+    /// <summary>سماح لانحراف ساعة طفيف قبل اعتبار التاريخ مستقبلياً.</summary>
+    private static readonly TimeSpan ClockSkewTolerance = TimeSpan.FromMinutes(5);
+
     private readonly IBackupService _backupService;
     private readonly ISystemSettingsService _settingsService;
     private System.Timers.Timer? _timer;
@@ -90,10 +93,10 @@ public class AutoBackupService : IAutoBackupService, IDisposable
                 && DateTime.TryParse(recordedText, System.Globalization.CultureInfo.InvariantCulture,
                     System.Globalization.DateTimeStyles.RoundtripKind, out var parsedRecorded))
             {
-                recordedLast = parsedRecorded;
+                recordedLast = RejectFutureDate(parsedRecorded, "الإعدادات (LastAutoBackupAt)");
             }
 
-            DateTime? lastBackupDate = scan.Latest;
+            DateTime? lastBackupDate = RejectFutureDate(scan.Latest, "مسح مجلد النسخ");
             if (recordedLast.HasValue && (!lastBackupDate.HasValue || recordedLast.Value > lastBackupDate.Value))
             {
                 lastBackupDate = recordedLast;
@@ -159,6 +162,25 @@ public class AutoBackupService : IAutoBackupService, IDisposable
         {
             _isChecking = false;
         }
+    }
+
+    /// <summary>
+    /// يُهمل أي تاريخ يقع في المستقبل. اعتماد تاريخ مستقبلي يجعل (DateTime.Now - تاريخ)
+    /// سالباً فلا يبلغ الفاصل المطلوب أبداً، فينقطع النسخ التلقائي بصمت حتى يحين ذلك التاريخ.
+    /// </summary>
+    private static DateTime? RejectFutureDate(DateTime? value, string sourceLabel)
+    {
+        if (!value.HasValue) return null;
+
+        var now = DateTime.Now;
+        if (value.Value <= now + ClockSkewTolerance) return value;
+
+        LoggerService.LogWarning(
+            $"فحص النسخ الاحتياطي التلقائي: تاريخ آخر نسخة المأخوذ من {sourceLabel} " +
+            $"({value.Value:yyyy-MM-dd HH:mm:ss}) يقع في المستقبل مقارنةً بساعة الجهاز ({now:yyyy-MM-dd HH:mm:ss}) " +
+            "فيُهمَل. اعتماده يوقف النسخ التلقائي إلى أن يحين ذلك التاريخ. " +
+            "راجع ضبط ساعة الجهاز أو مصدر ملفات النسخ في المجلد.");
+        return null;
     }
 
     private static List<string> BuildTargetFolders(string backupPath)

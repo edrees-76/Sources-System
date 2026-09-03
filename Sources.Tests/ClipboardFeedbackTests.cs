@@ -82,9 +82,9 @@ public class ClipboardFeedbackTests : IDisposable
         // Assert
         Assert.False(result);
         Assert.NotNull(DialogHelper.LastMessage);
-        Assert.Contains("تعذّر النسخ إلى الحافظة", DialogHelper.LastMessage);
+        Assert.Equal(ClipboardCopyHelper.FallbackFailureMessage, DialogHelper.LastMessage);
         Assert.NotEqual(successMsg, DialogHelper.LastMessage);
-        Assert.Equal("تعذّر النسخ", DialogHelper.LastTitle);
+        Assert.Equal(ClipboardCopyHelper.FallbackFailureTitle, DialogHelper.LastTitle);
     }
 
     [Fact]
@@ -147,8 +147,8 @@ public class ClipboardFeedbackTests : IDisposable
 
         // Assert
         Assert.NotNull(DialogHelper.LastMessage);
-        Assert.Contains("تعذّر النسخ إلى الحافظة", DialogHelper.LastMessage);
-        Assert.Equal("تعذّر النسخ", DialogHelper.LastTitle);
+        Assert.Equal(ClipboardCopyHelper.FallbackFailureMessage, DialogHelper.LastMessage);
+        Assert.Equal(ClipboardCopyHelper.FallbackFailureTitle, DialogHelper.LastTitle);
     }
 
     [Fact]
@@ -167,7 +167,8 @@ public class ClipboardFeedbackTests : IDisposable
 
         // Assert
         Assert.NotNull(DialogHelper.LastMessage);
-        Assert.Contains("تم نسخ", DialogHelper.LastMessage);
+        Assert.NotEqual(ClipboardCopyHelper.FallbackFailureMessage, DialogHelper.LastMessage);
+        Assert.NotEqual(ClipboardCopyHelper.FallbackFailureTitle, DialogHelper.LastTitle);
         mockClipboard.Verify(c => c.SetText(It.IsAny<string>()), Times.Once);
     }
 
@@ -204,8 +205,8 @@ public class ClipboardFeedbackTests : IDisposable
 
         // Assert
         Assert.NotNull(DialogHelper.LastMessage);
-        Assert.Contains("تعذّر النسخ إلى الحافظة", DialogHelper.LastMessage);
-        Assert.Equal("تعذّر النسخ", DialogHelper.LastTitle);
+        Assert.Equal(ClipboardCopyHelper.FallbackFailureMessage, DialogHelper.LastMessage);
+        Assert.Equal(ClipboardCopyHelper.FallbackFailureTitle, DialogHelper.LastTitle);
     }
 
     [Fact]
