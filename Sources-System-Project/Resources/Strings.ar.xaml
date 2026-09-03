@@ -1193,6 +1193,10 @@
     <system:String x:Key="PromptAdminPasswordForDeletions">يرجى إدخال كلمة مرور مدير النظام للوصول إلى شاشة المحذوفات الإدارية</system:String>
     <system:String x:Key="MsgErrAdminOnly">غير مصرح: هذه العملية مخصصة لمدير النظام فقط</system:String>
     <system:String x:Key="MsgErrNoCurrentUser">لا يوجد مستخدم مسجل حالياً في الجلسة</system:String>
+    <system:String x:Key="MsgErrNotLoggedIn">لا يمكن تنفيذ العملية: لا يوجد مستخدم مسجَّل الدخول.</system:String>
+    <system:String x:Key="MsgErrReadOnlyUser">لا تملك صلاحية التعديل. حسابك للاطّلاع فقط.</system:String>
+    <system:String x:Key="MsgErrNoSectionPermission">لا تملك صلاحية الوصول إلى هذا القسم.</system:String>
+    <system:String x:Key="MsgErrOperationAdminOnly">هذه العملية مقصورة على مدير النظام.</system:String>
     <system:String x:Key="HeaderEntityType">نوع الكيان</system:String>
     <system:String x:Key="HeaderIdentifier">الاسم / المعرّف</system:String>
     <system:String x:Key="HeaderDeletedBy">حُذف بواسطة</system:String>

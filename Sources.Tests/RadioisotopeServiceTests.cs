@@ -25,14 +25,17 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
         _fixture.ResetDatabase();
 
         _fakeAuditService = new FakeAuditService();
-        var role = new Role { Id = Guid.NewGuid(), RoleName = "مدير النظام" };
+        var role = new Role { Id = Guid.NewGuid(), RoleName = "مدير النظام", Permissions = "All" };
         var user = new User
         {
             Id = Guid.NewGuid(),
             FullName = "مستخدم اختباري",
             Username = "testuser",
             RoleId = role.Id,
-            IsActive = true
+            Role = role,
+            Permissions = "All",
+            IsActive = true,
+            IsEditor = true
         };
         _fakeUserService = new FakeUserService(user);
 

@@ -133,6 +133,9 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
     /// <summary>حذف نوع مصدر نيتروني</summary>
     public (bool Success, string Message) Delete(Guid id)
     {
+        var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Sources");
+        if (!guard.Allowed) return (false, guard.Message);
+
         using var db = _dbFactory.CreateDbContext();
         var item = db.NeutronSourceTypes.Include(t => t.NeutronSources).FirstOrDefault(t => t.Id == id);
         if (item == null) return (false, "نوع المصدر غير موجود");
@@ -160,6 +163,9 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
     /// <summary>استرجاع نوع مصدر نيتروني محذوف</summary>
     public (bool Success, string Message) Restore(Guid id)
     {
+        var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Sources");
+        if (!guard.Allowed) return (false, guard.Message);
+
         using var db = _dbFactory.CreateDbContext();
         var item = db.NeutronSourceTypes.IgnoreQueryFilters().FirstOrDefault(t => t.Id == id);
         if (item == null) return (false, "نوع المصدر غير موجود");

@@ -519,7 +519,7 @@ namespace Sources.Tests
             var location = new Location { Id = Guid.NewGuid(), LocationName = "مختبر غاما 1", IsDeleted = false };
             var isotope = new Radioisotope { Id = Guid.NewGuid(), Symbol = "Cs-137", Name = "Cesium-137", HalfLife = 30.17, RadiationType = "Gamma" };
             var unit = new ActivityUnit { Id = Guid.NewGuid(), UnitName = "MBq", UnitSymbol = "MBq", ConversionToBq = 1e6 };
-            var adminUser = new User { Id = Guid.NewGuid(), Username = "admin_user", FullName = "مدير التدقيق", Role = new Role { RoleName = "مدير" } };
+            var adminUser = new User { Id = Guid.NewGuid(), Username = "admin_user", FullName = "مدير التدقيق", Role = new Role { RoleName = "مدير النظام", Permissions = "All" }, Permissions = "All", IsEditor = true };
 
             using (var db = _fixture.ContextFactory.CreateDbContext())
             {
@@ -586,7 +586,7 @@ namespace Sources.Tests
         public void RestoreLocation_Succeeds_AndClearsDeletionFlags_AndLogsAudit()
         {
             // Arrange
-            var adminUser = new User { Id = Guid.NewGuid(), Username = "admin_loc", FullName = "مسؤول المواقع", Role = new Role { RoleName = "مدير" } };
+            var adminUser = new User { Id = Guid.NewGuid(), Username = "admin_loc", FullName = "مسؤول المواقع", Role = new Role { RoleName = "مدير النظام", Permissions = "All" }, Permissions = "All", IsEditor = true };
             var locationId = Guid.NewGuid();
 
             using (var db = _fixture.ContextFactory.CreateDbContext())
@@ -637,11 +637,23 @@ namespace Sources.Tests
             // Arrange
             var role = new Role { Id = Guid.NewGuid(), RoleName = "مشغل" };
             var userId = Guid.NewGuid();
-            var adminUser = new User { Id = Guid.NewGuid(), Username = "admin_usr", FullName = "مدير الحسابات", Role = new Role { RoleName = "مدير" } };
+            var adminRole = new Role { Id = Guid.NewGuid(), RoleName = "مدير النظام", Permissions = "All" };
+            var adminUser = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "admin_usr",
+                FullName = "مدير الحسابات",
+                RoleId = adminRole.Id,
+                Role = adminRole,
+                PasswordHash = PasswordHelper.HashPassword("AdminPass123!"),
+                Permissions = "All",
+                IsActive = true,
+                IsEditor = true
+            };
 
             using (var db = _fixture.ContextFactory.CreateDbContext())
             {
-                db.Roles.Add(role);
+                db.Roles.AddRange(role, adminRole);
                 db.Users.Add(adminUser);
                 db.Users.Add(new User
                 {
@@ -661,6 +673,7 @@ namespace Sources.Tests
             mockUserService.Setup(u => u.CurrentUser).Returns(adminUser);
             var auditService = new AuditService(_fixture.ContextFactory, mockUserService.Object);
             var userService = new UserService(_fixture.ContextFactory, auditService);
+            userService.Login("admin_usr", "AdminPass123!");
 
             // Act
             var (success, message) = userService.RestoreUser(userId);
@@ -690,7 +703,7 @@ namespace Sources.Tests
         {
             // Arrange
             var isotopeId = Guid.NewGuid();
-            var adminUser = new User { Id = Guid.NewGuid(), Username = "admin_iso", FullName = "مسؤول النظائر", Role = new Role { RoleName = "مدير" } };
+            var adminUser = new User { Id = Guid.NewGuid(), Username = "admin_iso", FullName = "مسؤول النظائر", Role = new Role { RoleName = "مدير النظام", Permissions = "All" }, Permissions = "All", IsEditor = true };
 
             using (var db = _fixture.ContextFactory.CreateDbContext())
             {
@@ -770,7 +783,9 @@ namespace Sources.Tests
                 db.SaveChanges();
             }
 
+            var adminUser = new User { Id = Guid.NewGuid(), Username = "admin_caller", Role = new Role { RoleName = "مدير النظام", Permissions = "All" }, Permissions = "All", IsEditor = true };
             var mockUserService = new Mock<IUserService>();
+            mockUserService.Setup(u => u.CurrentUser).Returns(adminUser);
             var auditService = new AuditService(_fixture.ContextFactory, mockUserService.Object);
             var sourceService = new SourceService(_fixture.ContextFactory, new DecayCalculationService(), auditService, mockUserService.Object);
 
@@ -796,12 +811,25 @@ namespace Sources.Tests
         {
             // Arrange
             var role = new Role { Id = Guid.NewGuid(), RoleName = "فني" };
+            var adminRole = new Role { Id = Guid.NewGuid(), RoleName = "مدير النظام", Permissions = "All" };
+            var adminUser = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "admin_conflict_caller",
+                RoleId = adminRole.Id,
+                Role = adminRole,
+                PasswordHash = PasswordHelper.HashPassword("Pass123!"),
+                Permissions = "All",
+                IsActive = true,
+                IsEditor = true
+            };
             var deletedUserId = Guid.NewGuid();
             var activeUserId = Guid.NewGuid();
 
             using (var db = _fixture.ContextFactory.CreateDbContext())
             {
-                db.Roles.Add(role);
+                db.Roles.AddRange(role, adminRole);
+                db.Users.Add(adminUser);
 
                 // Deleted user with username 'same_user'
                 db.Users.Add(new User
@@ -828,8 +856,10 @@ namespace Sources.Tests
             }
 
             var mockUserService = new Mock<IUserService>();
+            mockUserService.Setup(u => u.CurrentUser).Returns(adminUser);
             var auditService = new AuditService(_fixture.ContextFactory, mockUserService.Object);
             var userService = new UserService(_fixture.ContextFactory, auditService);
+            userService.Login("admin_conflict_caller", "Pass123!");
 
             // Act
             var (success, message) = userService.RestoreUser(deletedUserId);
@@ -858,7 +888,11 @@ namespace Sources.Tests
                 db.SaveChanges();
             }
 
-            var vm = new DeletionsViewModel(_fixture.ContextFactory);
+            var mockUser = new Mock<IUserService>();
+            var adminUser = new User { Id = Guid.NewGuid(), Username = "admin", Role = new Role { RoleName = "مدير النظام", Permissions = "All" }, Permissions = "All", IsEditor = true };
+            mockUser.Setup(u => u.CurrentUser).Returns(adminUser);
+
+            var vm = new DeletionsViewModel(_fixture.ContextFactory, userService: mockUser.Object);
             await vm.LoadDeletedItemsAsync();
 
             var rowToRestore = vm.AllItems.FirstOrDefault(i => i.Id == loc.Id);

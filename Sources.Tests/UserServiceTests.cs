@@ -90,6 +90,14 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
         return user;
     }
 
+    private User LoginAsAdmin(UserService? service = null)
+    {
+        var targetService = service ?? _userService;
+        var admin = CreateTestUser(username: "admin_actor_" + Guid.NewGuid().ToString("N")[..8], password: "AdminPassword123!", role: _adminRole);
+        targetService.Login(admin.Username, "AdminPassword123!");
+        return admin;
+    }
+
     public void Dispose()
     {
         _userService.Logout();
@@ -382,6 +390,7 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     [Fact]
     public void UnlockAccount_WhenUserIsLocked_ClearsBothLockoutEndAndFailedAttempts()
     {
+        LoginAsAdmin();
         // Arrange: مستخدم مقفول ولديه محاولات
         var user = CreateTestUser(
             username: "to_unlock",
@@ -409,6 +418,7 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     [Fact]
     public void UnlockAccount_WithNonExistentUser_ReturnsNotFound()
     {
+        LoginAsAdmin();
         // Act
         var (success, message) = _userService.UnlockAccount(Guid.NewGuid());
 
@@ -420,6 +430,7 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     [Fact]
     public void ResetPassword_ChangesPasswordHashAndClearsLockoutAndCounter()
     {
+        LoginAsAdmin();
         // Arrange: مستخدم بكلمة مرور قديمة ومقفول
         var user = CreateTestUser(
             username: "pass_reset_user",
@@ -454,6 +465,7 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     [Fact]
     public void ResetPassword_WithNonExistentUser_ReturnsNotFound()
     {
+        LoginAsAdmin();
         // Act
         var (success, message) = _userService.ResetPassword(Guid.NewGuid(), "AnyPass");
 
@@ -465,6 +477,7 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     [Fact]
     public void ToggleUserFreeze_OnAdminUser_ProtectsAdminFromFreezing()
     {
+        LoginAsAdmin();
         // Arrange: مستخدم مدير النظام الرئيسي "admin"
         var adminUser = CreateTestUser(username: "admin", password: "AdminPassword", role: _adminRole, isActive: true);
 
@@ -483,6 +496,7 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     [Fact]
     public void DeleteUser_OnAdminUser_ProtectsAdminFromDeletion()
     {
+        LoginAsAdmin();
         // Arrange: مستخدم "admin"
         var adminUser = CreateTestUser(username: "admin", password: "AdminPassword", role: _adminRole);
 
@@ -501,6 +515,7 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     [Fact]
     public void ToggleUserFreeze_OnNormalUser_TogglesActiveStateSuccessfully()
     {
+        LoginAsAdmin();
         // Arrange
         var user = CreateTestUser(username: "normal_freeze", password: "Pass", isActive: true);
 
@@ -531,7 +546,7 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     public void DeleteUser_OnNormalUser_PerformsSoftDeleteSuccessfully_AndRecordsAuditLog()
     {
         // Arrange
-        var admin = CreateTestUser(username: "admin_actor", password: "AdminPassword123");
+        var admin = CreateTestUser(username: "admin_actor", password: "AdminPassword123", role: _adminRole);
         var user = CreateTestUser(username: "to_delete", password: "Pass");
 
         // Login as admin
@@ -567,6 +582,7 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     [Fact]
     public void ToggleUserFreeze_And_DeleteUser_WithNonExistentUser_ReturnsNotFound()
     {
+        LoginAsAdmin();
         var nonExistentId = Guid.NewGuid();
 
         var (freezeSuccess, freezeMsg) = _userService.ToggleUserFreeze(nonExistentId);
@@ -601,7 +617,7 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     public void HasPermission_WhenNormalUserLoggedIn_ReturnsTrueOnlyForAssignedPermissions()
     {
         // Arrange: دور المستخدم يحتوي فقط على "Sources,Reports"
-        CreateTestUser(username: "normal_perm", password: "Pass", role: _userRole);
+        CreateTestUser(username: "normal_perm", password: "Pass", role: _userRole, permissions: "Sources,Reports");
         _userService.Login("normal_perm", "Pass");
 
         // Act & Assert
@@ -688,6 +704,7 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     [Fact]
     public void CreateUser_WithUniqueUsername_CreatesAndHashesPassword()
     {
+        LoginAsAdmin();
         // Arrange
         var newUser = new User
         {
@@ -714,6 +731,7 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     [Fact]
     public void CreateUser_WithDuplicateUsername_ReturnsError()
     {
+        LoginAsAdmin();
         // Arrange
         CreateTestUser(username: "duplicate_user", password: "Password123");
 
@@ -735,6 +753,7 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     [Fact]
     public void UpdateUser_WithValidData_UpdatesUserProperties()
     {
+        LoginAsAdmin();
         // Arrange
         var user = CreateTestUser(username: "to_update", password: "Password123");
 
@@ -763,6 +782,7 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
         // Arrange
         var mockAuditService = new Moq.Mock<IAuditService>();
         var userServiceWithAudit = new UserService(_fixture.ContextFactory, mockAuditService.Object);
+        LoginAsAdmin(userServiceWithAudit);
         var user = CreateTestUser(username: "audit_user_update", password: "Password123", permissions: "Sources");
 
         // Act
@@ -785,6 +805,7 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     [Fact]
     public void UpdateUser_WithNonExistentUser_ReturnsNotFound()
     {
+        LoginAsAdmin();
         var nonExistentUser = new User
         {
             Id = Guid.NewGuid(),

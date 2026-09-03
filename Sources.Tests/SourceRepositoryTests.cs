@@ -53,8 +53,11 @@ public class SourceRepositoryTests : IClassFixture<SqliteInMemoryFixture>, IDisp
         if (_userService.CurrentUser != null)
         {
             var roleId = _userService.CurrentUser.RoleId != Guid.Empty ? _userService.CurrentUser.RoleId : Guid.NewGuid();
-            var role = new Role { Id = roleId, RoleName = "مدير المصادر" };
+            var role = new Role { Id = roleId, RoleName = "مدير النظام", Permissions = "All" };
             _userService.CurrentUser.RoleId = role.Id;
+            _userService.CurrentUser.Role = role;
+            _userService.CurrentUser.Permissions = "All";
+            _userService.CurrentUser.IsEditor = true;
             context.Roles.Add(role);
             context.Users.Add(_userService.CurrentUser);
         }

@@ -227,6 +227,9 @@ public class SourceService : ISourceService
 
     public (bool Success, string Message) DeleteSource(Guid id)
     {
+        var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Sources");
+        if (!guard.Allowed) return (false, guard.Message);
+
         using var db = _dbFactory.CreateDbContext();
         var source = db.Sources
             .Include(s => s.Radioisotope)
@@ -310,6 +313,9 @@ public class SourceService : ISourceService
 
     public (bool Success, string Message) RestoreSource(Guid id)
     {
+        var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Sources");
+        if (!guard.Allowed) return (false, guard.Message);
+
         using var db = _dbFactory.CreateDbContext();
         var source = db.Sources
             .IgnoreQueryFilters()

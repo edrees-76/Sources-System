@@ -113,6 +113,9 @@ public class RadioisotopeService : IRadioisotopeService
 
     public (bool Success, string Message) Delete(Guid id)
     {
+        var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Radioisotopes");
+        if (!guard.Allowed) return (false, guard.Message);
+
         using var db = _dbFactory.CreateDbContext();
         var item = db.Radioisotopes.Include(r => r.Sources).FirstOrDefault(r => r.Id == id);
         if (item == null) return (false, "النظير غير موجود");
@@ -136,6 +139,9 @@ public class RadioisotopeService : IRadioisotopeService
 
     public (bool Success, string Message) Restore(Guid id)
     {
+        var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Radioisotopes");
+        if (!guard.Allowed) return (false, guard.Message);
+
         using var db = _dbFactory.CreateDbContext();
         var item = db.Radioisotopes.IgnoreQueryFilters().FirstOrDefault(r => r.Id == id);
         if (item == null) return (false, "النظير غير موجود");

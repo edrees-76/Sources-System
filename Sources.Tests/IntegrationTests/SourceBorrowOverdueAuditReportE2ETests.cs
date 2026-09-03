@@ -54,7 +54,10 @@ public class SourceBorrowOverdueAuditReportE2ETests : IClassFixture<SqliteInMemo
             Username = "e2e_admin",
             PasswordHash = "hashed_pass",
             IsActive = true,
-            RoleId = role.Id
+            RoleId = role.Id,
+            Role = role,
+            Permissions = role.Permissions,
+            IsEditor = true
         };
 
         _fakeUserService = new FakeUserService(_testUser);

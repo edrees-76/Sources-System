@@ -1196,6 +1196,10 @@
     <system:String x:Key="PromptAdminPasswordForDeletions">Please enter administrator password to open the administrative deletions view:</system:String>
     <system:String x:Key="MsgErrAdminOnly">Unauthorized: This operation is restricted to system administrators only</system:String>
     <system:String x:Key="MsgErrNoCurrentUser">No user is currently logged in</system:String>
+    <system:String x:Key="MsgErrNotLoggedIn">Cannot perform the operation: no user is signed in.</system:String>
+    <system:String x:Key="MsgErrReadOnlyUser">You do not have edit permission. Your account is view-only.</system:String>
+    <system:String x:Key="MsgErrNoSectionPermission">You do not have permission to access this section.</system:String>
+    <system:String x:Key="MsgErrOperationAdminOnly">This operation is restricted to system administrators.</system:String>
     <system:String x:Key="HeaderEntityType">Entity Type</system:String>
     <system:String x:Key="HeaderIdentifier">Name / Identifier</system:String>
     <system:String x:Key="HeaderDeletedBy">Deleted By</system:String>

@@ -97,8 +97,7 @@ public class UserService : IUserService
     /// <summary>التحقق من صلاحية معينة للمستخدم الحالي</summary>
     public bool HasPermission(string permission)
     {
-        if (_currentUser?.Role?.Permissions == null) return false;
-        return _currentUser.Role.Permissions.Contains(permission);
+        return _currentUser?.HasSectionPermission(permission) ?? false;
     }
 
     public List<User> GetAllUsers()
@@ -115,6 +114,9 @@ public class UserService : IUserService
 
     public (bool Success, string Message) CreateUser(User user, string password)
     {
+        var guard = AuthorizationGuard.RequireAdmin(CurrentUser);
+        if (!guard.Allowed) return (false, guard.Message);
+
         using var db = _dbFactory.CreateDbContext();
         if (db.Users.Any(u => u.Username == user.Username))
             return (false, "اسم المستخدم موجود بالفعل");
@@ -148,6 +150,9 @@ public class UserService : IUserService
 
     public (bool Success, string Message) UpdateUser(User user)
     {
+        var guard = AuthorizationGuard.RequireAdmin(CurrentUser);
+        if (!guard.Allowed) return (false, guard.Message);
+
         using var db = _dbFactory.CreateDbContext();
         var existing = db.Users.Find(user.Id);
         if (existing == null)
@@ -195,9 +200,15 @@ public class UserService : IUserService
 
     public (bool Success, string Message) ResetPassword(Guid userId, string newPassword)
     {
+        var guard = AuthorizationGuard.RequireAdmin(CurrentUser);
+        if (!guard.Allowed) return (false, guard.Message);
+
         using var db = _dbFactory.CreateDbContext();
         var user = db.Users.Find(userId);
         if (user == null) return (false, "المستخدم غير موجود");
+
+        if (user.Username == "admin" && CurrentUser?.Username != "admin")
+            return (false, "لا يمكن تغيير كلمة مرور حساب مدير النظام الأساسي من حساب آخر");
 
         user.PasswordHash = PasswordHelper.HashPassword(newPassword);
         user.FailedLoginAttempts = 0;
@@ -209,6 +220,9 @@ public class UserService : IUserService
     /// <summary>فك قفل حساب المستخدم</summary>
     public (bool Success, string Message) UnlockAccount(Guid userId)
     {
+        var guard = AuthorizationGuard.RequireAdmin(CurrentUser);
+        if (!guard.Allowed) return (false, guard.Message);
+
         using var db = _dbFactory.CreateDbContext();
         var user = db.Users.Find(userId);
         if (user == null) return (false, "المستخدم غير موجود");
@@ -221,6 +235,9 @@ public class UserService : IUserService
 
     public (bool Success, string Message) DeleteUser(Guid userId)
     {
+        var guard = AuthorizationGuard.RequireAdmin(CurrentUser);
+        if (!guard.Allowed) return (false, guard.Message);
+
         using var db = _dbFactory.CreateDbContext();
         var user = db.Users.Find(userId);
         if (user == null) return (false, "المستخدم غير موجود");
@@ -250,6 +267,9 @@ public class UserService : IUserService
 
     public (bool Success, string Message) RestoreUser(Guid userId)
     {
+        var guard = AuthorizationGuard.RequireAdmin(CurrentUser);
+        if (!guard.Allowed) return (false, guard.Message);
+
         using var db = _dbFactory.CreateDbContext();
         var user = db.Users.IgnoreQueryFilters().Include(u => u.Role).FirstOrDefault(u => u.Id == userId);
         if (user == null) return (false, "المستخدم غير موجود");
@@ -275,6 +295,9 @@ public class UserService : IUserService
     /// <summary>تجميد أو تنشيط حساب مستخدم</summary>
     public (bool Success, string Message) ToggleUserFreeze(Guid userId)
     {
+        var guard = AuthorizationGuard.RequireAdmin(CurrentUser);
+        if (!guard.Allowed) return (false, guard.Message);
+
         using var db = _dbFactory.CreateDbContext();
         var user = db.Users.Find(userId);
         if (user == null) return (false, "المستخدم غير موجود");

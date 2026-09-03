@@ -68,7 +68,7 @@ public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
 
         _testLocation = TestDataBuilder.CreateLocation("مختبر المعايرة الرئيسي", "Lab", "المبنى 1", "101");
 
-        var role = new Role { Id = Guid.NewGuid(), RoleName = "مدير المصادر", Permissions = "All" };
+        var role = new Role { Id = Guid.NewGuid(), RoleName = "مدير النظام", Permissions = "All" };
         _testUser = new User
         {
             Id = Guid.NewGuid(),
@@ -76,7 +76,10 @@ public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             Username = "ahmed_admin",
             PasswordHash = "hash123",
             RoleId = role.Id,
-            IsActive = true
+            Role = role,
+            Permissions = "All",
+            IsActive = true,
+            IsEditor = true
         };
 
         context.Roles.Add(role);

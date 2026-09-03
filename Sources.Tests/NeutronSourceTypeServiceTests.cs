@@ -21,9 +21,21 @@ public class NeutronSourceTypeServiceTests : IClassFixture<SqliteInMemoryFixture
     {
         _fixture = fixture;
         _fixture.ResetDatabase();
-
         _fakeAuditService = new FakeAuditService();
-        _fakeUserService = new FakeUserService();
+
+        var role = new Role { Id = Guid.NewGuid(), RoleName = "مدير النظام", Permissions = "All" };
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            FullName = "مسؤول أنواع النيوترونات",
+            Username = "neutron_type_admin",
+            RoleId = role.Id,
+            Role = role,
+            Permissions = "Sources",
+            IsActive = true,
+            IsEditor = true
+        };
+        _fakeUserService = new FakeUserService(user);
         _sut = new NeutronSourceTypeService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService);
     }
 

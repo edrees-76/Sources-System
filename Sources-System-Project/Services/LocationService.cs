@@ -103,6 +103,9 @@ public class LocationService : ILocationService
 
     public (bool Success, string Message) Delete(Guid id)
     {
+        var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Locations");
+        if (!guard.Allowed) return (false, guard.Message);
+
         using var db = _dbFactory.CreateDbContext();
         var item = db.Locations.Include(l => l.Sources).FirstOrDefault(l => l.Id == id);
         if (item == null) return (false, "الموقع غير موجود");
@@ -125,6 +128,9 @@ public class LocationService : ILocationService
 
     public (bool Success, string Message) Restore(Guid id)
     {
+        var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Locations");
+        if (!guard.Allowed) return (false, guard.Message);
+
         using var db = _dbFactory.CreateDbContext();
         var item = db.Locations.IgnoreQueryFilters().FirstOrDefault(l => l.Id == id);
         if (item == null) return (false, "الموقع غير موجود");
