@@ -40,8 +40,18 @@ public class RadioisotopeService : IRadioisotopeService
     public (bool Success, string Message) Create(Radioisotope item)
     {
         if (item == null) return (false, "بيانات النظير غير صالحة");
+        if (!double.IsFinite(item.HalfLife))
+            return (false, TranslationHelper.GetString("MsgErrInvalidHalfLifeFinite") ?? "قيمة نصف العمر غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.HalfLife <= 0) return (false, "نصف العمر يجب أن يكون أكبر من صفر");
+        if (!double.IsFinite(item.Energy))
+            return (false, TranslationHelper.GetString("MsgErrInvalidEnergyFinite") ?? "قيمة الطاقة غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.Energy < 0) return (false, "قيمة الطاقة غير صالحة");
+        if (item.Yield.HasValue && !double.IsFinite(item.Yield.Value))
+            return (false, TranslationHelper.GetString("MsgErrInvalidYieldFinite") ?? "قيمة المردود غير صالحة (يجب أن تكون رقماً منتهياً)");
+        if (item.ExemptionLimit.HasValue && !double.IsFinite(item.ExemptionLimit.Value))
+            return (false, TranslationHelper.GetString("MsgErrInvalidExemptionLimitFinite") ?? "قيمة حد الإعفاء غير صالحة (يجب أن تكون رقماً منتهياً)");
+        if (item.GammaConstant.HasValue && !double.IsFinite(item.GammaConstant.Value))
+            return (false, TranslationHelper.GetString("MsgErrInvalidGammaConstantFinite") ?? "قيمة ثابت غاما غير صالحة (يجب أن تكون رقماً منتهياً)");
 
         using var db = _dbFactory.CreateDbContext();
         if (db.Radioisotopes.Any(r => r.Symbol == item.Symbol))
@@ -64,8 +74,18 @@ public class RadioisotopeService : IRadioisotopeService
     public (bool Success, string Message) Update(Radioisotope item)
     {
         if (item == null) return (false, "بيانات النظير غير صالحة");
+        if (!double.IsFinite(item.HalfLife))
+            return (false, TranslationHelper.GetString("MsgErrInvalidHalfLifeFinite") ?? "قيمة نصف العمر غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.HalfLife <= 0) return (false, "نصف العمر يجب أن يكون أكبر من صفر");
+        if (!double.IsFinite(item.Energy))
+            return (false, TranslationHelper.GetString("MsgErrInvalidEnergyFinite") ?? "قيمة الطاقة غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.Energy < 0) return (false, "قيمة الطاقة غير صالحة");
+        if (item.Yield.HasValue && !double.IsFinite(item.Yield.Value))
+            return (false, TranslationHelper.GetString("MsgErrInvalidYieldFinite") ?? "قيمة المردود غير صالحة (يجب أن تكون رقماً منتهياً)");
+        if (item.ExemptionLimit.HasValue && !double.IsFinite(item.ExemptionLimit.Value))
+            return (false, TranslationHelper.GetString("MsgErrInvalidExemptionLimitFinite") ?? "قيمة حد الإعفاء غير صالحة (يجب أن تكون رقماً منتهياً)");
+        if (item.GammaConstant.HasValue && !double.IsFinite(item.GammaConstant.Value))
+            return (false, TranslationHelper.GetString("MsgErrInvalidGammaConstantFinite") ?? "قيمة ثابت غاما غير صالحة (يجب أن تكون رقماً منتهياً)");
 
         using var db = _dbFactory.CreateDbContext();
         var existing = db.Radioisotopes.Find(item.Id);

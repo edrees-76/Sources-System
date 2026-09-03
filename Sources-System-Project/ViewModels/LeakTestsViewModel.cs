@@ -272,7 +272,7 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
         double? measuredBq = null;
         if (!string.IsNullOrWhiteSpace(FormMeasuredActivityText))
         {
-            if (double.TryParse(FormMeasuredActivityText, out double parsedBq) && parsedBq >= 0)
+            if (NumericInputParser.TryParseFinite(FormMeasuredActivityText, out double parsedBq) && parsedBq >= 0)
             {
                 measuredBq = parsedBq;
             }

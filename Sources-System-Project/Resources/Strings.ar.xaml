@@ -1379,6 +1379,21 @@
 
     <!-- Round 109 Finite Numeric Input Validation -->
     <system:String x:Key="MsgErrInvalidUncertainty">نسبة عدم اليقين يجب أن تكون رقماً موجباً أو صفراً</system:String>
+
+    <!-- Round 110 Service Layer Finite Numbers Guard -->
+    <system:String x:Key="MsgErrInvalidHalfLifeFinite">قيمة نصف العمر غير صالحة (يجب أن تكون رقماً منتهياً)</system:String>
+    <system:String x:Key="MsgErrInvalidEnergyFinite">قيمة الطاقة غير صالحة (يجب أن تكون رقماً منتهياً)</system:String>
+    <system:String x:Key="MsgErrInvalidYieldFinite">قيمة المردود غير صالحة (يجب أن تكون رقماً منتهياً)</system:String>
+    <system:String x:Key="MsgErrInvalidExemptionLimitFinite">قيمة حد الإعفاء غير صالحة (يجب أن تكون رقماً منتهياً)</system:String>
+    <system:String x:Key="MsgErrInvalidGammaConstantFinite">قيمة ثابت غاما غير صالحة (يجب أن تكون رقماً منتهياً)</system:String>
+    <system:String x:Key="MsgErrInvalidEmissionRateFinite">معدل انبعاث النيترونات غير صالح (يجب أن يكون رقماً منتهياً)</system:String>
+    <system:String x:Key="MsgErrInvalidAnisotropyFactorFinite">معامل اللاتماثل الزاوي غير صالح (يجب أن يكون رقماً منتهياً)</system:String>
+    <system:String x:Key="MsgErrInvalidUncertaintyFinite">نسبة عدم اليقين غير صالحة (يجب أن تكون رقماً منتهياً)</system:String>
+    <system:String x:Key="MsgErrInvalidInitialActivityFinite">قيمة النشاط الابتدائي غير صالحة (يجب أن تكون رقماً منتهياً)</system:String>
+    <system:String x:Key="MsgErrInvalidIsotopeActivityFinite">قيمة النشاط لنظير الخليط غير صالحة (يجب أن تكون رقماً منتهياً)</system:String>
+    <system:String x:Key="MsgErrInvalidMeasuredActivityFinite">قيمة النشاط المقاس غير صالحة (يجب أن تكون رقماً منتهياً)</system:String>
+    <system:String x:Key="MsgErrInvalidMeanNeutronEnergyFinite">قيمة متوسط طاقة النيوترونات غير صالحة (يجب أن تكون رقماً منتهياً)</system:String>
+    <system:String x:Key="MsgErrInvalidAmbientDoseConversionFinite">قيمة معامل تحويل التدفق غير صالحة (يجب أن تكون رقماً منتهياً)</system:String>
 </ResourceDictionary>
 
 

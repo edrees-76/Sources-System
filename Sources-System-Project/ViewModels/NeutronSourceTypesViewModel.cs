@@ -72,7 +72,7 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
 
     partial void OnEditHalfLifeTextChanged(string value)
     {
-        if (double.TryParse(value, out double res)) EditHalfLife = res;
+        if (NumericInputParser.TryParseFinite(value, out double res)) EditHalfLife = res;
         else EditHalfLife = 0;
     }
 

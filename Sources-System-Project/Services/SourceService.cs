@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Sources.Data;
 using Sources.Models;
+using Sources.Helpers;
 
 namespace Sources.Services;
 
@@ -67,6 +68,14 @@ public class SourceService : ISourceService
 
     public (bool Success, string Message) CreateSource(Source source, List<SourceIsotope>? isotopes = null)
     {
+        if (source == null) return (false, "بيانات المصدر غير صالحة");
+        if (!double.IsFinite(source.InitialActivityValue))
+            return (false, TranslationHelper.GetString("MsgErrInvalidInitialActivityFinite") ?? "قيمة النشاط الابتدائي غير صالحة (يجب أن تكون رقماً منتهياً)");
+        if (source.InitialActivityValue <= 0 && (isotopes == null || !isotopes.Any()))
+            return (false, "قيمة النشاط الابتدائي يجب أن تكون أكبر من صفر");
+        if (isotopes != null && isotopes.Any(si => si.InitialActivityValue.HasValue && !double.IsFinite(si.InitialActivityValue.Value)))
+            return (false, TranslationHelper.GetString("MsgErrInvalidIsotopeActivityFinite") ?? "قيمة النشاط لنظير الخليط غير صالحة (يجب أن تكون رقماً منتهياً)");
+
         using var db = _dbFactory.CreateDbContext();
         var trimmedCode = source.SourceCode?.Trim() ?? string.Empty;
         var lowerCode = trimmedCode.ToLower();
@@ -124,6 +133,14 @@ public class SourceService : ISourceService
 
     public (bool Success, string Message) UpdateSource(Source source, List<SourceIsotope>? isotopes = null)
     {
+        if (source == null) return (false, "بيانات المصدر غير صالحة");
+        if (!double.IsFinite(source.InitialActivityValue))
+            return (false, TranslationHelper.GetString("MsgErrInvalidInitialActivityFinite") ?? "قيمة النشاط الابتدائي غير صالحة (يجب أن تكون رقماً منتهياً)");
+        if (source.InitialActivityValue <= 0 && (isotopes == null || !isotopes.Any()))
+            return (false, "قيمة النشاط الابتدائي يجب أن تكون أكبر من صفر");
+        if (isotopes != null && isotopes.Any(si => si.InitialActivityValue.HasValue && !double.IsFinite(si.InitialActivityValue.Value)))
+            return (false, TranslationHelper.GetString("MsgErrInvalidIsotopeActivityFinite") ?? "قيمة النشاط لنظير الخليط غير صالحة (يجب أن تكون رقماً منتهياً)");
+
         using var db = _dbFactory.CreateDbContext();
         var existing = db.Sources.Include(s => s.SourceIsotopes).FirstOrDefault(s => s.Id == source.Id);
         if (existing == null) return (false, "المصدر غير موجود");

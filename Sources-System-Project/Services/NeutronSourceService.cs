@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Sources.Data;
 using Sources.Models;
+using Sources.Helpers;
 
 namespace Sources.Services;
 
@@ -102,7 +103,13 @@ public class NeutronSourceService : INeutronSourceService
     {
         if (item == null) return (false, "بيانات المصدر النيتروني غير صالحة");
         if (string.IsNullOrWhiteSpace(item.SourceCode)) return (false, "كود المصدر مطلوب");
+        if (!double.IsFinite(item.CalibratedEmissionRate))
+            return (false, TranslationHelper.GetString("MsgErrInvalidEmissionRateFinite") ?? "معدل انبعاث النيترونات غير صالح (يجب أن يكون رقماً منتهياً)");
         if (item.CalibratedEmissionRate <= 0) return (false, "معدل انبعاث النيترونات يجب أن يكون أكبر من صفر");
+        if (item.AnisotropyFactor.HasValue && !double.IsFinite(item.AnisotropyFactor.Value))
+            return (false, TranslationHelper.GetString("MsgErrInvalidAnisotropyFactorFinite") ?? "معامل اللاتماثل الزاوي غير صالح (يجب أن يكون رقماً منتهياً)");
+        if (item.RelativeExpandedUncertaintyPercent.HasValue && !double.IsFinite(item.RelativeExpandedUncertaintyPercent.Value))
+            return (false, TranslationHelper.GetString("MsgErrInvalidUncertaintyFinite") ?? "نسبة عدم اليقين غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.NeutronSourceTypeId == Guid.Empty) return (false, "نوع المصدر النيتروني مطلوب");
 
         using var db = _dbFactory.CreateDbContext();
@@ -139,7 +146,13 @@ public class NeutronSourceService : INeutronSourceService
     {
         if (item == null) return (false, "بيانات المصدر النيتروني غير صالحة");
         if (string.IsNullOrWhiteSpace(item.SourceCode)) return (false, "كود المصدر مطلوب");
+        if (!double.IsFinite(item.CalibratedEmissionRate))
+            return (false, TranslationHelper.GetString("MsgErrInvalidEmissionRateFinite") ?? "معدل انبعاث النيترونات غير صالح (يجب أن يكون رقماً منتهياً)");
         if (item.CalibratedEmissionRate <= 0) return (false, "معدل انبعاث النيترونات يجب أن يكون أكبر من صفر");
+        if (item.AnisotropyFactor.HasValue && !double.IsFinite(item.AnisotropyFactor.Value))
+            return (false, TranslationHelper.GetString("MsgErrInvalidAnisotropyFactorFinite") ?? "معامل اللاتماثل الزاوي غير صالح (يجب أن يكون رقماً منتهياً)");
+        if (item.RelativeExpandedUncertaintyPercent.HasValue && !double.IsFinite(item.RelativeExpandedUncertaintyPercent.Value))
+            return (false, TranslationHelper.GetString("MsgErrInvalidUncertaintyFinite") ?? "نسبة عدم اليقين غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.NeutronSourceTypeId == Guid.Empty) return (false, "نوع المصدر النيتروني مطلوب");
 
         using var db = _dbFactory.CreateDbContext();

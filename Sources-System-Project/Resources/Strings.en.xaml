@@ -1380,6 +1380,21 @@
 
     <!-- Round 109 Finite Numeric Input Validation -->
     <system:String x:Key="MsgErrInvalidUncertainty">The uncertainty percentage must be zero or a positive number</system:String>
+
+    <!-- Round 110 Service Layer Finite Numbers Guard -->
+    <system:String x:Key="MsgErrInvalidHalfLifeFinite">The half-life value is invalid (must be a finite number)</system:String>
+    <system:String x:Key="MsgErrInvalidEnergyFinite">The energy value is invalid (must be a finite number)</system:String>
+    <system:String x:Key="MsgErrInvalidYieldFinite">The yield value is invalid (must be a finite number)</system:String>
+    <system:String x:Key="MsgErrInvalidExemptionLimitFinite">The exemption limit value is invalid (must be a finite number)</system:String>
+    <system:String x:Key="MsgErrInvalidGammaConstantFinite">The gamma constant value is invalid (must be a finite number)</system:String>
+    <system:String x:Key="MsgErrInvalidEmissionRateFinite">The neutron emission rate is invalid (must be a finite number)</system:String>
+    <system:String x:Key="MsgErrInvalidAnisotropyFactorFinite">The anisotropy factor is invalid (must be a finite number)</system:String>
+    <system:String x:Key="MsgErrInvalidUncertaintyFinite">The uncertainty percentage is invalid (must be a finite number)</system:String>
+    <system:String x:Key="MsgErrInvalidInitialActivityFinite">The initial activity value is invalid (must be a finite number)</system:String>
+    <system:String x:Key="MsgErrInvalidIsotopeActivityFinite">The mixture isotope activity value is invalid (must be a finite number)</system:String>
+    <system:String x:Key="MsgErrInvalidMeasuredActivityFinite">The measured activity value is invalid (must be a finite number)</system:String>
+    <system:String x:Key="MsgErrInvalidMeanNeutronEnergyFinite">The mean neutron energy value is invalid (must be a finite number)</system:String>
+    <system:String x:Key="MsgErrInvalidAmbientDoseConversionFinite">The ambient dose conversion coefficient is invalid (must be a finite number)</system:String>
 </ResourceDictionary>
 
 

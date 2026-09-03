@@ -51,21 +51,27 @@ public partial class RadioisotopesViewModel : ObservableObject, IEditableViewMod
 
     partial void OnEditHalfLifeTextChanged(string value)
     {
-        if (double.TryParse(value, out double result)) EditHalfLife = result;
+        if (Helpers.NumericInputParser.TryParseFinite(value, out double result)) EditHalfLife = result;
+        else EditHalfLife = 0;
     }
 
     partial void OnEditEnergyTextChanged(string value)
     {
-        if (double.TryParse(value, out double result)) EditEnergy = result;
+        if (Helpers.NumericInputParser.TryParseFinite(value, out double result)) EditEnergy = result;
+        else EditEnergy = 0;
     }
 
     partial void OnEditYieldTextChanged(string value)
     {
         // التعامل مع العلامة المئوية إذا وجدت
         string clean = value.Replace("%", "").Trim();
-        if (double.TryParse(clean, out double result))
+        if (Helpers.NumericInputParser.TryParseFinite(clean, out double result))
         {
             EditYield = value.Contains("%") ? result / 100 : result;
+        }
+        else
+        {
+            EditYield = 0;
         }
     }
 
@@ -75,9 +81,13 @@ public partial class RadioisotopesViewModel : ObservableObject, IEditableViewMod
         {
             EditGammaConstant = null;
         }
-        else if (double.TryParse(value, out double result) && result > 0)
+        else if (Helpers.NumericInputParser.TryParseFinite(value, out double result) && result > 0)
         {
             EditGammaConstant = result;
+        }
+        else
+        {
+            EditGammaConstant = null;
         }
     }
     private Guid? _editingId;
@@ -266,7 +276,7 @@ public partial class RadioisotopesViewModel : ObservableObject, IEditableViewMod
 
         if (!string.IsNullOrWhiteSpace(EditGammaConstantText))
         {
-            if (!double.TryParse(EditGammaConstantText, out double gc) || gc <= 0)
+            if (!Helpers.NumericInputParser.TryParseFinite(EditGammaConstantText, out double gc) || gc <= 0)
             {
                 ShowMsg(Helpers.TranslationHelper.GetString("MsgErrGammaConstantPositive") ?? "يجب أن تكون قيمة ثابت غاما رقماً موجباً أكبر من الصفر");
                 return;

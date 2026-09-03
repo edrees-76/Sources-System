@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Sources.Data;
 using Sources.Models;
+using Sources.Helpers;
 
 namespace Sources.Services;
 
@@ -61,7 +62,13 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
         if (item == null) return (false, "بيانات نوع المصدر غير صالحة");
         if (string.IsNullOrWhiteSpace(item.Code)) return (false, "رمز نوع المصدر مطلوب");
         if (string.IsNullOrWhiteSpace(item.NameEn)) return (false, "الاسم بالإنجليزية مطلوب");
+        if (!double.IsFinite(item.HalfLife))
+            return (false, TranslationHelper.GetString("MsgErrInvalidHalfLifeFinite") ?? "قيمة نصف العمر غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.HalfLife <= 0) return (false, "نصف العمر يجب أن يكون أكبر من صفر");
+        if (item.MeanNeutronEnergyMeV.HasValue && !double.IsFinite(item.MeanNeutronEnergyMeV.Value))
+            return (false, TranslationHelper.GetString("MsgErrInvalidMeanNeutronEnergyFinite") ?? "قيمة متوسط طاقة النيوترونات غير صالحة (يجب أن تكون رقماً منتهياً)");
+        if (item.AmbientDoseConversionCoefficient.HasValue && !double.IsFinite(item.AmbientDoseConversionCoefficient.Value))
+            return (false, TranslationHelper.GetString("MsgErrInvalidAmbientDoseConversionFinite") ?? "قيمة معامل تحويل التدفق غير صالحة (يجب أن تكون رقماً منتهياً)");
 
         using var db = _dbFactory.CreateDbContext();
         var trimmedCode = item.Code.Trim();
@@ -88,7 +95,13 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
         if (item == null) return (false, "بيانات نوع المصدر غير صالحة");
         if (string.IsNullOrWhiteSpace(item.Code)) return (false, "رمز نوع المصدر مطلوب");
         if (string.IsNullOrWhiteSpace(item.NameEn)) return (false, "الاسم بالإنجليزية مطلوب");
+        if (!double.IsFinite(item.HalfLife))
+            return (false, TranslationHelper.GetString("MsgErrInvalidHalfLifeFinite") ?? "قيمة نصف العمر غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.HalfLife <= 0) return (false, "نصف العمر يجب أن يكون أكبر من صفر");
+        if (item.MeanNeutronEnergyMeV.HasValue && !double.IsFinite(item.MeanNeutronEnergyMeV.Value))
+            return (false, TranslationHelper.GetString("MsgErrInvalidMeanNeutronEnergyFinite") ?? "قيمة متوسط طاقة النيوترونات غير صالحة (يجب أن تكون رقماً منتهياً)");
+        if (item.AmbientDoseConversionCoefficient.HasValue && !double.IsFinite(item.AmbientDoseConversionCoefficient.Value))
+            return (false, TranslationHelper.GetString("MsgErrInvalidAmbientDoseConversionFinite") ?? "قيمة معامل تحويل التدفق غير صالحة (يجب أن تكون رقماً منتهياً)");
 
         using var db = _dbFactory.CreateDbContext();
         var existing = db.NeutronSourceTypes.Find(item.Id);

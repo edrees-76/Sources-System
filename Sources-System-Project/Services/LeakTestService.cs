@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Sources.Data;
 using Sources.Models;
+using Sources.Helpers;
 
 namespace Sources.Services;
 
@@ -147,6 +148,8 @@ public class LeakTestService : ILeakTestService
     {
         if (record == null) return (false, "سجل الفحص غير صالح", null);
         if (record.SourceId == Guid.Empty) return (false, "يجب تحديد المصدر المشع", null);
+        if (record.MeasuredActivityBq.HasValue && !double.IsFinite(record.MeasuredActivityBq.Value))
+            return (false, TranslationHelper.GetString("MsgErrInvalidMeasuredActivityFinite") ?? "قيمة النشاط المقاس غير صالحة (يجب أن تكون رقماً منتهياً)", null);
 
         using var db = _dbFactory.CreateDbContext();
         var source = db.Sources.Find(record.SourceId);
@@ -177,6 +180,8 @@ public class LeakTestService : ILeakTestService
     public (bool Success, string Message) UpdateRecord(LeakTestRecord record)
     {
         if (record == null) return (false, "سجل الفحص غير صالح");
+        if (record.MeasuredActivityBq.HasValue && !double.IsFinite(record.MeasuredActivityBq.Value))
+            return (false, TranslationHelper.GetString("MsgErrInvalidMeasuredActivityFinite") ?? "قيمة النشاط المقاس غير صالحة (يجب أن تكون رقماً منتهياً)");
 
         using var db = _dbFactory.CreateDbContext();
         var existing = db.LeakTestRecords.Include(r => r.Source).FirstOrDefault(r => r.Id == record.Id);
