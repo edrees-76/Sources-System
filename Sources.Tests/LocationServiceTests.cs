@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Sources.Data;
 using Sources.Models;
@@ -188,6 +189,12 @@ public class LocationServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
         Assert.Equal("Locations", audit.TableName);
         Assert.Equal(location.Id, audit.RecordId);
         Assert.Contains("المستودع الرئيسي", audit.Details);
+
+        Assert.Null(audit.OldValues);
+        Assert.NotNull(audit.NewValues);
+        var newValuesDoc = JsonDocument.Parse(audit.NewValues);
+        Assert.Equal("المستودع الرئيسي", newValuesDoc.RootElement.GetProperty("LocationName").GetString());
+        Assert.Equal("105", newValuesDoc.RootElement.GetProperty("Room").GetString());
     }
 
     [Fact]
@@ -352,6 +359,20 @@ public class LocationServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
         Assert.Equal("Locations", audit.TableName);
         Assert.Equal(location.Id, audit.RecordId);
         Assert.Contains("الاسم الجديد", audit.Details);
+
+        Assert.NotNull(audit.OldValues);
+        Assert.NotNull(audit.NewValues);
+        var oldValuesDoc = JsonDocument.Parse(audit.OldValues);
+        var newValuesDoc = JsonDocument.Parse(audit.NewValues);
+
+        Assert.Equal("الاسم القديم", oldValuesDoc.RootElement.GetProperty("LocationName").GetString());
+        Assert.Equal("101", oldValuesDoc.RootElement.GetProperty("Room").GetString());
+
+        Assert.Equal("الاسم الجديد", newValuesDoc.RootElement.GetProperty("LocationName").GetString());
+        Assert.Equal("202", newValuesDoc.RootElement.GetProperty("Room").GetString());
+
+        Assert.NotEqual(oldValuesDoc.RootElement.GetProperty("LocationName").GetString(), newValuesDoc.RootElement.GetProperty("LocationName").GetString());
+        Assert.NotEqual(oldValuesDoc.RootElement.GetProperty("Room").GetString(), newValuesDoc.RootElement.GetProperty("Room").GetString());
     }
 
     [Fact]
@@ -507,6 +528,11 @@ public class LocationServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
         Assert.Equal("Locations", audit.TableName);
         Assert.Equal(location.Id, audit.RecordId);
         Assert.Contains("موقع للحذف", audit.Details);
+
+        Assert.NotNull(audit.OldValues);
+        var deleteOldValuesDoc = JsonDocument.Parse(audit.OldValues);
+        Assert.Equal("موقع للحذف", deleteOldValuesDoc.RootElement.GetProperty("LocationName").GetString());
+        Assert.Null(audit.NewValues);
     }
 
     [Fact]
@@ -921,6 +947,11 @@ public class LocationServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
         Assert.Equal("Locations", audit.TableName);
         Assert.Equal(loc.Id, audit.RecordId);
         Assert.Contains(loc.LocationName, audit.Details);
+
+        Assert.NotNull(audit.OldValues);
+        var deleteOldValuesDoc2 = JsonDocument.Parse(audit.OldValues);
+        Assert.Equal(loc.LocationName, deleteOldValuesDoc2.RootElement.GetProperty("LocationName").GetString());
+        Assert.Null(audit.NewValues);
     }
 
     [Fact]
@@ -956,6 +987,74 @@ public class LocationServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
             Assert.Null(rawLoc.DeletedAt);
             Assert.Null(rawLoc.DeletedBy);
         }
+    }
+
+    #endregion
+
+    #region Restore Tests
+
+    [Fact]
+    public void Restore_DeletedLocationWithoutConflict_RestoresAndLogsAuditWithNewValues()
+    {
+        // Arrange
+        var loc = TestDataBuilder.CreateLocation(name: "موقع للاسترجاع");
+        loc.IsDeleted = true;
+        loc.DeletedAt = DateTime.Now;
+
+        using (var db = _fixture.CreateContext())
+        {
+            db.Locations.Add(loc);
+            db.SaveChanges();
+        }
+
+        // Act
+        var (success, message) = _sut.Restore(loc.Id);
+
+        // Assert
+        Assert.True(success);
+        Assert.Contains("موقع للاسترجاع", message);
+
+        using (var db = _fixture.CreateContext())
+        {
+            var restored = db.Locations.Find(loc.Id);
+            Assert.NotNull(restored);
+            Assert.False(restored!.IsDeleted);
+            Assert.Null(restored.DeletedAt);
+            Assert.Null(restored.DeletedBy);
+        }
+
+        Assert.Single(_fakeAuditService.LoggedEntries);
+        var audit = _fakeAuditService.LoggedEntries[0];
+        Assert.Equal("Restore", audit.Action);
+        Assert.Equal("Locations", audit.TableName);
+        Assert.Equal(loc.Id, audit.RecordId);
+        Assert.Contains("موقع للاسترجاع", audit.Details);
+
+        Assert.Null(audit.OldValues);
+        Assert.NotNull(audit.NewValues);
+        var restoreNewValuesDoc = JsonDocument.Parse(audit.NewValues);
+        Assert.Equal("موقع للاسترجاع", restoreNewValuesDoc.RootElement.GetProperty("LocationName").GetString());
+    }
+
+    [Fact]
+    public void Restore_NonDeletedLocation_ReturnsFalse()
+    {
+        // Arrange
+        var loc = TestDataBuilder.CreateLocation(name: "موقع نشط");
+
+        using (var db = _fixture.CreateContext())
+        {
+            db.Locations.Add(loc);
+            db.SaveChanges();
+        }
+
+        // Act
+        var (success, message) = _sut.Restore(loc.Id);
+
+        // Assert
+        Assert.False(success);
+        Assert.Equal("الموقع غير محذوف أصلاً", message);
+        Assert.Empty(_fakeAuditService.LoggedEntries);
     }
 
     #endregion
