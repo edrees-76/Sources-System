@@ -73,7 +73,16 @@ public class LocationService : ILocationService
             : null;
         db.Locations.Add(item);
         db.SaveChanges();
-        _auditService.Log("Create", "Locations", item.Id, $"إضافة موقع: {item.LocationName}");
+
+        var newValuesObj = new
+        {
+            item.LocationName,
+            item.LocationType,
+            item.Building,
+            item.Room,
+            item.ResponsiblePerson
+        };
+        _auditService.LogWithChanges("Create", "Locations", item.Id, $"إضافة موقع: {item.LocationName}", oldValues: null, newValues: System.Text.Json.JsonSerializer.Serialize(newValuesObj));
         return (true, "تم إضافة الموقع بنجاح");
     }
 
@@ -86,6 +95,16 @@ public class LocationService : ILocationService
         var existing = db.Locations.Find(item.Id);
         if (existing == null) return (false, "الموقع غير موجود");
 
+        var oldValuesObj = new
+        {
+            existing.LocationName,
+            existing.LocationType,
+            existing.Building,
+            existing.Room,
+            existing.ResponsiblePerson
+        };
+        string oldValuesJson = System.Text.Json.JsonSerializer.Serialize(oldValuesObj);
+
         var trimmedName = item.LocationName.Trim();
         var lowerName = trimmedName.ToLower();
         if (db.Locations.Any(l => l.Id != item.Id && l.LocationName.ToLower() == lowerName))
@@ -97,7 +116,18 @@ public class LocationService : ILocationService
         existing.Room = item.Room;
         existing.ResponsiblePerson = item.ResponsiblePerson;
         db.SaveChanges();
-        _auditService.Log("Update", "Locations", item.Id, $"تعديل موقع: {existing.LocationName}");
+
+        var newValuesObj = new
+        {
+            existing.LocationName,
+            existing.LocationType,
+            existing.Building,
+            existing.Room,
+            existing.ResponsiblePerson
+        };
+        string newValuesJson = System.Text.Json.JsonSerializer.Serialize(newValuesObj);
+
+        _auditService.LogWithChanges("Update", "Locations", item.Id, $"تعديل موقع: {existing.LocationName}", oldValuesJson, newValuesJson);
         return (true, "تم تحديث الموقع");
     }
 
@@ -110,6 +140,17 @@ public class LocationService : ILocationService
         var item = db.Locations.Include(l => l.Sources).FirstOrDefault(l => l.Id == id);
         if (item == null) return (false, "الموقع غير موجود");
         if (item.Sources.Any() || db.NeutronSources.Any(ns => ns.LocationId == id)) return (false, $"لا يمكن حذف الموقع \"{item.LocationName}\" لاحتوائه على مصادر مرتبطة به");
+
+        var oldValuesObj = new
+        {
+            item.LocationName,
+            item.LocationType,
+            item.Building,
+            item.Room,
+            item.ResponsiblePerson
+        };
+        string oldValuesJson = System.Text.Json.JsonSerializer.Serialize(oldValuesObj);
+
         item.IsDeleted = true;
         item.DeletedAt = DateTime.Now;
         var currentUserId = _userService.CurrentUser?.Id;
@@ -122,7 +163,7 @@ public class LocationService : ILocationService
             item.DeletedBy = null;
         }
         db.SaveChanges();
-        _auditService.Log("Delete", "Locations", id, $"حذف موقع: {item.LocationName}");
+        _auditService.LogWithChanges("Delete", "Locations", id, $"حذف موقع: {item.LocationName}", oldValuesJson, null);
         return (true, "تم حذف الموقع");
     }
 
@@ -145,7 +186,17 @@ public class LocationService : ILocationService
         item.DeletedBy = null;
         db.SaveChanges();
 
-        _auditService.Log("Restore", "Locations", id, $"استرجاع موقع: {item.LocationName}");
+        var newValuesObj = new
+        {
+            item.LocationName,
+            item.LocationType,
+            item.Building,
+            item.Room,
+            item.ResponsiblePerson
+        };
+        string newValuesJson = System.Text.Json.JsonSerializer.Serialize(newValuesObj);
+
+        _auditService.LogWithChanges("Restore", "Locations", id, $"استرجاع موقع: {item.LocationName}", null, newValuesJson);
         return (true, $"تم استرجاع الموقع {item.LocationName}");
     }
 
