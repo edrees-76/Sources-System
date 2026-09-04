@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Sources.Data;
 using Sources.Models;
@@ -140,6 +141,13 @@ public class NeutronSourceTypeServiceTests : IClassFixture<SqliteInMemoryFixture
         }
 
         Assert.Contains(_fakeAuditService.LoggedEntries, l => l.Action == "Create" && l.TableName == "NeutronSourceTypes");
+
+        var createLog = _fakeAuditService.LoggedEntries.First(l => l.Action == "Create" && l.TableName == "NeutronSourceTypes");
+        Assert.Null(createLog.OldValues);
+        Assert.NotNull(createLog.NewValues);
+        var createNewValuesDoc = JsonDocument.Parse(createLog.NewValues);
+        Assert.Equal("Am-241/Be", createNewValuesDoc.RootElement.GetProperty("Code").GetString());
+        Assert.Equal("Americium-241/Beryllium", createNewValuesDoc.RootElement.GetProperty("NameEn").GetString());
     }
 
     [Fact]
@@ -200,6 +208,16 @@ public class NeutronSourceTypeServiceTests : IClassFixture<SqliteInMemoryFixture
         }
 
         Assert.Contains(_fakeAuditService.LoggedEntries, l => l.Action == "Update" && l.TableName == "NeutronSourceTypes");
+
+        var updateLog = _fakeAuditService.LoggedEntries.First(l => l.Action == "Update" && l.TableName == "NeutronSourceTypes");
+        Assert.NotNull(updateLog.OldValues);
+        Assert.NotNull(updateLog.NewValues);
+        var updateOldValuesDoc = JsonDocument.Parse(updateLog.OldValues);
+        var updateNewValuesDoc = JsonDocument.Parse(updateLog.NewValues);
+        Assert.Equal("Old Name", updateOldValuesDoc.RootElement.GetProperty("NameEn").GetString());
+        Assert.Equal(string.Empty, updateOldValuesDoc.RootElement.GetProperty("ReactionType").GetString());
+        Assert.Equal("Updated Californium-252", updateNewValuesDoc.RootElement.GetProperty("NameEn").GetString());
+        Assert.Equal("Spontaneous Fission", updateNewValuesDoc.RootElement.GetProperty("ReactionType").GetString());
     }
 
     [Fact]
@@ -231,6 +249,12 @@ public class NeutronSourceTypeServiceTests : IClassFixture<SqliteInMemoryFixture
         }
 
         Assert.Contains(_fakeAuditService.LoggedEntries, l => l.Action == "Delete" && l.TableName == "NeutronSourceTypes");
+
+        var deleteLog = _fakeAuditService.LoggedEntries.First(l => l.Action == "Delete" && l.TableName == "NeutronSourceTypes");
+        Assert.NotNull(deleteLog.OldValues);
+        Assert.Null(deleteLog.NewValues);
+        var deleteOldValuesDoc = JsonDocument.Parse(deleteLog.OldValues);
+        Assert.Equal("Am-241/Li", deleteOldValuesDoc.RootElement.GetProperty("Code").GetString());
     }
 
     [Fact]
@@ -287,6 +311,12 @@ public class NeutronSourceTypeServiceTests : IClassFixture<SqliteInMemoryFixture
         }
 
         Assert.Contains(_fakeAuditService.LoggedEntries, l => l.Action == "Restore" && l.TableName == "NeutronSourceTypes");
+
+        var restoreLog = _fakeAuditService.LoggedEntries.First(l => l.Action == "Restore" && l.TableName == "NeutronSourceTypes");
+        Assert.Null(restoreLog.OldValues);
+        Assert.NotNull(restoreLog.NewValues);
+        var restoreNewValuesDoc = JsonDocument.Parse(restoreLog.NewValues);
+        Assert.Equal("Cf-252", restoreNewValuesDoc.RootElement.GetProperty("Code").GetString());
     }
 
     [Fact]
