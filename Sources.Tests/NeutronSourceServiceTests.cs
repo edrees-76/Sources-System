@@ -571,5 +571,90 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
     }
 
     #endregion
+
+    #region Manufacturing/Capsule Fields Validation & Audit Tests
+
+    [Fact]
+    public void Create_WithNonFiniteOrNonPositiveCapsuleDimensions_ReturnsFailure()
+    {
+        // Arrange
+        var typeId = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Am-241/Be", NameEn = "Americium-Beryllium", HalfLife = 432.2 });
+            db.SaveChanges();
+        }
+
+        // Act & Assert: CapsuleLengthMm
+        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-CAP-1", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, CapsuleLengthMm = double.NaN }).Success);
+        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-CAP-1", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, CapsuleLengthMm = double.PositiveInfinity }).Success);
+        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-CAP-1", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, CapsuleLengthMm = 0 }).Success);
+        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-CAP-1", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, CapsuleLengthMm = -5 }).Success);
+
+        // Act & Assert: CapsuleDiameterMm
+        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-CAP-2", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, CapsuleDiameterMm = double.NaN }).Success);
+        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-CAP-2", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, CapsuleDiameterMm = double.PositiveInfinity }).Success);
+        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-CAP-2", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, CapsuleDiameterMm = 0 }).Success);
+        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-CAP-2", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, CapsuleDiameterMm = -1 }).Success);
+    }
+
+    [Fact]
+    public void Update_WithNonFiniteOrNonPositiveCapsuleDimensions_ReturnsFailure()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var typeId = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Cf-252", NameEn = "Cf-252", HalfLife = 2.645 });
+            db.NeutronSources.Add(new NeutronSource { Id = id, SourceCode = "NS-CAP-UPD", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6 });
+            db.SaveChanges();
+        }
+
+        var badLength = new NeutronSource { Id = id, SourceCode = "NS-CAP-UPD", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, CapsuleLengthMm = double.NaN };
+        var negativeDiameter = new NeutronSource { Id = id, SourceCode = "NS-CAP-UPD", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, CapsuleDiameterMm = -2 };
+
+        // Act & Assert
+        Assert.False(_sut.Update(badLength).Success);
+        Assert.False(_sut.Update(negativeDiameter).Success);
+    }
+
+    [Fact]
+    public void Create_WithManufacturingFields_LogsAuditWithNewValues()
+    {
+        // Arrange
+        var typeId = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Am-241/Be", NameEn = "Americium-Beryllium", HalfLife = 432.2 });
+            db.SaveChanges();
+        }
+
+        var item = new NeutronSource
+        {
+            SourceCode = "NS-MFG-001",
+            NeutronSourceTypeId = typeId,
+            CalibratedEmissionRate = 1e6,
+            Manufacturer = "Eckert & Ziegler",
+            Model = "AmBe-100",
+            CapsuleLengthMm = 50.5,
+            CapsuleDiameterMm = 12.3
+        };
+
+        // Act
+        var (success, _) = _sut.Create(item);
+
+        // Assert
+        Assert.True(success);
+        var createLog = _fakeAuditService.LoggedEntries.First(l => l.Action == "Create" && l.TableName == "NeutronSources");
+        Assert.NotNull(createLog.NewValues);
+        var doc = JsonDocument.Parse(createLog.NewValues);
+        Assert.Equal("Eckert & Ziegler", doc.RootElement.GetProperty("Manufacturer").GetString());
+        Assert.Equal("AmBe-100", doc.RootElement.GetProperty("Model").GetString());
+        Assert.Equal(50.5, doc.RootElement.GetProperty("CapsuleLengthMm").GetDouble());
+        Assert.Equal(12.3, doc.RootElement.GetProperty("CapsuleDiameterMm").GetDouble());
+    }
+
+    #endregion
 }
 

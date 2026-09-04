@@ -1,7 +1,7 @@
 # منظومة مصادر — لوحة جاهزية النشر
 
 **آخر تحديث:** 4 سبتمبر 2026
-**حالة المستودع:** الجولة 122 محلياً (تسجيل `OldValues`/`NewValues` في عمليات `NeutronSourceService` و`NeutronSourceTypeService` الأربع لكل منهما — الجولة الأخيرة في سلسلة إغلاق هذا الدين عبر الخدمات الخمس) · 1088 اختباراً محلياً (Debug) / 1086 محلياً (Release) · 5 تحذيرات بناء (CS8604) و0 أخطاء
+**حالة المستودع:** الجولة 123 محلياً (ب4 — الجولة الفرعية الأولى: إضافة حقول `NeutronSource.Manufacturer`/`Model`/`CapsuleLengthMm`/`CapsuleDiameterMm` و`NeutronSourceType.PhotonToNeutronDoseRatio` مع ترحيل مخطط وتحقق وتسجيل تدقيق) · 1094 اختباراً محلياً (Debug) / 1092 محلياً (Release) · 5 تحذيرات بناء (CS8604) و0 أخطاء
 
 > لوحة حالة حيّة تُحدَّث وتُصحَّح مع كل جولة. السجل التاريخي للجولات في `session-summary.md` ولا يُعدَّل.
 
@@ -49,6 +49,14 @@
 شاشة مستقلة كاملة للأنواع المرجعية على نمط مكتبة النظائر + قسم المراجع العلمية.
 محرَّمات حقل النشاط: ألا يُستنتج معدل الانبعاث منه، وألا تُعرض قيمة بلا وحدتها، وألا تُجمع قيم إلا بعد التحويل إلى البكريل.
 يسبقه: مراجعة `P074_scr` و `TRS393`. يحتاج ترحيل مخطط.
+**الجولة 123 (فرعية أولى، منجزة):** ترحيل `AddNeutronManufacturingAndPhotonRatioFields` يضيف
+`NeutronSource.Manufacturer`/`Model`/`CapsuleLengthMm`/`CapsuleDiameterMm` (بترحيل الأبعاد يُشترط
+`IsFinite` و`> 0`، مطابقاً لنمط `CalibratedEmissionRate`) و`NeutronSourceType.PhotonToNeutronDoseRatio`
+(`IsFinite` فقط، بلا شرط `>0` لأنها نسبة بلا وحدة). خدمات `NeutronSourceService`/
+`NeutronSourceTypeService` وسجلات `OldValues`/`NewValues` عُدِّلت لتشمل الحقول الجديدة. **يتبقى لإغلاق
+ب4 بالكامل:** تصحيح بيانات البذر (تقسيم صف "Am-241/Be" الملتبس إلى صغير/كبير — جولة لاحقة منفصلة)، ثم
+شاشات الواجهة (النشاط الإشعاعي للمصدر النيتروني وتاريخ قياسه، شاشة الأنواع المرجعية المستقلة، قسم
+المراجع العلمية) — جولات لاحقة.
 
 ### ☐ ب5 — إكمال الترجمة الإنجليزية
 56 نصاً عربياً مثبتاً خارج `DynamicResource` + 7 أعمدة `DataGrid`. أكثرها في `BorrowView.xaml` و `SettingsView.xaml` و `SourceDetailsWindow.xaml`. يُنفَّذ بعد ب4 لتشمل شاشاتها.

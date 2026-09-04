@@ -110,6 +110,14 @@ public class NeutronSourceService : INeutronSourceService
             return (false, TranslationHelper.GetString("MsgErrInvalidAnisotropyFactorFinite") ?? "معامل اللاتماثل الزاوي غير صالح (يجب أن يكون رقماً منتهياً)");
         if (item.RelativeExpandedUncertaintyPercent.HasValue && !double.IsFinite(item.RelativeExpandedUncertaintyPercent.Value))
             return (false, TranslationHelper.GetString("MsgErrInvalidUncertaintyFinite") ?? "نسبة عدم اليقين غير صالحة (يجب أن تكون رقماً منتهياً)");
+        if (item.CapsuleLengthMm.HasValue && !double.IsFinite(item.CapsuleLengthMm.Value))
+            return (false, "طول الكبسولة غير صالح (يجب أن يكون رقماً منتهياً)");
+        if (item.CapsuleLengthMm.HasValue && item.CapsuleLengthMm.Value <= 0)
+            return (false, "طول الكبسولة يجب أن يكون أكبر من صفر");
+        if (item.CapsuleDiameterMm.HasValue && !double.IsFinite(item.CapsuleDiameterMm.Value))
+            return (false, "قطر الكبسولة غير صالح (يجب أن يكون رقماً منتهياً)");
+        if (item.CapsuleDiameterMm.HasValue && item.CapsuleDiameterMm.Value <= 0)
+            return (false, "قطر الكبسولة يجب أن يكون أكبر من صفر");
         if (item.CalibrationDate.HasValue && item.CalibrationDate.Value.Date > DateTime.Today)
             return (false, TranslationHelper.GetString("MsgErrCalibrationDateFuture") ?? "لا يمكن أن يكون تاريخ المعايرة في المستقبل.");
         if (item.EmissionCalibrationDate.HasValue && item.EmissionCalibrationDate.Value.Date > DateTime.Today)
@@ -131,6 +139,8 @@ public class NeutronSourceService : INeutronSourceService
 
         item.SourceCode = trimmedCode;
         item.SerialNumber = item.SerialNumber?.Trim();
+        item.Manufacturer = item.Manufacturer?.Trim();
+        item.Model = item.Model?.Trim();
         item.Status = string.IsNullOrWhiteSpace(item.Status) ? "Storage" : item.Status.Trim();
         var addedByUserId = _userService.CurrentUser?.Id;
         item.AddedBy = (addedByUserId.HasValue && db.Users.Any(u => u.Id == addedByUserId.Value))
@@ -145,6 +155,10 @@ public class NeutronSourceService : INeutronSourceService
         {
             item.SourceCode,
             item.SerialNumber,
+            item.Manufacturer,
+            item.Model,
+            item.CapsuleLengthMm,
+            item.CapsuleDiameterMm,
             item.NeutronSourceTypeId,
             item.LocationId,
             item.CalibratedEmissionRate,
@@ -172,6 +186,14 @@ public class NeutronSourceService : INeutronSourceService
             return (false, TranslationHelper.GetString("MsgErrInvalidAnisotropyFactorFinite") ?? "معامل اللاتماثل الزاوي غير صالح (يجب أن يكون رقماً منتهياً)");
         if (item.RelativeExpandedUncertaintyPercent.HasValue && !double.IsFinite(item.RelativeExpandedUncertaintyPercent.Value))
             return (false, TranslationHelper.GetString("MsgErrInvalidUncertaintyFinite") ?? "نسبة عدم اليقين غير صالحة (يجب أن تكون رقماً منتهياً)");
+        if (item.CapsuleLengthMm.HasValue && !double.IsFinite(item.CapsuleLengthMm.Value))
+            return (false, "طول الكبسولة غير صالح (يجب أن يكون رقماً منتهياً)");
+        if (item.CapsuleLengthMm.HasValue && item.CapsuleLengthMm.Value <= 0)
+            return (false, "طول الكبسولة يجب أن يكون أكبر من صفر");
+        if (item.CapsuleDiameterMm.HasValue && !double.IsFinite(item.CapsuleDiameterMm.Value))
+            return (false, "قطر الكبسولة غير صالح (يجب أن يكون رقماً منتهياً)");
+        if (item.CapsuleDiameterMm.HasValue && item.CapsuleDiameterMm.Value <= 0)
+            return (false, "قطر الكبسولة يجب أن يكون أكبر من صفر");
         if (item.CalibrationDate.HasValue && item.CalibrationDate.Value.Date > DateTime.Today)
             return (false, TranslationHelper.GetString("MsgErrCalibrationDateFuture") ?? "لا يمكن أن يكون تاريخ المعايرة في المستقبل.");
         if (item.EmissionCalibrationDate.HasValue && item.EmissionCalibrationDate.Value.Date > DateTime.Today)
@@ -186,6 +208,10 @@ public class NeutronSourceService : INeutronSourceService
         {
             existing.SourceCode,
             existing.SerialNumber,
+            existing.Manufacturer,
+            existing.Model,
+            existing.CapsuleLengthMm,
+            existing.CapsuleDiameterMm,
             existing.NeutronSourceTypeId,
             existing.LocationId,
             existing.CalibratedEmissionRate,
@@ -213,6 +239,10 @@ public class NeutronSourceService : INeutronSourceService
 
         existing.SourceCode = trimmedCode;
         existing.SerialNumber = item.SerialNumber?.Trim();
+        existing.Manufacturer = item.Manufacturer?.Trim();
+        existing.Model = item.Model?.Trim();
+        existing.CapsuleLengthMm = item.CapsuleLengthMm;
+        existing.CapsuleDiameterMm = item.CapsuleDiameterMm;
         existing.NeutronSourceTypeId = item.NeutronSourceTypeId;
         existing.LocationId = item.LocationId;
         existing.CalibratedEmissionRate = item.CalibratedEmissionRate;
@@ -230,6 +260,10 @@ public class NeutronSourceService : INeutronSourceService
         {
             existing.SourceCode,
             existing.SerialNumber,
+            existing.Manufacturer,
+            existing.Model,
+            existing.CapsuleLengthMm,
+            existing.CapsuleDiameterMm,
             existing.NeutronSourceTypeId,
             existing.LocationId,
             existing.CalibratedEmissionRate,
@@ -261,6 +295,10 @@ public class NeutronSourceService : INeutronSourceService
         {
             item.SourceCode,
             item.SerialNumber,
+            item.Manufacturer,
+            item.Model,
+            item.CapsuleLengthMm,
+            item.CapsuleDiameterMm,
             item.NeutronSourceTypeId,
             item.LocationId,
             item.CalibratedEmissionRate,
@@ -315,6 +353,10 @@ public class NeutronSourceService : INeutronSourceService
         {
             item.SourceCode,
             item.SerialNumber,
+            item.Manufacturer,
+            item.Model,
+            item.CapsuleLengthMm,
+            item.CapsuleDiameterMm,
             item.NeutronSourceTypeId,
             item.LocationId,
             item.CalibratedEmissionRate,
