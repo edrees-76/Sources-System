@@ -199,7 +199,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
             }
             else
             {
-                sections.Add("المصادر، النظائر، المواقع، الاستعارة، التقارير، الحاسبة");
+                sections.Add("الصلاحيات مضبوطة بشكل فردي لكل مستخدم ضمن هذا الدور");
             }
 
             list.Add(new RoleSummaryItem
