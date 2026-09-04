@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Sources.Data;
 using Sources.Models;
@@ -235,6 +236,13 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
         Assert.Equal("Radioisotopes", log.TableName);
         Assert.Equal(item.Id, log.RecordId);
         Assert.Contains("Cobalt-60", log.Details);
+
+        Assert.Null(log.OldValues);
+        Assert.NotNull(log.NewValues);
+        var createNewValuesDoc = JsonDocument.Parse(log.NewValues);
+        Assert.Equal("Co-60", createNewValuesDoc.RootElement.GetProperty("Symbol").GetString());
+        Assert.Equal("Cobalt-60", createNewValuesDoc.RootElement.GetProperty("Name").GetString());
+        Assert.Equal("Gamma", createNewValuesDoc.RootElement.GetProperty("RadiationType").GetString());
     }
 
     [Fact]
@@ -472,6 +480,7 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
                 Yield = 0.5,
                 Category = 2,
                 ExemptionLimit = 1.0,
+                GammaConstant = 0.1500,
                 Notes = "Old Notes",
                 EnglishNotes = "Old Eng Notes"
             });
@@ -491,6 +500,7 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
             Yield = 0.9998,
             Category = 1,
             ExemptionLimit = 0.001,
+            GammaConstant = 0.3050,
             Notes = "ملاحظات جديدة",
             EnglishNotes = "Updated English Notes"
         };
@@ -515,6 +525,7 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
             Assert.Equal(0.9998, updated.Yield);
             Assert.Equal(1, updated.Category);
             Assert.Equal(0.001, updated.ExemptionLimit);
+            Assert.Equal(0.3050, updated.GammaConstant);
             Assert.Equal("ملاحظات جديدة", updated.Notes);
             Assert.Equal("Updated English Notes", updated.EnglishNotes);
         }
@@ -525,6 +536,20 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
         Assert.Equal("Radioisotopes", log.TableName);
         Assert.Equal(id, log.RecordId);
         Assert.Contains("Updated Cobalt-60", log.Details);
+
+        Assert.NotNull(log.OldValues);
+        Assert.NotNull(log.NewValues);
+        var updateOldValuesDoc = JsonDocument.Parse(log.OldValues);
+        var updateNewValuesDoc = JsonDocument.Parse(log.NewValues);
+
+        Assert.Equal("Old Cobalt", updateOldValuesDoc.RootElement.GetProperty("Name").GetString());
+        Assert.Equal(0.1500, updateOldValuesDoc.RootElement.GetProperty("GammaConstant").GetDouble());
+
+        Assert.Equal("Updated Cobalt-60", updateNewValuesDoc.RootElement.GetProperty("Name").GetString());
+        Assert.Equal(0.3050, updateNewValuesDoc.RootElement.GetProperty("GammaConstant").GetDouble());
+
+        Assert.NotEqual(updateOldValuesDoc.RootElement.GetProperty("Name").GetString(), updateNewValuesDoc.RootElement.GetProperty("Name").GetString());
+        Assert.NotEqual(updateOldValuesDoc.RootElement.GetProperty("GammaConstant").GetDouble(), updateNewValuesDoc.RootElement.GetProperty("GammaConstant").GetDouble());
     }
 
     [Fact]
@@ -715,6 +740,15 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
         var updated = dbContext.Radioisotopes.Find(id);
         Assert.NotNull(updated);
         Assert.Equal("137-سيزيوم", updated.ArabicName);
+
+        Assert.Single(_fakeAuditService.LoggedEntries);
+        var log = _fakeAuditService.LoggedEntries[0];
+        Assert.NotNull(log.OldValues);
+        Assert.NotNull(log.NewValues);
+        var oldDoc = JsonDocument.Parse(log.OldValues);
+        var newDoc = JsonDocument.Parse(log.NewValues);
+        Assert.Equal("اسم مخصص قديم", oldDoc.RootElement.GetProperty("ArabicName").GetString());
+        Assert.Equal("137-سيزيوم", newDoc.RootElement.GetProperty("ArabicName").GetString());
     }
 
     #endregion
@@ -771,6 +805,12 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
         Assert.Equal("Radioisotopes", log.TableName);
         Assert.Equal(id, log.RecordId);
         Assert.Contains("Cobalt-60", log.Details);
+
+        Assert.NotNull(log.OldValues);
+        Assert.Null(log.NewValues);
+        var deleteOldValuesDoc = JsonDocument.Parse(log.OldValues);
+        Assert.Equal("Co-60", deleteOldValuesDoc.RootElement.GetProperty("Symbol").GetString());
+        Assert.Equal("Cobalt-60", deleteOldValuesDoc.RootElement.GetProperty("Name").GetString());
     }
 
     [Fact]
@@ -985,6 +1025,111 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
             Assert.NotNull(savedInDb.GammaConstant);
             Assert.Equal(0.3120, savedInDb.GammaConstant.Value, precision: 6);
         }
+    }
+
+    #endregion
+
+    #region Restore Tests
+
+    [Fact]
+    public void Restore_DeletedRadioisotopeWithoutConflict_RestoresAndLogsAuditWithNewValues()
+    {
+        // Arrange
+        var isotope = TestDataBuilder.CreateRadioisotope("Cs-137", "Cesium-137");
+        isotope.IsDeleted = true;
+        isotope.DeletedAt = DateTime.Now;
+
+        using (var db = _fixture.CreateContext())
+        {
+            db.Radioisotopes.Add(isotope);
+            db.SaveChanges();
+        }
+
+        // Act
+        var (success, message) = _sut.Restore(isotope.Id);
+
+        // Assert
+        Assert.True(success);
+        Assert.Contains("Cesium-137", message);
+
+        using (var db = _fixture.CreateContext())
+        {
+            var restored = db.Radioisotopes.Find(isotope.Id);
+            Assert.NotNull(restored);
+            Assert.False(restored!.IsDeleted);
+            Assert.Null(restored.DeletedAt);
+            Assert.Null(restored.DeletedBy);
+        }
+
+        Assert.Single(_fakeAuditService.LoggedEntries);
+        var log = _fakeAuditService.LoggedEntries[0];
+        Assert.Equal("Restore", log.Action);
+        Assert.Equal("Radioisotopes", log.TableName);
+        Assert.Equal(isotope.Id, log.RecordId);
+        Assert.Contains("Cesium-137", log.Details);
+
+        Assert.Null(log.OldValues);
+        Assert.NotNull(log.NewValues);
+        var restoreNewValuesDoc = JsonDocument.Parse(log.NewValues);
+        Assert.Equal("Cs-137", restoreNewValuesDoc.RootElement.GetProperty("Symbol").GetString());
+        Assert.Equal("Cesium-137", restoreNewValuesDoc.RootElement.GetProperty("Name").GetString());
+    }
+
+    [Fact]
+    public void Restore_NonDeletedRadioisotope_ReturnsFalse()
+    {
+        // Arrange
+        var isotope = TestDataBuilder.CreateRadioisotope("Co-60", "Cobalt-60");
+
+        using (var db = _fixture.CreateContext())
+        {
+            db.Radioisotopes.Add(isotope);
+            db.SaveChanges();
+        }
+
+        // Act
+        var (success, message) = _sut.Restore(isotope.Id);
+
+        // Assert
+        Assert.False(success);
+        Assert.Equal("النظير غير محذوف أصلاً", message);
+        Assert.Empty(_fakeAuditService.LoggedEntries);
+    }
+
+    [Fact]
+    public void Restore_WhenNotFound_ReturnsFalse()
+    {
+        // Act
+        var (success, message) = _sut.Restore(Guid.NewGuid());
+
+        // Assert
+        Assert.False(success);
+        Assert.Equal("النظير غير موجود", message);
+        Assert.Empty(_fakeAuditService.LoggedEntries);
+    }
+
+    [Fact]
+    public void Restore_WhenActiveIsotopeWithSameSymbolExists_ReturnsFalse()
+    {
+        // Arrange
+        var activeIsotope = TestDataBuilder.CreateRadioisotope("Cs-137", "Cesium-137 Active");
+        var deletedIsotope = TestDataBuilder.CreateRadioisotope("Cs-137", "Cesium-137 Deleted");
+        deletedIsotope.IsDeleted = true;
+        deletedIsotope.DeletedAt = DateTime.Now;
+
+        using (var db = _fixture.CreateContext())
+        {
+            db.Radioisotopes.AddRange(activeIsotope, deletedIsotope);
+            db.SaveChanges();
+        }
+
+        // Act
+        var (success, message) = _sut.Restore(deletedIsotope.Id);
+
+        // Assert
+        Assert.False(success);
+        Assert.Contains("لا يمكن استرجاع النظير", message);
+        Assert.Empty(_fakeAuditService.LoggedEntries);
     }
 
     #endregion

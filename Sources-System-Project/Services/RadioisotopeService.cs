@@ -67,7 +67,24 @@ public class RadioisotopeService : IRadioisotopeService
 
         db.Radioisotopes.Add(item);
         db.SaveChanges();
-        _auditService.Log("Create", "Radioisotopes", item.Id, $"إضافة نظير: {item.Name}");
+
+        var newValuesObj = new
+        {
+            item.Name,
+            item.ArabicName,
+            item.Symbol,
+            item.RadiationType,
+            item.HalfLife,
+            item.HalfLifeUnit,
+            item.Energy,
+            item.Yield,
+            item.Category,
+            item.ExemptionLimit,
+            item.GammaConstant,
+            item.Notes,
+            item.EnglishNotes
+        };
+        _auditService.LogWithChanges("Create", "Radioisotopes", item.Id, $"إضافة نظير: {item.Name}", oldValues: null, newValues: System.Text.Json.JsonSerializer.Serialize(newValuesObj));
         return (true, "تم إضافة النظير بنجاح");
     }
 
@@ -90,6 +107,25 @@ public class RadioisotopeService : IRadioisotopeService
         using var db = _dbFactory.CreateDbContext();
         var existing = db.Radioisotopes.Find(item.Id);
         if (existing == null) return (false, "النظير غير موجود");
+
+        var oldValuesObj = new
+        {
+            existing.Name,
+            existing.ArabicName,
+            existing.Symbol,
+            existing.RadiationType,
+            existing.HalfLife,
+            existing.HalfLifeUnit,
+            existing.Energy,
+            existing.Yield,
+            existing.Category,
+            existing.ExemptionLimit,
+            existing.GammaConstant,
+            existing.Notes,
+            existing.EnglishNotes
+        };
+        string oldValuesJson = System.Text.Json.JsonSerializer.Serialize(oldValuesObj);
+
         if (db.Radioisotopes.Any(r => r.Symbol == item.Symbol && r.Id != item.Id))
             return (false, "رمز النظير موجود بالفعل");
 
@@ -107,7 +143,26 @@ public class RadioisotopeService : IRadioisotopeService
         existing.Notes = item.Notes;
         existing.EnglishNotes = item.EnglishNotes;
         db.SaveChanges();
-        _auditService.Log("Update", "Radioisotopes", item.Id, $"تعديل نظير: {item.Name}");
+
+        var newValuesObj = new
+        {
+            existing.Name,
+            existing.ArabicName,
+            existing.Symbol,
+            existing.RadiationType,
+            existing.HalfLife,
+            existing.HalfLifeUnit,
+            existing.Energy,
+            existing.Yield,
+            existing.Category,
+            existing.ExemptionLimit,
+            existing.GammaConstant,
+            existing.Notes,
+            existing.EnglishNotes
+        };
+        string newValuesJson = System.Text.Json.JsonSerializer.Serialize(newValuesObj);
+
+        _auditService.LogWithChanges("Update", "Radioisotopes", item.Id, $"تعديل نظير: {item.Name}", oldValuesJson, newValuesJson);
         return (true, "تم تحديث النظير");
     }
 
@@ -121,6 +176,25 @@ public class RadioisotopeService : IRadioisotopeService
         if (item == null) return (false, "النظير غير موجود");
         if (item.Sources.Any() || db.SourceIsotopes.Any(si => si.RadioisotopeId == id))
             return (false, "لا يمكن حذف نظير مرتبط بمصادر");
+
+        var oldValuesObj = new
+        {
+            item.Name,
+            item.ArabicName,
+            item.Symbol,
+            item.RadiationType,
+            item.HalfLife,
+            item.HalfLifeUnit,
+            item.Energy,
+            item.Yield,
+            item.Category,
+            item.ExemptionLimit,
+            item.GammaConstant,
+            item.Notes,
+            item.EnglishNotes
+        };
+        string oldValuesJson = System.Text.Json.JsonSerializer.Serialize(oldValuesObj);
+
         item.IsDeleted = true;
         item.DeletedAt = DateTime.Now;
         var currentUserId = _userService.CurrentUser?.Id;
@@ -133,7 +207,7 @@ public class RadioisotopeService : IRadioisotopeService
             item.DeletedBy = null;
         }
         db.SaveChanges();
-        _auditService.Log("Delete", "Radioisotopes", id, $"حذف نظير: {item.Name}");
+        _auditService.LogWithChanges("Delete", "Radioisotopes", id, $"حذف نظير: {item.Name}", oldValuesJson, null);
         return (true, "تم حذف النظير");
     }
 
@@ -156,7 +230,25 @@ public class RadioisotopeService : IRadioisotopeService
         item.DeletedBy = null;
         db.SaveChanges();
 
-        _auditService.Log("Restore", "Radioisotopes", id, $"استرجاع نظير: {item.DisplayName ?? item.Symbol}");
+        var newValuesObj = new
+        {
+            item.Name,
+            item.ArabicName,
+            item.Symbol,
+            item.RadiationType,
+            item.HalfLife,
+            item.HalfLifeUnit,
+            item.Energy,
+            item.Yield,
+            item.Category,
+            item.ExemptionLimit,
+            item.GammaConstant,
+            item.Notes,
+            item.EnglishNotes
+        };
+        string newValuesJson = System.Text.Json.JsonSerializer.Serialize(newValuesObj);
+
+        _auditService.LogWithChanges("Restore", "Radioisotopes", id, $"استرجاع نظير: {item.DisplayName ?? item.Symbol}", null, newValuesJson);
         return (true, $"تم استرجاع النظير {item.DisplayName ?? item.Symbol}");
     }
 }
