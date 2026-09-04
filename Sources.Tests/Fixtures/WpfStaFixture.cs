@@ -9,7 +9,6 @@ public static class WpfStaFixture
 {
     private static readonly Lazy<Dispatcher> StaDispatcher = new(() =>
     {
-        Sources.Helpers.DialogHelper.IsTestMode = true;
         Dispatcher? dispatcher = null;
         var readyEvent = new ManualResetEventSlim(false);
         var thread = new Thread(() =>

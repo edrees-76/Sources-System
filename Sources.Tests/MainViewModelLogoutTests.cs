@@ -18,7 +18,6 @@ public class MainViewModelLogoutTests : IDisposable
 
     public MainViewModelLogoutTests()
     {
-        DialogHelper.IsTestMode = true;
         _mockUserService = new Mock<IUserService>();
         _mockAlertService = new Mock<IAlertService>();
         _mockSettingsService = new Mock<ISystemSettingsService>();
@@ -109,7 +108,6 @@ public class MainViewModelLogoutTests : IDisposable
 
     public void Dispose()
     {
-        DialogHelper.IsTestMode = false;
         DialogHelper.LastTitle = null;
         DialogHelper.LastMessage = null;
     }

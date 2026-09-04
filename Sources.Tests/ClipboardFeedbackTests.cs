@@ -16,7 +16,6 @@ public class ClipboardFeedbackTests : IDisposable
 
     public ClipboardFeedbackTests()
     {
-        DialogHelper.IsTestMode = true;
         DialogHelper.LastMessage = null;
         DialogHelper.LastTitle = null;
 
@@ -29,7 +28,6 @@ public class ClipboardFeedbackTests : IDisposable
 
     public void Dispose()
     {
-        DialogHelper.IsTestMode = false;
         DialogHelper.LastMessage = null;
         DialogHelper.LastTitle = null;
     }

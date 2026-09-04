@@ -17,7 +17,6 @@ public class InteractiveFailureFeedbackTests : IDisposable
 
     public InteractiveFailureFeedbackTests()
     {
-        DialogHelper.IsTestMode = true;
         DialogHelper.LastMessage = null;
         DialogHelper.LastTitle = null;
 
@@ -43,7 +42,6 @@ public class InteractiveFailureFeedbackTests : IDisposable
 
     public void Dispose()
     {
-        DialogHelper.IsTestMode = false;
         DialogHelper.LastMessage = null;
         DialogHelper.LastTitle = null;
     }

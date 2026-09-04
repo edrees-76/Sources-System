@@ -13,7 +13,6 @@ public class SqliteInMemoryFixture : IDisposable
 
     public SqliteInMemoryFixture()
     {
-        Sources.Helpers.DialogHelper.IsTestMode = true;
         // استخدام اتصال In-Memory مفتوح طوال فترة عمل الـ Fixture
         _connection = new SqliteConnection("Filename=:memory:");
         _connection.Open();

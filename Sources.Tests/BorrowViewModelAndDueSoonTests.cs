@@ -28,7 +28,6 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
 
     public BorrowViewModelAndDueSoonTests()
     {
-        Sources.Helpers.DialogHelper.IsTestMode = true;
         _fixture = new SqliteInMemoryFixture();
         _fixture.ResetDatabase();
 
@@ -40,7 +39,6 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
 
     public void Dispose()
     {
-        Sources.Helpers.DialogHelper.IsTestMode = false;
         _fixture.ResetDatabase();
     }
 

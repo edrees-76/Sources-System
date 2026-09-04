@@ -21,8 +21,6 @@ public class AlertsViewModelTests : IDisposable
 
     public AlertsViewModelTests()
     {
-        DialogHelper.IsTestMode = true;
-
         _mockAlertService = new Mock<IAlertService>();
         _mockLocationService = new Mock<ILocationService>();
 
@@ -113,7 +111,6 @@ public class AlertsViewModelTests : IDisposable
 
     public void Dispose()
     {
-        DialogHelper.IsTestMode = false;
         foreach (var vm in _createdVms)
         {
             vm.Dispose();

@@ -410,7 +410,6 @@ public class SourcesViewModelTests : IDisposable
         var vm = CreateViewModel();
         var source = new Source { Id = Guid.NewGuid(), SourceCode = "SRC-CANCEL-01" };
 
-        DialogHelper.IsTestMode = true;
         DialogHelper.ShowConfirmationResult = false; // المستخدم يلغي الحذف
 
         try
@@ -423,7 +422,6 @@ public class SourcesViewModelTests : IDisposable
         }
         finally
         {
-            DialogHelper.IsTestMode = false;
             DialogHelper.ShowConfirmationResult = null;
         }
     }
@@ -439,7 +437,6 @@ public class SourcesViewModelTests : IDisposable
         _mockSourceService.Setup(s => s.DeleteSource(sourceId))
             .Returns((false, "لا يمكن حذف المصدر لوجود استعارة نشطة عليه"));
 
-        DialogHelper.IsTestMode = true;
         DialogHelper.ShowConfirmationResult = true; // المستخدم يؤكد
         DialogHelper.LastMessage = null;
 
@@ -455,7 +452,6 @@ public class SourcesViewModelTests : IDisposable
         }
         finally
         {
-            DialogHelper.IsTestMode = false;
             DialogHelper.ShowConfirmationResult = null;
             DialogHelper.LastMessage = null;
         }
@@ -473,7 +469,6 @@ public class SourcesViewModelTests : IDisposable
             .Returns((true, "تم حذف المصدر بنجاح"));
         _mockSourceService.Setup(s => s.GetAllSources()).Returns(new List<Source>());
 
-        DialogHelper.IsTestMode = true;
         DialogHelper.ShowConfirmationResult = true; // المستخدم يؤكد
 
         try
@@ -488,7 +483,6 @@ public class SourcesViewModelTests : IDisposable
         }
         finally
         {
-            DialogHelper.IsTestMode = false;
             DialogHelper.ShowConfirmationResult = null;
         }
     }
@@ -526,7 +520,6 @@ public class SourcesViewModelTests : IDisposable
     public async Task SaveAsync_NewSource_ShowsDialogWithExtraOption()
     {
         // Arrange
-        DialogHelper.IsTestMode = true;
         DialogHelper.ShowInfoWithExtraOptionResult = Sources.Views.AlertDialog.AlertResult.OK;
         DialogHelper.LastMessage = null;
 
@@ -557,7 +550,6 @@ public class SourcesViewModelTests : IDisposable
         }
         finally
         {
-            DialogHelper.IsTestMode = false;
             DialogHelper.ShowInfoWithExtraOptionResult = null;
             DialogHelper.LastMessage = null;
         }

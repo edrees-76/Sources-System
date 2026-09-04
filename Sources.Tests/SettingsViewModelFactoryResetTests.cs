@@ -19,7 +19,6 @@ public class SettingsViewModelFactoryResetTests : IDisposable
 
     public SettingsViewModelFactoryResetTests()
     {
-        DialogHelper.IsTestMode = true;
         _mockBackupService = new Mock<IBackupService>();
         _mockSettingsService = new Mock<ISystemSettingsService>();
         _mockSettingsService.Setup(s => s.GetAllSettings()).Returns(new Dictionary<string, string>());
@@ -29,7 +28,6 @@ public class SettingsViewModelFactoryResetTests : IDisposable
 
     public void Dispose()
     {
-        DialogHelper.IsTestMode = false;
         DialogHelper.LastMessage = null;
         DialogHelper.LastTitle = null;
     }

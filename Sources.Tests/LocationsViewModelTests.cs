@@ -163,7 +163,6 @@ public class LocationsViewModelTests
         _vm.Locations = new System.Collections.ObjectModel.ObservableCollection<LocationRow> { row };
         _vm.Selected = row;
 
-        Sources.Helpers.DialogHelper.IsTestMode = true;
         Sources.Helpers.DialogHelper.ShowConfirmationResult = false; // User cancels
 
         try
@@ -176,7 +175,6 @@ public class LocationsViewModelTests
         }
         finally
         {
-            Sources.Helpers.DialogHelper.IsTestMode = false;
             Sources.Helpers.DialogHelper.ShowConfirmationResult = null;
         }
     }
@@ -193,7 +191,6 @@ public class LocationsViewModelTests
         _mockService.Setup(s => s.Delete(loc.Id)).Returns((true, "تم حذف الموقع"));
         _mockService.Setup(s => s.GetAll()).Returns(new List<Location>());
 
-        Sources.Helpers.DialogHelper.IsTestMode = true;
         Sources.Helpers.DialogHelper.ShowConfirmationResult = true; // User confirms
 
         try
@@ -208,7 +205,6 @@ public class LocationsViewModelTests
         }
         finally
         {
-            Sources.Helpers.DialogHelper.IsTestMode = false;
             Sources.Helpers.DialogHelper.ShowConfirmationResult = null;
         }
     }
@@ -233,7 +229,6 @@ public class LocationsViewModelTests
     {
         // Arrange
         _vm.Selected = null;
-        Sources.Helpers.DialogHelper.IsTestMode = true;
         Sources.Helpers.DialogHelper.LastMessage = null;
 
         try
@@ -247,7 +242,6 @@ public class LocationsViewModelTests
         }
         finally
         {
-            Sources.Helpers.DialogHelper.IsTestMode = false;
             Sources.Helpers.DialogHelper.LastMessage = null;
         }
     }
@@ -263,7 +257,6 @@ public class LocationsViewModelTests
 
         _mockService.Setup(s => s.Delete(loc.Id)).Returns((false, "لا يمكن حذف الموقع لوجود مصادر مرتبطة به"));
 
-        Sources.Helpers.DialogHelper.IsTestMode = true;
         Sources.Helpers.DialogHelper.ShowConfirmationResult = true; // User confirms
         Sources.Helpers.DialogHelper.LastMessage = null;
 
@@ -278,7 +271,6 @@ public class LocationsViewModelTests
         }
         finally
         {
-            Sources.Helpers.DialogHelper.IsTestMode = false;
             Sources.Helpers.DialogHelper.ShowConfirmationResult = null;
             Sources.Helpers.DialogHelper.LastMessage = null;
         }

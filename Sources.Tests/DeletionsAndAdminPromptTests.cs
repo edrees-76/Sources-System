@@ -23,7 +23,6 @@ namespace Sources.Tests
         {
             _fixture = fixture;
             _fixture.ResetDatabase();
-            DialogHelper.IsTestMode = true;
             DialogHelper.ShowConfirmationResult = null;
             PasswordPromptDialog.CustomPromptResult = null;
         }
@@ -31,7 +30,6 @@ namespace Sources.Tests
         public void Dispose()
         {
             _fixture.ResetDatabase();
-            DialogHelper.IsTestMode = false;
             DialogHelper.ShowConfirmationResult = null;
             DialogHelper.LastMessage = null;
             DialogHelper.LastTitle = null;

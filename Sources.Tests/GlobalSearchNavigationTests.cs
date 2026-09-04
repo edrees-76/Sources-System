@@ -19,7 +19,6 @@ public class GlobalSearchNavigationTests : IDisposable
 {
     public GlobalSearchNavigationTests()
     {
-        DialogHelper.IsTestMode = true;
         WeakReferenceMessenger.Default.Reset();
     }
 
