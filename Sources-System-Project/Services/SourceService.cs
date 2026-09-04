@@ -132,7 +132,25 @@ public class SourceService : ISourceService
             });
         }
         db.SaveChanges();
-        _auditService.Log("Create", "Sources", source.Id, $"إنشاء مصدر: {source.SourceCode}");
+
+        var newValuesObj = new
+        {
+            source.SourceCode,
+            source.RadioisotopeId,
+            source.SerialNumber,
+            source.Manufacturer,
+            source.Model,
+            source.InitialActivityValue,
+            source.InitialActivityUnitId,
+            CalibrationDate = source.CalibrationDate.ToString("yyyy-MM-dd"),
+            source.CurrentActivityUnitId,
+            source.LocationId,
+            source.Status,
+            source.IsSealed,
+            source.Notes,
+            source.ImagePath
+        };
+        _auditService.LogWithChanges("Create", "Sources", source.Id, $"إنشاء مصدر: {source.SourceCode}", oldValues: null, newValues: System.Text.Json.JsonSerializer.Serialize(newValuesObj));
         return (true, "تم إضافة المصدر بنجاح");
     }
 
@@ -153,6 +171,25 @@ public class SourceService : ISourceService
         using var db = _dbFactory.CreateDbContext();
         var existing = db.Sources.Include(s => s.SourceIsotopes).FirstOrDefault(s => s.Id == source.Id);
         if (existing == null) return (false, "المصدر غير موجود");
+
+        var oldValuesObj = new
+        {
+            existing.SourceCode,
+            existing.RadioisotopeId,
+            existing.SerialNumber,
+            existing.Manufacturer,
+            existing.Model,
+            existing.InitialActivityValue,
+            existing.InitialActivityUnitId,
+            CalibrationDate = existing.CalibrationDate.ToString("yyyy-MM-dd"),
+            existing.CurrentActivityUnitId,
+            existing.LocationId,
+            existing.Status,
+            existing.IsSealed,
+            existing.Notes,
+            existing.ImagePath
+        };
+        string oldValuesJson = System.Text.Json.JsonSerializer.Serialize(oldValuesObj);
 
         var trimmedCode = source.SourceCode?.Trim() ?? string.Empty;
         var lowerCode = trimmedCode.ToLower();
@@ -230,7 +267,27 @@ public class SourceService : ISourceService
         CalculateSourceCurrentActivityInMemory(existing, isotopesDict, unitsDict);
 
         db.SaveChanges();
-        _auditService.Log("Update", "Sources", source.Id, $"تعديل مصدر: {source.SourceCode}");
+
+        var newValuesObj = new
+        {
+            existing.SourceCode,
+            existing.RadioisotopeId,
+            existing.SerialNumber,
+            existing.Manufacturer,
+            existing.Model,
+            existing.InitialActivityValue,
+            existing.InitialActivityUnitId,
+            CalibrationDate = existing.CalibrationDate.ToString("yyyy-MM-dd"),
+            existing.CurrentActivityUnitId,
+            existing.LocationId,
+            existing.Status,
+            existing.IsSealed,
+            existing.Notes,
+            existing.ImagePath
+        };
+        string newValuesJson = System.Text.Json.JsonSerializer.Serialize(newValuesObj);
+
+        _auditService.LogWithChanges("Update", "Sources", source.Id, $"تعديل مصدر: {source.SourceCode}", oldValuesJson, newValuesJson);
         return (true, "تم تحديث المصدر بنجاح");
     }
 

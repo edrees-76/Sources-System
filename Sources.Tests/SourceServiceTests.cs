@@ -125,6 +125,17 @@ public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             log.RecordId == source.Id &&
             log.Details != null &&
             log.Details.Contains("SRC-SRV-001"));
+
+        var createLog = _auditService.LoggedEntries.Single(log =>
+            log.Action == "Create" &&
+            log.TableName == "Sources" &&
+            log.RecordId == source.Id);
+
+        Assert.Null(createLog.OldValues);
+        Assert.NotNull(createLog.NewValues);
+        Assert.Contains("SRC-SRV-001", createLog.NewValues);
+        Assert.Contains(source.Manufacturer!, createLog.NewValues);
+        Assert.Contains(source.Model!, createLog.NewValues);
     }
 
     [Fact]
@@ -280,8 +291,10 @@ public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
     public void UpdateSource_ValidSource_SucceedsAndUpdatesPropertiesAndLogsAudit()
     {
         // Arrange
-        var source = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-UPD-001");
+        var source = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-UPD-001", status: "InUse");
         _sourceService.CreateSource(source);
+        var originalSerialNumber = source.SerialNumber!;
+        var originalStatus = source.Status;
 
         // Act
         source.SerialNumber = "SN-NEW-12345";
@@ -307,6 +320,21 @@ public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             log.Action == "Update" &&
             log.TableName == "Sources" &&
             log.RecordId == source.Id);
+
+        var updateLog = _auditService.LoggedEntries.Single(log =>
+            log.Action == "Update" &&
+            log.TableName == "Sources" &&
+            log.RecordId == source.Id);
+
+        Assert.NotNull(updateLog.OldValues);
+        Assert.NotNull(updateLog.NewValues);
+        Assert.Contains(originalSerialNumber, updateLog.OldValues);
+        Assert.DoesNotContain("SN-NEW-12345", updateLog.OldValues);
+        Assert.Contains(originalStatus, updateLog.OldValues);
+
+        Assert.Contains("SN-NEW-12345", updateLog.NewValues);
+        Assert.DoesNotContain(originalSerialNumber, updateLog.NewValues);
+        Assert.Contains("Storage", updateLog.NewValues);
     }
 
     [Fact]
