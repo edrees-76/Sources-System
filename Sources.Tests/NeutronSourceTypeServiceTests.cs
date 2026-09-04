@@ -341,4 +341,60 @@ public class NeutronSourceTypeServiceTests : IClassFixture<SqliteInMemoryFixture
         Assert.False(success);
         Assert.Contains("بنفس الرمز", message);
     }
+
+    #region PhotonToNeutronDoseRatio Validation & Audit Tests
+
+    [Fact]
+    public void Create_WithNonFinitePhotonToNeutronDoseRatio_ReturnsFailure()
+    {
+        // Act & Assert
+        Assert.False(_sut.Create(new NeutronSourceType { Code = "T-2", NameEn = "Test", HalfLife = 10, PhotonToNeutronDoseRatio = double.NaN }).Success);
+        Assert.False(_sut.Create(new NeutronSourceType { Code = "T-2", NameEn = "Test", HalfLife = 10, PhotonToNeutronDoseRatio = double.PositiveInfinity }).Success);
+        Assert.False(_sut.Create(new NeutronSourceType { Code = "T-2", NameEn = "Test", HalfLife = 10, PhotonToNeutronDoseRatio = double.NegativeInfinity }).Success);
+    }
+
+    [Fact]
+    public void Update_WithNonFinitePhotonToNeutronDoseRatio_ReturnsFailure()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.NeutronSourceTypes.Add(new NeutronSourceType { Id = id, Code = "Cf-252", NameEn = "Cf-252", HalfLife = 2.645 });
+            db.SaveChanges();
+        }
+
+        var updateItem = new NeutronSourceType { Id = id, Code = "Cf-252", NameEn = "Cf-252", HalfLife = 2.645, PhotonToNeutronDoseRatio = double.NaN };
+
+        // Act
+        var result = _sut.Update(updateItem);
+
+        // Assert
+        Assert.False(result.Success);
+    }
+
+    [Fact]
+    public void Create_WithPhotonToNeutronDoseRatio_LogsAuditWithNewValues()
+    {
+        // Arrange
+        var newType = new NeutronSourceType
+        {
+            Code = "Am-241/Be",
+            NameEn = "Americium-241/Beryllium",
+            HalfLife = 432.2,
+            PhotonToNeutronDoseRatio = 0.15
+        };
+
+        // Act
+        var (success, _) = _sut.Create(newType);
+
+        // Assert
+        Assert.True(success);
+        var createLog = _fakeAuditService.LoggedEntries.First(l => l.Action == "Create" && l.TableName == "NeutronSourceTypes");
+        Assert.NotNull(createLog.NewValues);
+        var doc = JsonDocument.Parse(createLog.NewValues);
+        Assert.Equal(0.15, doc.RootElement.GetProperty("PhotonToNeutronDoseRatio").GetDouble());
+    }
+
+    #endregion
 }

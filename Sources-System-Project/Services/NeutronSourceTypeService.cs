@@ -69,6 +69,8 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
             return (false, TranslationHelper.GetString("MsgErrInvalidMeanNeutronEnergyFinite") ?? "قيمة متوسط طاقة النيوترونات غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.AmbientDoseConversionCoefficient.HasValue && !double.IsFinite(item.AmbientDoseConversionCoefficient.Value))
             return (false, TranslationHelper.GetString("MsgErrInvalidAmbientDoseConversionFinite") ?? "قيمة معامل تحويل التدفق إلى الجرعة المحيطية غير صالحة (يجب أن تكون رقماً منتهياً)");
+        if (item.PhotonToNeutronDoseRatio.HasValue && !double.IsFinite(item.PhotonToNeutronDoseRatio.Value))
+            return (false, "قيمة نسبة جرعة الفوتون إلى النيترون غير صالحة (يجب أن تكون رقماً منتهياً)");
 
         using var db = _dbFactory.CreateDbContext();
         var trimmedCode = item.Code.Trim();
@@ -98,6 +100,7 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
             item.HalfLifeUnit,
             item.MeanNeutronEnergyMeV,
             item.AmbientDoseConversionCoefficient,
+            item.PhotonToNeutronDoseRatio,
             item.StandardReference,
             item.Notes
         };
@@ -118,6 +121,8 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
             return (false, TranslationHelper.GetString("MsgErrInvalidMeanNeutronEnergyFinite") ?? "قيمة متوسط طاقة النيوترونات غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.AmbientDoseConversionCoefficient.HasValue && !double.IsFinite(item.AmbientDoseConversionCoefficient.Value))
             return (false, TranslationHelper.GetString("MsgErrInvalidAmbientDoseConversionFinite") ?? "قيمة معامل تحويل التدفق إلى الجرعة المحيطية غير صالحة (يجب أن تكون رقماً منتهياً)");
+        if (item.PhotonToNeutronDoseRatio.HasValue && !double.IsFinite(item.PhotonToNeutronDoseRatio.Value))
+            return (false, "قيمة نسبة جرعة الفوتون إلى النيترون غير صالحة (يجب أن تكون رقماً منتهياً)");
 
         using var db = _dbFactory.CreateDbContext();
         var existing = db.NeutronSourceTypes.Find(item.Id);
@@ -135,6 +140,7 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
             existing.HalfLifeUnit,
             existing.MeanNeutronEnergyMeV,
             existing.AmbientDoseConversionCoefficient,
+            existing.PhotonToNeutronDoseRatio,
             existing.StandardReference,
             existing.Notes
         };
@@ -155,6 +161,7 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
         existing.HalfLifeUnit = string.IsNullOrWhiteSpace(item.HalfLifeUnit) ? "years" : item.HalfLifeUnit.Trim();
         existing.MeanNeutronEnergyMeV = item.MeanNeutronEnergyMeV;
         existing.AmbientDoseConversionCoefficient = item.AmbientDoseConversionCoefficient;
+        existing.PhotonToNeutronDoseRatio = item.PhotonToNeutronDoseRatio;
         existing.StandardReference = item.StandardReference;
         existing.Notes = item.Notes;
 
@@ -172,6 +179,7 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
             existing.HalfLifeUnit,
             existing.MeanNeutronEnergyMeV,
             existing.AmbientDoseConversionCoefficient,
+            existing.PhotonToNeutronDoseRatio,
             existing.StandardReference,
             existing.Notes
         };
@@ -206,6 +214,7 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
             item.HalfLifeUnit,
             item.MeanNeutronEnergyMeV,
             item.AmbientDoseConversionCoefficient,
+            item.PhotonToNeutronDoseRatio,
             item.StandardReference,
             item.Notes
         };
@@ -260,6 +269,7 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
             item.HalfLifeUnit,
             item.MeanNeutronEnergyMeV,
             item.AmbientDoseConversionCoefficient,
+            item.PhotonToNeutronDoseRatio,
             item.StandardReference,
             item.Notes
         };

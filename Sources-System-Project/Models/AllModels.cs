@@ -972,6 +972,11 @@ public class NeutronSourceType
     [MaxLength(200)]
     public string? StandardReference { get; set; }
 
+    /// <summary>نسبة معدل جرعة الفوتون المصاحب إلى معدل جرعة النيترون (بلا وحدة).
+    /// ISO 8529-1:2021 Table 1 "Ratio of photon to neutron ambient-dose-equivalent
+    /// rates". فراغه يعني عدم توفر قيمة مرجعية لهذا النوع.</summary>
+    public double? PhotonToNeutronDoseRatio { get; set; }
+
     public string? Notes { get; set; }
 
     public bool IsDeleted { get; set; } = false;
@@ -1003,6 +1008,17 @@ public class NeutronSource
 
     [MaxLength(100)]
     public string? SerialNumber { get; set; }
+
+    [MaxLength(100)]
+    public string? Manufacturer { get; set; }
+
+    [MaxLength(100)]
+    public string? Model { get; set; }
+
+    /// <summary>طول الكبسولة بالملم كما في شهادة المصدر. ISO 8529-1 §4.3: لا معيار
+    /// موحّد للأبعاد — خاصية المصدر الفردي لا النوع المرجعي.</summary>
+    public double? CapsuleLengthMm { get; set; }
+    public double? CapsuleDiameterMm { get; set; }
 
     [Required]
     public Guid NeutronSourceTypeId { get; set; }
