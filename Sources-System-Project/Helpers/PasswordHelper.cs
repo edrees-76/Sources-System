@@ -1,4 +1,5 @@
 using System;
+using Sources.Services;
 
 namespace Sources.Helpers;
 
@@ -25,9 +26,10 @@ public static class PasswordHelper
         {
             return BCrypt.Net.BCrypt.Verify(password, hash);
         }
-        catch
+        catch (Exception ex)
         {
             // في حال كان التشفير القديم (SHA256) موجوداً، قد يفشل BCrypt
+            LoggerService.LogError("PasswordHelper: BCrypt verification threw", ex);
             return false;
         }
     }
