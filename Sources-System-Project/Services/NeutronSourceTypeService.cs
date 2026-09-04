@@ -85,7 +85,23 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
 
         db.NeutronSourceTypes.Add(item);
         db.SaveChanges();
-        _auditService.Log("Create", "NeutronSourceTypes", item.Id, $"إضافة نوع مصدر نيتروني: {item.Code}");
+
+        var newValuesObj = new
+        {
+            item.Code,
+            item.NameEn,
+            item.NameAr,
+            item.ReactionType,
+            item.TargetMaterial,
+            item.ParentNuclide,
+            item.HalfLife,
+            item.HalfLifeUnit,
+            item.MeanNeutronEnergyMeV,
+            item.AmbientDoseConversionCoefficient,
+            item.StandardReference,
+            item.Notes
+        };
+        _auditService.LogWithChanges("Create", "NeutronSourceTypes", item.Id, $"إضافة نوع مصدر نيتروني: {item.Code}", oldValues: null, newValues: System.Text.Json.JsonSerializer.Serialize(newValuesObj));
         return (true, "تم إضافة نوع المصدر النيتروني بنجاح");
     }
 
@@ -107,6 +123,23 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
         var existing = db.NeutronSourceTypes.Find(item.Id);
         if (existing == null) return (false, "نوع المصدر غير موجود");
 
+        var oldValuesObj = new
+        {
+            existing.Code,
+            existing.NameEn,
+            existing.NameAr,
+            existing.ReactionType,
+            existing.TargetMaterial,
+            existing.ParentNuclide,
+            existing.HalfLife,
+            existing.HalfLifeUnit,
+            existing.MeanNeutronEnergyMeV,
+            existing.AmbientDoseConversionCoefficient,
+            existing.StandardReference,
+            existing.Notes
+        };
+        string oldValuesJson = System.Text.Json.JsonSerializer.Serialize(oldValuesObj);
+
         var trimmedCode = item.Code.Trim();
         var lowerCode = trimmedCode.ToLower();
         if (db.NeutronSourceTypes.Any(t => t.Id != item.Id && t.Code.ToLower() == lowerCode))
@@ -126,7 +159,25 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
         existing.Notes = item.Notes;
 
         db.SaveChanges();
-        _auditService.Log("Update", "NeutronSourceTypes", item.Id, $"تعديل نوع مصدر نيتروني: {item.Code}");
+
+        var newValuesObj = new
+        {
+            existing.Code,
+            existing.NameEn,
+            existing.NameAr,
+            existing.ReactionType,
+            existing.TargetMaterial,
+            existing.ParentNuclide,
+            existing.HalfLife,
+            existing.HalfLifeUnit,
+            existing.MeanNeutronEnergyMeV,
+            existing.AmbientDoseConversionCoefficient,
+            existing.StandardReference,
+            existing.Notes
+        };
+        string newValuesJson = System.Text.Json.JsonSerializer.Serialize(newValuesObj);
+
+        _auditService.LogWithChanges("Update", "NeutronSourceTypes", item.Id, $"تعديل نوع مصدر نيتروني: {item.Code}", oldValuesJson, newValuesJson);
         return (true, "تم تحديث نوع المصدر النيتروني");
     }
 
@@ -143,6 +194,23 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
         if (item.NeutronSources.Any() || db.NeutronSources.Any(n => n.NeutronSourceTypeId == id))
             return (false, "لا يمكن حذف نوع مصدر نيتروني مرتبط بمصادر نيترونية");
 
+        var oldValuesObj = new
+        {
+            item.Code,
+            item.NameEn,
+            item.NameAr,
+            item.ReactionType,
+            item.TargetMaterial,
+            item.ParentNuclide,
+            item.HalfLife,
+            item.HalfLifeUnit,
+            item.MeanNeutronEnergyMeV,
+            item.AmbientDoseConversionCoefficient,
+            item.StandardReference,
+            item.Notes
+        };
+        string oldValuesJson = System.Text.Json.JsonSerializer.Serialize(oldValuesObj);
+
         item.IsDeleted = true;
         item.DeletedAt = DateTime.Now;
         var currentUserId = _userService.CurrentUser?.Id;
@@ -156,7 +224,7 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
         }
 
         db.SaveChanges();
-        _auditService.Log("Delete", "NeutronSourceTypes", id, $"حذف نوع مصدر نيتروني: {item.Code}");
+        _auditService.LogWithChanges("Delete", "NeutronSourceTypes", id, $"حذف نوع مصدر نيتروني: {item.Code}", oldValuesJson, null);
         return (true, "تم حذف نوع المصدر النيتروني");
     }
 
@@ -180,7 +248,24 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
         item.DeletedBy = null;
         db.SaveChanges();
 
-        _auditService.Log("Restore", "NeutronSourceTypes", id, $"استرجاع نوع مصدر نيتروني: {item.Code}");
+        var newValuesObj = new
+        {
+            item.Code,
+            item.NameEn,
+            item.NameAr,
+            item.ReactionType,
+            item.TargetMaterial,
+            item.ParentNuclide,
+            item.HalfLife,
+            item.HalfLifeUnit,
+            item.MeanNeutronEnergyMeV,
+            item.AmbientDoseConversionCoefficient,
+            item.StandardReference,
+            item.Notes
+        };
+        string newValuesJson = System.Text.Json.JsonSerializer.Serialize(newValuesObj);
+
+        _auditService.LogWithChanges("Restore", "NeutronSourceTypes", id, $"استرجاع نوع مصدر نيتروني: {item.Code}", null, newValuesJson);
         return (true, $"تم استرجاع نوع المصدر النيتروني {item.Code}");
     }
 }

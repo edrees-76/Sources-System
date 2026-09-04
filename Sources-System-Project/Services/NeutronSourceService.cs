@@ -141,7 +141,22 @@ public class NeutronSourceService : INeutronSourceService
         db.NeutronSources.Add(item);
         db.SaveChanges();
 
-        _auditService.Log("Create", "NeutronSources", item.Id, $"إضافة مصدر نيتروني: {item.SourceCode}");
+        var newValuesObj = new
+        {
+            item.SourceCode,
+            item.SerialNumber,
+            item.NeutronSourceTypeId,
+            item.LocationId,
+            item.CalibratedEmissionRate,
+            item.RelativeExpandedUncertaintyPercent,
+            CalibrationDate = item.CalibrationDate?.ToString("yyyy-MM-dd"),
+            EmissionCalibrationDate = item.EmissionCalibrationDate?.ToString("yyyy-MM-dd"),
+            item.CalibrationReference,
+            item.AnisotropyFactor,
+            item.Status,
+            item.Notes
+        };
+        _auditService.LogWithChanges("Create", "NeutronSources", item.Id, $"إضافة مصدر نيتروني: {item.SourceCode}", oldValues: null, newValues: System.Text.Json.JsonSerializer.Serialize(newValuesObj));
         return (true, "تم إضافة المصدر النيتروني بنجاح");
     }
 
@@ -166,6 +181,23 @@ public class NeutronSourceService : INeutronSourceService
         using var db = _dbFactory.CreateDbContext();
         var existing = db.NeutronSources.Find(item.Id);
         if (existing == null) return (false, "المصدر النيتروني غير موجود");
+
+        var oldValuesObj = new
+        {
+            existing.SourceCode,
+            existing.SerialNumber,
+            existing.NeutronSourceTypeId,
+            existing.LocationId,
+            existing.CalibratedEmissionRate,
+            existing.RelativeExpandedUncertaintyPercent,
+            CalibrationDate = existing.CalibrationDate?.ToString("yyyy-MM-dd"),
+            EmissionCalibrationDate = existing.EmissionCalibrationDate?.ToString("yyyy-MM-dd"),
+            existing.CalibrationReference,
+            existing.AnisotropyFactor,
+            existing.Status,
+            existing.Notes
+        };
+        string oldValuesJson = System.Text.Json.JsonSerializer.Serialize(oldValuesObj);
 
         var trimmedCode = item.SourceCode.Trim();
         var lowerCode = trimmedCode.ToLower();
@@ -194,7 +226,24 @@ public class NeutronSourceService : INeutronSourceService
 
         db.SaveChanges();
 
-        _auditService.Log("Update", "NeutronSources", item.Id, $"تعديل مصدر نيتروني: {item.SourceCode}");
+        var newValuesObj = new
+        {
+            existing.SourceCode,
+            existing.SerialNumber,
+            existing.NeutronSourceTypeId,
+            existing.LocationId,
+            existing.CalibratedEmissionRate,
+            existing.RelativeExpandedUncertaintyPercent,
+            CalibrationDate = existing.CalibrationDate?.ToString("yyyy-MM-dd"),
+            EmissionCalibrationDate = existing.EmissionCalibrationDate?.ToString("yyyy-MM-dd"),
+            existing.CalibrationReference,
+            existing.AnisotropyFactor,
+            existing.Status,
+            existing.Notes
+        };
+        string newValuesJson = System.Text.Json.JsonSerializer.Serialize(newValuesObj);
+
+        _auditService.LogWithChanges("Update", "NeutronSources", item.Id, $"تعديل مصدر نيتروني: {item.SourceCode}", oldValuesJson, newValuesJson);
         return (true, "تم تحديث المصدر النيتروني");
     }
 
@@ -207,6 +256,23 @@ public class NeutronSourceService : INeutronSourceService
         using var db = _dbFactory.CreateDbContext();
         var item = db.NeutronSources.Find(id);
         if (item == null) return (false, "المصدر النيتروني غير موجود");
+
+        var oldValuesObj = new
+        {
+            item.SourceCode,
+            item.SerialNumber,
+            item.NeutronSourceTypeId,
+            item.LocationId,
+            item.CalibratedEmissionRate,
+            item.RelativeExpandedUncertaintyPercent,
+            CalibrationDate = item.CalibrationDate?.ToString("yyyy-MM-dd"),
+            EmissionCalibrationDate = item.EmissionCalibrationDate?.ToString("yyyy-MM-dd"),
+            item.CalibrationReference,
+            item.AnisotropyFactor,
+            item.Status,
+            item.Notes
+        };
+        string oldValuesJson = System.Text.Json.JsonSerializer.Serialize(oldValuesObj);
 
         item.IsDeleted = true;
         item.DeletedAt = DateTime.Now;
@@ -221,7 +287,7 @@ public class NeutronSourceService : INeutronSourceService
         }
 
         db.SaveChanges();
-        _auditService.Log("Delete", "NeutronSources", id, $"حذف مصدر نيتروني: {item.SourceCode}");
+        _auditService.LogWithChanges("Delete", "NeutronSources", id, $"حذف مصدر نيتروني: {item.SourceCode}", oldValuesJson, null);
         return (true, "تم حذف المصدر النيتروني");
     }
 
@@ -245,7 +311,24 @@ public class NeutronSourceService : INeutronSourceService
         item.DeletedBy = null;
         db.SaveChanges();
 
-        _auditService.Log("Restore", "NeutronSources", id, $"استرجاع مصدر نيتروني: {item.SourceCode}");
+        var newValuesObj = new
+        {
+            item.SourceCode,
+            item.SerialNumber,
+            item.NeutronSourceTypeId,
+            item.LocationId,
+            item.CalibratedEmissionRate,
+            item.RelativeExpandedUncertaintyPercent,
+            CalibrationDate = item.CalibrationDate?.ToString("yyyy-MM-dd"),
+            EmissionCalibrationDate = item.EmissionCalibrationDate?.ToString("yyyy-MM-dd"),
+            item.CalibrationReference,
+            item.AnisotropyFactor,
+            item.Status,
+            item.Notes
+        };
+        string newValuesJson = System.Text.Json.JsonSerializer.Serialize(newValuesObj);
+
+        _auditService.LogWithChanges("Restore", "NeutronSources", id, $"استرجاع مصدر نيتروني: {item.SourceCode}", null, newValuesJson);
         return (true, $"تم استرجاع المصدر النيتروني {item.SourceCode}");
     }
 }
