@@ -9,8 +9,8 @@ public class PasswordHelperTests
 {
     // مسار ملف السجل نفسه المستخدم داخل LoggerService (Sources.Services.LoggerService)
     private static string LogFilePath => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "Sources", "Logs", $"sources_{DateTime.Now:yyyy-MM-dd}.log");
+        Sources.Data.DatabasePaths.AppDataDirectory,
+        "Logs", $"sources_{DateTime.Now:yyyy-MM-dd}.log");
 
     [Fact]
     public void VerifyPassword_WhenHashIsMalformed_ReturnsFalseAndLogsBCryptFailure()
