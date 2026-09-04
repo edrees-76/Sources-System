@@ -428,6 +428,34 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     }
 
     [Fact]
+    public void UnlockAccount_WhenAuditServiceProvided_LogsChangesWithOldAndNewValues()
+    {
+        // Arrange
+        var mockAuditService = new Moq.Mock<IAuditService>();
+        var userServiceWithAudit = new UserService(_fixture.ContextFactory, mockAuditService.Object);
+        LoginAsAdmin(userServiceWithAudit);
+        var user = CreateTestUser(
+            username: "audit_unlock_user",
+            password: "Password123",
+            failedAttempts: 3,
+            lockoutEnd: DateTime.Now.AddMinutes(15));
+
+        // Act
+        var (success, _) = userServiceWithAudit.UnlockAccount(user.Id);
+
+        // Assert
+        Assert.True(success);
+        mockAuditService.Verify(a => a.LogWithChanges(
+            "UnlockAccount",
+            "Users",
+            user.Id,
+            It.Is<string>(d => d.Contains(user.FullName) && d.Contains(user.Username)),
+            It.Is<string>(oldVal => oldVal.Contains("\"FailedLoginAttempts\":3")),
+            It.Is<string>(newVal => newVal.Contains("\"FailedLoginAttempts\":0") && newVal.Contains("\"LockoutEnd\":null"))
+        ), Moq.Times.Once);
+    }
+
+    [Fact]
     public void ResetPassword_ChangesPasswordHashAndClearsLockoutAndCounter()
     {
         LoginAsAdmin();
@@ -472,6 +500,35 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
         // Assert
         Assert.False(success);
         Assert.Equal("المستخدم غير موجود", message);
+    }
+
+    [Fact]
+    public void ResetPassword_WhenAuditServiceProvided_LogsBareEntryWithoutPasswordMaterial()
+    {
+        // Arrange
+        var mockAuditService = new Moq.Mock<IAuditService>();
+        var userServiceWithAudit = new UserService(_fixture.ContextFactory, mockAuditService.Object);
+        LoginAsAdmin(userServiceWithAudit);
+        var user = CreateTestUser(username: "audit_reset_pw", password: "OldPassword123");
+        string oldHash = user.PasswordHash;
+        const string newPassword = "NewPassword456";
+
+        // Act
+        var (success, _) = userServiceWithAudit.ResetPassword(user.Id, newPassword);
+
+        // Assert
+        Assert.True(success);
+        mockAuditService.Verify(a => a.Log(
+            "ResetPassword",
+            "Users",
+            user.Id,
+            It.Is<string>(d => d.Contains(user.FullName) && d.Contains(user.Username)
+                && !d.Contains(oldHash) && !d.Contains(newPassword))
+        ), Moq.Times.Once);
+
+        mockAuditService.Verify(a => a.LogWithChanges(
+            It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Guid?>(), It.IsAny<string>(),
+            It.IsAny<string>(), It.IsAny<string>()), Moq.Times.Never);
     }
 
     [Fact]
@@ -540,6 +597,30 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
         {
             Assert.True(context.Users.Find(user.Id)!.IsActive);
         }
+    }
+
+    [Fact]
+    public void ToggleUserFreeze_WhenAuditServiceProvided_LogsChangesWithOldAndNewValues()
+    {
+        // Arrange
+        var mockAuditService = new Moq.Mock<IAuditService>();
+        var userServiceWithAudit = new UserService(_fixture.ContextFactory, mockAuditService.Object);
+        LoginAsAdmin(userServiceWithAudit);
+        var user = CreateTestUser(username: "audit_freeze_user", password: "Pass", isActive: true);
+
+        // Act
+        var (success, _) = userServiceWithAudit.ToggleUserFreeze(user.Id);
+
+        // Assert
+        Assert.True(success);
+        mockAuditService.Verify(a => a.LogWithChanges(
+            "ToggleUserFreeze",
+            "Users",
+            user.Id,
+            It.Is<string>(d => d.Contains(user.FullName) && d.Contains(user.Username)),
+            It.Is<string>(oldVal => oldVal.Contains("\"IsActive\":true")),
+            It.Is<string>(newVal => newVal.Contains("\"IsActive\":false"))
+        ), Moq.Times.Once);
     }
 
     [Fact]

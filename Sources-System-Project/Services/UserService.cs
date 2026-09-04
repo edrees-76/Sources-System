@@ -214,6 +214,10 @@ public class UserService : IUserService
         user.FailedLoginAttempts = 0;
         user.LockoutEnd = null;
         db.SaveChanges();
+
+        var auditService = _auditService ?? new AuditService(_dbFactory, this);
+        auditService.Log("ResetPassword", "Users", userId, $"إعادة تعيين كلمة مرور المستخدم: {user.FullName} (@{user.Username})");
+
         return (true, "تم إعادة تعيين كلمة المرور");
     }
 
@@ -227,9 +231,21 @@ public class UserService : IUserService
         var user = db.Users.Find(userId);
         if (user == null) return (false, "المستخدم غير موجود");
 
+        var oldValuesObj = new { user.FailedLoginAttempts, user.LockoutEnd };
+
         user.FailedLoginAttempts = 0;
         user.LockoutEnd = null;
         db.SaveChanges();
+
+        var auditService = _auditService ?? new AuditService(_dbFactory, this);
+        auditService.LogWithChanges(
+            "UnlockAccount",
+            "Users",
+            userId,
+            $"فك قفل حساب: {user.FullName} (@{user.Username})",
+            JsonSerializer.Serialize(oldValuesObj),
+            JsonSerializer.Serialize(new { FailedLoginAttempts = 0, LockoutEnd = (DateTime?)null }));
+
         return (true, "تم فك قفل الحساب");
     }
 
@@ -303,10 +319,22 @@ public class UserService : IUserService
         if (user == null) return (false, "المستخدم غير موجود");
         if (user.Username == "admin") return (false, "لا يمكن تجميد حساب مدير النظام الأساسي");
 
+        var oldValuesObj = new { user.IsActive };
+
         user.IsActive = !user.IsActive;
         db.SaveChanges();
 
         string action = user.IsActive ? "تنشيط" : "تجميد";
+
+        var auditService = _auditService ?? new AuditService(_dbFactory, this);
+        auditService.LogWithChanges(
+            "ToggleUserFreeze",
+            "Users",
+            userId,
+            $"{action} حساب: {user.FullName} (@{user.Username})",
+            JsonSerializer.Serialize(oldValuesObj),
+            JsonSerializer.Serialize(new { user.IsActive }));
+
         return (true, $"تم {action} حساب {user.FullName}");
     }
 
