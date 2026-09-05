@@ -118,6 +118,29 @@ VALUES ('{ns2Id}', 'NS-WITHOUT-CALIB', '{typeId}', '{locId}', 1200000.0, NULL, '
                 .UseSqlite($"Data Source={tempDbPath}")
                 .Options;
 
+            // 0. زرع صف قديم يحاكي قاعدة بيانات سابقة للجولة 124 (النوع الوحيد غير المحدد "Am-241/Be")
+            //    للتأكد من أن SeedData() يُبطله (Soft-delete) بعد استبداله بصفَي صغير/كبير.
+            using (var context = new AppDbContext(options))
+            {
+                context.Database.Migrate();
+                context.NeutronSourceTypes.Add(new NeutronSourceType
+                {
+                    Code = "Am-241/Be",
+                    NameEn = "Americium-241/Beryllium",
+                    NameAr = "أمريسيوم-241 / بيريليوم",
+                    ReactionType = "(α,n)",
+                    TargetMaterial = "Be",
+                    ParentNuclide = "Am-241",
+                    HalfLife = 432.2,
+                    HalfLifeUnit = "years",
+                    MeanNeutronEnergyMeV = null,
+                    AmbientDoseConversionCoefficient = null,
+                    StandardReference = "ISO 8529-3:2023 Table 2 — يعتمد على حجم المصدر (صغير 393 / كبير 387)؛ غير محدد للنوع",
+                    Notes = "الأكثر شيوعاً في التطبيقات الصناعية وسبر الآبار."
+                });
+                context.SaveChanges();
+            }
+
             using (var ctx = new AppDbContext(options))
             {
                 ctx.InitializeDatabase();
@@ -126,7 +149,7 @@ VALUES ('{ns2Id}', 'NS-WITHOUT-CALIB', '{typeId}', '{locId}', 1200000.0, NULL, '
             using (var ctx = new AppDbContext(options))
             {
                 var types = ctx.NeutronSourceTypes.ToList();
-                Assert.Equal(10, types.Count);
+                Assert.Equal(11, types.Count);
 
                 // 1. Cf-252 المجرد هو النوع الوحيد ذو المعامل المحدد للنوع ككل في ISO 8529-1:2021 Table 1 و ISO 8529-3:2023 Table 2
                 var cf252 = types.FirstOrDefault(t => t.Code == "Cf-252");
@@ -135,12 +158,18 @@ VALUES ('{ns2Id}', 'NS-WITHOUT-CALIB', '{typeId}', '{locId}', 1200000.0, NULL, '
                 Assert.Equal(385.0, cf252.AmbientDoseConversionCoefficient);
                 Assert.Equal("ISO 8529-1:2021 Table 1; ISO 8529-3:2023 Table 2", cf252.StandardReference);
 
-                // 2. Am-241/Be: المعامل يعتمد على حجم الكبسولة ومصدرها، الحقول NULL والتوثيق المرجعي موجود
-                var amBe = types.FirstOrDefault(t => t.Code == "Am-241/Be");
-                Assert.NotNull(amBe);
-                Assert.Null(amBe!.MeanNeutronEnergyMeV);
-                Assert.Null(amBe.AmbientDoseConversionCoefficient);
-                Assert.Equal("ISO 8529-3:2023 Table 2 — يعتمد على حجم المصدر (صغير 393 / كبير 387)؛ غير محدد للنوع", amBe.StandardReference);
+                // 2. Am-241/Be-Small و Am-241/Be-Large: قيم دقيقة لكل حجم وفق ISO 8529-1:2021 Table 1 و ISO 8529-3:2023 Table 2
+                var amBeSmall = types.FirstOrDefault(t => t.Code == "Am-241/Be-Small");
+                Assert.NotNull(amBeSmall);
+                Assert.Equal(4.17, amBeSmall!.MeanNeutronEnergyMeV);
+                Assert.Equal(393.0, amBeSmall.AmbientDoseConversionCoefficient);
+                Assert.Equal("ISO 8529-1:2021 Table 1; ISO 8529-3:2023 Table 2", amBeSmall.StandardReference);
+
+                var amBeLarge = types.FirstOrDefault(t => t.Code == "Am-241/Be-Large");
+                Assert.NotNull(amBeLarge);
+                Assert.Equal(4.05, amBeLarge!.MeanNeutronEnergyMeV);
+                Assert.Equal(387.0, amBeLarge.AmbientDoseConversionCoefficient);
+                Assert.Equal("ISO 8529-1:2021 Table 1; ISO 8529-3:2023 Table 2", amBeLarge.StandardReference);
 
                 // 3. Am-241/B: خرج من الإشعاعات المرجعية في ISO 8529-1:2021، الحقول NULL والتوثيق المرجعي موجود
                 var amB = types.FirstOrDefault(t => t.Code == "Am-241/B");
@@ -164,6 +193,12 @@ VALUES ('{ns2Id}', 'NS-WITHOUT-CALIB', '{typeId}', '{locId}', 1200000.0, NULL, '
                     Assert.Null(item.AmbientDoseConversionCoefficient);
                     Assert.Null(item.StandardReference);
                 }
+
+                // 5. الصف القديم "Am-241/Be" غير النشط يجب أن يُبطَل (Soft-delete) لا أن يبقى نشطاً أو يُكرَّر
+                var legacyAmBe = ctx.NeutronSourceTypes.IgnoreQueryFilters().FirstOrDefault(t => t.Code == "Am-241/Be");
+                Assert.NotNull(legacyAmBe);
+                Assert.True(legacyAmBe!.IsDeleted);
+                Assert.NotNull(legacyAmBe.DeletedAt);
             }
         }
         finally

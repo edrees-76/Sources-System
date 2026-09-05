@@ -177,7 +177,8 @@ public class AppDbContext : DbContext
         var neutronTypeData = new[]
         {
             new { Code = "Cf-252", NameEn = "Californium-252", NameAr = "كاليفورنيوم-252", ReactionType = "Spontaneous Fission", TargetMaterial = (string?)null, ParentNuclide = "Cf-252", HalfLife = 2.645, HalfLifeUnit = "years", MeanNeutronEnergyMeV = (double?)2.13, AmbientDoseConversionCoefficient = (double?)385.0, StandardReference = (string?)"ISO 8529-1:2021 Table 1; ISO 8529-3:2023 Table 2", Notes = "انشطار تلقائي مستمر، انبعاث عالي." },
-            new { Code = "Am-241/Be", NameEn = "Americium-241/Beryllium", NameAr = "أمريسيوم-241 / بيريليوم", ReactionType = "(α,n)", TargetMaterial = (string?)"Be", ParentNuclide = "Am-241", HalfLife = 432.2, HalfLifeUnit = "years", MeanNeutronEnergyMeV = (double?)null, AmbientDoseConversionCoefficient = (double?)null, StandardReference = (string?)"ISO 8529-3:2023 Table 2 — يعتمد على حجم المصدر (صغير 393 / كبير 387)؛ غير محدد للنوع", Notes = "الأكثر شيوعاً في التطبيقات الصناعية وسبر الآبار." },
+            new { Code = "Am-241/Be-Small", NameEn = "Americium-241/Beryllium (small source)", NameAr = "أمريسيوم-241 / بيريليوم (مصدر صغير)", ReactionType = "(α,n)", TargetMaterial = (string?)"Be", ParentNuclide = "Am-241", HalfLife = 432.2, HalfLifeUnit = "years", MeanNeutronEnergyMeV = (double?)4.17, AmbientDoseConversionCoefficient = (double?)393.0, StandardReference = (string?)"ISO 8529-1:2021 Table 1; ISO 8529-3:2023 Table 2", Notes = "الأكثر شيوعاً في التطبيقات الصناعية وسبر الآبار؛ مصدر صغير (نشاط نموذجي أقل، وفق ISO 8529-1 §4.4)." },
+            new { Code = "Am-241/Be-Large", NameEn = "Americium-241/Beryllium (large source)", NameAr = "أمريسيوم-241 / بيريليوم (مصدر كبير)", ReactionType = "(α,n)", TargetMaterial = (string?)"Be", ParentNuclide = "Am-241", HalfLife = 432.2, HalfLifeUnit = "years", MeanNeutronEnergyMeV = (double?)4.05, AmbientDoseConversionCoefficient = (double?)387.0, StandardReference = (string?)"ISO 8529-1:2021 Table 1; ISO 8529-3:2023 Table 2", Notes = "الأكثر شيوعاً في التطبيقات الصناعية وسبر الآبار؛ مصدر كبير (نشاط نموذجي أعلى، وفق ISO 8529-1 §4.4)." },
             new { Code = "Pu-239/Be", NameEn = "Plutonium-239/Beryllium", NameAr = "بلوتونيوم-239 / بيريليوم", ReactionType = "(α,n)", TargetMaterial = (string?)"Be", ParentNuclide = "Pu-239", HalfLife = 24110.0, HalfLifeUnit = "years", MeanNeutronEnergyMeV = (double?)null, AmbientDoseConversionCoefficient = (double?)null, StandardReference = (string?)null, Notes = "مصدر قياسي مستقر جداً طويل العمر." },
             new { Code = "Pu-238/Be", NameEn = "Plutonium-238/Beryllium", NameAr = "بلوتونيوم-238 / بيريليوم", ReactionType = "(α,n)", TargetMaterial = (string?)"Be", ParentNuclide = "Pu-238", HalfLife = 87.7, HalfLifeUnit = "years", MeanNeutronEnergyMeV = (double?)null, AmbientDoseConversionCoefficient = (double?)null, StandardReference = (string?)null, Notes = "انبعاث نيتروني مرتفع بحجم مدمج." },
             new { Code = "Am-241/B", NameEn = "Americium-241/Boron", NameAr = "أمريسيوم-241 / بورون", ReactionType = "(α,n)", TargetMaterial = (string?)"B", ParentNuclide = "Am-241", HalfLife = 432.2, HalfLifeUnit = "years", MeanNeutronEnergyMeV = (double?)null, AmbientDoseConversionCoefficient = (double?)null, StandardReference = (string?)"خارج الإشعاعات المرجعية في ISO 8529-1:2021؛ لا معامل معياري حالي", Notes = "طيف طاقة أقل من Am-Be." },
@@ -226,6 +227,15 @@ public class AppDbContext : DbContext
         }
 
         SaveChanges();
+
+        // ─── إبطال الصف القديم "Am-241/Be" غير المحدد بعد استبداله بصفَي (صغير/كبير) — الجولة 124 ───
+        var legacyAmBe = NeutronSourceTypes.IgnoreQueryFilters().FirstOrDefault(nt => nt.Code == "Am-241/Be");
+        if (legacyAmBe != null && !legacyAmBe.IsDeleted)
+        {
+            legacyAmBe.IsDeleted = true;
+            legacyAmBe.DeletedAt = DateTime.Now;
+            SaveChanges();
+        }
 
         // ─── الصلاحيات (مُحدّثة بـ RBAC لتكون مدير ومستخدم فقط) ───
         var existingRoles = Roles.ToList();
