@@ -38,6 +38,8 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
     [ObservableProperty] private string _editHalfLifeUnit = "years";
     [ObservableProperty] private double? _editAverageEnergyMev;
     [ObservableProperty] private string _editAverageEnergyText = string.Empty;
+    [ObservableProperty] private double? _editPhotonToNeutronRatio;
+    [ObservableProperty] private string _editPhotonToNeutronRatioText = string.Empty;
     [ObservableProperty] private string _editNotes = string.Empty;
 
     private Guid? _editingId;
@@ -82,6 +84,12 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
         else EditAverageEnergyMev = null;
     }
 
+    partial void OnEditPhotonToNeutronRatioTextChanged(string value)
+    {
+        if (ScientificNotationParser.TryParse(value, out double res)) EditPhotonToNeutronRatio = res;
+        else EditPhotonToNeutronRatio = null;
+    }
+
     [RelayCommand]
     public void AddNew()
     {
@@ -108,6 +116,8 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
         EditHalfLifeUnit = target.HalfLifeUnit;
         EditAverageEnergyMev = target.MeanNeutronEnergyMeV;
         EditAverageEnergyText = target.MeanNeutronEnergyMeV?.ToString() ?? string.Empty;
+        EditPhotonToNeutronRatio = target.PhotonToNeutronDoseRatio;
+        EditPhotonToNeutronRatioText = target.PhotonToNeutronDoseRatio?.ToString() ?? string.Empty;
         EditNotes = target.Notes ?? string.Empty;
 
         IsEditing = true;
@@ -156,6 +166,22 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
             EditAverageEnergyMev = null;
         }
 
+        if (!string.IsNullOrWhiteSpace(EditPhotonToNeutronRatioText))
+        {
+            if (!ScientificNotationParser.TryParse(EditPhotonToNeutronRatioText, out double ratioVal) || !double.IsFinite(ratioVal))
+            {
+                DialogHelper.ShowWarning(
+                    "نسبة الفوتون إلى النيترون يجب أن تكون قيمة رقمية صحيحة",
+                    TranslationHelper.GetString("TitleWarning") ?? "تنبيه");
+                return;
+            }
+            EditPhotonToNeutronRatio = ratioVal;
+        }
+        else
+        {
+            EditPhotonToNeutronRatio = null;
+        }
+
         if (IsNew)
         {
             var newType = new NeutronSourceType
@@ -169,6 +195,7 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
                 HalfLife = EditHalfLife,
                 HalfLifeUnit = EditHalfLifeUnit ?? "years",
                 MeanNeutronEnergyMeV = EditAverageEnergyMev,
+                PhotonToNeutronDoseRatio = EditPhotonToNeutronRatio,
                 Notes = EditNotes?.Trim()
             };
 
@@ -203,6 +230,7 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
             existing.HalfLife = EditHalfLife;
             existing.HalfLifeUnit = EditHalfLifeUnit ?? "years";
             existing.MeanNeutronEnergyMeV = EditAverageEnergyMev;
+            existing.PhotonToNeutronDoseRatio = EditPhotonToNeutronRatio;
             existing.Notes = EditNotes?.Trim();
 
             var res = _service.Update(existing);
@@ -255,6 +283,8 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
         EditHalfLifeUnit = "years";
         EditAverageEnergyMev = null;
         EditAverageEnergyText = string.Empty;
+        EditPhotonToNeutronRatio = null;
+        EditPhotonToNeutronRatioText = string.Empty;
         EditNotes = string.Empty;
     }
 }

@@ -24,6 +24,8 @@ public class SourcesViewModelTests : IDisposable
     private readonly Mock<IRadioisotopeService> _mockIsotopeService;
     private readonly Mock<ILocationService> _mockLocationService;
     private readonly Mock<IReportingService> _mockReportingService;
+    private readonly Mock<INeutronSourceService> _mockNeutronSourceService;
+    private readonly Mock<INeutronSourceTypeService> _mockNeutronSourceTypeService;
 
     private readonly Guid _unitBqId = Guid.NewGuid();
     private readonly Guid _unitCiId = Guid.NewGuid();
@@ -62,6 +64,8 @@ public class SourcesViewModelTests : IDisposable
         _mockIsotopeService = new Mock<IRadioisotopeService>();
         _mockLocationService = new Mock<ILocationService>();
         _mockReportingService = new Mock<IReportingService>();
+        _mockNeutronSourceService = new Mock<INeutronSourceService>();
+        _mockNeutronSourceTypeService = new Mock<INeutronSourceTypeService>();
 
         _mockIsotopeService.Setup(s => s.GetAll()).Returns(new List<Radioisotope>
         {
@@ -89,7 +93,10 @@ public class SourcesViewModelTests : IDisposable
             _mockSourceService.Object,
             _mockIsotopeService.Object,
             _mockLocationService.Object,
-            _mockReportingService.Object
+            _mockReportingService.Object,
+            null,
+            _mockNeutronSourceService.Object,
+            _mockNeutronSourceTypeService.Object
         );
     }
 
@@ -553,6 +560,135 @@ public class SourcesViewModelTests : IDisposable
             DialogHelper.ShowInfoWithExtraOptionResult = null;
             DialogHelper.LastMessage = null;
         }
+    }
+
+    #endregion
+
+    #region 3. Neutron Source Manufacturer/Model/Capsule Field Tests (Round 125)
+
+    [Fact]
+    public async Task SaveAsync_NeutronSource_WithManufacturerModelAndCapsuleDimensions_PersistsAllFourFields()
+    {
+        // Arrange
+        var neutronTypeId = Guid.NewGuid();
+        NeutronSource? captured = null;
+        _mockNeutronSourceTypeService.Setup(s => s.GetAll()).Returns(new List<NeutronSourceType>
+        {
+            new NeutronSourceType { Id = neutronTypeId, Code = "AmBe" }
+        });
+        _mockNeutronSourceService
+            .Setup(s => s.Create(It.IsAny<NeutronSource>()))
+            .Callback<NeutronSource>(n => captured = n)
+            .Returns((true, "تم إضافة المصدر النيتروني بنجاح"));
+
+        var vm = CreateViewModel();
+        vm.AddNewNeutronCommand.Execute(null);
+        vm.EditSourceCode = "NEU-001";
+        vm.EditNeutronTypeId = neutronTypeId;
+        vm.EditEmissionRateText = "1000";
+        vm.EditCalibrationDate = DateTime.Today;
+        vm.EditLocationId = _locationId;
+        vm.EditStatus = "InUse";
+        vm.EditManufacturer = "Amersham";
+        vm.EditModel = "AmBe-100";
+        vm.EditCapsuleLengthText = "25.4";
+        vm.EditCapsuleDiameterText = "6.35";
+
+        // Act
+        await vm.SaveCommand.ExecuteAsync(null);
+
+        // Assert
+        _mockNeutronSourceService.Verify(s => s.Create(It.IsAny<NeutronSource>()), Times.Once);
+        Assert.NotNull(captured);
+        Assert.Equal("Amersham", captured!.Manufacturer);
+        Assert.Equal("AmBe-100", captured.Model);
+        Assert.Equal(25.4, captured.CapsuleLengthMm);
+        Assert.Equal(6.35, captured.CapsuleDiameterMm);
+    }
+
+    [Fact]
+    public void EditNeutronSource_PrefillsManufacturerModelAndCapsuleDimensionsFromTarget()
+    {
+        // Arrange
+        var neutronTypeId = Guid.NewGuid();
+        var target = new NeutronSource
+        {
+            Id = Guid.NewGuid(),
+            SourceCode = "NEU-EDIT-01",
+            NeutronSourceTypeId = neutronTypeId,
+            Manufacturer = "Eckert & Ziegler",
+            Model = "PuBe-50",
+            CapsuleLengthMm = 30.0,
+            CapsuleDiameterMm = 12.5,
+            CalibratedEmissionRate = 500
+        };
+
+        var vm = CreateViewModel();
+
+        // Act
+        vm.EditNeutronSourceCommand.Execute(target);
+
+        // Assert
+        Assert.Equal("Eckert & Ziegler", vm.EditManufacturer);
+        Assert.Equal("PuBe-50", vm.EditModel);
+        Assert.Equal(30.0, vm.EditCapsuleLengthMm);
+        Assert.Equal("30", vm.EditCapsuleLengthText);
+        Assert.Equal(12.5, vm.EditCapsuleDiameterMm);
+        Assert.Equal("12.5", vm.EditCapsuleDiameterText);
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("-5")]
+    [InlineData("abc")]
+    public async Task SaveAsync_NeutronSource_WithInvalidCapsuleLength_RejectsBeforeCallingService(string invalidValue)
+    {
+        // Arrange
+        var neutronTypeId = Guid.NewGuid();
+        var vm = CreateViewModel();
+        vm.AddNewNeutronCommand.Execute(null);
+        vm.EditSourceCode = "NEU-BAD-LEN";
+        vm.EditNeutronTypeId = neutronTypeId;
+        vm.EditEmissionRateText = "1000";
+        vm.EditCalibrationDate = DateTime.Today;
+        vm.EditLocationId = _locationId;
+        vm.EditStatus = "InUse";
+        vm.EditCapsuleLengthText = invalidValue;
+
+        // Act
+        await vm.SaveCommand.ExecuteAsync(null);
+
+        // Assert
+        _mockNeutronSourceService.Verify(s => s.Create(It.IsAny<NeutronSource>()), Times.Never);
+        Assert.True(vm.HasMessage);
+        Assert.True(vm.IsEditing);
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("-1")]
+    [InlineData("xyz")]
+    public async Task SaveAsync_NeutronSource_WithInvalidCapsuleDiameter_RejectsBeforeCallingService(string invalidValue)
+    {
+        // Arrange
+        var neutronTypeId = Guid.NewGuid();
+        var vm = CreateViewModel();
+        vm.AddNewNeutronCommand.Execute(null);
+        vm.EditSourceCode = "NEU-BAD-DIA";
+        vm.EditNeutronTypeId = neutronTypeId;
+        vm.EditEmissionRateText = "1000";
+        vm.EditCalibrationDate = DateTime.Today;
+        vm.EditLocationId = _locationId;
+        vm.EditStatus = "InUse";
+        vm.EditCapsuleDiameterText = invalidValue;
+
+        // Act
+        await vm.SaveCommand.ExecuteAsync(null);
+
+        // Assert
+        _mockNeutronSourceService.Verify(s => s.Create(It.IsAny<NeutronSource>()), Times.Never);
+        Assert.True(vm.HasMessage);
+        Assert.True(vm.IsEditing);
     }
 
     #endregion

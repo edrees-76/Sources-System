@@ -157,6 +157,10 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     [ObservableProperty] private string _editCalibrationReference = string.Empty;
     [ObservableProperty] private double? _editAnisotropyFactor;
     [ObservableProperty] private string _editAnisotropyFactorText = string.Empty;
+    [ObservableProperty] private double? _editCapsuleLengthMm;
+    [ObservableProperty] private string _editCapsuleLengthText = string.Empty;
+    [ObservableProperty] private double? _editCapsuleDiameterMm;
+    [ObservableProperty] private string _editCapsuleDiameterText = string.Empty;
 
     private bool _isUpdatingEmissionRate;
 
@@ -225,6 +229,40 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         else
         {
             EditAnisotropyFactor = null;
+        }
+    }
+
+    partial void OnEditCapsuleLengthTextChanged(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            EditCapsuleLengthMm = null;
+            return;
+        }
+        if (NumericInputParser.TryParseFinite(value.Trim(), out double result))
+        {
+            EditCapsuleLengthMm = result;
+        }
+        else
+        {
+            EditCapsuleLengthMm = null;
+        }
+    }
+
+    partial void OnEditCapsuleDiameterTextChanged(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            EditCapsuleDiameterMm = null;
+            return;
+        }
+        if (NumericInputParser.TryParseFinite(value.Trim(), out double result))
+        {
+            EditCapsuleDiameterMm = result;
+        }
+        else
+        {
+            EditCapsuleDiameterMm = null;
         }
     }
 
@@ -693,6 +731,10 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         EditCalibrationReference = string.Empty;
         EditAnisotropyFactor = null;
         EditAnisotropyFactorText = string.Empty;
+        EditCapsuleLengthMm = null;
+        EditCapsuleLengthText = string.Empty;
+        EditCapsuleDiameterMm = null;
+        EditCapsuleDiameterText = string.Empty;
     }
 
     [RelayCommand]
@@ -735,6 +777,12 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         EditSourceCode = target.SourceCode;
         EditNeutronTypeId = target.NeutronSourceTypeId;
         EditSerialNumber = target.SerialNumber ?? "";
+        EditManufacturer = target.Manufacturer ?? "";
+        EditModel = target.Model ?? "";
+        EditCapsuleLengthMm = target.CapsuleLengthMm;
+        EditCapsuleLengthText = target.CapsuleLengthMm?.ToString() ?? "";
+        EditCapsuleDiameterMm = target.CapsuleDiameterMm;
+        EditCapsuleDiameterText = target.CapsuleDiameterMm?.ToString() ?? "";
         EditEmissionRate = target.CalibratedEmissionRate;
         EditEmissionRateText = target.CalibratedEmissionRate.ToString();
         EditRelativeUncertaintyPercent = target.RelativeExpandedUncertaintyPercent;
@@ -951,6 +999,22 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                         return;
                     }
                 }
+                if (!string.IsNullOrWhiteSpace(EditCapsuleLengthText))
+                {
+                    if (EditCapsuleLengthMm == null || !double.IsFinite(EditCapsuleLengthMm.Value) || EditCapsuleLengthMm.Value <= 0)
+                    {
+                        ShowMessage("طول الكبسولة يجب أن يكون رقماً أكبر من صفر");
+                        return;
+                    }
+                }
+                if (!string.IsNullOrWhiteSpace(EditCapsuleDiameterText))
+                {
+                    if (EditCapsuleDiameterMm == null || !double.IsFinite(EditCapsuleDiameterMm.Value) || EditCapsuleDiameterMm.Value <= 0)
+                    {
+                        ShowMessage("قطر الكبسولة يجب أن يكون رقماً أكبر من صفر");
+                        return;
+                    }
+                }
                 if (EditLocationId == null)
                 {
                     ShowMessage(TranslationHelper.GetString("MsgErrLocationReq") ?? "الرجاء إختيار موقع المصدر (Location).");
@@ -968,6 +1032,10 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                     SourceCode = EditSourceCode.Trim(),
                     NeutronSourceTypeId = EditNeutronTypeId.Value,
                     SerialNumber = EditSerialNumber?.Trim(),
+                    Manufacturer = EditManufacturer?.Trim(),
+                    Model = EditModel?.Trim(),
+                    CapsuleLengthMm = EditCapsuleLengthMm,
+                    CapsuleDiameterMm = EditCapsuleDiameterMm,
                     CalibratedEmissionRate = EditEmissionRate,
                     RelativeExpandedUncertaintyPercent = EditRelativeUncertaintyPercent,
                     CalibrationDate = EditCalibrationDate,
