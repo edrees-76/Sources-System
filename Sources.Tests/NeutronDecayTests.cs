@@ -445,6 +445,7 @@ public class NeutronDecayTests
 
         // Assert
         Assert.True(result.IsCalculated);
+        Assert.NotNull(result.CurrentActivityBq);
         double expectedActivityBq = (rawValue * conversionToBq) * 0.5;
         Assert.Equal(expectedActivityBq, result.CurrentActivityBq.Value, precision: 0);
     }
