@@ -198,6 +198,12 @@
                                  materialDesign:HintAssist.Hint="{DynamicResource HintAverageEnergyMev}"/>
                     </Grid>
 
+                    <Grid Margin="0,0,0,12">
+                        <TextBox Text="{Binding EditPhotonToNeutronRatioText, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                 materialDesign:HintAssist.Hint="نسبة جرعة الفوتون إلى النيترون"/>
+                    </Grid>
+
                     <TextBox Text="{Binding EditNotes, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource MaterialDesignFloatingHintTextBox}"
                              materialDesign:HintAssist.Hint="{DynamicResource HintNeutronTypeNotes}"

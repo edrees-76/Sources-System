@@ -1694,6 +1694,30 @@
                                                              materialDesign:HintAssist.Hint="{DynamicResource HintAnisotropyFactorExample}"/>
                                                 </StackPanel>
                                             </UniformGrid>
+
+                                            <UniformGrid Columns="2" Margin="0,12,0,0">
+                                                <!-- طول الكبسولة -->
+                                                <StackPanel Margin="0,0,12,0">
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                        <materialDesign:PackIcon Kind="Ruler" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                        <TextBlock Text="طول الكبسولة (مم)" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                    </StackPanel>
+                                                    <TextBox Text="{Binding EditCapsuleLengthText, UpdateSourceTrigger=LostFocus}"
+                                                             Style="{StaticResource FormTextBox}"
+                                                             materialDesign:HintAssist.Hint="مثال: 25.4"/>
+                                                </StackPanel>
+
+                                                <!-- قطر الكبسولة -->
+                                                <StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                        <materialDesign:PackIcon Kind="CircleOutline" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                        <TextBlock Text="قطر الكبسولة (مم)" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                    </StackPanel>
+                                                    <TextBox Text="{Binding EditCapsuleDiameterText, UpdateSourceTrigger=LostFocus}"
+                                                             Style="{StaticResource FormTextBox}"
+                                                             materialDesign:HintAssist.Hint="مثال: 6.35"/>
+                                                </StackPanel>
+                                            </UniformGrid>
                                         </StackPanel>
                                     </StackPanel>
                                 </Border>
