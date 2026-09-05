@@ -17,7 +17,7 @@ public class NeutronDecayTests
         double initialRate = 1.0e7; // 10,000,000 n/s
         double halfLife = 2.645;
         string halfLifeUnit = "years";
-        
+
         DateTime calDate = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         // 1 half-life = 2.645 * 365.2422 days
         double halfLifeDays = halfLife * NeutronDecayCalculationService.DaysPerYear;
@@ -30,7 +30,7 @@ public class NeutronDecayTests
         Assert.True(result.IsCalculated);
         Assert.Equal(NeutronDecayCalculationStatus.Calculated, result.Status);
         Assert.NotNull(result.CurrentEmissionRate);
-        
+
         double expectedRate = initialRate * 0.5;
         Assert.Equal(expectedRate, result.CurrentEmissionRate.Value, precision: 3);
     }
@@ -42,7 +42,7 @@ public class NeutronDecayTests
         double initialRate = 1.0e7; // 10,000,000 n/s
         double halfLife = 2.645;
         string halfLifeUnit = "years";
-        
+
         DateTime calDate = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         double elapsedDays = 5.0 * NeutronDecayCalculationService.DaysPerYear;
         DateTime calcDate = calDate.AddDays(elapsedDays);
@@ -291,5 +291,218 @@ public class NeutronDecayTests
             Assert.Contains("غير محسوب", vm.CurrentEmissionRateDisplay);
             Assert.Contains("تاريخ المعايرة غير مسجّل", vm.CurrentEmissionRateDisplay);
         });
+    }
+
+    [Fact]
+    public void Am241Activity_NotRecorded_WhenValueAndUnitAreNull()
+    {
+        // Arrange
+        var source = new NeutronSource
+        {
+            Am241ActivityValue = null,
+            Am241ActivityUnitId = null,
+            Am241ActivityUnit = null,
+            CalibrationDate = DateTime.Today.AddYears(-1)
+        };
+
+        // Act
+        var result = _decayService.CalculateCurrentAm241Activity(source);
+
+        // Assert
+        Assert.False(result.IsCalculated);
+        Assert.Equal(NeutronDecayCalculationStatus.NotRecorded, result.Status);
+        Assert.Null(result.CurrentActivityBq);
+    }
+
+    [Fact]
+    public void Am241Activity_MissingActivityUnit_WhenUnitNavigationNotLoaded()
+    {
+        // Arrange: Am241ActivityUnitId has a value but the navigation property was not
+        // eager-loaded by the caller (mirrors MissingSourceType pattern)
+        var source = new NeutronSource
+        {
+            Am241ActivityValue = 1.0e10,
+            Am241ActivityUnitId = Guid.NewGuid(),
+            Am241ActivityUnit = null,
+            CalibrationDate = DateTime.Today.AddYears(-1)
+        };
+
+        // Act
+        var result = _decayService.CalculateCurrentAm241Activity(source);
+
+        // Assert
+        Assert.False(result.IsCalculated);
+        Assert.Equal(NeutronDecayCalculationStatus.MissingActivityUnit, result.Status);
+        Assert.Null(result.CurrentActivityBq);
+    }
+
+    [Fact]
+    public void Am241Activity_InvalidValue_WhenConvertedBqIsZeroOrNegative()
+    {
+        // Arrange: ConversionToBq = 0 makes the converted activity 0 (invalid: <= 0)
+        var unit = new ActivityUnit { UnitName = "Zero", UnitSymbol = "Z", ConversionToBq = 0.0 };
+        var source = new NeutronSource
+        {
+            Am241ActivityValue = 5.0,
+            Am241ActivityUnitId = Guid.NewGuid(),
+            Am241ActivityUnit = unit,
+            CalibrationDate = DateTime.Today.AddYears(-1)
+        };
+
+        // Act
+        var result = _decayService.CalculateCurrentAm241Activity(source);
+
+        // Assert
+        Assert.False(result.IsCalculated);
+        Assert.Equal(NeutronDecayCalculationStatus.InvalidActivityValue, result.Status);
+        Assert.Null(result.CurrentActivityBq);
+    }
+
+    [Fact]
+    public void Am241Activity_CalibratedExactlyOneHalfLifeAgo_ReturnsHalfOfCalibratedActivity()
+    {
+        // Arrange: Am-241 half-life = 432.2 years, unit ConversionToBq = 1.0 (already in Bq)
+        double initialActivityBq = 3.7e10; // 1 Ci equivalent value, but pre-expressed in Bq via unit
+        var unit = new ActivityUnit { UnitName = "Becquerel", UnitSymbol = "Bq", ConversionToBq = 1.0 };
+
+        DateTime calDate = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        double halfLifeDays = 432.2 * NeutronDecayCalculationService.DaysPerYear;
+        DateTime calcDate = calDate.AddDays(halfLifeDays);
+
+        var source = new NeutronSource
+        {
+            Am241ActivityValue = initialActivityBq,
+            Am241ActivityUnitId = Guid.NewGuid(),
+            Am241ActivityUnit = unit,
+            CalibrationDate = calDate
+        };
+
+        // Act
+        var result = _decayService.CalculateAm241ActivityAtDate(source, calcDate);
+
+        // Assert
+        Assert.True(result.IsCalculated);
+        Assert.Equal(NeutronDecayCalculationStatus.Calculated, result.Status);
+        Assert.NotNull(result.CurrentActivityBq);
+
+        double expectedActivityBq = initialActivityBq * 0.5;
+        Assert.Equal(expectedActivityBq, result.CurrentActivityBq.Value, precision: 3);
+    }
+
+    [Fact]
+    public void Am241Activity_PartialDecay_100YearsElapsed_MatchesHandComputedValue()
+    {
+        // Arrange: 100 years elapsed out of a 432.2-year half-life
+        double initialActivityBq = 1.0e9;
+        var unit = new ActivityUnit { UnitName = "Becquerel", UnitSymbol = "Bq", ConversionToBq = 1.0 };
+
+        DateTime calDate = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        double elapsedDays = 100.0 * NeutronDecayCalculationService.DaysPerYear;
+        DateTime calcDate = calDate.AddDays(elapsedDays);
+
+        var source = new NeutronSource
+        {
+            Am241ActivityValue = initialActivityBq,
+            Am241ActivityUnitId = Guid.NewGuid(),
+            Am241ActivityUnit = unit,
+            CalibrationDate = calDate
+        };
+
+        // Act
+        var result = _decayService.CalculateAm241ActivityAtDate(source, calcDate);
+
+        // Assert
+        Assert.True(result.IsCalculated);
+        Assert.NotNull(result.CurrentActivityBq);
+
+        // B(t) = B0 * exp(-ln(2) * 100 / 432.2)
+        double expectedActivityBq = initialActivityBq * Math.Exp(-Math.Log(2.0) * (100.0 / 432.2));
+        Assert.Equal(expectedActivityBq, result.CurrentActivityBq.Value, precision: 3);
+    }
+
+    [Fact]
+    public void Am241Activity_ConvertsNonBqUnit_BeforeApplyingDecay()
+    {
+        // Arrange: unit conversion factor != 1 must be applied before decay
+        double rawValue = 1.0; // 1 Ci
+        double conversionToBq = 3.7e10; // Ci -> Bq
+        var unit = new ActivityUnit { UnitName = "Curie", UnitSymbol = "Ci", ConversionToBq = conversionToBq };
+
+        DateTime calDate = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        double halfLifeDays = 432.2 * NeutronDecayCalculationService.DaysPerYear;
+        DateTime calcDate = calDate.AddDays(halfLifeDays);
+
+        var source = new NeutronSource
+        {
+            Am241ActivityValue = rawValue,
+            Am241ActivityUnitId = Guid.NewGuid(),
+            Am241ActivityUnit = unit,
+            CalibrationDate = calDate
+        };
+
+        // Act
+        var result = _decayService.CalculateAm241ActivityAtDate(source, calcDate);
+
+        // Assert
+        Assert.True(result.IsCalculated);
+        Assert.NotNull(result.CurrentActivityBq);
+        double expectedActivityBq = (rawValue * conversionToBq) * 0.5;
+        Assert.Equal(expectedActivityBq, result.CurrentActivityBq.Value, precision: 0);
+    }
+
+    [Fact]
+    public void Am241Activity_MissingCalibrationDate_ReturnsUncalculated()
+    {
+        // Arrange
+        var unit = new ActivityUnit { UnitName = "Becquerel", UnitSymbol = "Bq", ConversionToBq = 1.0 };
+        var source = new NeutronSource
+        {
+            Am241ActivityValue = 1.0e9,
+            Am241ActivityUnitId = Guid.NewGuid(),
+            Am241ActivityUnit = unit,
+            CalibrationDate = null
+        };
+
+        // Act
+        var result = _decayService.CalculateCurrentAm241Activity(source);
+
+        // Assert
+        Assert.False(result.IsCalculated);
+        Assert.Equal(NeutronDecayCalculationStatus.MissingCalibrationDate, result.Status);
+        Assert.Null(result.CurrentActivityBq);
+    }
+
+    [Fact]
+    public void Am241Activity_CalculationDateBeforeCalibrationDate_ReturnsUncalculated()
+    {
+        // Arrange
+        var unit = new ActivityUnit { UnitName = "Becquerel", UnitSymbol = "Bq", ConversionToBq = 1.0 };
+        var source = new NeutronSource
+        {
+            Am241ActivityValue = 1.0e9,
+            Am241ActivityUnitId = Guid.NewGuid(),
+            Am241ActivityUnit = unit,
+            CalibrationDate = new DateTime(2025, 6, 1)
+        };
+
+        // Act
+        var result = _decayService.CalculateAm241ActivityAtDate(source, new DateTime(2024, 1, 1));
+
+        // Assert
+        Assert.False(result.IsCalculated);
+        Assert.Equal(NeutronDecayCalculationStatus.CalculationDatePrecedesCalibrationDate, result.Status);
+        Assert.Null(result.CurrentActivityBq);
+    }
+
+    [Fact]
+    public void Am241Activity_MissingSource_ReturnsUncalculated()
+    {
+        // Act
+        var result = _decayService.CalculateCurrentAm241Activity(null);
+
+        // Assert
+        Assert.False(result.IsCalculated);
+        Assert.Equal(NeutronDecayCalculationStatus.MissingSource, result.Status);
+        Assert.Null(result.CurrentActivityBq);
     }
 }
