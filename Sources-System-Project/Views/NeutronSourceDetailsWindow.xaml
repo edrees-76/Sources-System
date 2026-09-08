@@ -148,6 +148,8 @@
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
 
                                     <!-- 1. معدل الانبعاث المُعاير وتاريخ المعايرة -->
@@ -181,15 +183,27 @@
                                     </StackPanel>
 
                                     <!-- 5. نسبة عدم اليقين الموسعة -->
-                                    <StackPanel Grid.Row="3" Grid.Column="0">
+                                    <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,0,10">
                                         <TextBlock Text="{DynamicResource DetailLabelUncertainty}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                                         <TextBlock Text="{Binding UncertaintyFormatted}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
                                     </StackPanel>
 
                                     <!-- 6. متوسط طاقة النيترونات -->
-                                    <StackPanel Grid.Row="3" Grid.Column="1">
+                                    <StackPanel Grid.Row="3" Grid.Column="1" Margin="0,0,0,10">
                                         <TextBlock Text="{DynamicResource DetailLabelAverageNeutronEnergy}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                                         <TextBlock Text="{Binding EnergyDisplay}" FontSize="13" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+
+                                    <!-- 7. النشاط الإشعاعي المُدخَل -->
+                                    <StackPanel Grid.Row="4" Grid.Column="0" Margin="0,0,0,12">
+                                        <TextBlock Text="{DynamicResource DetailLabelActivity}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                        <TextBlock Text="{Binding ActivityValueFormatted}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+
+                                    <!-- 8. النشاط الحالي المحسوب (محسوباً بتاريخ اليوم) -->
+                                    <StackPanel Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2">
+                                        <TextBlock Text="{DynamicResource DetailLabelCurrentActivity}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                        <TextBlock Text="{Binding CurrentActivityDisplay}" FontSize="16" FontWeight="Bold" Foreground="#0D9488" Margin="0,2,0,0"/>
                                     </StackPanel>
                                 </Grid>
                             </StackPanel>

@@ -1270,6 +1270,8 @@
     <system:String x:Key="DetailLabelEmissionRate">معدل انبعاث النيترونات:</system:String>
     <system:String x:Key="DetailLabelCalibratedEmissionRate">معدل الانبعاث المُعاير:</system:String>
     <system:String x:Key="DetailLabelCurrentEmissionRate">معدل الانبعاث الحالي:</system:String>
+    <system:String x:Key="DetailLabelActivity">النشاط الإشعاعي:</system:String>
+    <system:String x:Key="DetailLabelCurrentActivity">النشاط الحالي المحسوب:</system:String>
     <system:String x:Key="DetailLabelEmissionCalibrationDate">تاريخ معايرة الانبعاث:</system:String>
     <system:String x:Key="DetailLabelCalibrationReference">مرجع المعايرة:</system:String>
     <system:String x:Key="DetailLabelAnisotropyFactor">عامل التباين الاتجاهي (Anisotropy):</system:String>

@@ -861,6 +861,121 @@ public class NeutronSourcesUITests : IDisposable
         Assert.Equal("1.1×10⁷ n/s", detailsVm.CalibratedEmissionRateFormatted);
     }
 
+    [Fact]
+    public void NeutronSourceDetailsViewModel_WithStoredActivity_ShowsEnteredValueAndComputedCurrentActivity()
+    {
+        // Arrange: CalibrationDate exactly one half-life (432.2 years, Am-241) ago, so the
+        // hand-verifiable expected current activity is exactly half of the stored initial value.
+        double initialActivityBq = 3.7e10;
+        double halfLifeDays = 432.2 * NeutronDecayCalculationService.DaysPerYear;
+        DateTime calDate = DateTime.Now.AddDays(-halfLifeDays);
+        var unit = new ActivityUnit { UnitName = "Becquerel", UnitSymbol = "Bq", ConversionToBq = 1.0 };
+
+        var source = new NeutronSource
+        {
+            Id = Guid.NewGuid(),
+            SourceCode = "NS-ACT-01",
+            ActivityValue = initialActivityBq,
+            ActivityUnitId = unit.Id,
+            ActivityUnit = unit,
+            CalibrationDate = calDate,
+            NeutronSourceType = new NeutronSourceType { HalfLife = 432.2, HalfLifeUnit = "years" }
+        };
+
+        // Act
+        var vm = new NeutronSourceDetailsViewModel(source);
+
+        // Assert: entered value + unit displayed as-is
+        Assert.Equal("37000000000 Bq", vm.ActivityValueFormatted);
+
+        // Assert: computed current activity ≈ half of initial value (one half-life elapsed)
+        Assert.True(vm.IsCurrentActivityCalculated);
+        Assert.Contains("Bq", vm.CurrentActivityDisplay);
+        var match = System.Text.RegularExpressions.Regex.Match(vm.CurrentActivityDisplay, @"[\d.]+E[+-]\d+");
+        Assert.True(match.Success, $"Expected a scientific-notation activity value in '{vm.CurrentActivityDisplay}'");
+        double displayedValue = double.Parse(match.Value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture);
+        double expected = initialActivityBq * 0.5;
+        Assert.True(Math.Abs(displayedValue - expected) / expected < 0.001,
+            $"Expected ≈{expected} (half of initial after one half-life), got {displayedValue}");
+    }
+
+    [Fact]
+    public void NeutronSourceDetailsViewModel_WithNoStoredActivity_ShowsNeutralNotRecordedDisplay()
+    {
+        // Arrange
+        var source = new NeutronSource
+        {
+            Id = Guid.NewGuid(),
+            SourceCode = "NS-ACT-02",
+            ActivityValue = null,
+            ActivityUnitId = null,
+            ActivityUnit = null,
+            CalibrationDate = DateTime.Today
+        };
+
+        // Act
+        var vm = new NeutronSourceDetailsViewModel(source);
+
+        // Assert: neutral "not recorded" state, not an error and not blank
+        Assert.Equal("غير مسجّل", vm.ActivityValueFormatted);
+        Assert.Equal("لم يُسجَّل", vm.CurrentActivityDisplay);
+        Assert.False(vm.IsCurrentActivityCalculated);
+    }
+
+    [Fact]
+    public void NeutronSourceDetailsViewModel_ActivityUnitNavigationNotLoaded_DoesNotThrowAndShowsSafeFallback()
+    {
+        // Arrange: ActivityUnitId has a value but the ActivityUnit navigation property was not
+        // eager-loaded by the caller — mirrors the round 127 regression class of bug at the
+        // display layer (must not throw NullReferenceException).
+        var source = new NeutronSource
+        {
+            Id = Guid.NewGuid(),
+            SourceCode = "NS-ACT-03",
+            ActivityValue = 1.0e9,
+            ActivityUnitId = Guid.NewGuid(),
+            ActivityUnit = null,
+            CalibrationDate = DateTime.Today.AddYears(-1)
+        };
+
+        // Act
+        var ex = Record.Exception(() =>
+        {
+            var vm = new NeutronSourceDetailsViewModel(source);
+            _ = vm.ActivityValueFormatted;
+            _ = vm.CurrentActivityDisplay;
+        });
+
+        // Assert: no exception, safe fallback text
+        Assert.Null(ex);
+        var vm2 = new NeutronSourceDetailsViewModel(source);
+        Assert.Equal("غير مسجّل", vm2.ActivityValueFormatted);
+        Assert.Equal("غير محسوب — وحدة النشاط غير محمّلة", vm2.CurrentActivityDisplay);
+    }
+
+    [Fact]
+    public void NeutronSource_ActivityValueFormatted_ActivityUnitNavigationNotLoaded_DoesNotThrowAndFallsBack()
+    {
+        // Model-level regression test (not via ViewModel): a NeutronSource with ActivityValue
+        // set but ActivityUnit navigation property left null (as when a caller queries without
+        // .Include()) must not throw a NullReferenceException from ActivityValueFormatted.
+        var source = new NeutronSource
+        {
+            Id = Guid.NewGuid(),
+            SourceCode = "NS-ACT-04",
+            ActivityValue = 42.0,
+            ActivityUnitId = Guid.NewGuid(),
+            ActivityUnit = null
+        };
+
+        // Act
+        var ex = Record.Exception(() => source.ActivityValueFormatted);
+
+        // Assert
+        Assert.Null(ex);
+        Assert.Equal("غير مسجّل", source.ActivityValueFormatted);
+    }
+
     [Theory]
     [InlineData("1.1×1000000", 1100000.0, 1.1)]
     [InlineData("5x1000", 5000.0, 5.0)]
