@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Sources.Data;
+using Sources.Helpers;
 using Sources.Models;
 
 namespace Sources.Services;
@@ -57,14 +58,14 @@ public class LocationService : ILocationService
 
     public (bool Success, string Message) Create(Location item)
     {
-        if (item == null) return (false, "بيانات الموقع غير صالحة");
-        if (string.IsNullOrWhiteSpace(item.LocationName)) return (false, "اسم الموقع مطلوب");
+        if (item == null) return (false, TranslationHelper.GetString("MsgErrInvalidLocationData") ?? "بيانات الموقع غير صالحة");
+        if (string.IsNullOrWhiteSpace(item.LocationName)) return (false, TranslationHelper.GetString("MsgErrLocationNameRequired") ?? "اسم الموقع مطلوب");
 
         using var db = _dbFactory.CreateDbContext();
         var trimmedName = item.LocationName.Trim();
         var lowerName = trimmedName.ToLower();
         if (db.Locations.Any(l => l.LocationName.ToLower() == lowerName))
-            return (false, "اسم الموقع موجود بالفعل");
+            return (false, TranslationHelper.GetString("MsgErrLocationNameExists") ?? "اسم الموقع موجود بالفعل");
 
         item.LocationName = trimmedName;
         var addedByUserId = _userService.CurrentUser?.Id;
@@ -83,17 +84,17 @@ public class LocationService : ILocationService
             item.ResponsiblePerson
         };
         _auditService.LogWithChanges("Create", "Locations", item.Id, $"إضافة موقع: {item.LocationName}", oldValues: null, newValues: System.Text.Json.JsonSerializer.Serialize(newValuesObj));
-        return (true, "تم إضافة الموقع بنجاح");
+        return (true, TranslationHelper.GetString("MsgSuccessLocationCreated") ?? "تم إضافة الموقع بنجاح");
     }
 
     public (bool Success, string Message) Update(Location item)
     {
-        if (item == null) return (false, "بيانات الموقع غير صالحة");
-        if (string.IsNullOrWhiteSpace(item.LocationName)) return (false, "اسم الموقع مطلوب");
+        if (item == null) return (false, TranslationHelper.GetString("MsgErrInvalidLocationData") ?? "بيانات الموقع غير صالحة");
+        if (string.IsNullOrWhiteSpace(item.LocationName)) return (false, TranslationHelper.GetString("MsgErrLocationNameRequired") ?? "اسم الموقع مطلوب");
 
         using var db = _dbFactory.CreateDbContext();
         var existing = db.Locations.Find(item.Id);
-        if (existing == null) return (false, "الموقع غير موجود");
+        if (existing == null) return (false, TranslationHelper.GetString("MsgErrLocationNotFound") ?? "الموقع غير موجود");
 
         var oldValuesObj = new
         {
@@ -108,7 +109,7 @@ public class LocationService : ILocationService
         var trimmedName = item.LocationName.Trim();
         var lowerName = trimmedName.ToLower();
         if (db.Locations.Any(l => l.Id != item.Id && l.LocationName.ToLower() == lowerName))
-            return (false, "اسم الموقع موجود بالفعل");
+            return (false, TranslationHelper.GetString("MsgErrLocationNameExists") ?? "اسم الموقع موجود بالفعل");
 
         existing.LocationName = trimmedName;
         existing.LocationType = item.LocationType;
@@ -128,7 +129,7 @@ public class LocationService : ILocationService
         string newValuesJson = System.Text.Json.JsonSerializer.Serialize(newValuesObj);
 
         _auditService.LogWithChanges("Update", "Locations", item.Id, $"تعديل موقع: {existing.LocationName}", oldValuesJson, newValuesJson);
-        return (true, "تم تحديث الموقع");
+        return (true, TranslationHelper.GetString("MsgSuccessLocationUpdated") ?? "تم تحديث الموقع");
     }
 
     public (bool Success, string Message) Delete(Guid id)
@@ -138,8 +139,9 @@ public class LocationService : ILocationService
 
         using var db = _dbFactory.CreateDbContext();
         var item = db.Locations.Include(l => l.Sources).FirstOrDefault(l => l.Id == id);
-        if (item == null) return (false, "الموقع غير موجود");
-        if (item.Sources.Any() || db.NeutronSources.Any(ns => ns.LocationId == id)) return (false, $"لا يمكن حذف الموقع \"{item.LocationName}\" لاحتوائه على مصادر مرتبطة به");
+        if (item == null) return (false, TranslationHelper.GetString("MsgErrLocationNotFound") ?? "الموقع غير موجود");
+        if (item.Sources.Any() || db.NeutronSources.Any(ns => ns.LocationId == id))
+            return (false, string.Format(TranslationHelper.GetString("MsgErrCannotDeleteLocationHasSources") ?? "لا يمكن حذف الموقع \"{0}\" لاحتوائه على مصادر مرتبطة به", item.LocationName));
 
         var oldValuesObj = new
         {
@@ -164,7 +166,7 @@ public class LocationService : ILocationService
         }
         db.SaveChanges();
         _auditService.LogWithChanges("Delete", "Locations", id, $"حذف موقع: {item.LocationName}", oldValuesJson, null);
-        return (true, "تم حذف الموقع");
+        return (true, TranslationHelper.GetString("MsgSuccessLocationDeleted") ?? "تم حذف الموقع");
     }
 
     public (bool Success, string Message) Restore(Guid id)
@@ -174,12 +176,12 @@ public class LocationService : ILocationService
 
         using var db = _dbFactory.CreateDbContext();
         var item = db.Locations.IgnoreQueryFilters().FirstOrDefault(l => l.Id == id);
-        if (item == null) return (false, "الموقع غير موجود");
-        if (!item.IsDeleted) return (false, "الموقع غير محذوف أصلاً");
+        if (item == null) return (false, TranslationHelper.GetString("MsgErrLocationNotFound") ?? "الموقع غير موجود");
+        if (!item.IsDeleted) return (false, TranslationHelper.GetString("MsgErrLocationNotDeleted") ?? "الموقع غير محذوف أصلاً");
 
         var lowerName = item.LocationName.Trim().ToLower();
         if (db.Locations.Any(l => !l.IsDeleted && l.Id != id && l.LocationName.ToLower() == lowerName))
-            return (false, $"لا يمكن استرجاع الموقع لوجود موقع نشط آخر بنفس الاسم (\"{item.LocationName}\")");
+            return (false, string.Format(TranslationHelper.GetString("MsgErrCannotRestoreLocationNameConflict") ?? "لا يمكن استرجاع الموقع لوجود موقع نشط آخر بنفس الاسم (\"{0}\")", item.LocationName));
 
         item.IsDeleted = false;
         item.DeletedAt = null;
@@ -197,7 +199,7 @@ public class LocationService : ILocationService
         string newValuesJson = System.Text.Json.JsonSerializer.Serialize(newValuesObj);
 
         _auditService.LogWithChanges("Restore", "Locations", id, $"استرجاع موقع: {item.LocationName}", null, newValuesJson);
-        return (true, $"تم استرجاع الموقع {item.LocationName}");
+        return (true, string.Format(TranslationHelper.GetString("MsgSuccessLocationRestored") ?? "تم استرجاع الموقع {0}", item.LocationName));
     }
 
     public int GetCount()

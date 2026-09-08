@@ -1316,6 +1316,17 @@
     <system:String x:Key="MsgErrBorrowRequestNotFound">Request not found.</system:String>
     <system:String x:Key="MsgErrReturnNotAllowedStatus">The current status does not allow return.</system:String>
     <system:String x:Key="MsgSuccessBorrowReturned">The source return was recorded successfully and it is now available in storage.</system:String>
+    <system:String x:Key="MsgErrInvalidLocationData">Invalid location data</system:String>
+    <system:String x:Key="MsgErrLocationNameRequired">Location name is required</system:String>
+    <system:String x:Key="MsgErrLocationNameExists">Location name already exists</system:String>
+    <system:String x:Key="MsgSuccessLocationCreated">Location added successfully</system:String>
+    <system:String x:Key="MsgErrLocationNotFound">Location not found</system:String>
+    <system:String x:Key="MsgSuccessLocationUpdated">Location updated</system:String>
+    <system:String x:Key="MsgErrCannotDeleteLocationHasSources">Cannot delete location "{0}" because it has linked sources</system:String>
+    <system:String x:Key="MsgSuccessLocationDeleted">Location deleted</system:String>
+    <system:String x:Key="MsgErrLocationNotDeleted">Location is not deleted</system:String>
+    <system:String x:Key="MsgErrCannotRestoreLocationNameConflict">Cannot restore the location because another active location has the same name ("{0}")</system:String>
+    <system:String x:Key="MsgSuccessLocationRestored">Location {0} restored</system:String>
 
     <!-- Add/Edit Form Categories -->
     <system:String x:Key="LabelSourceCategory">Source Category:</system:String>

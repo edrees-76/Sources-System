@@ -1,11 +1,12 @@
 # منظومة مصادر — لوحة جاهزية النشر
 
-**آخر تحديث:** 8 سبتمبر 2026
-**حالة المستودع:** الجولة 133 محلياً (رابع جولة فرعية وأخيرة من ب5 من ناحية طبقة الخدمات — ترجمة
-رسائل التحقق والنجاح في `BorrowService.cs` إلى الإنجليزية عبر `TranslationHelper`، 9 مفاتيح رسالة
-جديدة) · لم يُفتح Draft PR بعد وقت كتابة هذا السطر · آخر دمج فعلي على `main` هو الجولة 132
-(PR #21، commit الدمج `aadc46151c728fb776701d33a4e61b0bfa6b87eb`) · 1141 اختباراً محلياً (Debug) /
-1139 محلياً (Release) للجولة 133 · تحذيرات بناء مسبقة بلا علاقة بهذه الجولة (CS8604 في
+**آخر تحديث:** 9 سبتمبر 2026
+**حالة المستودع:** الجولة 134 محلياً (جولة إضافية لـب5 من ناحية طبقة الخدمات، بعد أن تبيّن أن
+`LocationService.cs` كانت متبقّية من السلسلة رغم إعلان الجولة 133 اكتمالها — ترجمة رسائل التحقق
+والنجاح فيها إلى الإنجليزية عبر `TranslationHelper`، 11 مفتاح رسالة جديد) · لم يُفتح Draft PR بعد
+وقت كتابة هذا السطر · آخر دمج فعلي على `main` هو الجولة 133 (PR #22، commit الدمج
+`27502444573c6844d0751b079a6bccc42deff16a`) · 1142 اختباراً محلياً (Debug) / 1140 محلياً (Release)
+للجولة 134 · تحذيرات بناء مسبقة بلا علاقة بهذه الجولة (CS8604 في
 `LoginWindow.xaml.cs`/`ViewInstantiationTests.cs`) و0 أخطاء
 
 > لوحة حالة حيّة تُحدَّث وتُصحَّح مع كل جولة. السجل التاريخي للجولات في `session-summary.md` ولا يُعدَّل.
@@ -303,6 +304,28 @@ ArabicStatus` — خاصية `[NotMapped]` تُعيد نصاً عربياً دا
 (`NeutronSourceService` ← `SourceService` ← `UserService` ← `BorrowService`). النطاق المتبقي من ب5
 (`ViewModels` ونصوص XAML المثبتة، بما فيها 56 نصاً + 7 أعمدة `DataGrid` في `BorrowView.xaml`/
 `SettingsView.xaml`/`SourceDetailsWindow.xaml` وغيرها) ما زال مؤجَّلاً لجولات لاحقة.
+
+**الجولة 134 (خامسة، تصحيح نطاق بعد إعلان الاكتمال في الجولة 133):** عند مراجعة طبقة الخدمات تبيّن
+أن `LocationService.cs` لم تُشمَل ضمن السلسلة الأربعية السابقة رغم مطابقتها لنفس النمط، فغُلِّفت كل
+رسالة تحقق/نجاح في `Create`/`Update`/`Delete`/`Restore` بنفس نمط الجولات 130-133 —
+`TranslationHelper.GetString` مع ارتداد عربي مطابق حرفياً، و`string.Format` (لا `GetFormat` مباشرة)
+للرسائل ذات المتغيرات (`MsgErrCannotDeleteLocationHasSources` باسم الموقع،
+`MsgErrCannotRestoreLocationNameConflict` باسم الموقع المتعارض، `MsgSuccessLocationRestored` باسم
+الموقع المُسترجَع). دمج صريح لأربعة مفاتيح متكررة حرفياً بين الدوال: `MsgErrInvalidLocationData`
+("بيانات الموقع غير صالحة"، `Create`+`Update`)، `MsgErrLocationNameRequired` ("اسم الموقع مطلوب"،
+`Create`+`Update`)، `MsgErrLocationNameExists` ("اسم الموقع موجود بالفعل"، `Create`+`Update`)،
+و`MsgErrLocationNotFound` ("الموقع غير موجود"، `Update`+`Delete`+`Restore`). 11 مفتاح رسالة جديد
+إجمالاً. `guard.Message` من `AuthorizationGuard.RequireEditor` في `Delete`/`Restore` بقي دون أي
+تعديل، ونصوص `_auditService.LogWithChanges` الوصفية في الدوال الأربع بقيت عربية دوماً بتصميم مقصود
+ومستثناة صراحة من الترجمة. بلا أي تغيير في منطق التحقق من التكرار أو فحص الارتباط بمصادر (`Sources`
+أو `NeutronSources`) أو شرط الاسترجاع. اختبار انحداري جديد
+(`Create_And_Delete_Messages_UseEnglishStrings_WhenEnglishLanguageActive`) بنفس آلية تبديل القاموس
+المستعملة في الجولات 130-133، يثبت رسالة فشل واحدة (اسم موقع فارغ) ورسالتي نجاح (`Create` ثم
+`Delete`) بالإنجليزية الصحيحة. 1142/1140 اختباراً (Debug/Release، +1 عن الجولة 133). **سلسلة ب5
+الفرعية لطبقة الخدمات مكتملة الآن فعلياً** (`NeutronSourceService` ← `SourceService` ←
+`UserService` ← `BorrowService` ← `LocationService`)، مع تحفظ أن أي خدمة أخرى لم تُراجَع بعد صراحة
+قد تكشف نفس الفجوة. النطاق المتبقي من ب5 (`ViewModels` ونصوص XAML المثبتة) ما زال مؤجَّلاً لجولات
+لاحقة.
 
 ### ☐ ب6 — معالج أول تشغيل
 يسأل عن مجلد النسخ الاحتياطي ويُفعّل النسخ التلقائي. الافتراضي الحالي `AutoBackupEnabled = false`.

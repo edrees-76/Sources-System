@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Sources.Data;
+using Sources.Helpers;
 using Sources.Models;
 using Sources.Services;
 using Sources.Tests.Fakes;
@@ -1055,6 +1056,76 @@ public class LocationServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
         Assert.False(success);
         Assert.Equal("الموقع غير محذوف أصلاً", message);
         Assert.Empty(_fakeAuditService.LoggedEntries);
+    }
+
+    #endregion
+
+    #region ي. الترجمة الإنجليزية لرسائل التحقق والنجاح (Round 134)
+
+    [Fact]
+    public void Create_And_Delete_Messages_UseEnglishStrings_WhenEnglishLanguageActive()
+    {
+        Sources.Tests.Fixtures.WpfStaFixture.RunInSta(() =>
+        {
+            var dicts = System.Windows.Application.Current.Resources.MergedDictionaries;
+            var arabicDictIndex = -1;
+            for (int i = 0; i < dicts.Count; i++)
+            {
+                var src = dicts[i].Source?.OriginalString;
+                if (src != null && src.Contains("Strings.ar.xaml"))
+                {
+                    arabicDictIndex = i;
+                    break;
+                }
+            }
+            Assert.True(arabicDictIndex >= 0, "Strings.ar.xaml dictionary must already be loaded by WpfStaFixture.");
+
+            try
+            {
+                // Arrange: swap the active dictionary to English, mirroring App.ApplyLanguage's
+                // merged-dictionary-replacement mechanism (its own relative pack URI cannot
+                // resolve outside the packaged application, so an absolute pack URI is used here,
+                // exactly as WpfStaFixture already does for the initial Arabic dictionary).
+                dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.en.xaml", UriKind.Absolute)
+                };
+
+                // Act: trigger a failure message (empty location name)
+                var failResult = _sut.Create(new Location { LocationName = "" });
+
+                // Assert: the English dictionary text is returned, not the Arabic fallback
+                Assert.False(failResult.Success);
+                Assert.Equal("Location name is required", failResult.Message);
+                Assert.Equal(TranslationHelper.GetString("MsgErrLocationNameRequired"), failResult.Message);
+                Assert.NotEqual("اسم الموقع مطلوب", failResult.Message);
+
+                // Act: trigger a success message (Create)
+                var location = new Location { LocationName = "English Test Location" };
+                var createResult = _sut.Create(location);
+
+                Assert.True(createResult.Success);
+                Assert.Equal("Location added successfully", createResult.Message);
+                Assert.Equal(TranslationHelper.GetString("MsgSuccessLocationCreated"), createResult.Message);
+                Assert.NotEqual("تم إضافة الموقع بنجاح", createResult.Message);
+
+                // Act: trigger a success message (Delete)
+                var deleteResult = _sut.Delete(location.Id);
+
+                Assert.True(deleteResult.Success);
+                Assert.Equal("Location deleted", deleteResult.Message);
+                Assert.Equal(TranslationHelper.GetString("MsgSuccessLocationDeleted"), deleteResult.Message);
+                Assert.NotEqual("تم حذف الموقع", deleteResult.Message);
+            }
+            finally
+            {
+                // Restore the Arabic dictionary so subsequent STA-thread tests are unaffected
+                dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.ar.xaml", UriKind.Absolute)
+                };
+            }
+        });
     }
 
     #endregion
