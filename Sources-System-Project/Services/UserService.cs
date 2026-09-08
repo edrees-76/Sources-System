@@ -39,17 +39,17 @@ public class UserService : IUserService
                 .FirstOrDefault(u => u.Username.ToLower() == lowerUsername);
 
             if (user == null)
-                return (false, "اسم المستخدم غير موجود");
+                return (false, TranslationHelper.GetString("MsgErrUsernameNotFound") ?? "اسم المستخدم غير موجود");
 
             if (!user.IsActive)
-                return (false, "تم تجميد الحساب يرجى مراجعة مدير النظام");
+                return (false, TranslationHelper.GetString("MsgErrAccountFrozen") ?? "تم تجميد الحساب يرجى مراجعة مدير النظام");
 
             // ─── التحقق من قفل الحساب ───
             if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.Now)
             {
                 var remaining = (user.LockoutEnd.Value - DateTime.Now).Minutes + 1;
                 LoggerService.LogInfo($"محاولة دخول لحساب مقفل: {username}");
-                return (false, $"الحساب مقفل. حاول مرة أخرى بعد {remaining} دقيقة");
+                return (false, string.Format(TranslationHelper.GetString("MsgErrAccountLocked") ?? "الحساب مقفل. حاول مرة أخرى بعد {0} دقيقة", remaining));
             }
 
             if (!PasswordHelper.VerifyPassword(password, user.PasswordHash))
@@ -63,13 +63,13 @@ public class UserService : IUserService
                     user.FailedLoginAttempts = 0;
                     db.SaveChanges();
                     LoggerService.LogInfo($"تم قفل حساب {username} بعد {MaxFailedAttempts} محاولات فاشلة");
-                    return (false, $"تم قفل الحساب لمدة {LockoutDurationMinutes} دقيقة بسبب محاولات دخول فاشلة متعددة");
+                    return (false, string.Format(TranslationHelper.GetString("MsgErrAccountLockedNow") ?? "تم قفل الحساب لمدة {0} دقيقة بسبب محاولات دخول فاشلة متعددة", LockoutDurationMinutes));
                 }
 
                 db.SaveChanges();
                 var attemptsLeft = MaxFailedAttempts - user.FailedLoginAttempts;
                 LoggerService.LogInfo($"محاولة دخول فاشلة للمستخدم: {username} (متبقي {attemptsLeft} محاولات)");
-                return (false, $"كلمة المرور غير صحيحة. متبقي {attemptsLeft} محاولات قبل قفل الحساب");
+                return (false, string.Format(TranslationHelper.GetString("MsgErrWrongPasswordAttemptsLeft") ?? "كلمة المرور غير صحيحة. متبقي {0} محاولات قبل قفل الحساب", attemptsLeft));
             }
 
             // ─── تسجيل دخول ناجح ───
@@ -80,12 +80,12 @@ public class UserService : IUserService
 
             _currentUser = user;
             LoggerService.LogInfo($"تم تسجيل دخول المستخدم: {username}");
-            return (true, "تم تسجيل الدخول بنجاح");
+            return (true, TranslationHelper.GetString("MsgSuccessLogin") ?? "تم تسجيل الدخول بنجاح");
         }
         catch (Exception ex)
         {
             LoggerService.LogError("خطأ أثناء تسجيل الدخول", ex);
-            return (false, "حدث خطأ فني أثناء تسجيل الدخول");
+            return (false, TranslationHelper.GetString("MsgErrLoginTechnicalError") ?? "حدث خطأ فني أثناء تسجيل الدخول");
         }
     }
 
@@ -119,7 +119,7 @@ public class UserService : IUserService
 
         using var db = _dbFactory.CreateDbContext();
         if (db.Users.Any(u => u.Username == user.Username))
-            return (false, "اسم المستخدم موجود بالفعل");
+            return (false, TranslationHelper.GetString("MsgErrUsernameExists") ?? "اسم المستخدم موجود بالفعل");
 
         user.PasswordHash = PasswordHelper.HashPassword(password);
         db.Users.Add(user);
@@ -145,7 +145,7 @@ public class UserService : IUserService
             newValues: JsonSerializer.Serialize(newValuesObj)
         );
 
-        return (true, "تم إنشاء المستخدم بنجاح");
+        return (true, TranslationHelper.GetString("MsgSuccessUserCreated") ?? "تم إنشاء المستخدم بنجاح");
     }
 
     public (bool Success, string Message) UpdateUser(User user)
@@ -156,7 +156,7 @@ public class UserService : IUserService
         using var db = _dbFactory.CreateDbContext();
         var existing = db.Users.Find(user.Id);
         if (existing == null)
-            return (false, "المستخدم غير موجود");
+            return (false, TranslationHelper.GetString("MsgErrUserNotFound") ?? "المستخدم غير موجود");
 
         var oldValuesObj = new
         {
@@ -195,7 +195,7 @@ public class UserService : IUserService
             newValues: JsonSerializer.Serialize(newValuesObj)
         );
 
-        return (true, "تم تحديث بيانات المستخدم");
+        return (true, TranslationHelper.GetString("MsgSuccessUserUpdated") ?? "تم تحديث بيانات المستخدم");
     }
 
     public (bool Success, string Message) ResetPassword(Guid userId, string newPassword)
@@ -205,10 +205,10 @@ public class UserService : IUserService
 
         using var db = _dbFactory.CreateDbContext();
         var user = db.Users.Find(userId);
-        if (user == null) return (false, "المستخدم غير موجود");
+        if (user == null) return (false, TranslationHelper.GetString("MsgErrUserNotFound") ?? "المستخدم غير موجود");
 
         if (user.Username == "admin" && CurrentUser?.Username != "admin")
-            return (false, "لا يمكن تغيير كلمة مرور حساب مدير النظام الأساسي من حساب آخر");
+            return (false, TranslationHelper.GetString("MsgErrCannotChangeAdminPasswordFromOther") ?? "لا يمكن تغيير كلمة مرور حساب مدير النظام الأساسي من حساب آخر");
 
         user.PasswordHash = PasswordHelper.HashPassword(newPassword);
         user.FailedLoginAttempts = 0;
@@ -218,7 +218,7 @@ public class UserService : IUserService
         var auditService = _auditService ?? new AuditService(_dbFactory, this);
         auditService.Log("ResetPassword", "Users", userId, $"إعادة تعيين كلمة مرور المستخدم: {user.FullName} (@{user.Username})");
 
-        return (true, "تم إعادة تعيين كلمة المرور");
+        return (true, TranslationHelper.GetString("MsgSuccessPasswordReset") ?? "تم إعادة تعيين كلمة المرور");
     }
 
     /// <summary>فك قفل حساب المستخدم</summary>
@@ -229,7 +229,7 @@ public class UserService : IUserService
 
         using var db = _dbFactory.CreateDbContext();
         var user = db.Users.Find(userId);
-        if (user == null) return (false, "المستخدم غير موجود");
+        if (user == null) return (false, TranslationHelper.GetString("MsgErrUserNotFound") ?? "المستخدم غير موجود");
 
         var oldValuesObj = new { user.FailedLoginAttempts, user.LockoutEnd };
 
@@ -246,7 +246,7 @@ public class UserService : IUserService
             JsonSerializer.Serialize(oldValuesObj),
             JsonSerializer.Serialize(new { FailedLoginAttempts = 0, LockoutEnd = (DateTime?)null }));
 
-        return (true, "تم فك قفل الحساب");
+        return (true, TranslationHelper.GetString("MsgSuccessAccountUnlocked") ?? "تم فك قفل الحساب");
     }
 
     public (bool Success, string Message) DeleteUser(Guid userId)
@@ -256,10 +256,10 @@ public class UserService : IUserService
 
         using var db = _dbFactory.CreateDbContext();
         var user = db.Users.Find(userId);
-        if (user == null) return (false, "المستخدم غير موجود");
-        
+        if (user == null) return (false, TranslationHelper.GetString("MsgErrUserNotFound") ?? "المستخدم غير موجود");
+
         // منع حذف مستخدم admin الأساسي
-        if (user.Username == "admin") return (false, "لا يمكن حذف حساب مدير النظام الأساسي");
+        if (user.Username == "admin") return (false, TranslationHelper.GetString("MsgErrCannotDeleteAdmin") ?? "لا يمكن حذف حساب مدير النظام الأساسي");
 
         user.IsDeleted = true;
         user.IsActive = false;
@@ -278,7 +278,7 @@ public class UserService : IUserService
         var auditService = _auditService ?? new AuditService(_dbFactory, this);
         auditService.Log("Delete", "Users", userId, $"حذف مستخدم: {user.FullName} ({user.Username})");
 
-        return (true, "تم حذف المستخدم بنجاح");
+        return (true, TranslationHelper.GetString("MsgSuccessUserDeleted") ?? "تم حذف المستخدم بنجاح");
     }
 
     public (bool Success, string Message) RestoreUser(Guid userId)
@@ -288,13 +288,13 @@ public class UserService : IUserService
 
         using var db = _dbFactory.CreateDbContext();
         var user = db.Users.IgnoreQueryFilters().Include(u => u.Role).FirstOrDefault(u => u.Id == userId);
-        if (user == null) return (false, "المستخدم غير موجود");
-        if (!user.IsDeleted) return (false, "المستخدم غير محذوف أصلاً");
+        if (user == null) return (false, TranslationHelper.GetString("MsgErrUserNotFound") ?? "المستخدم غير موجود");
+        if (!user.IsDeleted) return (false, TranslationHelper.GetString("MsgErrUserNotDeleted") ?? "المستخدم غير محذوف أصلاً");
 
         // التحقق من فرادة اسم المستخدم بين الحسابات النشطة
         var lowerUsername = user.Username.Trim().ToLower();
         if (db.Users.Any(u => !u.IsDeleted && u.Id != userId && u.Username.ToLower() == lowerUsername))
-            return (false, $"لا يمكن استرجاع المستخدم لوجود حساب نشط آخر بنفس اسم المستخدم (@{user.Username})");
+            return (false, string.Format(TranslationHelper.GetString("MsgErrCannotRestoreUsernameConflict") ?? "لا يمكن استرجاع المستخدم لوجود حساب نشط آخر بنفس اسم المستخدم (@{0})", user.Username));
 
         user.IsDeleted = false;
         user.IsActive = true;
@@ -305,7 +305,7 @@ public class UserService : IUserService
         var auditService = _auditService ?? new AuditService(_dbFactory, this);
         auditService.Log("Restore", "Users", userId, $"استرجاع مستخدم: {user.FullName} (@{user.Username})");
 
-        return (true, $"تم استرجاع حساب المستخدم {user.FullName}");
+        return (true, string.Format(TranslationHelper.GetString("MsgSuccessUserRestored") ?? "تم استرجاع حساب المستخدم {0}", user.FullName));
     }
 
     /// <summary>تجميد أو تنشيط حساب مستخدم</summary>
@@ -316,15 +316,19 @@ public class UserService : IUserService
 
         using var db = _dbFactory.CreateDbContext();
         var user = db.Users.Find(userId);
-        if (user == null) return (false, "المستخدم غير موجود");
-        if (user.Username == "admin") return (false, "لا يمكن تجميد حساب مدير النظام الأساسي");
+        if (user == null) return (false, TranslationHelper.GetString("MsgErrUserNotFound") ?? "المستخدم غير موجود");
+        if (user.Username == "admin") return (false, TranslationHelper.GetString("MsgErrCannotFreezeAdmin") ?? "لا يمكن تجميد حساب مدير النظام الأساسي");
 
         var oldValuesObj = new { user.IsActive };
 
         user.IsActive = !user.IsActive;
         db.SaveChanges();
 
+        // السجل الرقابي يبقى عربياً دوماً بتصميم مقصود، بمعزل عن لغة الواجهة المستخدمة في الرسالة المُعادة أدناه
         string action = user.IsActive ? "تنشيط" : "تجميد";
+        string translatedAction = user.IsActive
+            ? (TranslationHelper.GetString("TextActivate") ?? "تنشيط")
+            : (TranslationHelper.GetString("TextDeactivate") ?? "تجميد");
 
         var auditService = _auditService ?? new AuditService(_dbFactory, this);
         auditService.LogWithChanges(
@@ -335,7 +339,7 @@ public class UserService : IUserService
             JsonSerializer.Serialize(oldValuesObj),
             JsonSerializer.Serialize(new { user.IsActive }));
 
-        return (true, $"تم {action} حساب {user.FullName}");
+        return (true, string.Format(TranslationHelper.GetString("MsgSuccessToggleFreeze") ?? "تم {0} حساب {1}", translatedAction, user.FullName));
     }
 
     /// <summary>استرجاع سجل التدقيق مع فلاتر اختيارية</summary>

@@ -999,4 +999,79 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     }
 
     #endregion
+
+    #region ط. الترجمة الإنجليزية لرسائل التحقق والنجاح (Round 132)
+
+    [Fact]
+    public void Login_And_ToggleUserFreeze_Messages_UseEnglishStrings_WhenEnglishLanguageActive()
+    {
+        Sources.Tests.Fixtures.WpfStaFixture.RunInSta(() =>
+        {
+            var dicts = System.Windows.Application.Current.Resources.MergedDictionaries;
+            var arabicDictIndex = -1;
+            for (int i = 0; i < dicts.Count; i++)
+            {
+                var src = dicts[i].Source?.OriginalString;
+                if (src != null && src.Contains("Strings.ar.xaml"))
+                {
+                    arabicDictIndex = i;
+                    break;
+                }
+            }
+            Assert.True(arabicDictIndex >= 0, "Strings.ar.xaml dictionary must already be loaded by WpfStaFixture.");
+
+            try
+            {
+                // Arrange: swap the active dictionary to English, mirroring App.ApplyLanguage's
+                // merged-dictionary-replacement mechanism (its own relative pack URI cannot
+                // resolve outside the packaged application, so an absolute pack URI is used here,
+                // exactly as WpfStaFixture already does for the initial Arabic dictionary).
+                dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.en.xaml", UriKind.Absolute)
+                };
+
+                // Act: trigger a login failure message (unknown username)
+                var failResult = _userService.Login("no_such_user_en", "AnyPassword");
+
+                // Assert: the English dictionary text is returned, not the Arabic fallback
+                Assert.False(failResult.Success);
+                Assert.Equal("Username not found", failResult.Message);
+                Assert.Equal(TranslationHelper.GetString("MsgErrUsernameNotFound"), failResult.Message);
+                Assert.NotEqual("اسم المستخدم غير موجود", failResult.Message);
+
+                // Act: trigger the login success message
+                CreateTestUser(username: "en_success_user", password: "Password123!");
+                var successResult = _userService.Login("en_success_user", "Password123!");
+
+                // Assert
+                Assert.True(successResult.Success);
+                Assert.Equal("Login successful", successResult.Message);
+                Assert.Equal(TranslationHelper.GetString("MsgSuccessLogin"), successResult.Message);
+                Assert.NotEqual("تم تسجيل الدخول بنجاح", successResult.Message);
+
+                // Act: trigger the special-case "Activate/Deactivate" toggle message (freeze then unfreeze)
+                var admin = CreateTestUser(username: "en_admin_actor_" + Guid.NewGuid().ToString("N")[..8], password: "AdminPassword123!", role: _adminRole);
+                _userService.Login(admin.Username, "AdminPassword123!");
+                var targetUser = CreateTestUser(username: "en_toggle_user", password: "Password123!", isActive: true);
+
+                var freezeResult = _userService.ToggleUserFreeze(targetUser.Id);
+
+                // Assert: freeze message uses the translated "deactivated" word, not the Arabic "تجميد"
+                Assert.True(freezeResult.Success);
+                Assert.Equal($"Account {targetUser.FullName} has been deactivated", freezeResult.Message);
+                Assert.DoesNotContain("تجميد", freezeResult.Message);
+            }
+            finally
+            {
+                // Restore the Arabic dictionary so subsequent STA-thread tests are unaffected
+                dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.ar.xaml", UriKind.Absolute)
+                };
+            }
+        });
+    }
+
+    #endregion
 }
