@@ -1261,6 +1261,25 @@
     <system:String x:Key="MsgErrNeutronSourceRestoreConflict">لا يمكن استرجاع المصدر النيتروني لوجود مصدر نشط آخر بنفس الكود ({0})</system:String>
     <system:String x:Key="MsgSuccessNeutronSourceRestored">تم استرجاع المصدر النيتروني {0}</system:String>
 
+    <!-- Round 131 (فرعية ثانية لـب5): SourceService.cs validation/success message localization -->
+    <system:String x:Key="MsgErrInvalidSourceData">بيانات المصدر غير صالحة</system:String>
+    <system:String x:Key="MsgErrInitialActivityPositive">قيمة النشاط الابتدائي يجب أن تكون أكبر من صفر</system:String>
+    <system:String x:Key="MsgErrSourceCodeUsedByDeleted">كود المصدر ({0}) مستخدم لمصدر محذوف. لا يمكن إعادة استخدام كود المصدر حفاظاً على سجل التدقيق، ويمكنك استرجاع المصدر من قسم المحذوفات.</system:String>
+    <system:String x:Key="MsgSuccessSourceCreated">تم إضافة المصدر بنجاح</system:String>
+    <system:String x:Key="MsgErrSourceNotFound">المصدر غير موجود</system:String>
+    <system:String x:Key="MsgErrCannotEditActiveBorrowSource">لا يمكن تعديل الموقع أو الحالة لمصدر قيد الاستعارة النشطة حالياً</system:String>
+    <system:String x:Key="MsgSuccessSourceUpdated">تم تحديث المصدر بنجاح</system:String>
+    <system:String x:Key="MsgReasonPendingBorrow">لوجود طلب استعارة معلّق عليه (قيد الانتظار)</system:String>
+    <system:String x:Key="MsgReasonApprovedBorrow">لوجود طلب استعارة معتمد عليه</system:String>
+    <system:String x:Key="MsgReasonActiveBorrow">لوجود استعارة نشطة عليه</system:String>
+    <system:String x:Key="MsgReasonIncompleteBorrow">لوجود طلب استعارة غير مكتمل عليه</system:String>
+    <system:String x:Key="MsgErrCannotDeleteSourceReason">لا يمكن حذف المصدر {0}</system:String>
+    <system:String x:Key="MsgSuccessSourceDeleted">تم حذف المصدر بنجاح</system:String>
+    <system:String x:Key="MsgErrSourceNotDeleted">المصدر غير محذوف أصلاً</system:String>
+    <system:String x:Key="MsgErrSourceRestoreConflict">لا يمكن استرجاع المصدر لوجود مصدر نشط آخر بنفس الكود ({0})</system:String>
+    <system:String x:Key="MsgErrSourceRestoreLocationDeleted">لا يمكن استرجاع المصدر لأن موقعه الأصلي "{0}" محذوف حالياً. يرجى استرجاع الموقع أولاً من سجل المحذوفات ثم إعادة المحاولة.</system:String>
+    <system:String x:Key="MsgSuccessSourceRestored">تم استرجاع المصدر {0} إلى موقع {1} بحالة {2}</system:String>
+
     <!-- Add/Edit Form Categories -->
     <system:String x:Key="LabelSourceCategory">فئة المصدر:</system:String>
     <system:String x:Key="RadioCategoryStandardSource">مصدر مشع عادي (غاما / بيتا / ألفا)</system:String>

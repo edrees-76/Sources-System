@@ -1264,6 +1264,25 @@
     <system:String x:Key="MsgErrNeutronSourceRestoreConflict">Cannot restore the neutron source because another active source with the same code exists ({0})</system:String>
     <system:String x:Key="MsgSuccessNeutronSourceRestored">Neutron source {0} restored successfully</system:String>
 
+    <!-- Round 131 (second sub-round of B5): SourceService.cs validation/success message localization -->
+    <system:String x:Key="MsgErrInvalidSourceData">Invalid source data</system:String>
+    <system:String x:Key="MsgErrInitialActivityPositive">Initial activity value must be greater than zero</system:String>
+    <system:String x:Key="MsgErrSourceCodeUsedByDeleted">Source code ({0}) is used by a deleted source. The source code cannot be reused to preserve the audit trail; you can restore the source from the deleted items section.</system:String>
+    <system:String x:Key="MsgSuccessSourceCreated">Source added successfully</system:String>
+    <system:String x:Key="MsgErrSourceNotFound">Source not found</system:String>
+    <system:String x:Key="MsgErrCannotEditActiveBorrowSource">Cannot edit the location or status of a source that is currently under active borrow</system:String>
+    <system:String x:Key="MsgSuccessSourceUpdated">Source updated successfully</system:String>
+    <system:String x:Key="MsgReasonPendingBorrow">because a pending borrow request exists for it (awaiting review)</system:String>
+    <system:String x:Key="MsgReasonApprovedBorrow">because an approved borrow request exists for it</system:String>
+    <system:String x:Key="MsgReasonActiveBorrow">because an active borrow exists for it</system:String>
+    <system:String x:Key="MsgReasonIncompleteBorrow">because an incomplete borrow request exists for it</system:String>
+    <system:String x:Key="MsgErrCannotDeleteSourceReason">Cannot delete the source {0}</system:String>
+    <system:String x:Key="MsgSuccessSourceDeleted">Source deleted successfully</system:String>
+    <system:String x:Key="MsgErrSourceNotDeleted">The source is not deleted</system:String>
+    <system:String x:Key="MsgErrSourceRestoreConflict">Cannot restore the source because another active source with the same code exists ({0})</system:String>
+    <system:String x:Key="MsgErrSourceRestoreLocationDeleted">Cannot restore the source because its original location "{0}" is currently deleted. Please restore the location first from the deleted items log, then try again.</system:String>
+    <system:String x:Key="MsgSuccessSourceRestored">Source {0} restored to location {1} with status {2}</system:String>
+
     <!-- Add/Edit Form Categories -->
     <system:String x:Key="LabelSourceCategory">Source Category:</system:String>
     <system:String x:Key="RadioCategoryStandardSource">Standard Radionuclide (Gamma / Beta / Alpha)</system:String>
