@@ -1106,6 +1106,11 @@ public class NeutronSource
     public double? ActivityValue { get; set; }
     public Guid? ActivityUnitId { get; set; }
     public ActivityUnit? ActivityUnit { get; set; }
+
+    [NotMapped]
+    public string ActivityValueFormatted => ActivityValue.HasValue && ActivityUnit != null
+        ? $"{ActivityValue.Value} {ActivityUnit.UnitSymbol}"
+        : "غير مسجّل";
 }
 
 // ─── شهادات ومستندات المصادر ───

@@ -1273,6 +1273,8 @@
     <system:String x:Key="DetailLabelEmissionRate">Neutron Emission Rate:</system:String>
     <system:String x:Key="DetailLabelCalibratedEmissionRate">Calibrated Emission Rate:</system:String>
     <system:String x:Key="DetailLabelCurrentEmissionRate">Current Emission Rate:</system:String>
+    <system:String x:Key="DetailLabelActivity">Radioactive Activity:</system:String>
+    <system:String x:Key="DetailLabelCurrentActivity">Current Calculated Activity:</system:String>
     <system:String x:Key="DetailLabelEmissionCalibrationDate">Emission Calibration Date:</system:String>
     <system:String x:Key="DetailLabelCalibrationReference">Calibration Reference:</system:String>
     <system:String x:Key="DetailLabelAnisotropyFactor">Anisotropy Factor (Anisotropy):</system:String>

@@ -95,6 +95,55 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
 
     public bool IsCurrentEmissionRateCalculated => DecayResult.IsCalculated;
 
+    // ─── النشاط الإشعاعي المُدخَل والنشاط الحالي المحسوب ───
+    public string ActivityValueFormatted => NeutronSource.ActivityValueFormatted;
+
+    public NeutronDecayResult ActivityDecayResult => _decayService.CalculateCurrentSourceActivity(NeutronSource);
+
+    public string CurrentActivityDisplay
+    {
+        get
+        {
+            var result = ActivityDecayResult;
+            if (result.IsCalculated && result.CurrentActivityBq.HasValue)
+            {
+                return FormatActivityValue(result.CurrentActivityBq.Value, "Bq");
+            }
+
+            return result.Status switch
+            {
+                NeutronDecayCalculationStatus.NotRecorded => "لم يُسجَّل",
+                NeutronDecayCalculationStatus.MissingCalibrationDate =>
+                    TranslationHelper.GetString("DecayStatusMissingCalibrationDate") ?? "غير محسوب — تاريخ المعايرة غير مسجّل",
+                NeutronDecayCalculationStatus.MissingActivityUnit => "غير محسوب — وحدة النشاط غير محمّلة",
+                NeutronDecayCalculationStatus.InvalidActivityValue => "غير محسوب — قيمة النشاط غير صالحة",
+                NeutronDecayCalculationStatus.MissingSourceType =>
+                    TranslationHelper.GetString("DecayStatusMissingSourceType") ?? "غير محسوب — بيانات نوع المصدر غير متوفرة",
+                NeutronDecayCalculationStatus.MissingSource =>
+                    TranslationHelper.GetString("DecayStatusMissingSource") ?? "غير محسوب — بيانات المصدر غير متوفرة",
+                NeutronDecayCalculationStatus.InvalidHalfLife =>
+                    TranslationHelper.GetString("DecayStatusInvalidHalfLife") ?? "غير محسوب — نصف العمر غير صالح",
+                NeutronDecayCalculationStatus.UnsupportedHalfLifeUnit =>
+                    TranslationHelper.GetString("DecayStatusUnsupportedHalfLifeUnit") ?? "غير محسوب — وحدة نصف العمر غير مدعومة",
+                NeutronDecayCalculationStatus.CalculationDatePrecedesCalibrationDate =>
+                    TranslationHelper.GetString("DecayStatusDatePrecedesCalibration") ?? "غير محسوب — تاريخ الحساب يسبق تاريخ المعايرة",
+                _ => TranslationHelper.GetString("DecayStatusMissingCalibrationDate") ?? "غير محسوب — تاريخ المعايرة غير مسجّل"
+            };
+        }
+    }
+
+    public bool IsCurrentActivityCalculated => ActivityDecayResult.IsCalculated;
+
+    private static string FormatActivityValue(double value, string unitSymbol)
+    {
+        if (value == 0) return $"0 {unitSymbol}";
+        if (Math.Abs(value) >= 1e9) return $"{value:E3} {unitSymbol}";
+        if (Math.Abs(value) >= 1e6) return $"{value:N0} {unitSymbol}";
+        if (Math.Abs(value) >= 1000) return $"{value:N2} {unitSymbol}";
+        if (Math.Abs(value) >= 1) return $"{value:N4} {unitSymbol}";
+        return $"{value:E3} {unitSymbol}";
+    }
+
     public string CalibrationReferenceDisplay => !string.IsNullOrWhiteSpace(NeutronSource.CalibrationReference) 
         ? NeutronSource.CalibrationReference 
         : (TranslationHelper.GetString("TextNotRecorded") ?? "غير مسجّل");
