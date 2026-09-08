@@ -656,5 +656,182 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
     }
 
     #endregion
+
+    #region Am-241 Activity Field Validation & Audit Tests
+
+    [Fact]
+    public void Create_WithNonFiniteOrNonPositiveAm241ActivityValue_ReturnsFailure()
+    {
+        // Arrange
+        var typeId = Guid.NewGuid();
+        var unitId = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Am-241/Be", NameEn = "Americium-Beryllium", HalfLife = 432.2 });
+            db.ActivityUnits.Add(new ActivityUnit { Id = unitId, UnitName = "Becquerel", UnitSymbol = "Bq", ConversionToBq = 1.0 });
+            db.SaveChanges();
+        }
+
+        // Act & Assert
+        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-AM-1", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, Am241ActivityValue = double.NaN, Am241ActivityUnitId = unitId }).Success);
+        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-AM-1", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, Am241ActivityValue = double.PositiveInfinity, Am241ActivityUnitId = unitId }).Success);
+        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-AM-1", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, Am241ActivityValue = 0, Am241ActivityUnitId = unitId }).Success);
+        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-AM-1", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, Am241ActivityValue = -5, Am241ActivityUnitId = unitId }).Success);
+    }
+
+    [Fact]
+    public void Create_WithExactlyOneOfAm241ActivityValueOrUnit_ReturnsFailure()
+    {
+        // Arrange
+        var typeId = Guid.NewGuid();
+        var unitId = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Am-241/Be", NameEn = "Americium-Beryllium", HalfLife = 432.2 });
+            db.ActivityUnits.Add(new ActivityUnit { Id = unitId, UnitName = "Becquerel", UnitSymbol = "Bq", ConversionToBq = 1.0 });
+            db.SaveChanges();
+        }
+
+        // Act & Assert: value set without unit
+        var valueOnly = _sut.Create(new NeutronSource { SourceCode = "NS-AM-2", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, Am241ActivityValue = 1.0e9, Am241ActivityUnitId = null });
+        Assert.False(valueOnly.Success);
+
+        // Act & Assert: unit set without value
+        var unitOnly = _sut.Create(new NeutronSource { SourceCode = "NS-AM-3", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, Am241ActivityValue = null, Am241ActivityUnitId = unitId });
+        Assert.False(unitOnly.Success);
+    }
+
+    [Fact]
+    public void Update_WithExactlyOneOfAm241ActivityValueOrUnit_ReturnsFailure()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var typeId = Guid.NewGuid();
+        var unitId = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Cf-252", NameEn = "Cf-252", HalfLife = 2.645 });
+            db.ActivityUnits.Add(new ActivityUnit { Id = unitId, UnitName = "Becquerel", UnitSymbol = "Bq", ConversionToBq = 1.0 });
+            db.NeutronSources.Add(new NeutronSource { Id = id, SourceCode = "NS-AM-UPD", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6 });
+            db.SaveChanges();
+        }
+
+        var valueOnly = new NeutronSource { Id = id, SourceCode = "NS-AM-UPD", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, Am241ActivityValue = 1.0e9, Am241ActivityUnitId = null };
+        var unitOnly = new NeutronSource { Id = id, SourceCode = "NS-AM-UPD", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, Am241ActivityValue = null, Am241ActivityUnitId = unitId };
+
+        // Act & Assert
+        Assert.False(_sut.Update(valueOnly).Success);
+        Assert.False(_sut.Update(unitOnly).Success);
+    }
+
+    [Fact]
+    public void Create_WithUnknownAm241ActivityUnitId_ReturnsFailure()
+    {
+        // Arrange
+        var typeId = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Am-241/Be", NameEn = "Americium-Beryllium", HalfLife = 432.2 });
+            db.SaveChanges();
+        }
+
+        var item = new NeutronSource
+        {
+            SourceCode = "NS-AM-4",
+            NeutronSourceTypeId = typeId,
+            CalibratedEmissionRate = 1e6,
+            Am241ActivityValue = 1.0e9,
+            Am241ActivityUnitId = Guid.NewGuid() // does not exist
+        };
+
+        // Act
+        var result = _sut.Create(item);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Contains("وحدة نشاط الأمريسيوم-241", result.Message);
+    }
+
+    [Fact]
+    public void Create_WithValidAm241Activity_Succeeds_AndAuditLogNewValuesContainsBothFields()
+    {
+        // Arrange
+        var typeId = Guid.NewGuid();
+        var unitId = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Am-241/Be", NameEn = "Americium-Beryllium", HalfLife = 432.2 });
+            db.ActivityUnits.Add(new ActivityUnit { Id = unitId, UnitName = "Becquerel", UnitSymbol = "Bq", ConversionToBq = 1.0 });
+            db.SaveChanges();
+        }
+
+        var item = new NeutronSource
+        {
+            SourceCode = "NS-AM-5",
+            NeutronSourceTypeId = typeId,
+            CalibratedEmissionRate = 1e6,
+            Am241ActivityValue = 3.7e10,
+            Am241ActivityUnitId = unitId
+        };
+
+        // Act
+        var (success, message) = _sut.Create(item);
+
+        // Assert
+        Assert.True(success);
+
+        using (var db = _fixture.CreateContext())
+        {
+            var saved = db.NeutronSources.FirstOrDefault(n => n.SourceCode == "NS-AM-5");
+            Assert.NotNull(saved);
+            Assert.Equal(3.7e10, saved!.Am241ActivityValue);
+            Assert.Equal(unitId, saved.Am241ActivityUnitId);
+        }
+
+        var createLog = _fakeAuditService.LoggedEntries.First(l => l.Action == "Create" && l.TableName == "NeutronSources" && l.RecordId == item.Id);
+        Assert.NotNull(createLog.NewValues);
+        var doc = JsonDocument.Parse(createLog.NewValues);
+        Assert.Equal(3.7e10, doc.RootElement.GetProperty("Am241ActivityValue").GetDouble());
+        Assert.Equal(unitId, doc.RootElement.GetProperty("Am241ActivityUnitId").GetGuid());
+    }
+
+    [Fact]
+    public void Update_WithValidAm241Activity_AuditLogNewValuesContainsBothFields()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var typeId = Guid.NewGuid();
+        var unitId = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Cf-252", NameEn = "Cf-252", HalfLife = 2.645 });
+            db.ActivityUnits.Add(new ActivityUnit { Id = unitId, UnitName = "Curie", UnitSymbol = "Ci", ConversionToBq = 3.7e10 });
+            db.NeutronSources.Add(new NeutronSource { Id = id, SourceCode = "NS-AM-UPD-2", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6 });
+            db.SaveChanges();
+        }
+
+        var updateItem = new NeutronSource
+        {
+            Id = id,
+            SourceCode = "NS-AM-UPD-2",
+            NeutronSourceTypeId = typeId,
+            CalibratedEmissionRate = 1e6,
+            Am241ActivityValue = 1.0,
+            Am241ActivityUnitId = unitId
+        };
+
+        // Act
+        var (success, _) = _sut.Update(updateItem);
+
+        // Assert
+        Assert.True(success);
+        var updateLog = _fakeAuditService.LoggedEntries.First(l => l.Action == "Update" && l.TableName == "NeutronSources");
+        Assert.NotNull(updateLog.NewValues);
+        var doc = JsonDocument.Parse(updateLog.NewValues);
+        Assert.Equal(1.0, doc.RootElement.GetProperty("Am241ActivityValue").GetDouble());
+        Assert.Equal(unitId, doc.RootElement.GetProperty("Am241ActivityUnitId").GetGuid());
+    }
+
+    #endregion
 }
 

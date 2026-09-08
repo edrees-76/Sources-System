@@ -1097,6 +1097,14 @@ public class NeutronSource
 
     [NotMapped]
     public string CalibratedEmissionRateFormatted => DisplayEmissionRate;
+
+    /// <summary>نشاط الأمريسيوم-241 في المصدر كما في شهادته — قيمة مستقلة لا
+    /// تُشتق من معدل الانبعاث المُعاير. ISO 8529-1:2021 §4.4: العلاقة بينهما
+    /// تتأثر بعملية التصنيع ودرجة الخلط ولا تخضع لصيغة عامة. تاريخ المرجع
+    /// لاضمحلالها هو CalibrationDate نفسه (بقرار معتمد، لا حقل تاريخ جديد).</summary>
+    public double? Am241ActivityValue { get; set; }
+    public Guid? Am241ActivityUnitId { get; set; }
+    public ActivityUnit? Am241ActivityUnit { get; set; }
 }
 
 // ─── شهادات ومستندات المصادر ───
