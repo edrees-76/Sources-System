@@ -68,11 +68,11 @@ public class SourceService : ISourceService
 
     public (bool Success, string Message) CreateSource(Source source, List<SourceIsotope>? isotopes = null)
     {
-        if (source == null) return (false, "بيانات المصدر غير صالحة");
+        if (source == null) return (false, TranslationHelper.GetString("MsgErrInvalidSourceData") ?? "بيانات المصدر غير صالحة");
         if (!double.IsFinite(source.InitialActivityValue))
             return (false, TranslationHelper.GetString("MsgErrInvalidInitialActivityFinite") ?? "قيمة النشاط الابتدائي غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (source.InitialActivityValue <= 0 && (isotopes == null || !isotopes.Any()) && !source.SourceIsotopes.Any())
-            return (false, "قيمة النشاط الابتدائي يجب أن تكون أكبر من صفر");
+            return (false, TranslationHelper.GetString("MsgErrInitialActivityPositive") ?? "قيمة النشاط الابتدائي يجب أن تكون أكبر من صفر");
         if (isotopes != null && isotopes.Any(si => si.InitialActivityValue.HasValue && !double.IsFinite(si.InitialActivityValue.Value)))
             return (false, TranslationHelper.GetString("MsgErrInvalidIsotopeActivityFinite") ?? "قيمة النشاط لنظير الخليط غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (source.SourceIsotopes != null && source.SourceIsotopes.Any(si => si.InitialActivityValue.HasValue && !double.IsFinite(si.InitialActivityValue.Value)))
@@ -86,11 +86,11 @@ public class SourceService : ISourceService
 
         // 1. التحقق من وجود مصدر نشط بنفس الكود
         if (db.Sources.Any(s => s.SourceCode.ToLower() == lowerCode))
-            return (false, "كود المصدر موجود بالفعل");
+            return (false, TranslationHelper.GetString("MsgErrNeutronSourceCodeExists") ?? "كود المصدر موجود بالفعل");
 
         // 2. التحقق من وجود مصدر محذوف بنفس الكود
         if (db.Sources.IgnoreQueryFilters().Any(s => s.IsDeleted && s.SourceCode.ToLower() == lowerCode))
-            return (false, $"كود المصدر ({trimmedCode}) مستخدم لمصدر محذوف. لا يمكن إعادة استخدام كود المصدر حفاظاً على سجل التدقيق، ويمكنك استرجاع المصدر من قسم المحذوفات.");
+            return (false, string.Format(TranslationHelper.GetString("MsgErrSourceCodeUsedByDeleted") ?? "كود المصدر ({0}) مستخدم لمصدر محذوف. لا يمكن إعادة استخدام كود المصدر حفاظاً على سجل التدقيق، ويمكنك استرجاع المصدر من قسم المحذوفات.", trimmedCode));
 
         source.SourceCode = trimmedCode;
 
@@ -151,16 +151,16 @@ public class SourceService : ISourceService
             source.ImagePath
         };
         _auditService.LogWithChanges("Create", "Sources", source.Id, $"إنشاء مصدر: {source.SourceCode}", oldValues: null, newValues: System.Text.Json.JsonSerializer.Serialize(newValuesObj));
-        return (true, "تم إضافة المصدر بنجاح");
+        return (true, TranslationHelper.GetString("MsgSuccessSourceCreated") ?? "تم إضافة المصدر بنجاح");
     }
 
     public (bool Success, string Message) UpdateSource(Source source, List<SourceIsotope>? isotopes = null)
     {
-        if (source == null) return (false, "بيانات المصدر غير صالحة");
+        if (source == null) return (false, TranslationHelper.GetString("MsgErrInvalidSourceData") ?? "بيانات المصدر غير صالحة");
         if (!double.IsFinite(source.InitialActivityValue))
             return (false, TranslationHelper.GetString("MsgErrInvalidInitialActivityFinite") ?? "قيمة النشاط الابتدائي غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (source.InitialActivityValue <= 0 && (isotopes == null || !isotopes.Any()))
-            return (false, "قيمة النشاط الابتدائي يجب أن تكون أكبر من صفر");
+            return (false, TranslationHelper.GetString("MsgErrInitialActivityPositive") ?? "قيمة النشاط الابتدائي يجب أن تكون أكبر من صفر");
         if (isotopes != null && isotopes.Any(si => si.InitialActivityValue.HasValue && !double.IsFinite(si.InitialActivityValue.Value)))
             return (false, TranslationHelper.GetString("MsgErrInvalidIsotopeActivityFinite") ?? "قيمة النشاط لنظير الخليط غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (source.SourceIsotopes != null && source.SourceIsotopes.Any(si => si.InitialActivityValue.HasValue && !double.IsFinite(si.InitialActivityValue.Value)))
@@ -170,7 +170,7 @@ public class SourceService : ISourceService
 
         using var db = _dbFactory.CreateDbContext();
         var existing = db.Sources.Include(s => s.SourceIsotopes).FirstOrDefault(s => s.Id == source.Id);
-        if (existing == null) return (false, "المصدر غير موجود");
+        if (existing == null) return (false, TranslationHelper.GetString("MsgErrSourceNotFound") ?? "المصدر غير موجود");
 
         var oldValuesObj = new
         {
@@ -196,17 +196,17 @@ public class SourceService : ISourceService
 
         // 1. التحقق من وجود مصدر نشط آخر بنفس الكود
         if (db.Sources.Any(s => s.Id != source.Id && s.SourceCode.ToLower() == lowerCode))
-            return (false, "كود المصدر موجود بالفعل");
+            return (false, TranslationHelper.GetString("MsgErrNeutronSourceCodeExists") ?? "كود المصدر موجود بالفعل");
 
         // 2. التحقق من وجود مصدر محذوف آخر بنفس الكود
         if (db.Sources.IgnoreQueryFilters().Any(s => s.IsDeleted && s.Id != source.Id && s.SourceCode.ToLower() == lowerCode))
-            return (false, $"كود المصدر ({trimmedCode}) مستخدم لمصدر محذوف. لا يمكن إعادة استخدام كود المصدر حفاظاً على سجل التدقيق، ويمكنك استرجاع المصدر من قسم المحذوفات.");
+            return (false, string.Format(TranslationHelper.GetString("MsgErrSourceCodeUsedByDeleted") ?? "كود المصدر ({0}) مستخدم لمصدر محذوف. لا يمكن إعادة استخدام كود المصدر حفاظاً على سجل التدقيق، ويمكنك استرجاع المصدر من قسم المحذوفات.", trimmedCode));
 
         // منع تعديل الموقع أو الحالة لمصدر قيد الاستعارة النشطة
         bool hasActiveBorrow = db.BorrowRequests.Any(b => b.SourceId == source.Id && (b.Status == "Delivered" || b.Status == "Overdue"));
         if (hasActiveBorrow && (existing.LocationId != source.LocationId || existing.Status != source.Status))
         {
-            return (false, "لا يمكن تعديل الموقع أو الحالة لمصدر قيد الاستعارة النشطة حالياً");
+            return (false, TranslationHelper.GetString("MsgErrCannotEditActiveBorrowSource") ?? "لا يمكن تعديل الموقع أو الحالة لمصدر قيد الاستعارة النشطة حالياً");
         }
 
         var oldLocationId = existing.LocationId;
@@ -288,7 +288,7 @@ public class SourceService : ISourceService
         string newValuesJson = System.Text.Json.JsonSerializer.Serialize(newValuesObj);
 
         _auditService.LogWithChanges("Update", "Sources", source.Id, $"تعديل مصدر: {source.SourceCode}", oldValuesJson, newValuesJson);
-        return (true, "تم تحديث المصدر بنجاح");
+        return (true, TranslationHelper.GetString("MsgSuccessSourceUpdated") ?? "تم تحديث المصدر بنجاح");
     }
 
     public (bool Success, string Message) DeleteSource(Guid id)
@@ -303,22 +303,22 @@ public class SourceService : ISourceService
             .Include(s => s.CurrentActivityUnit)
             .Include(s => s.SourceIsotopes).ThenInclude(si => si.Radioisotope)
             .FirstOrDefault(s => s.Id == id);
-        if (source == null) return (false, "المصدر غير موجود");
+        if (source == null) return (false, TranslationHelper.GetString("MsgErrSourceNotFound") ?? "المصدر غير موجود");
 
-        var pendingOrActiveBorrow = db.BorrowRequests.FirstOrDefault(b => b.SourceId == id && 
+        var pendingOrActiveBorrow = db.BorrowRequests.FirstOrDefault(b => b.SourceId == id &&
             (b.Status == "Pending" || b.Status == "Approved" || b.Status == "Delivered" || b.Status == "Overdue"));
-        
+
         if (pendingOrActiveBorrow != null)
         {
             string statusMsg = pendingOrActiveBorrow.Status switch
             {
-                "Pending" => "لوجود طلب استعارة معلّق عليه (قيد الانتظار)",
-                "Approved" => "لوجود طلب استعارة معتمد عليه",
-                "Delivered" => "لوجود استعارة نشطة عليه",
-                "Overdue" => "لوجود استعارة نشطة عليه",
-                _ => "لوجود طلب استعارة غير مكتمل عليه"
+                "Pending" => TranslationHelper.GetString("MsgReasonPendingBorrow") ?? "لوجود طلب استعارة معلّق عليه (قيد الانتظار)",
+                "Approved" => TranslationHelper.GetString("MsgReasonApprovedBorrow") ?? "لوجود طلب استعارة معتمد عليه",
+                "Delivered" => TranslationHelper.GetString("MsgReasonActiveBorrow") ?? "لوجود استعارة نشطة عليه",
+                "Overdue" => TranslationHelper.GetString("MsgReasonActiveBorrow") ?? "لوجود استعارة نشطة عليه",
+                _ => TranslationHelper.GetString("MsgReasonIncompleteBorrow") ?? "لوجود طلب استعارة غير مكتمل عليه"
             };
-            return (false, $"لا يمكن حذف المصدر {statusMsg}");
+            return (false, string.Format(TranslationHelper.GetString("MsgErrCannotDeleteSourceReason") ?? "لا يمكن حذف المصدر {0}", statusMsg));
         }
 
         // إثراء سجل التدقيق: التقاط تفاصيل المصدر الكاملة قبل الحذف
@@ -351,7 +351,7 @@ public class SourceService : ISourceService
         db.SaveChanges();
 
         _auditService.LogWithChanges("Delete", "Sources", id, $"حذف مصدر: {source.SourceCode} (الحالة السابقة: {source.ArabicStatus})", oldValuesJson, null);
-        return (true, "تم حذف المصدر بنجاح");
+        return (true, TranslationHelper.GetString("MsgSuccessSourceDeleted") ?? "تم حذف المصدر بنجاح");
     }
 
     public List<Source> GetDeletedSources()
@@ -391,14 +391,14 @@ public class SourceService : ISourceService
             .Include(s => s.SourceIsotopes).ThenInclude(si => si.Radioisotope)
             .FirstOrDefault(s => s.Id == id);
 
-        if (source == null) return (false, "المصدر غير موجود");
-        if (!source.IsDeleted) return (false, "المصدر غير محذوف أصلاً");
+        if (source == null) return (false, TranslationHelper.GetString("MsgErrSourceNotFound") ?? "المصدر غير موجود");
+        if (!source.IsDeleted) return (false, TranslationHelper.GetString("MsgErrSourceNotDeleted") ?? "المصدر غير محذوف أصلاً");
 
         // التحقق من عدم وجود مصدر نشط آخر بنفس الكود
         var lowerCode = source.SourceCode?.Trim().ToLower() ?? string.Empty;
         if (db.Sources.Any(s => s.Id != id && s.SourceCode.ToLower() == lowerCode))
         {
-            return (false, $"لا يمكن استرجاع المصدر لوجود مصدر نشط آخر بنفس الكود ({source.SourceCode})");
+            return (false, string.Format(TranslationHelper.GetString("MsgErrSourceRestoreConflict") ?? "لا يمكن استرجاع المصدر لوجود مصدر نشط آخر بنفس الكود ({0})", source.SourceCode));
         }
 
         // فحص الموقع: إذا كان للمصدر موقع أصلي، تحقق هل الموقع محذوف
@@ -407,7 +407,7 @@ public class SourceService : ISourceService
             var loc = db.Locations.IgnoreQueryFilters().FirstOrDefault(l => l.Id == source.LocationId.Value);
             if (loc != null && loc.IsDeleted)
             {
-                return (false, $"لا يمكن استرجاع المصدر لأن موقعه الأصلي \"{loc.LocationName}\" محذوف حالياً. يرجى استرجاع الموقع أولاً من سجل المحذوفات ثم إعادة المحاولة.");
+                return (false, string.Format(TranslationHelper.GetString("MsgErrSourceRestoreLocationDeleted") ?? "لا يمكن استرجاع المصدر لأن موقعه الأصلي \"{0}\" محذوف حالياً. يرجى استرجاع الموقع أولاً من سجل المحذوفات ثم إعادة المحاولة.", loc.LocationName));
             }
         }
 
@@ -416,9 +416,10 @@ public class SourceService : ISourceService
         source.DeletedBy = null;
         db.SaveChanges();
 
-        var locationName = source.Location?.LocationName ?? "غير محدد";
+        var locationName = source.Location?.LocationName ?? (TranslationHelper.GetString("TextUnspecified") ?? "غير محدد");
+        // ملاحظة: source.ArabicStatus خاصية [NotMapped] تُرجع نصاً عربياً دائماً بغض النظر عن لغة الواجهة النشطة — قيد معماري موثّق يبقى خارج نطاق هذه الجولة.
         var statusDisplay = source.ArabicStatus;
-        var msg = $"تم استرجاع المصدر {source.SourceCode} إلى موقع {locationName} بحالة {statusDisplay}";
+        var msg = string.Format(TranslationHelper.GetString("MsgSuccessSourceRestored") ?? "تم استرجاع المصدر {0} إلى موقع {1} بحالة {2}", source.SourceCode, locationName, statusDisplay);
 
         var newValuesObj = new
         {

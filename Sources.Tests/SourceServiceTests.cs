@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Sources.Data;
+using Sources.Helpers;
 using Sources.Models;
 using Sources.Services;
 using Sources.Tests.Fakes;
@@ -1186,6 +1187,80 @@ public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         // Assert
         Assert.False(updateResult.Success);
         Assert.Equal("لا يمكن أن يكون تاريخ المعايرة في المستقبل.", updateResult.Message);
+    }
+
+    #endregion
+
+    #region Round 131: English-Language Message Localization
+
+    [Fact]
+    public void CreateSource_ValidationAndSuccessMessages_UseEnglishStrings_WhenEnglishLanguageActive()
+    {
+        Sources.Tests.Fixtures.WpfStaFixture.RunInSta(() =>
+        {
+            var dicts = System.Windows.Application.Current.Resources.MergedDictionaries;
+            var arabicDictIndex = -1;
+            for (int i = 0; i < dicts.Count; i++)
+            {
+                var src = dicts[i].Source?.OriginalString;
+                if (src != null && src.Contains("Strings.ar.xaml"))
+                {
+                    arabicDictIndex = i;
+                    break;
+                }
+            }
+            Assert.True(arabicDictIndex >= 0, "Strings.ar.xaml dictionary must already be loaded by WpfStaFixture.");
+
+            try
+            {
+                // Arrange: swap the active dictionary to English, mirroring App.ApplyLanguage's
+                // merged-dictionary-replacement mechanism (its own relative pack URI cannot
+                // resolve outside the packaged application, so an absolute pack URI is used here,
+                // exactly as WpfStaFixture already does for the initial Arabic dictionary).
+                dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.en.xaml", UriKind.Absolute)
+                };
+
+                // Act: trigger a failure message (initial activity must be positive)
+                var invalidSource = TestDataBuilder.CreateSource(
+                    _isoCs137,
+                    _unitBq,
+                    _testLocation,
+                    sourceCode: "SRC-EN-TEST-1",
+                    initialActivity: 0.0);
+                var failResult = _sourceService.CreateSource(invalidSource);
+
+                // Assert: the English dictionary text is returned, not the Arabic fallback
+                Assert.False(failResult.Success);
+                Assert.Equal("Initial activity value must be greater than zero", failResult.Message);
+                Assert.Equal(TranslationHelper.GetString("MsgErrInitialActivityPositive"), failResult.Message);
+                Assert.NotEqual("قيمة النشاط الابتدائي يجب أن تكون أكبر من صفر", failResult.Message);
+
+                // Act: trigger the success message
+                var validSource = TestDataBuilder.CreateSource(
+                    _isoCs137,
+                    _unitBq,
+                    _testLocation,
+                    sourceCode: "SRC-EN-TEST-2",
+                    initialActivity: 100000.0);
+                var successResult = _sourceService.CreateSource(validSource);
+
+                // Assert
+                Assert.True(successResult.Success);
+                Assert.Equal("Source added successfully", successResult.Message);
+                Assert.Equal(TranslationHelper.GetString("MsgSuccessSourceCreated"), successResult.Message);
+                Assert.NotEqual("تم إضافة المصدر بنجاح", successResult.Message);
+            }
+            finally
+            {
+                // Restore the Arabic dictionary so subsequent STA-thread tests are unaffected
+                dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.ar.xaml", UriKind.Absolute)
+                };
+            }
+        });
     }
 
     #endregion
