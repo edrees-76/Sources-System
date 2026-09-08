@@ -1307,6 +1307,15 @@
     <system:String x:Key="MsgSuccessToggleFreeze">Account {1} has been {0}</system:String>
     <system:String x:Key="TextActivate">activated</system:String>
     <system:String x:Key="TextDeactivate">deactivated</system:String>
+    <system:String x:Key="MsgErrBorrowSourceNotFound">Source not found.</system:String>
+    <system:String x:Key="MsgErrSourceNotAvailableForBorrow">The source is not available for borrowing currently. It must be in storage.</system:String>
+    <system:String x:Key="MsgErrLeakTestFailedBorrow">This source cannot be borrowed because its latest leak test result failed (radiation leak detected). A new test with a passing result must be performed first.</system:String>
+    <system:String x:Key="MsgErrActiveBorrowExists">An active borrow already exists for this source.</system:String>
+    <system:String x:Key="MsgSuccessBorrowCreated">Borrow recorded successfully. The source is now in the borrower's custody.</system:String>
+    <system:String x:Key="MsgErrGenericWithDetail">An error occurred: {0}</system:String>
+    <system:String x:Key="MsgErrBorrowRequestNotFound">Request not found.</system:String>
+    <system:String x:Key="MsgErrReturnNotAllowedStatus">The current status does not allow return.</system:String>
+    <system:String x:Key="MsgSuccessBorrowReturned">The source return was recorded successfully and it is now available in storage.</system:String>
 
     <!-- Add/Edit Form Categories -->
     <system:String x:Key="LabelSourceCategory">Source Category:</system:String>
