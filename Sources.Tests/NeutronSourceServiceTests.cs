@@ -832,6 +832,54 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
         Assert.Equal(unitId, doc.RootElement.GetProperty("Am241ActivityUnitId").GetGuid());
     }
 
+    [Fact]
+    public void GetById_WithAm241Activity_LoadsActivityUnit_AndDecayCalculationSucceeds()
+    {
+        // Regression test for round 127 (CodeRabbit finding on PR #14, round 126):
+        // NeutronSourceService's read methods did not Include(n => n.Am241ActivityUnit),
+        // so the non-virtual navigation stayed null after the DbContext was disposed and
+        // the decay calculation always returned MissingActivityUnit even when
+        // Am241ActivityUnitId was correctly stored. This proves the fix end-to-end using
+        // the service's own Create + GetById, not a manually-constructed object.
+
+        // Arrange
+        var typeId = Guid.NewGuid();
+        var unitId = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Am-241/Be", NameEn = "Americium-Beryllium", HalfLife = 432.2 });
+            db.ActivityUnits.Add(new ActivityUnit { Id = unitId, UnitName = "Becquerel", UnitSymbol = "Bq", ConversionToBq = 1.0 });
+            db.SaveChanges();
+        }
+
+        var item = new NeutronSource
+        {
+            SourceCode = "NS-AM-INCLUDE",
+            NeutronSourceTypeId = typeId,
+            CalibratedEmissionRate = 1e6,
+            Am241ActivityValue = 3.7e10,
+            Am241ActivityUnitId = unitId,
+            CalibrationDate = DateTime.Today.AddYears(-1)
+        };
+        var (createSuccess, _) = _sut.Create(item);
+        Assert.True(createSuccess);
+
+        // Act
+        var fetched = _sut.GetById(item.Id);
+        Assert.NotNull(fetched);
+        Assert.NotNull(fetched!.Am241ActivityUnit);
+
+        var decayService = new NeutronDecayCalculationService();
+        var currentResult = decayService.CalculateCurrentAm241Activity(fetched);
+        var atDateResult = decayService.CalculateAm241ActivityAtDate(fetched, DateTime.Today);
+
+        // Assert
+        Assert.Equal(NeutronDecayCalculationStatus.Calculated, currentResult.Status);
+        Assert.NotNull(currentResult.CurrentActivityBq);
+        Assert.Equal(NeutronDecayCalculationStatus.Calculated, atDateResult.Status);
+        Assert.NotNull(atDateResult.CurrentActivityBq);
+    }
+
     #endregion
 }
 
