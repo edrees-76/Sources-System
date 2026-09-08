@@ -1237,7 +1237,30 @@
     <system:String x:Key="TitleNeutronSourceDetails">تفاصيل المصدر النيتروني</system:String>
     <system:String x:Key="MsgErrNeutronTypeReq">نوع المصدر النيتروني مطلوب</system:String>
     <system:String x:Key="MsgErrEmissionRateReq">معدل انبعاث النيترونات يجب أن يكون قيمة موجبة</system:String>
-    
+
+    <!-- Round 130: NeutronSourceService.cs validation/success message localization -->
+    <system:String x:Key="MsgErrInvalidNeutronSourceData">بيانات المصدر النيتروني غير صالحة</system:String>
+    <system:String x:Key="MsgErrNeutronSourceCodeReq">كود المصدر مطلوب</system:String>
+    <system:String x:Key="MsgErrEmissionRatePositive">معدل انبعاث النيترونات يجب أن يكون أكبر من صفر</system:String>
+    <system:String x:Key="MsgErrCapsuleLengthFinite">طول الكبسولة غير صالح (يجب أن يكون رقماً منتهياً)</system:String>
+    <system:String x:Key="MsgErrCapsuleLengthPositive">طول الكبسولة يجب أن يكون أكبر من صفر</system:String>
+    <system:String x:Key="MsgErrCapsuleDiameterFinite">قطر الكبسولة غير صالح (يجب أن يكون رقماً منتهياً)</system:String>
+    <system:String x:Key="MsgErrCapsuleDiameterPositive">قطر الكبسولة يجب أن يكون أكبر من صفر</system:String>
+    <system:String x:Key="MsgErrActivityValueFinite">قيمة النشاط الإشعاعي غير صالحة (يجب أن تكون رقماً منتهياً)</system:String>
+    <system:String x:Key="MsgErrActivityValuePositive">قيمة النشاط الإشعاعي يجب أن تكون أكبر من صفر</system:String>
+    <system:String x:Key="MsgErrActivityBothOrNeither">يجب إدخال قيمة النشاط الإشعاعي ووحدته معاً أو تركهما فارغين</system:String>
+    <system:String x:Key="MsgErrNeutronSourceCodeExists">كود المصدر موجود بالفعل</system:String>
+    <system:String x:Key="MsgErrNeutronTypeNotFound">نوع المصدر النيتروني المحدد غير موجود</system:String>
+    <system:String x:Key="MsgErrNeutronLocationNotFound">الموقع المحدد غير موجود</system:String>
+    <system:String x:Key="MsgErrNeutronActivityUnitNotFound">وحدة النشاط الإشعاعي المحددة غير موجودة</system:String>
+    <system:String x:Key="MsgSuccessNeutronSourceCreated">تم إضافة المصدر النيتروني بنجاح</system:String>
+    <system:String x:Key="MsgErrNeutronSourceNotFound">المصدر النيتروني غير موجود</system:String>
+    <system:String x:Key="MsgSuccessNeutronSourceUpdated">تم تحديث المصدر النيتروني</system:String>
+    <system:String x:Key="MsgSuccessNeutronSourceDeleted">تم حذف المصدر النيتروني</system:String>
+    <system:String x:Key="MsgErrNeutronSourceNotDeleted">المصدر النيتروني غير محذوف أصلاً</system:String>
+    <system:String x:Key="MsgErrNeutronSourceRestoreConflict">لا يمكن استرجاع المصدر النيتروني لوجود مصدر نشط آخر بنفس الكود ({0})</system:String>
+    <system:String x:Key="MsgSuccessNeutronSourceRestored">تم استرجاع المصدر النيتروني {0}</system:String>
+
     <!-- Add/Edit Form Categories -->
     <system:String x:Key="LabelSourceCategory">فئة المصدر:</system:String>
     <system:String x:Key="RadioCategoryStandardSource">مصدر مشع عادي (غاما / بيتا / ألفا)</system:String>
