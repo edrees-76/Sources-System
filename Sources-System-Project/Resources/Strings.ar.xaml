@@ -1280,6 +1280,31 @@
     <system:String x:Key="MsgErrSourceRestoreLocationDeleted">لا يمكن استرجاع المصدر لأن موقعه الأصلي "{0}" محذوف حالياً. يرجى استرجاع الموقع أولاً من سجل المحذوفات ثم إعادة المحاولة.</system:String>
     <system:String x:Key="MsgSuccessSourceRestored">تم استرجاع المصدر {0} إلى موقع {1} بحالة {2}</system:String>
 
+    <!-- Round 132 (فرعية ثالثة لـب5): UserService.cs validation/success message localization -->
+    <system:String x:Key="MsgErrUsernameNotFound">اسم المستخدم غير موجود</system:String>
+    <system:String x:Key="MsgErrAccountFrozen">تم تجميد الحساب يرجى مراجعة مدير النظام</system:String>
+    <system:String x:Key="MsgErrAccountLocked">الحساب مقفل. حاول مرة أخرى بعد {0} دقيقة</system:String>
+    <system:String x:Key="MsgErrAccountLockedNow">تم قفل الحساب لمدة {0} دقيقة بسبب محاولات دخول فاشلة متعددة</system:String>
+    <system:String x:Key="MsgErrWrongPasswordAttemptsLeft">كلمة المرور غير صحيحة. متبقي {0} محاولات قبل قفل الحساب</system:String>
+    <system:String x:Key="MsgSuccessLogin">تم تسجيل الدخول بنجاح</system:String>
+    <system:String x:Key="MsgErrLoginTechnicalError">حدث خطأ فني أثناء تسجيل الدخول</system:String>
+    <system:String x:Key="MsgErrUsernameExists">اسم المستخدم موجود بالفعل</system:String>
+    <system:String x:Key="MsgSuccessUserCreated">تم إنشاء المستخدم بنجاح</system:String>
+    <system:String x:Key="MsgErrUserNotFound">المستخدم غير موجود</system:String>
+    <system:String x:Key="MsgSuccessUserUpdated">تم تحديث بيانات المستخدم</system:String>
+    <system:String x:Key="MsgErrCannotChangeAdminPasswordFromOther">لا يمكن تغيير كلمة مرور حساب مدير النظام الأساسي من حساب آخر</system:String>
+    <system:String x:Key="MsgSuccessPasswordReset">تم إعادة تعيين كلمة المرور</system:String>
+    <system:String x:Key="MsgSuccessAccountUnlocked">تم فك قفل الحساب</system:String>
+    <system:String x:Key="MsgErrCannotDeleteAdmin">لا يمكن حذف حساب مدير النظام الأساسي</system:String>
+    <system:String x:Key="MsgSuccessUserDeleted">تم حذف المستخدم بنجاح</system:String>
+    <system:String x:Key="MsgErrUserNotDeleted">المستخدم غير محذوف أصلاً</system:String>
+    <system:String x:Key="MsgErrCannotRestoreUsernameConflict">لا يمكن استرجاع المستخدم لوجود حساب نشط آخر بنفس اسم المستخدم (@{0})</system:String>
+    <system:String x:Key="MsgSuccessUserRestored">تم استرجاع حساب المستخدم {0}</system:String>
+    <system:String x:Key="MsgErrCannotFreezeAdmin">لا يمكن تجميد حساب مدير النظام الأساسي</system:String>
+    <system:String x:Key="MsgSuccessToggleFreeze">تم {0} حساب {1}</system:String>
+    <system:String x:Key="TextActivate">تنشيط</system:String>
+    <system:String x:Key="TextDeactivate">تجميد</system:String>
+
     <!-- Add/Edit Form Categories -->
     <system:String x:Key="LabelSourceCategory">فئة المصدر:</system:String>
     <system:String x:Key="RadioCategoryStandardSource">مصدر مشع عادي (غاما / بيتا / ألفا)</system:String>
