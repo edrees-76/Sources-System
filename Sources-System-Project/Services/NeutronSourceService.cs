@@ -33,6 +33,7 @@ public class NeutronSourceService : INeutronSourceService
             .Include(n => n.NeutronSourceType)
             .Include(n => n.Location)
             .Include(n => n.AddedByUser)
+            .Include(n => n.Am241ActivityUnit)
             .OrderBy(n => n.SourceCode)
             .ToList();
     }
@@ -48,6 +49,7 @@ public class NeutronSourceService : INeutronSourceService
             .Include(n => n.Location)
             .Include(n => n.DeletedByUser)
             .Include(n => n.AddedByUser)
+            .Include(n => n.Am241ActivityUnit)
             .Where(n => n.IsDeleted)
             .OrderByDescending(n => n.DeletedAt)
             .ToList();
@@ -61,6 +63,7 @@ public class NeutronSourceService : INeutronSourceService
             .Include(n => n.NeutronSourceType)
             .Include(n => n.Location)
             .Include(n => n.AddedByUser)
+            .Include(n => n.Am241ActivityUnit)
             .FirstOrDefault(n => n.Id == id);
     }
 
@@ -74,6 +77,7 @@ public class NeutronSourceService : INeutronSourceService
             .Include(n => n.NeutronSourceType)
             .Include(n => n.Location)
             .Include(n => n.AddedByUser)
+            .Include(n => n.Am241ActivityUnit)
             .FirstOrDefault(n => n.SourceCode.ToLower() == lowerCode);
     }
 
@@ -86,6 +90,7 @@ public class NeutronSourceService : INeutronSourceService
             .Include(n => n.NeutronSourceType)
             .Include(n => n.Location)
             .Include(n => n.AddedByUser)
+            .Include(n => n.Am241ActivityUnit)
             .Where(n => n.LocationId == locationId)
             .OrderBy(n => n.SourceCode)
             .ToList();
