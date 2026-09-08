@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Sources.Data;
+using Sources.Helpers;
 using Sources.Models;
 
 namespace Sources.Services;
@@ -117,9 +118,9 @@ public class BorrowService : IBorrowService
             
             // التحقق من أن المصدر موجود ومتاح (في المخزن فقط)
             var source = db.Sources.Find(request.SourceId);
-            if (source == null) return (false, "المصدر غير موجود.");
-            if (source.Status != "Storage") return (false, "المصدر غير متاح للاستعارة حالياً. يجب أن يكون في المخزن.");
-            
+            if (source == null) return (false, TranslationHelper.GetString("MsgErrBorrowSourceNotFound") ?? "المصدر غير موجود.");
+            if (source.Status != "Storage") return (false, TranslationHelper.GetString("MsgErrSourceNotAvailableForBorrow") ?? "المصدر غير متاح للاستعارة حالياً. يجب أن يكون في المخزن.");
+
             // التحقق من نتيجة آخر فحص تسرب للمصدر
             var latestLeakTest = db.LeakTestRecords
                 .Where(r => r.SourceId == request.SourceId)
@@ -129,13 +130,13 @@ public class BorrowService : IBorrowService
 
             if (latestLeakTest != null && latestLeakTest.Result == "Fail")
             {
-                return (false, "لا يمكن استعارة هذا المصدر لأن نتيجة آخر فحص تسرب له كانت راسبة (تسرب إشعاعي مكتشف). يجب إجراء فحص جديد بنتيجة ناجحة أولاً.");
+                return (false, TranslationHelper.GetString("MsgErrLeakTestFailedBorrow") ?? "لا يمكن استعارة هذا المصدر لأن نتيجة آخر فحص تسرب له كانت راسبة (تسرب إشعاعي مكتشف). يجب إجراء فحص جديد بنتيجة ناجحة أولاً.");
             }
 
             // التحقق من عدم وجود استعارة نشطة لنفس المصدر
-            var existingActive = db.BorrowRequests.Any(b => b.SourceId == request.SourceId && 
+            var existingActive = db.BorrowRequests.Any(b => b.SourceId == request.SourceId &&
                 (b.Status == "Delivered" || b.Status == "Overdue"));
-            if (existingActive) return (false, "يوجد استعارة نشطة لهذا المصدر بالفعل.");
+            if (existingActive) return (false, TranslationHelper.GetString("MsgErrActiveBorrowExists") ?? "يوجد استعارة نشطة لهذا المصدر بالفعل.");
 
             // استعارة فورية: الحالة مباشرة "تم التسليم"
             request.Status = "Delivered";
@@ -156,15 +157,16 @@ public class BorrowService : IBorrowService
 
             _auditService.Log("Create", "BorrowRequests", request.Id, $"استعارة فورية للمصدر {source.SourceCode} بواسطة {request.BorrowerName}");
             
-            return (true, "تم تسجيل الاستعارة بنجاح. المصدر الآن في عهدة المستعير.");
+            return (true, TranslationHelper.GetString("MsgSuccessBorrowCreated") ?? "تم تسجيل الاستعارة بنجاح. المصدر الآن في عهدة المستعير.");
         }
         catch (DbUpdateException)
         {
-            return (false, "يوجد استعارة نشطة لهذا المصدر بالفعل.");
+            return (false, TranslationHelper.GetString("MsgErrActiveBorrowExists") ?? "يوجد استعارة نشطة لهذا المصدر بالفعل.");
         }
         catch (Exception ex)
         {
-            return (false, $"حدث خطأ: {ex.Message} {(ex.InnerException != null ? " - " + ex.InnerException.Message : "")}");
+            var details = $"{ex.Message} {(ex.InnerException != null ? " - " + ex.InnerException.Message : "")}";
+            return (false, string.Format(TranslationHelper.GetString("MsgErrGenericWithDetail") ?? "حدث خطأ: {0}", details));
         }
     }
 
@@ -174,9 +176,9 @@ public class BorrowService : IBorrowService
         {
             using var db = _dbFactory.CreateDbContext();
             var req = db.BorrowRequests.Include(b => b.Source).FirstOrDefault(b => b.Id == requestId);
-            if (req == null) return (false, "الطلب غير موجود.");
-            if (req.Status != "Delivered" && req.Status != "Approved" && req.Status != "Overdue") 
-                return (false, "الحالة الحالية لا تسمح بالإرجاع.");
+            if (req == null) return (false, TranslationHelper.GetString("MsgErrBorrowRequestNotFound") ?? "الطلب غير موجود.");
+            if (req.Status != "Delivered" && req.Status != "Approved" && req.Status != "Overdue")
+                return (false, TranslationHelper.GetString("MsgErrReturnNotAllowedStatus") ?? "الحالة الحالية لا تسمح بالإرجاع.");
 
             req.Status = "Returned";
             req.ActualReturnDate = actualReturnDate;
@@ -198,12 +200,12 @@ public class BorrowService : IBorrowService
 
             string code = req.Source?.SourceCode ?? "غير معروف";
             _auditService.Log("Return", "BorrowRequests", requestId, $"إرجاع المصدر المستعار {code}");
-            
-            return (true, "تم تسجيل إرجاع المصدر بنجاح وعاد ليكون متاحاً في المخزن.");
+
+            return (true, TranslationHelper.GetString("MsgSuccessBorrowReturned") ?? "تم تسجيل إرجاع المصدر بنجاح وعاد ليكون متاحاً في المخزن.");
         }
         catch (Exception ex)
         {
-            return (false, $"حدث خطأ: {ex.Message}");
+            return (false, string.Format(TranslationHelper.GetString("MsgErrGenericWithDetail") ?? "حدث خطأ: {0}", ex.Message));
         }
     }
 

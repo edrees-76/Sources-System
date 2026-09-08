@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Sources.Data;
+using Sources.Helpers;
 using Sources.Models;
 using Sources.Services;
 using Sources.Tests.Fakes;
@@ -1062,6 +1063,91 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         // Assert
         Assert.True(result.Success);
         Assert.Contains("تم تسجيل الاستعارة بنجاح", result.Message);
+    }
+
+    #endregion
+
+    #region ي. الترجمة الإنجليزية لرسائل التحقق والنجاح (Round 133)
+
+    [Fact]
+    public void CreateRequest_And_MarkReturned_Messages_UseEnglishStrings_WhenEnglishLanguageActive()
+    {
+        Sources.Tests.Fixtures.WpfStaFixture.RunInSta(() =>
+        {
+            var dicts = System.Windows.Application.Current.Resources.MergedDictionaries;
+            var arabicDictIndex = -1;
+            for (int i = 0; i < dicts.Count; i++)
+            {
+                var src = dicts[i].Source?.OriginalString;
+                if (src != null && src.Contains("Strings.ar.xaml"))
+                {
+                    arabicDictIndex = i;
+                    break;
+                }
+            }
+            Assert.True(arabicDictIndex >= 0, "Strings.ar.xaml dictionary must already be loaded by WpfStaFixture.");
+
+            try
+            {
+                // Arrange: swap the active dictionary to English, mirroring App.ApplyLanguage's
+                // merged-dictionary-replacement mechanism (its own relative pack URI cannot
+                // resolve outside the packaged application, so an absolute pack URI is used here,
+                // exactly as WpfStaFixture already does for the initial Arabic dictionary).
+                dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.en.xaml", UriKind.Absolute)
+                };
+
+                // Act: trigger a failure message (attempting to borrow a non-existent source)
+                var failRequest = new BorrowRequest
+                {
+                    SourceId = Guid.NewGuid(),
+                    BorrowerName = "EN Borrower",
+                    Purpose = "English message test"
+                };
+                var failResult = _sut.CreateRequest(failRequest);
+
+                // Assert: the English dictionary text is returned, not the Arabic fallback
+                Assert.False(failResult.Success);
+                Assert.Equal("Source not found.", failResult.Message);
+                Assert.Equal(TranslationHelper.GetString("MsgErrBorrowSourceNotFound"), failResult.Message);
+                Assert.NotEqual("المصدر غير موجود.", failResult.Message);
+
+                // Act: trigger a success message (CreateRequest then MarkReturned)
+                var source = CreateAndSaveSource("SRC-EN-133", status: "Storage");
+                var successRequest = new BorrowRequest
+                {
+                    SourceId = source.Id,
+                    BorrowerName = "EN Borrower 2",
+                    Purpose = "English success test",
+                    ExpectedReturnDate = DateTime.Now.AddDays(5)
+                };
+                var createResult = _sut.CreateRequest(successRequest);
+
+                Assert.True(createResult.Success);
+                Assert.Equal("Borrow recorded successfully. The source is now in the borrower's custody.", createResult.Message);
+                Assert.Equal(TranslationHelper.GetString("MsgSuccessBorrowCreated"), createResult.Message);
+                Assert.NotEqual("تم تسجيل الاستعارة بنجاح. المصدر الآن في عهدة المستعير.", createResult.Message);
+
+                using var db = _fixture.CreateContext();
+                var createdReq = db.BorrowRequests.First(b => b.SourceId == source.Id);
+
+                var returnResult = _sut.MarkReturned(createdReq.Id, _testUser.Id, DateTime.Now);
+
+                Assert.True(returnResult.Success);
+                Assert.Equal("The source return was recorded successfully and it is now available in storage.", returnResult.Message);
+                Assert.Equal(TranslationHelper.GetString("MsgSuccessBorrowReturned"), returnResult.Message);
+                Assert.NotEqual("تم تسجيل إرجاع المصدر بنجاح وعاد ليكون متاحاً في المخزن.", returnResult.Message);
+            }
+            finally
+            {
+                // Restore the Arabic dictionary so subsequent STA-thread tests are unaffected
+                dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.ar.xaml", UriKind.Absolute)
+                };
+            }
+        });
     }
 
     #endregion

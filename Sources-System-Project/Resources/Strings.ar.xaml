@@ -1304,6 +1304,15 @@
     <system:String x:Key="MsgSuccessToggleFreeze">تم {0} حساب {1}</system:String>
     <system:String x:Key="TextActivate">تنشيط</system:String>
     <system:String x:Key="TextDeactivate">تجميد</system:String>
+    <system:String x:Key="MsgErrBorrowSourceNotFound">المصدر غير موجود.</system:String>
+    <system:String x:Key="MsgErrSourceNotAvailableForBorrow">المصدر غير متاح للاستعارة حالياً. يجب أن يكون في المخزن.</system:String>
+    <system:String x:Key="MsgErrLeakTestFailedBorrow">لا يمكن استعارة هذا المصدر لأن نتيجة آخر فحص تسرب له كانت راسبة (تسرب إشعاعي مكتشف). يجب إجراء فحص جديد بنتيجة ناجحة أولاً.</system:String>
+    <system:String x:Key="MsgErrActiveBorrowExists">يوجد استعارة نشطة لهذا المصدر بالفعل.</system:String>
+    <system:String x:Key="MsgSuccessBorrowCreated">تم تسجيل الاستعارة بنجاح. المصدر الآن في عهدة المستعير.</system:String>
+    <system:String x:Key="MsgErrGenericWithDetail">حدث خطأ: {0}</system:String>
+    <system:String x:Key="MsgErrBorrowRequestNotFound">الطلب غير موجود.</system:String>
+    <system:String x:Key="MsgErrReturnNotAllowedStatus">الحالة الحالية لا تسمح بالإرجاع.</system:String>
+    <system:String x:Key="MsgSuccessBorrowReturned">تم تسجيل إرجاع المصدر بنجاح وعاد ليكون متاحاً في المخزن.</system:String>
 
     <!-- Add/Edit Form Categories -->
     <system:String x:Key="LabelSourceCategory">فئة المصدر:</system:String>
