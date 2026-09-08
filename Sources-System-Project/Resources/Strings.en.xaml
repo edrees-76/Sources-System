@@ -1240,7 +1240,30 @@
     <system:String x:Key="TitleNeutronSourceDetails">Neutron Source Details</system:String>
     <system:String x:Key="MsgErrNeutronTypeReq">Neutron source type is required</system:String>
     <system:String x:Key="MsgErrEmissionRateReq">Neutron emission rate must be a positive value</system:String>
-    
+
+    <!-- Round 130: NeutronSourceService.cs validation/success message localization -->
+    <system:String x:Key="MsgErrInvalidNeutronSourceData">Invalid neutron source data</system:String>
+    <system:String x:Key="MsgErrNeutronSourceCodeReq">Source code is required</system:String>
+    <system:String x:Key="MsgErrEmissionRatePositive">Neutron emission rate must be greater than zero</system:String>
+    <system:String x:Key="MsgErrCapsuleLengthFinite">Capsule length is invalid (must be a finite number)</system:String>
+    <system:String x:Key="MsgErrCapsuleLengthPositive">Capsule length must be greater than zero</system:String>
+    <system:String x:Key="MsgErrCapsuleDiameterFinite">Capsule diameter is invalid (must be a finite number)</system:String>
+    <system:String x:Key="MsgErrCapsuleDiameterPositive">Capsule diameter must be greater than zero</system:String>
+    <system:String x:Key="MsgErrActivityValueFinite">Activity value is invalid (must be a finite number)</system:String>
+    <system:String x:Key="MsgErrActivityValuePositive">Activity value must be greater than zero</system:String>
+    <system:String x:Key="MsgErrActivityBothOrNeither">The activity value and its unit must be entered together, or both left empty</system:String>
+    <system:String x:Key="MsgErrNeutronSourceCodeExists">Source code already exists</system:String>
+    <system:String x:Key="MsgErrNeutronTypeNotFound">The selected neutron source type does not exist</system:String>
+    <system:String x:Key="MsgErrNeutronLocationNotFound">The selected location does not exist</system:String>
+    <system:String x:Key="MsgErrNeutronActivityUnitNotFound">The selected activity unit does not exist</system:String>
+    <system:String x:Key="MsgSuccessNeutronSourceCreated">Neutron source added successfully</system:String>
+    <system:String x:Key="MsgErrNeutronSourceNotFound">Neutron source not found</system:String>
+    <system:String x:Key="MsgSuccessNeutronSourceUpdated">Neutron source updated</system:String>
+    <system:String x:Key="MsgSuccessNeutronSourceDeleted">Neutron source deleted</system:String>
+    <system:String x:Key="MsgErrNeutronSourceNotDeleted">The neutron source is not deleted</system:String>
+    <system:String x:Key="MsgErrNeutronSourceRestoreConflict">Cannot restore the neutron source because another active source with the same code exists ({0})</system:String>
+    <system:String x:Key="MsgSuccessNeutronSourceRestored">Neutron source {0} restored successfully</system:String>
+
     <!-- Add/Edit Form Categories -->
     <system:String x:Key="LabelSourceCategory">Source Category:</system:String>
     <system:String x:Key="RadioCategoryStandardSource">Standard Radionuclide (Gamma / Beta / Alpha)</system:String>

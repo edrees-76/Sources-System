@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Sources.Data;
+using Sources.Helpers;
 using Sources.Models;
 using Sources.Services;
 using Sources.Tests.Fakes;
@@ -179,7 +180,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
 
         // Assert
         Assert.True(success);
-        Assert.Contains("بنجاح", message);
+        Assert.Equal(TranslationHelper.GetString("MsgSuccessNeutronSourceCreated") ?? "تم إضافة المصدر النيتروني بنجاح", message);
 
         using (var db = _fixture.CreateContext())
         {
@@ -218,7 +219,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
 
         // Assert
         Assert.False(success);
-        Assert.Contains("موجود بالفعل", message);
+        Assert.Equal(TranslationHelper.GetString("MsgErrNeutronSourceCodeExists") ?? "كود المصدر موجود بالفعل", message);
     }
 
     [Fact]
@@ -253,7 +254,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
 
         // Assert: Must succeed because NeutronSources uses a filtered index (IsDeleted = 0)
         Assert.True(success);
-        Assert.Contains("بنجاح", message);
+        Assert.Equal(TranslationHelper.GetString("MsgSuccessNeutronSourceCreated") ?? "تم إضافة المصدر النيتروني بنجاح", message);
 
         using (var db = _fixture.CreateContext())
         {
@@ -480,7 +481,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
 
         // Assert
         Assert.False(result.Success);
-        Assert.Equal("لا يمكن أن يكون تاريخ المعايرة في المستقبل.", result.Message);
+        Assert.Equal(TranslationHelper.GetString("MsgErrCalibrationDateFuture") ?? "لا يمكن أن يكون تاريخ المعايرة في المستقبل.", result.Message);
     }
 
     [Fact]
@@ -507,7 +508,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
 
         // Assert
         Assert.False(result.Success);
-        Assert.Equal("تاريخ معايرة الانبعاث لا يمكن أن يكون في المستقبل", result.Message);
+        Assert.Equal(TranslationHelper.GetString("MsgErrEmissionCalibrationDateFuture") ?? "تاريخ معايرة الانبعاث لا يمكن أن يكون في المستقبل", result.Message);
     }
 
     [Fact]
@@ -537,7 +538,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
 
         // Assert
         Assert.False(updateResult.Success);
-        Assert.Equal("لا يمكن أن يكون تاريخ المعايرة في المستقبل.", updateResult.Message);
+        Assert.Equal(TranslationHelper.GetString("MsgErrCalibrationDateFuture") ?? "لا يمكن أن يكون تاريخ المعايرة في المستقبل.", updateResult.Message);
     }
 
     [Fact]
@@ -567,7 +568,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
 
         // Assert
         Assert.False(updateResult.Success);
-        Assert.Equal("تاريخ معايرة الانبعاث لا يمكن أن يكون في المستقبل", updateResult.Message);
+        Assert.Equal(TranslationHelper.GetString("MsgErrEmissionCalibrationDateFuture") ?? "تاريخ معايرة الانبعاث لا يمكن أن يكون في المستقبل", updateResult.Message);
     }
 
     #endregion
@@ -749,7 +750,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
 
         // Assert
         Assert.False(result.Success);
-        Assert.Contains("وحدة النشاط الإشعاعي", result.Message);
+        Assert.Equal(TranslationHelper.GetString("MsgErrNeutronActivityUnitNotFound") ?? "وحدة النشاط الإشعاعي المحددة غير موجودة", result.Message);
     }
 
     [Fact]
@@ -878,6 +879,88 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
         Assert.NotNull(currentResult.CurrentActivityBq);
         Assert.Equal(NeutronDecayCalculationStatus.Calculated, atDateResult.Status);
         Assert.NotNull(atDateResult.CurrentActivityBq);
+    }
+
+    #endregion
+
+    #region Round 130: English-Language Message Localization
+
+    [Fact]
+    public void Create_ValidationAndSuccessMessages_UseEnglishStrings_WhenEnglishLanguageActive()
+    {
+        Sources.Tests.Fixtures.WpfStaFixture.RunInSta(() =>
+        {
+            var dicts = System.Windows.Application.Current.Resources.MergedDictionaries;
+            var arabicDictIndex = -1;
+            for (int i = 0; i < dicts.Count; i++)
+            {
+                var src = dicts[i].Source?.OriginalString;
+                if (src != null && src.Contains("Strings.ar.xaml"))
+                {
+                    arabicDictIndex = i;
+                    break;
+                }
+            }
+            Assert.True(arabicDictIndex >= 0, "Strings.ar.xaml dictionary must already be loaded by WpfStaFixture.");
+
+            try
+            {
+                // Arrange: swap the active dictionary to English, mirroring App.ApplyLanguage's
+                // merged-dictionary-replacement mechanism (its own relative pack URI cannot
+                // resolve outside the packaged application, so an absolute pack URI is used here,
+                // exactly as WpfStaFixture already does for the initial Arabic dictionary).
+                dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.en.xaml", UriKind.Absolute)
+                };
+
+                var typeId = Guid.NewGuid();
+                using (var db = _fixture.CreateContext())
+                {
+                    db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Am-241/Be-EN", NameEn = "Americium-Beryllium", HalfLife = 432.2 });
+                    db.SaveChanges();
+                }
+
+                // Act: trigger a failure message (positive-emission-rate validation)
+                var invalidItem = new NeutronSource
+                {
+                    SourceCode = "NS-EN-TEST-1",
+                    NeutronSourceTypeId = typeId,
+                    CalibratedEmissionRate = -1
+                };
+                var (failSuccess, failMessage) = _sut.Create(invalidItem);
+
+                // Assert: the English dictionary text is returned, not the Arabic fallback
+                Assert.False(failSuccess);
+                Assert.Equal("Neutron emission rate must be greater than zero", failMessage);
+                Assert.Equal(TranslationHelper.GetString("MsgErrEmissionRatePositive"), failMessage);
+                Assert.NotEqual("معدل انبعاث النيترونات يجب أن يكون أكبر من صفر", failMessage);
+
+                // Act: trigger the success message
+                var validItem = new NeutronSource
+                {
+                    SourceCode = "NS-EN-TEST-2",
+                    NeutronSourceTypeId = typeId,
+                    CalibratedEmissionRate = 1e6,
+                    Status = "Storage"
+                };
+                var (successSuccess, successMessage) = _sut.Create(validItem);
+
+                // Assert
+                Assert.True(successSuccess);
+                Assert.Equal("Neutron source added successfully", successMessage);
+                Assert.Equal(TranslationHelper.GetString("MsgSuccessNeutronSourceCreated"), successMessage);
+                Assert.NotEqual("تم إضافة المصدر النيتروني بنجاح", successMessage);
+            }
+            finally
+            {
+                // Restore the Arabic dictionary so subsequent STA-thread tests are unaffected
+                dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.ar.xaml", UriKind.Absolute)
+                };
+            }
+        });
     }
 
     #endregion

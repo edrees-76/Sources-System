@@ -106,50 +106,50 @@ public class NeutronSourceService : INeutronSourceService
     /// <summary>إنشاء مصدر نيتروني جديد</summary>
     public (bool Success, string Message) Create(NeutronSource item)
     {
-        if (item == null) return (false, "بيانات المصدر النيتروني غير صالحة");
-        if (string.IsNullOrWhiteSpace(item.SourceCode)) return (false, "كود المصدر مطلوب");
+        if (item == null) return (false, TranslationHelper.GetString("MsgErrInvalidNeutronSourceData") ?? "بيانات المصدر النيتروني غير صالحة");
+        if (string.IsNullOrWhiteSpace(item.SourceCode)) return (false, TranslationHelper.GetString("MsgErrNeutronSourceCodeReq") ?? "كود المصدر مطلوب");
         if (!double.IsFinite(item.CalibratedEmissionRate))
             return (false, TranslationHelper.GetString("MsgErrInvalidEmissionRateFinite") ?? "معدل انبعاث النيترونات غير صالح (يجب أن يكون رقماً منتهياً)");
-        if (item.CalibratedEmissionRate <= 0) return (false, "معدل انبعاث النيترونات يجب أن يكون أكبر من صفر");
+        if (item.CalibratedEmissionRate <= 0) return (false, TranslationHelper.GetString("MsgErrEmissionRatePositive") ?? "معدل انبعاث النيترونات يجب أن يكون أكبر من صفر");
         if (item.AnisotropyFactor.HasValue && !double.IsFinite(item.AnisotropyFactor.Value))
             return (false, TranslationHelper.GetString("MsgErrInvalidAnisotropyFactorFinite") ?? "معامل اللاتماثل الزاوي غير صالح (يجب أن يكون رقماً منتهياً)");
         if (item.RelativeExpandedUncertaintyPercent.HasValue && !double.IsFinite(item.RelativeExpandedUncertaintyPercent.Value))
             return (false, TranslationHelper.GetString("MsgErrInvalidUncertaintyFinite") ?? "نسبة عدم اليقين غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.CapsuleLengthMm.HasValue && !double.IsFinite(item.CapsuleLengthMm.Value))
-            return (false, "طول الكبسولة غير صالح (يجب أن يكون رقماً منتهياً)");
+            return (false, TranslationHelper.GetString("MsgErrCapsuleLengthFinite") ?? "طول الكبسولة غير صالح (يجب أن يكون رقماً منتهياً)");
         if (item.CapsuleLengthMm.HasValue && item.CapsuleLengthMm.Value <= 0)
-            return (false, "طول الكبسولة يجب أن يكون أكبر من صفر");
+            return (false, TranslationHelper.GetString("MsgErrCapsuleLengthPositive") ?? "طول الكبسولة يجب أن يكون أكبر من صفر");
         if (item.CapsuleDiameterMm.HasValue && !double.IsFinite(item.CapsuleDiameterMm.Value))
-            return (false, "قطر الكبسولة غير صالح (يجب أن يكون رقماً منتهياً)");
+            return (false, TranslationHelper.GetString("MsgErrCapsuleDiameterFinite") ?? "قطر الكبسولة غير صالح (يجب أن يكون رقماً منتهياً)");
         if (item.CapsuleDiameterMm.HasValue && item.CapsuleDiameterMm.Value <= 0)
-            return (false, "قطر الكبسولة يجب أن يكون أكبر من صفر");
+            return (false, TranslationHelper.GetString("MsgErrCapsuleDiameterPositive") ?? "قطر الكبسولة يجب أن يكون أكبر من صفر");
         if (item.ActivityValue.HasValue && !double.IsFinite(item.ActivityValue.Value))
-            return (false, "قيمة النشاط الإشعاعي غير صالحة (يجب أن تكون رقماً منتهياً)");
+            return (false, TranslationHelper.GetString("MsgErrActivityValueFinite") ?? "قيمة النشاط الإشعاعي غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.ActivityValue.HasValue && item.ActivityValue.Value <= 0)
-            return (false, "قيمة النشاط الإشعاعي يجب أن تكون أكبر من صفر");
+            return (false, TranslationHelper.GetString("MsgErrActivityValuePositive") ?? "قيمة النشاط الإشعاعي يجب أن تكون أكبر من صفر");
         if (item.ActivityValue.HasValue != item.ActivityUnitId.HasValue)
-            return (false, "يجب إدخال قيمة النشاط الإشعاعي ووحدته معاً أو تركهما فارغين");
+            return (false, TranslationHelper.GetString("MsgErrActivityBothOrNeither") ?? "يجب إدخال قيمة النشاط الإشعاعي ووحدته معاً أو تركهما فارغين");
         if (item.CalibrationDate.HasValue && item.CalibrationDate.Value.Date > DateTime.Today)
             return (false, TranslationHelper.GetString("MsgErrCalibrationDateFuture") ?? "لا يمكن أن يكون تاريخ المعايرة في المستقبل.");
         if (item.EmissionCalibrationDate.HasValue && item.EmissionCalibrationDate.Value.Date > DateTime.Today)
             return (false, TranslationHelper.GetString("MsgErrEmissionCalibrationDateFuture") ?? "تاريخ معايرة الانبعاث لا يمكن أن يكون في المستقبل");
-        if (item.NeutronSourceTypeId == Guid.Empty) return (false, "نوع المصدر النيتروني مطلوب");
+        if (item.NeutronSourceTypeId == Guid.Empty) return (false, TranslationHelper.GetString("MsgErrNeutronTypeReq") ?? "نوع المصدر النيتروني مطلوب");
 
         using var db = _dbFactory.CreateDbContext();
         var trimmedCode = item.SourceCode.Trim();
         var lowerCode = trimmedCode.ToLower();
 
         if (db.NeutronSources.Any(n => n.SourceCode.ToLower() == lowerCode))
-            return (false, "كود المصدر موجود بالفعل");
+            return (false, TranslationHelper.GetString("MsgErrNeutronSourceCodeExists") ?? "كود المصدر موجود بالفعل");
 
         if (!db.NeutronSourceTypes.Any(t => t.Id == item.NeutronSourceTypeId))
-            return (false, "نوع المصدر النيتروني المحدد غير موجود");
+            return (false, TranslationHelper.GetString("MsgErrNeutronTypeNotFound") ?? "نوع المصدر النيتروني المحدد غير موجود");
 
         if (item.LocationId.HasValue && !db.Locations.Any(l => l.Id == item.LocationId.Value))
-            return (false, "الموقع المحدد غير موجود");
+            return (false, TranslationHelper.GetString("MsgErrNeutronLocationNotFound") ?? "الموقع المحدد غير موجود");
 
         if (item.ActivityUnitId.HasValue && !db.ActivityUnits.Any(u => u.Id == item.ActivityUnitId.Value))
-            return (false, "وحدة النشاط الإشعاعي المحددة غير موجودة");
+            return (false, TranslationHelper.GetString("MsgErrNeutronActivityUnitNotFound") ?? "وحدة النشاط الإشعاعي المحددة غير موجودة");
 
         item.SourceCode = trimmedCode;
         item.SerialNumber = item.SerialNumber?.Trim();
@@ -187,44 +187,44 @@ public class NeutronSourceService : INeutronSourceService
             item.Notes
         };
         _auditService.LogWithChanges("Create", "NeutronSources", item.Id, $"إضافة مصدر نيتروني: {item.SourceCode}", oldValues: null, newValues: System.Text.Json.JsonSerializer.Serialize(newValuesObj));
-        return (true, "تم إضافة المصدر النيتروني بنجاح");
+        return (true, TranslationHelper.GetString("MsgSuccessNeutronSourceCreated") ?? "تم إضافة المصدر النيتروني بنجاح");
     }
 
     /// <summary>تحديث مصدر نيتروني</summary>
     public (bool Success, string Message) Update(NeutronSource item)
     {
-        if (item == null) return (false, "بيانات المصدر النيتروني غير صالحة");
-        if (string.IsNullOrWhiteSpace(item.SourceCode)) return (false, "كود المصدر مطلوب");
+        if (item == null) return (false, TranslationHelper.GetString("MsgErrInvalidNeutronSourceData") ?? "بيانات المصدر النيتروني غير صالحة");
+        if (string.IsNullOrWhiteSpace(item.SourceCode)) return (false, TranslationHelper.GetString("MsgErrNeutronSourceCodeReq") ?? "كود المصدر مطلوب");
         if (!double.IsFinite(item.CalibratedEmissionRate))
             return (false, TranslationHelper.GetString("MsgErrInvalidEmissionRateFinite") ?? "معدل انبعاث النيترونات غير صالح (يجب أن يكون رقماً منتهياً)");
-        if (item.CalibratedEmissionRate <= 0) return (false, "معدل انبعاث النيترونات يجب أن يكون أكبر من صفر");
+        if (item.CalibratedEmissionRate <= 0) return (false, TranslationHelper.GetString("MsgErrEmissionRatePositive") ?? "معدل انبعاث النيترونات يجب أن يكون أكبر من صفر");
         if (item.AnisotropyFactor.HasValue && !double.IsFinite(item.AnisotropyFactor.Value))
             return (false, TranslationHelper.GetString("MsgErrInvalidAnisotropyFactorFinite") ?? "معامل اللاتماثل الزاوي غير صالح (يجب أن يكون رقماً منتهياً)");
         if (item.RelativeExpandedUncertaintyPercent.HasValue && !double.IsFinite(item.RelativeExpandedUncertaintyPercent.Value))
             return (false, TranslationHelper.GetString("MsgErrInvalidUncertaintyFinite") ?? "نسبة عدم اليقين غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.CapsuleLengthMm.HasValue && !double.IsFinite(item.CapsuleLengthMm.Value))
-            return (false, "طول الكبسولة غير صالح (يجب أن يكون رقماً منتهياً)");
+            return (false, TranslationHelper.GetString("MsgErrCapsuleLengthFinite") ?? "طول الكبسولة غير صالح (يجب أن يكون رقماً منتهياً)");
         if (item.CapsuleLengthMm.HasValue && item.CapsuleLengthMm.Value <= 0)
-            return (false, "طول الكبسولة يجب أن يكون أكبر من صفر");
+            return (false, TranslationHelper.GetString("MsgErrCapsuleLengthPositive") ?? "طول الكبسولة يجب أن يكون أكبر من صفر");
         if (item.CapsuleDiameterMm.HasValue && !double.IsFinite(item.CapsuleDiameterMm.Value))
-            return (false, "قطر الكبسولة غير صالح (يجب أن يكون رقماً منتهياً)");
+            return (false, TranslationHelper.GetString("MsgErrCapsuleDiameterFinite") ?? "قطر الكبسولة غير صالح (يجب أن يكون رقماً منتهياً)");
         if (item.CapsuleDiameterMm.HasValue && item.CapsuleDiameterMm.Value <= 0)
-            return (false, "قطر الكبسولة يجب أن يكون أكبر من صفر");
+            return (false, TranslationHelper.GetString("MsgErrCapsuleDiameterPositive") ?? "قطر الكبسولة يجب أن يكون أكبر من صفر");
         if (item.ActivityValue.HasValue && !double.IsFinite(item.ActivityValue.Value))
-            return (false, "قيمة النشاط الإشعاعي غير صالحة (يجب أن تكون رقماً منتهياً)");
+            return (false, TranslationHelper.GetString("MsgErrActivityValueFinite") ?? "قيمة النشاط الإشعاعي غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.ActivityValue.HasValue && item.ActivityValue.Value <= 0)
-            return (false, "قيمة النشاط الإشعاعي يجب أن تكون أكبر من صفر");
+            return (false, TranslationHelper.GetString("MsgErrActivityValuePositive") ?? "قيمة النشاط الإشعاعي يجب أن تكون أكبر من صفر");
         if (item.ActivityValue.HasValue != item.ActivityUnitId.HasValue)
-            return (false, "يجب إدخال قيمة النشاط الإشعاعي ووحدته معاً أو تركهما فارغين");
+            return (false, TranslationHelper.GetString("MsgErrActivityBothOrNeither") ?? "يجب إدخال قيمة النشاط الإشعاعي ووحدته معاً أو تركهما فارغين");
         if (item.CalibrationDate.HasValue && item.CalibrationDate.Value.Date > DateTime.Today)
             return (false, TranslationHelper.GetString("MsgErrCalibrationDateFuture") ?? "لا يمكن أن يكون تاريخ المعايرة في المستقبل.");
         if (item.EmissionCalibrationDate.HasValue && item.EmissionCalibrationDate.Value.Date > DateTime.Today)
             return (false, TranslationHelper.GetString("MsgErrEmissionCalibrationDateFuture") ?? "تاريخ معايرة الانبعاث لا يمكن أن يكون في المستقبل");
-        if (item.NeutronSourceTypeId == Guid.Empty) return (false, "نوع المصدر النيتروني مطلوب");
+        if (item.NeutronSourceTypeId == Guid.Empty) return (false, TranslationHelper.GetString("MsgErrNeutronTypeReq") ?? "نوع المصدر النيتروني مطلوب");
 
         using var db = _dbFactory.CreateDbContext();
         var existing = db.NeutronSources.Find(item.Id);
-        if (existing == null) return (false, "المصدر النيتروني غير موجود");
+        if (existing == null) return (false, TranslationHelper.GetString("MsgErrNeutronSourceNotFound") ?? "المصدر النيتروني غير موجود");
 
         var oldValuesObj = new
         {
@@ -253,16 +253,16 @@ public class NeutronSourceService : INeutronSourceService
         var lowerCode = trimmedCode.ToLower();
 
         if (db.NeutronSources.Any(n => n.Id != item.Id && n.SourceCode.ToLower() == lowerCode))
-            return (false, "كود المصدر موجود بالفعل");
+            return (false, TranslationHelper.GetString("MsgErrNeutronSourceCodeExists") ?? "كود المصدر موجود بالفعل");
 
         if (!db.NeutronSourceTypes.Any(t => t.Id == item.NeutronSourceTypeId))
-            return (false, "نوع المصدر النيتروني المحدد غير موجود");
+            return (false, TranslationHelper.GetString("MsgErrNeutronTypeNotFound") ?? "نوع المصدر النيتروني المحدد غير موجود");
 
         if (item.LocationId.HasValue && !db.Locations.Any(l => l.Id == item.LocationId.Value))
-            return (false, "الموقع المحدد غير موجود");
+            return (false, TranslationHelper.GetString("MsgErrNeutronLocationNotFound") ?? "الموقع المحدد غير موجود");
 
         if (item.ActivityUnitId.HasValue && !db.ActivityUnits.Any(u => u.Id == item.ActivityUnitId.Value))
-            return (false, "وحدة النشاط الإشعاعي المحددة غير موجودة");
+            return (false, TranslationHelper.GetString("MsgErrNeutronActivityUnitNotFound") ?? "وحدة النشاط الإشعاعي المحددة غير موجودة");
 
         existing.SourceCode = trimmedCode;
         existing.SerialNumber = item.SerialNumber?.Trim();
@@ -309,7 +309,7 @@ public class NeutronSourceService : INeutronSourceService
         string newValuesJson = System.Text.Json.JsonSerializer.Serialize(newValuesObj);
 
         _auditService.LogWithChanges("Update", "NeutronSources", item.Id, $"تعديل مصدر نيتروني: {item.SourceCode}", oldValuesJson, newValuesJson);
-        return (true, "تم تحديث المصدر النيتروني");
+        return (true, TranslationHelper.GetString("MsgSuccessNeutronSourceUpdated") ?? "تم تحديث المصدر النيتروني");
     }
 
     /// <summary>حذف مصدر نيتروني</summary>
@@ -320,7 +320,7 @@ public class NeutronSourceService : INeutronSourceService
 
         using var db = _dbFactory.CreateDbContext();
         var item = db.NeutronSources.Find(id);
-        if (item == null) return (false, "المصدر النيتروني غير موجود");
+        if (item == null) return (false, TranslationHelper.GetString("MsgErrNeutronSourceNotFound") ?? "المصدر النيتروني غير موجود");
 
         var oldValuesObj = new
         {
@@ -359,7 +359,7 @@ public class NeutronSourceService : INeutronSourceService
 
         db.SaveChanges();
         _auditService.LogWithChanges("Delete", "NeutronSources", id, $"حذف مصدر نيتروني: {item.SourceCode}", oldValuesJson, null);
-        return (true, "تم حذف المصدر النيتروني");
+        return (true, TranslationHelper.GetString("MsgSuccessNeutronSourceDeleted") ?? "تم حذف المصدر النيتروني");
     }
 
     /// <summary>استرجاع مصدر نيتروني محذوف</summary>
@@ -370,12 +370,12 @@ public class NeutronSourceService : INeutronSourceService
 
         using var db = _dbFactory.CreateDbContext();
         var item = db.NeutronSources.IgnoreQueryFilters().FirstOrDefault(n => n.Id == id);
-        if (item == null) return (false, "المصدر النيتروني غير موجود");
-        if (!item.IsDeleted) return (false, "المصدر النيتروني غير محذوف أصلاً");
+        if (item == null) return (false, TranslationHelper.GetString("MsgErrNeutronSourceNotFound") ?? "المصدر النيتروني غير موجود");
+        if (!item.IsDeleted) return (false, TranslationHelper.GetString("MsgErrNeutronSourceNotDeleted") ?? "المصدر النيتروني غير محذوف أصلاً");
 
         var lowerCode = item.SourceCode.Trim().ToLower();
         if (db.NeutronSources.Any(n => !n.IsDeleted && n.Id != id && n.SourceCode.ToLower() == lowerCode))
-            return (false, $"لا يمكن استرجاع المصدر النيتروني لوجود مصدر نشط آخر بنفس الكود ({item.SourceCode})");
+            return (false, string.Format(TranslationHelper.GetString("MsgErrNeutronSourceRestoreConflict") ?? "لا يمكن استرجاع المصدر النيتروني لوجود مصدر نشط آخر بنفس الكود ({0})", item.SourceCode));
 
         item.IsDeleted = false;
         item.DeletedAt = null;
@@ -406,6 +406,6 @@ public class NeutronSourceService : INeutronSourceService
         string newValuesJson = System.Text.Json.JsonSerializer.Serialize(newValuesObj);
 
         _auditService.LogWithChanges("Restore", "NeutronSources", id, $"استرجاع مصدر نيتروني: {item.SourceCode}", null, newValuesJson);
-        return (true, $"تم استرجاع المصدر النيتروني {item.SourceCode}");
+        return (true, string.Format(TranslationHelper.GetString("MsgSuccessNeutronSourceRestored") ?? "تم استرجاع المصدر النيتروني {0}", item.SourceCode));
     }
 }
