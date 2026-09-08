@@ -692,5 +692,155 @@ public class SourcesViewModelTests : IDisposable
     }
 
     #endregion
+
+    #region 4. Am-241 Activity Value/Unit Tests (Round 128)
+
+    [Fact]
+    public async Task SaveAsync_NeutronSource_WithActivityValueAndUnit_PersistsBothFields()
+    {
+        // Arrange
+        var neutronTypeId = Guid.NewGuid();
+        NeutronSource? captured = null;
+        _mockNeutronSourceTypeService.Setup(s => s.GetAll()).Returns(new List<NeutronSourceType>
+        {
+            new NeutronSourceType { Id = neutronTypeId, Code = "AmBe" }
+        });
+        _mockNeutronSourceService
+            .Setup(s => s.Create(It.IsAny<NeutronSource>()))
+            .Callback<NeutronSource>(n => captured = n)
+            .Returns((true, "تم إضافة المصدر النيتروني بنجاح"));
+
+        var vm = CreateViewModel();
+        vm.AddNewNeutronCommand.Execute(null);
+        vm.EditSourceCode = "NEU-AM-CREATE";
+        vm.EditNeutronTypeId = neutronTypeId;
+        vm.EditEmissionRateText = "1000";
+        vm.EditCalibrationDate = DateTime.Today;
+        vm.EditLocationId = _locationId;
+        vm.EditStatus = "InUse";
+        vm.EditActivityText = "3.7";
+        vm.EditActivityUnitId = _unitCiId;
+
+        // Act
+        await vm.SaveCommand.ExecuteAsync(null);
+
+        // Assert
+        _mockNeutronSourceService.Verify(s => s.Create(It.IsAny<NeutronSource>()), Times.Once);
+        Assert.NotNull(captured);
+        Assert.Equal(3.7, captured!.ActivityValue);
+        Assert.Equal(_unitCiId, captured.ActivityUnitId);
+    }
+
+    [Fact]
+    public void EditNeutronSource_WithStoredAm241Activity_PrefillsFieldsAndComputesHalfLifeDecay()
+    {
+        // Arrange: CalibrationDate exactly one Am-241 half-life (432.2 years) ago, so the
+        // hand-verifiable expected current activity is exactly half of the stored initial value.
+        var neutronTypeId = Guid.NewGuid();
+        double initialActivityBq = 3.7e10;
+        double halfLifeDays = 432.2 * NeutronDecayCalculationService.DaysPerYear;
+        DateTime calDate = DateTime.Now.AddDays(-halfLifeDays);
+
+        var target = new NeutronSource
+        {
+            Id = Guid.NewGuid(),
+            SourceCode = "NEU-AM-EDIT",
+            NeutronSourceTypeId = neutronTypeId,
+            CalibratedEmissionRate = 500,
+            CalibrationDate = calDate,
+            ActivityValue = initialActivityBq,
+            ActivityUnitId = _unitBqId,
+            ActivityUnit = new ActivityUnit { Id = _unitBqId, UnitSymbol = "Bq", ConversionToBq = 1.0 },
+            NeutronSourceType = new NeutronSourceType { Id = neutronTypeId, Code = "AmBe", HalfLife = 432.2, HalfLifeUnit = "years" }
+        };
+
+        var vm = CreateViewModel();
+
+        // Act
+        vm.EditNeutronSourceCommand.Execute(target);
+
+        // Assert
+        Assert.Equal(initialActivityBq, vm.EditActivityValue);
+        Assert.Equal("37000000000", vm.EditActivityText);
+        Assert.Equal(_unitBqId, vm.EditActivityUnitId);
+        Assert.NotEmpty(vm.DisplaySourceCurrentActivity);
+        Assert.Contains("Bq", vm.DisplaySourceCurrentActivity);
+
+        var match = System.Text.RegularExpressions.Regex.Match(vm.DisplaySourceCurrentActivity, @"[\d.]+E[+-]\d+");
+        Assert.True(match.Success, $"Expected a scientific-notation activity value in '{vm.DisplaySourceCurrentActivity}'");
+        double displayedValue = double.Parse(match.Value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture);
+        double expected = initialActivityBq * 0.5;
+        Assert.True(Math.Abs(displayedValue - expected) / expected < 0.001,
+            $"Expected ≈{expected} (half of initial after one half-life), got {displayedValue}");
+    }
+
+    [Fact]
+    public void EditNeutronSource_WithNoStoredAm241Activity_ShowsNeutralNotRecordedDisplay()
+    {
+        // Arrange
+        var target = new NeutronSource
+        {
+            Id = Guid.NewGuid(),
+            SourceCode = "NEU-NO-AM",
+            NeutronSourceTypeId = Guid.NewGuid(),
+            CalibratedEmissionRate = 500,
+            CalibrationDate = DateTime.Today,
+            ActivityValue = null,
+            ActivityUnitId = null
+        };
+
+        var vm = CreateViewModel();
+
+        // Act
+        vm.EditNeutronSourceCommand.Execute(target);
+
+        // Assert: neutral "not recorded" message, not an error dialog/message
+        Assert.Equal("لم يُسجَّل", vm.DisplaySourceCurrentActivity);
+        Assert.False(vm.HasMessage);
+        Assert.True(vm.IsEditing);
+    }
+
+    [Fact]
+    public void AddNewNeutron_DoesNotComputeAm241CurrentActivityDisplay()
+    {
+        // Arrange
+        var vm = CreateViewModel();
+
+        // Act
+        vm.AddNewNeutronCommand.Execute(null);
+
+        // Assert: a new/IsNew record has nothing to compute yet
+        Assert.True(vm.IsNew);
+        Assert.Equal(string.Empty, vm.DisplaySourceCurrentActivity);
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task SaveAsync_NeutronSource_WithOnlyOneOfAm241ValueOrUnit_RejectsBeforeCallingService(bool provideValue, bool provideUnit)
+    {
+        // Arrange
+        var neutronTypeId = Guid.NewGuid();
+        var vm = CreateViewModel();
+        vm.AddNewNeutronCommand.Execute(null);
+        vm.EditSourceCode = "NEU-AM-BAD";
+        vm.EditNeutronTypeId = neutronTypeId;
+        vm.EditEmissionRateText = "1000";
+        vm.EditCalibrationDate = DateTime.Today;
+        vm.EditLocationId = _locationId;
+        vm.EditStatus = "InUse";
+        if (provideValue) vm.EditActivityText = "3.7";
+        if (provideUnit) vm.EditActivityUnitId = _unitCiId;
+
+        // Act
+        await vm.SaveCommand.ExecuteAsync(null);
+
+        // Assert
+        _mockNeutronSourceService.Verify(s => s.Create(It.IsAny<NeutronSource>()), Times.Never);
+        Assert.True(vm.HasMessage);
+        Assert.True(vm.IsEditing);
+    }
+
+    #endregion
 }
 

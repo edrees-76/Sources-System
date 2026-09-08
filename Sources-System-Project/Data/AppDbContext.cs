@@ -620,9 +620,9 @@ public class AppDbContext : DbContext
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            entity.HasOne(n => n.Am241ActivityUnit)
+            entity.HasOne(n => n.ActivityUnit)
                 .WithMany()
-                .HasForeignKey(n => n.Am241ActivityUnitId)
+                .HasForeignKey(n => n.ActivityUnitId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
 

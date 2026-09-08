@@ -17,12 +17,12 @@ public enum NeutronDecayCalculationStatus
     CalculationDatePrecedesCalibrationDate,
     InvalidCalibratedRate,
 
-    /// <summary>Am241ActivityValue و/أو Am241ActivityUnitId غير مُدخلين على المصدر — حالة
-    /// طبيعية «غير مُسجَّل» وليست خطأ.</summary>
+    /// <summary>ActivityValue و/أو ActivityUnitId غير مُدخلين على المصدر — حالة طبيعية
+    /// «غير مُسجَّل» وليست خطأ.</summary>
     NotRecorded,
 
-    /// <summary>Am241ActivityUnitId له قيمة لكن خاصية التنقل Am241ActivityUnit لم تُحمَّل من
-    /// قِبل المستدعي — يُماثل نمط MissingSourceType تماماً.</summary>
+    /// <summary>ActivityUnitId له قيمة لكن خاصية التنقل ActivityUnit لم تُحمَّل من قِبل
+    /// المستدعي — يُماثل نمط MissingSourceType تماماً.</summary>
     MissingActivityUnit,
 
     /// <summary>قيمة النشاط بعد التحويل إلى Bq غير منتهية (IsFinite) أو <= 0 — فحص احترازي
@@ -39,7 +39,7 @@ public class NeutronDecayResult
     public NeutronDecayCalculationStatus Status { get; set; }
     public double? CurrentEmissionRate { get; set; }
 
-    /// <summary>نشاط الأمريسيوم-241 الحالي بوحدة Bq بعد الاضمحلال من CalibrationDate — لا
+    /// <summary>النشاط الإشعاعي الحالي بوحدة Bq بعد الاضمحلال من CalibrationDate — لا
     /// علاقة له بـ CurrentEmissionRate (n/s)، وهما كميتان مستقلتان.</summary>
     public double? CurrentActivityBq { get; set; }
 }
@@ -71,13 +71,16 @@ public interface INeutronDecayCalculationService
         DateTime calculationDate);
 
     /// <summary>
-    /// حساب نشاط الأمريسيوم-241 الحالي للمصدر (عند اللحظة الحالية)
+    /// حساب النشاط الإشعاعي الحالي للمصدر (عند اللحظة الحالية)، اعتماداً على نويدة المصدر
+    /// الأم ونصف عمرها المُسجَّلين على NeutronSourceType الخاص به — عام لأي نوع مصدر نيتروني
+    /// مرجعي، لا يفترض نويدة بعينها.
     /// </summary>
-    NeutronDecayResult CalculateCurrentAm241Activity(NeutronSource? source);
+    NeutronDecayResult CalculateCurrentSourceActivity(NeutronSource? source);
 
     /// <summary>
-    /// حساب نشاط الأمريسيوم-241 للمصدر عند تاريخ حساب محدد، بالاعتماد على CalibrationDate
-    /// كتاريخ مرجعي وعمر النصف الثابت 432.2 سنة
+    /// حساب النشاط الإشعاعي للمصدر عند تاريخ حساب محدد، بالاعتماد على CalibrationDate كتاريخ
+    /// مرجعي، ونصف العمر ووحدته من NeutronSourceType.HalfLife/HalfLifeUnit الخاص بنوع هذا
+    /// المصدر تحديداً (لا قيمة ثابتة مُكرَّرة لنويدة واحدة).
     /// </summary>
-    NeutronDecayResult CalculateAm241ActivityAtDate(NeutronSource? source, DateTime calculationDate);
+    NeutronDecayResult CalculateSourceActivityAtDate(NeutronSource? source, DateTime calculationDate);
 }

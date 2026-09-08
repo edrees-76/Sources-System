@@ -80,6 +80,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     private readonly IDecayCalculationService _decayService;
     private readonly INeutronSourceService _neutronSourceService;
     private readonly INeutronSourceTypeService _neutronSourceTypeService;
+    private readonly INeutronDecayCalculationService _neutronDecayService;
 
     [ObservableProperty] private ObservableCollection<Source> _sources = new();
     [ObservableProperty] private ObservableCollection<Radioisotope> _radioisotopes = new();
@@ -161,6 +162,10 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     [ObservableProperty] private string _editCapsuleLengthText = string.Empty;
     [ObservableProperty] private double? _editCapsuleDiameterMm;
     [ObservableProperty] private string _editCapsuleDiameterText = string.Empty;
+    [ObservableProperty] private double? _editActivityValue;
+    [ObservableProperty] private string _editActivityText = string.Empty;
+    [ObservableProperty] private Guid? _editActivityUnitId;
+    [ObservableProperty] private string _displaySourceCurrentActivity = string.Empty;
 
     private bool _isUpdatingEmissionRate;
 
@@ -266,6 +271,23 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         }
     }
 
+    partial void OnEditActivityTextChanged(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            EditActivityValue = null;
+            return;
+        }
+        if (NumericInputParser.TryParseFinite(value.Trim(), out double result))
+        {
+            EditActivityValue = result;
+        }
+        else
+        {
+            EditActivityValue = null;
+        }
+    }
+
     partial void OnEditInitialActivityTextChanged(string value)
     {
         if (NumericInputParser.TryParseFinite(value, out double result))
@@ -307,7 +329,8 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         IReportingService reportingService, 
         IDecayCalculationService? decayService = null,
         INeutronSourceService? neutronSourceService = null,
-        INeutronSourceTypeService? neutronSourceTypeService = null)
+        INeutronSourceTypeService? neutronSourceTypeService = null,
+        INeutronDecayCalculationService? neutronDecayService = null)
     {
         _sourceService = sourceService;
         _isotopeService = isotopeService;
@@ -316,6 +339,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         _decayService = decayService ?? new DecayCalculationService();
         _neutronSourceService = neutronSourceService ?? App.ServiceProvider?.GetService<INeutronSourceService>()!;
         _neutronSourceTypeService = neutronSourceTypeService ?? App.ServiceProvider?.GetService<INeutronSourceTypeService>()!;
+        _neutronDecayService = neutronDecayService ?? new NeutronDecayCalculationService();
         _ = LoadDataAsync();
 
         WeakReferenceMessenger.Default.Register<NavigateToSearchResultMessage>(this, (r, m) =>
@@ -735,6 +759,10 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         EditCapsuleLengthText = string.Empty;
         EditCapsuleDiameterMm = null;
         EditCapsuleDiameterText = string.Empty;
+        EditActivityValue = null;
+        EditActivityText = string.Empty;
+        EditActivityUnitId = null;
+        DisplaySourceCurrentActivity = string.Empty;
     }
 
     [RelayCommand]
@@ -792,13 +820,58 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         EditCalibrationReference = target.CalibrationReference ?? "";
         EditAnisotropyFactor = target.AnisotropyFactor;
         EditAnisotropyFactorText = target.AnisotropyFactor?.ToString() ?? "";
+        EditActivityValue = target.ActivityValue;
+        EditActivityText = target.ActivityValue?.ToString() ?? "";
+        EditActivityUnitId = target.ActivityUnitId;
         EditLocationId = target.LocationId;
         EditStatus = target.Status;
         EditNotes = target.Notes ?? "";
         EditImagePath = null;
         CurrentStep = 1;
 
+        UpdateDisplaySourceCurrentActivity(target);
+
         IsEditing = true;
+    }
+
+    /// <summary>
+    /// يحسب ويحدّث نص عرض النشاط الحالي المحسوب لمصدر نيتروني قائم فقط
+    /// (لا يُحسب لسجل جديد IsNew).
+    /// </summary>
+    private void UpdateDisplaySourceCurrentActivity(NeutronSource? target)
+    {
+        if (target == null || IsNew)
+        {
+            DisplaySourceCurrentActivity = string.Empty;
+            return;
+        }
+
+        var result = _neutronDecayService.CalculateCurrentSourceActivity(target);
+        if (result.IsCalculated && result.CurrentActivityBq.HasValue)
+        {
+            DisplaySourceCurrentActivity = FormatActivityValue(result.CurrentActivityBq.Value, "Bq");
+            return;
+        }
+
+        DisplaySourceCurrentActivity = result.Status switch
+        {
+            NeutronDecayCalculationStatus.NotRecorded => "لم يُسجَّل",
+            NeutronDecayCalculationStatus.MissingCalibrationDate =>
+                TranslationHelper.GetString("DecayStatusMissingCalibrationDate") ?? "غير محسوب — تاريخ المعايرة غير مسجّل",
+            NeutronDecayCalculationStatus.MissingActivityUnit => "غير محسوب — وحدة النشاط غير محمّلة",
+            NeutronDecayCalculationStatus.InvalidActivityValue => "غير محسوب — قيمة النشاط غير صالحة",
+            NeutronDecayCalculationStatus.CalculationDatePrecedesCalibrationDate =>
+                TranslationHelper.GetString("DecayStatusDatePrecedesCalibration") ?? "غير محسوب — تاريخ الحساب يسبق تاريخ المعايرة",
+            NeutronDecayCalculationStatus.MissingSource =>
+                TranslationHelper.GetString("DecayStatusMissingSource") ?? "غير محسوب — بيانات المصدر غير متوفرة",
+            NeutronDecayCalculationStatus.MissingSourceType =>
+                TranslationHelper.GetString("DecayStatusMissingSourceType") ?? "غير محسوب — بيانات نوع المصدر غير متوفرة",
+            NeutronDecayCalculationStatus.InvalidHalfLife =>
+                TranslationHelper.GetString("DecayStatusInvalidHalfLife") ?? "غير محسوب — نصف العمر غير صالح",
+            NeutronDecayCalculationStatus.UnsupportedHalfLifeUnit =>
+                TranslationHelper.GetString("DecayStatusUnsupportedHalfLifeUnit") ?? "غير محسوب — وحدة نصف العمر غير مدعومة",
+            _ => "لم يُسجَّل"
+        };
     }
 
     [RelayCommand]
@@ -1026,6 +1099,19 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                     return;
                 }
 
+                bool activityTextProvided = !string.IsNullOrWhiteSpace(EditActivityText);
+                bool activityUnitProvided = EditActivityUnitId.HasValue;
+                if (activityTextProvided != activityUnitProvided)
+                {
+                    ShowMessage("الرجاء إدخال النشاط الإشعاعي مع اختيار وحدته معاً، أو تركهما فارغين.");
+                    return;
+                }
+                if (activityTextProvided && (EditActivityValue == null || !double.IsFinite(EditActivityValue.Value) || EditActivityValue.Value <= 0))
+                {
+                    ShowMessage("قيمة النشاط الإشعاعي يجب أن تكون رقماً أكبر من صفر.");
+                    return;
+                }
+
                 var neutronSource = new NeutronSource
                 {
                     Id = IsNew ? Guid.NewGuid() : _editingId!.Value,
@@ -1042,6 +1128,8 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                     EmissionCalibrationDate = EditEmissionCalibrationDate,
                     CalibrationReference = string.IsNullOrWhiteSpace(EditCalibrationReference) ? null : EditCalibrationReference.Trim(),
                     AnisotropyFactor = EditAnisotropyFactor,
+                    ActivityValue = EditActivityValue,
+                    ActivityUnitId = EditActivityUnitId,
                     LocationId = EditLocationId,
                     Status = EditStatus,
                     Notes = EditNotes?.Trim()

@@ -1718,6 +1718,40 @@
                                                              materialDesign:HintAssist.Hint="مثال: 6.35"/>
                                                 </StackPanel>
                                             </UniformGrid>
+
+                                            <UniformGrid Columns="2" Margin="0,12,0,0">
+                                                <!-- النشاط الإشعاعي (قيمة) -->
+                                                <StackPanel Margin="0,0,12,0">
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                        <materialDesign:PackIcon Kind="FlashOutline" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                        <TextBlock Text="النشاط الإشعاعي" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                    </StackPanel>
+                                                    <TextBox Text="{Binding EditActivityText, UpdateSourceTrigger=LostFocus}"
+                                                             Style="{StaticResource FormTextBox}"
+                                                             materialDesign:HintAssist.Hint="مثال: 3.7"/>
+                                                </StackPanel>
+
+                                                <!-- وحدة النشاط -->
+                                                <StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                        <materialDesign:PackIcon Kind="Scale" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                        <TextBlock Text="وحدة النشاط" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                    </StackPanel>
+                                                    <ComboBox ItemsSource="{Binding ActivityUnits}" SelectedValue="{Binding EditActivityUnitId}"
+                                                              SelectedValuePath="Id" DisplayMemberPath="UnitSymbol" Style="{StaticResource FormComboBox}"/>
+                                                </StackPanel>
+                                            </UniformGrid>
+
+                                            <!-- النشاط الحالي المحسوب (عند تعديل مصدر موجود فقط) -->
+                                            <Border Visibility="{Binding IsNew, Converter={StaticResource InverseBoolToVis}}"
+                                                    Background="{DynamicResource InputBackground}" CornerRadius="6" Padding="12,10"
+                                                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Margin="0,12,0,0">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <materialDesign:PackIcon Kind="ClockOutline" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                    <TextBlock Text="النشاط الحالي المحسوب: " FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextSecondary}"/>
+                                                    <TextBlock Text="{Binding DisplaySourceCurrentActivity}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                </StackPanel>
+                                            </Border>
                                         </StackPanel>
                                     </StackPanel>
                                 </Border>
