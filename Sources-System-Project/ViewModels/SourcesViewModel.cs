@@ -162,10 +162,10 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     [ObservableProperty] private string _editCapsuleLengthText = string.Empty;
     [ObservableProperty] private double? _editCapsuleDiameterMm;
     [ObservableProperty] private string _editCapsuleDiameterText = string.Empty;
-    [ObservableProperty] private double? _editAm241ActivityValue;
-    [ObservableProperty] private string _editAm241ActivityText = string.Empty;
-    [ObservableProperty] private Guid? _editAm241ActivityUnitId;
-    [ObservableProperty] private string _displayAm241CurrentActivity = string.Empty;
+    [ObservableProperty] private double? _editActivityValue;
+    [ObservableProperty] private string _editActivityText = string.Empty;
+    [ObservableProperty] private Guid? _editActivityUnitId;
+    [ObservableProperty] private string _displaySourceCurrentActivity = string.Empty;
 
     private bool _isUpdatingEmissionRate;
 
@@ -271,20 +271,20 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         }
     }
 
-    partial void OnEditAm241ActivityTextChanged(string value)
+    partial void OnEditActivityTextChanged(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            EditAm241ActivityValue = null;
+            EditActivityValue = null;
             return;
         }
         if (NumericInputParser.TryParseFinite(value.Trim(), out double result))
         {
-            EditAm241ActivityValue = result;
+            EditActivityValue = result;
         }
         else
         {
-            EditAm241ActivityValue = null;
+            EditActivityValue = null;
         }
     }
 
@@ -759,10 +759,10 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         EditCapsuleLengthText = string.Empty;
         EditCapsuleDiameterMm = null;
         EditCapsuleDiameterText = string.Empty;
-        EditAm241ActivityValue = null;
-        EditAm241ActivityText = string.Empty;
-        EditAm241ActivityUnitId = null;
-        DisplayAm241CurrentActivity = string.Empty;
+        EditActivityValue = null;
+        EditActivityText = string.Empty;
+        EditActivityUnitId = null;
+        DisplaySourceCurrentActivity = string.Empty;
     }
 
     [RelayCommand]
@@ -820,40 +820,40 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         EditCalibrationReference = target.CalibrationReference ?? "";
         EditAnisotropyFactor = target.AnisotropyFactor;
         EditAnisotropyFactorText = target.AnisotropyFactor?.ToString() ?? "";
-        EditAm241ActivityValue = target.Am241ActivityValue;
-        EditAm241ActivityText = target.Am241ActivityValue?.ToString() ?? "";
-        EditAm241ActivityUnitId = target.Am241ActivityUnitId;
+        EditActivityValue = target.ActivityValue;
+        EditActivityText = target.ActivityValue?.ToString() ?? "";
+        EditActivityUnitId = target.ActivityUnitId;
         EditLocationId = target.LocationId;
         EditStatus = target.Status;
         EditNotes = target.Notes ?? "";
         EditImagePath = null;
         CurrentStep = 1;
 
-        UpdateDisplayAm241CurrentActivity(target);
+        UpdateDisplaySourceCurrentActivity(target);
 
         IsEditing = true;
     }
 
     /// <summary>
-    /// يحسب ويحدّث نص عرض النشاط الحالي المحسوب للأمريسيوم-241 لمصدر نيتروني قائم فقط
+    /// يحسب ويحدّث نص عرض النشاط الحالي المحسوب لمصدر نيتروني قائم فقط
     /// (لا يُحسب لسجل جديد IsNew).
     /// </summary>
-    private void UpdateDisplayAm241CurrentActivity(NeutronSource? target)
+    private void UpdateDisplaySourceCurrentActivity(NeutronSource? target)
     {
         if (target == null || IsNew)
         {
-            DisplayAm241CurrentActivity = string.Empty;
+            DisplaySourceCurrentActivity = string.Empty;
             return;
         }
 
-        var result = _neutronDecayService.CalculateCurrentAm241Activity(target);
+        var result = _neutronDecayService.CalculateCurrentSourceActivity(target);
         if (result.IsCalculated && result.CurrentActivityBq.HasValue)
         {
-            DisplayAm241CurrentActivity = FormatActivityValue(result.CurrentActivityBq.Value, "Bq");
+            DisplaySourceCurrentActivity = FormatActivityValue(result.CurrentActivityBq.Value, "Bq");
             return;
         }
 
-        DisplayAm241CurrentActivity = result.Status switch
+        DisplaySourceCurrentActivity = result.Status switch
         {
             NeutronDecayCalculationStatus.NotRecorded => "لم يُسجَّل",
             NeutronDecayCalculationStatus.MissingCalibrationDate =>
@@ -864,6 +864,12 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                 TranslationHelper.GetString("DecayStatusDatePrecedesCalibration") ?? "غير محسوب — تاريخ الحساب يسبق تاريخ المعايرة",
             NeutronDecayCalculationStatus.MissingSource =>
                 TranslationHelper.GetString("DecayStatusMissingSource") ?? "غير محسوب — بيانات المصدر غير متوفرة",
+            NeutronDecayCalculationStatus.MissingSourceType =>
+                TranslationHelper.GetString("DecayStatusMissingSourceType") ?? "غير محسوب — بيانات نوع المصدر غير متوفرة",
+            NeutronDecayCalculationStatus.InvalidHalfLife =>
+                TranslationHelper.GetString("DecayStatusInvalidHalfLife") ?? "غير محسوب — نصف العمر غير صالح",
+            NeutronDecayCalculationStatus.UnsupportedHalfLifeUnit =>
+                TranslationHelper.GetString("DecayStatusUnsupportedHalfLifeUnit") ?? "غير محسوب — وحدة نصف العمر غير مدعومة",
             _ => "لم يُسجَّل"
         };
     }
@@ -1093,16 +1099,16 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                     return;
                 }
 
-                bool am241TextProvided = !string.IsNullOrWhiteSpace(EditAm241ActivityText);
-                bool am241UnitProvided = EditAm241ActivityUnitId.HasValue;
-                if (am241TextProvided != am241UnitProvided)
+                bool activityTextProvided = !string.IsNullOrWhiteSpace(EditActivityText);
+                bool activityUnitProvided = EditActivityUnitId.HasValue;
+                if (activityTextProvided != activityUnitProvided)
                 {
-                    ShowMessage("الرجاء إدخال نشاط الأمريسيوم-241 مع اختيار وحدته معاً، أو تركهما فارغين.");
+                    ShowMessage("الرجاء إدخال النشاط الإشعاعي مع اختيار وحدته معاً، أو تركهما فارغين.");
                     return;
                 }
-                if (am241TextProvided && (EditAm241ActivityValue == null || !double.IsFinite(EditAm241ActivityValue.Value) || EditAm241ActivityValue.Value <= 0))
+                if (activityTextProvided && (EditActivityValue == null || !double.IsFinite(EditActivityValue.Value) || EditActivityValue.Value <= 0))
                 {
-                    ShowMessage("قيمة نشاط الأمريسيوم-241 يجب أن تكون رقماً أكبر من صفر.");
+                    ShowMessage("قيمة النشاط الإشعاعي يجب أن تكون رقماً أكبر من صفر.");
                     return;
                 }
 
@@ -1122,8 +1128,8 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                     EmissionCalibrationDate = EditEmissionCalibrationDate,
                     CalibrationReference = string.IsNullOrWhiteSpace(EditCalibrationReference) ? null : EditCalibrationReference.Trim(),
                     AnisotropyFactor = EditAnisotropyFactor,
-                    Am241ActivityValue = EditAm241ActivityValue,
-                    Am241ActivityUnitId = EditAm241ActivityUnitId,
+                    ActivityValue = EditActivityValue,
+                    ActivityUnitId = EditActivityUnitId,
                     LocationId = EditLocationId,
                     Status = EditStatus,
                     Notes = EditNotes?.Trim()

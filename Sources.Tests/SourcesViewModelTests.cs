@@ -696,7 +696,7 @@ public class SourcesViewModelTests : IDisposable
     #region 4. Am-241 Activity Value/Unit Tests (Round 128)
 
     [Fact]
-    public async Task SaveAsync_NeutronSource_WithAm241ActivityValueAndUnit_PersistsBothFields()
+    public async Task SaveAsync_NeutronSource_WithActivityValueAndUnit_PersistsBothFields()
     {
         // Arrange
         var neutronTypeId = Guid.NewGuid();
@@ -718,8 +718,8 @@ public class SourcesViewModelTests : IDisposable
         vm.EditCalibrationDate = DateTime.Today;
         vm.EditLocationId = _locationId;
         vm.EditStatus = "InUse";
-        vm.EditAm241ActivityText = "3.7";
-        vm.EditAm241ActivityUnitId = _unitCiId;
+        vm.EditActivityText = "3.7";
+        vm.EditActivityUnitId = _unitCiId;
 
         // Act
         await vm.SaveCommand.ExecuteAsync(null);
@@ -727,8 +727,8 @@ public class SourcesViewModelTests : IDisposable
         // Assert
         _mockNeutronSourceService.Verify(s => s.Create(It.IsAny<NeutronSource>()), Times.Once);
         Assert.NotNull(captured);
-        Assert.Equal(3.7, captured!.Am241ActivityValue);
-        Assert.Equal(_unitCiId, captured.Am241ActivityUnitId);
+        Assert.Equal(3.7, captured!.ActivityValue);
+        Assert.Equal(_unitCiId, captured.ActivityUnitId);
     }
 
     [Fact]
@@ -748,9 +748,10 @@ public class SourcesViewModelTests : IDisposable
             NeutronSourceTypeId = neutronTypeId,
             CalibratedEmissionRate = 500,
             CalibrationDate = calDate,
-            Am241ActivityValue = initialActivityBq,
-            Am241ActivityUnitId = _unitBqId,
-            Am241ActivityUnit = new ActivityUnit { Id = _unitBqId, UnitSymbol = "Bq", ConversionToBq = 1.0 }
+            ActivityValue = initialActivityBq,
+            ActivityUnitId = _unitBqId,
+            ActivityUnit = new ActivityUnit { Id = _unitBqId, UnitSymbol = "Bq", ConversionToBq = 1.0 },
+            NeutronSourceType = new NeutronSourceType { Id = neutronTypeId, Code = "AmBe", HalfLife = 432.2, HalfLifeUnit = "years" }
         };
 
         var vm = CreateViewModel();
@@ -759,14 +760,14 @@ public class SourcesViewModelTests : IDisposable
         vm.EditNeutronSourceCommand.Execute(target);
 
         // Assert
-        Assert.Equal(initialActivityBq, vm.EditAm241ActivityValue);
-        Assert.Equal("37000000000", vm.EditAm241ActivityText);
-        Assert.Equal(_unitBqId, vm.EditAm241ActivityUnitId);
-        Assert.NotEmpty(vm.DisplayAm241CurrentActivity);
-        Assert.Contains("Bq", vm.DisplayAm241CurrentActivity);
+        Assert.Equal(initialActivityBq, vm.EditActivityValue);
+        Assert.Equal("37000000000", vm.EditActivityText);
+        Assert.Equal(_unitBqId, vm.EditActivityUnitId);
+        Assert.NotEmpty(vm.DisplaySourceCurrentActivity);
+        Assert.Contains("Bq", vm.DisplaySourceCurrentActivity);
 
-        var match = System.Text.RegularExpressions.Regex.Match(vm.DisplayAm241CurrentActivity, @"[\d.]+E[+-]\d+");
-        Assert.True(match.Success, $"Expected a scientific-notation activity value in '{vm.DisplayAm241CurrentActivity}'");
+        var match = System.Text.RegularExpressions.Regex.Match(vm.DisplaySourceCurrentActivity, @"[\d.]+E[+-]\d+");
+        Assert.True(match.Success, $"Expected a scientific-notation activity value in '{vm.DisplaySourceCurrentActivity}'");
         double displayedValue = double.Parse(match.Value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture);
         double expected = initialActivityBq * 0.5;
         Assert.True(Math.Abs(displayedValue - expected) / expected < 0.001,
@@ -784,8 +785,8 @@ public class SourcesViewModelTests : IDisposable
             NeutronSourceTypeId = Guid.NewGuid(),
             CalibratedEmissionRate = 500,
             CalibrationDate = DateTime.Today,
-            Am241ActivityValue = null,
-            Am241ActivityUnitId = null
+            ActivityValue = null,
+            ActivityUnitId = null
         };
 
         var vm = CreateViewModel();
@@ -794,7 +795,7 @@ public class SourcesViewModelTests : IDisposable
         vm.EditNeutronSourceCommand.Execute(target);
 
         // Assert: neutral "not recorded" message, not an error dialog/message
-        Assert.Equal("لم يُسجَّل", vm.DisplayAm241CurrentActivity);
+        Assert.Equal("لم يُسجَّل", vm.DisplaySourceCurrentActivity);
         Assert.False(vm.HasMessage);
         Assert.True(vm.IsEditing);
     }
@@ -810,7 +811,7 @@ public class SourcesViewModelTests : IDisposable
 
         // Assert: a new/IsNew record has nothing to compute yet
         Assert.True(vm.IsNew);
-        Assert.Equal(string.Empty, vm.DisplayAm241CurrentActivity);
+        Assert.Equal(string.Empty, vm.DisplaySourceCurrentActivity);
     }
 
     [Theory]
@@ -828,8 +829,8 @@ public class SourcesViewModelTests : IDisposable
         vm.EditCalibrationDate = DateTime.Today;
         vm.EditLocationId = _locationId;
         vm.EditStatus = "InUse";
-        if (provideValue) vm.EditAm241ActivityText = "3.7";
-        if (provideUnit) vm.EditAm241ActivityUnitId = _unitCiId;
+        if (provideValue) vm.EditActivityText = "3.7";
+        if (provideUnit) vm.EditActivityUnitId = _unitCiId;
 
         // Act
         await vm.SaveCommand.ExecuteAsync(null);

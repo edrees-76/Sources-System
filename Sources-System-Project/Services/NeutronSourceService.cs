@@ -33,7 +33,7 @@ public class NeutronSourceService : INeutronSourceService
             .Include(n => n.NeutronSourceType)
             .Include(n => n.Location)
             .Include(n => n.AddedByUser)
-            .Include(n => n.Am241ActivityUnit)
+            .Include(n => n.ActivityUnit)
             .OrderBy(n => n.SourceCode)
             .ToList();
     }
@@ -49,7 +49,7 @@ public class NeutronSourceService : INeutronSourceService
             .Include(n => n.Location)
             .Include(n => n.DeletedByUser)
             .Include(n => n.AddedByUser)
-            .Include(n => n.Am241ActivityUnit)
+            .Include(n => n.ActivityUnit)
             .Where(n => n.IsDeleted)
             .OrderByDescending(n => n.DeletedAt)
             .ToList();
@@ -63,7 +63,7 @@ public class NeutronSourceService : INeutronSourceService
             .Include(n => n.NeutronSourceType)
             .Include(n => n.Location)
             .Include(n => n.AddedByUser)
-            .Include(n => n.Am241ActivityUnit)
+            .Include(n => n.ActivityUnit)
             .FirstOrDefault(n => n.Id == id);
     }
 
@@ -77,7 +77,7 @@ public class NeutronSourceService : INeutronSourceService
             .Include(n => n.NeutronSourceType)
             .Include(n => n.Location)
             .Include(n => n.AddedByUser)
-            .Include(n => n.Am241ActivityUnit)
+            .Include(n => n.ActivityUnit)
             .FirstOrDefault(n => n.SourceCode.ToLower() == lowerCode);
     }
 
@@ -90,7 +90,7 @@ public class NeutronSourceService : INeutronSourceService
             .Include(n => n.NeutronSourceType)
             .Include(n => n.Location)
             .Include(n => n.AddedByUser)
-            .Include(n => n.Am241ActivityUnit)
+            .Include(n => n.ActivityUnit)
             .Where(n => n.LocationId == locationId)
             .OrderBy(n => n.SourceCode)
             .ToList();
@@ -123,12 +123,12 @@ public class NeutronSourceService : INeutronSourceService
             return (false, "قطر الكبسولة غير صالح (يجب أن يكون رقماً منتهياً)");
         if (item.CapsuleDiameterMm.HasValue && item.CapsuleDiameterMm.Value <= 0)
             return (false, "قطر الكبسولة يجب أن يكون أكبر من صفر");
-        if (item.Am241ActivityValue.HasValue && !double.IsFinite(item.Am241ActivityValue.Value))
-            return (false, "قيمة نشاط الأمريسيوم-241 غير صالحة (يجب أن تكون رقماً منتهياً)");
-        if (item.Am241ActivityValue.HasValue && item.Am241ActivityValue.Value <= 0)
-            return (false, "قيمة نشاط الأمريسيوم-241 يجب أن تكون أكبر من صفر");
-        if (item.Am241ActivityValue.HasValue != item.Am241ActivityUnitId.HasValue)
-            return (false, "يجب إدخال قيمة نشاط الأمريسيوم-241 ووحدته معاً أو تركهما فارغين");
+        if (item.ActivityValue.HasValue && !double.IsFinite(item.ActivityValue.Value))
+            return (false, "قيمة النشاط الإشعاعي غير صالحة (يجب أن تكون رقماً منتهياً)");
+        if (item.ActivityValue.HasValue && item.ActivityValue.Value <= 0)
+            return (false, "قيمة النشاط الإشعاعي يجب أن تكون أكبر من صفر");
+        if (item.ActivityValue.HasValue != item.ActivityUnitId.HasValue)
+            return (false, "يجب إدخال قيمة النشاط الإشعاعي ووحدته معاً أو تركهما فارغين");
         if (item.CalibrationDate.HasValue && item.CalibrationDate.Value.Date > DateTime.Today)
             return (false, TranslationHelper.GetString("MsgErrCalibrationDateFuture") ?? "لا يمكن أن يكون تاريخ المعايرة في المستقبل.");
         if (item.EmissionCalibrationDate.HasValue && item.EmissionCalibrationDate.Value.Date > DateTime.Today)
@@ -148,8 +148,8 @@ public class NeutronSourceService : INeutronSourceService
         if (item.LocationId.HasValue && !db.Locations.Any(l => l.Id == item.LocationId.Value))
             return (false, "الموقع المحدد غير موجود");
 
-        if (item.Am241ActivityUnitId.HasValue && !db.ActivityUnits.Any(u => u.Id == item.Am241ActivityUnitId.Value))
-            return (false, "وحدة نشاط الأمريسيوم-241 المحددة غير موجودة");
+        if (item.ActivityUnitId.HasValue && !db.ActivityUnits.Any(u => u.Id == item.ActivityUnitId.Value))
+            return (false, "وحدة النشاط الإشعاعي المحددة غير موجودة");
 
         item.SourceCode = trimmedCode;
         item.SerialNumber = item.SerialNumber?.Trim();
@@ -181,8 +181,8 @@ public class NeutronSourceService : INeutronSourceService
             EmissionCalibrationDate = item.EmissionCalibrationDate?.ToString("yyyy-MM-dd"),
             item.CalibrationReference,
             item.AnisotropyFactor,
-            item.Am241ActivityValue,
-            item.Am241ActivityUnitId,
+            item.ActivityValue,
+            item.ActivityUnitId,
             item.Status,
             item.Notes
         };
@@ -210,12 +210,12 @@ public class NeutronSourceService : INeutronSourceService
             return (false, "قطر الكبسولة غير صالح (يجب أن يكون رقماً منتهياً)");
         if (item.CapsuleDiameterMm.HasValue && item.CapsuleDiameterMm.Value <= 0)
             return (false, "قطر الكبسولة يجب أن يكون أكبر من صفر");
-        if (item.Am241ActivityValue.HasValue && !double.IsFinite(item.Am241ActivityValue.Value))
-            return (false, "قيمة نشاط الأمريسيوم-241 غير صالحة (يجب أن تكون رقماً منتهياً)");
-        if (item.Am241ActivityValue.HasValue && item.Am241ActivityValue.Value <= 0)
-            return (false, "قيمة نشاط الأمريسيوم-241 يجب أن تكون أكبر من صفر");
-        if (item.Am241ActivityValue.HasValue != item.Am241ActivityUnitId.HasValue)
-            return (false, "يجب إدخال قيمة نشاط الأمريسيوم-241 ووحدته معاً أو تركهما فارغين");
+        if (item.ActivityValue.HasValue && !double.IsFinite(item.ActivityValue.Value))
+            return (false, "قيمة النشاط الإشعاعي غير صالحة (يجب أن تكون رقماً منتهياً)");
+        if (item.ActivityValue.HasValue && item.ActivityValue.Value <= 0)
+            return (false, "قيمة النشاط الإشعاعي يجب أن تكون أكبر من صفر");
+        if (item.ActivityValue.HasValue != item.ActivityUnitId.HasValue)
+            return (false, "يجب إدخال قيمة النشاط الإشعاعي ووحدته معاً أو تركهما فارغين");
         if (item.CalibrationDate.HasValue && item.CalibrationDate.Value.Date > DateTime.Today)
             return (false, TranslationHelper.GetString("MsgErrCalibrationDateFuture") ?? "لا يمكن أن يكون تاريخ المعايرة في المستقبل.");
         if (item.EmissionCalibrationDate.HasValue && item.EmissionCalibrationDate.Value.Date > DateTime.Today)
@@ -242,8 +242,8 @@ public class NeutronSourceService : INeutronSourceService
             EmissionCalibrationDate = existing.EmissionCalibrationDate?.ToString("yyyy-MM-dd"),
             existing.CalibrationReference,
             existing.AnisotropyFactor,
-            existing.Am241ActivityValue,
-            existing.Am241ActivityUnitId,
+            existing.ActivityValue,
+            existing.ActivityUnitId,
             existing.Status,
             existing.Notes
         };
@@ -261,8 +261,8 @@ public class NeutronSourceService : INeutronSourceService
         if (item.LocationId.HasValue && !db.Locations.Any(l => l.Id == item.LocationId.Value))
             return (false, "الموقع المحدد غير موجود");
 
-        if (item.Am241ActivityUnitId.HasValue && !db.ActivityUnits.Any(u => u.Id == item.Am241ActivityUnitId.Value))
-            return (false, "وحدة نشاط الأمريسيوم-241 المحددة غير موجودة");
+        if (item.ActivityUnitId.HasValue && !db.ActivityUnits.Any(u => u.Id == item.ActivityUnitId.Value))
+            return (false, "وحدة النشاط الإشعاعي المحددة غير موجودة");
 
         existing.SourceCode = trimmedCode;
         existing.SerialNumber = item.SerialNumber?.Trim();
@@ -278,8 +278,8 @@ public class NeutronSourceService : INeutronSourceService
         existing.EmissionCalibrationDate = item.EmissionCalibrationDate;
         existing.CalibrationReference = item.CalibrationReference;
         existing.AnisotropyFactor = item.AnisotropyFactor;
-        existing.Am241ActivityValue = item.Am241ActivityValue;
-        existing.Am241ActivityUnitId = item.Am241ActivityUnitId;
+        existing.ActivityValue = item.ActivityValue;
+        existing.ActivityUnitId = item.ActivityUnitId;
         existing.Status = string.IsNullOrWhiteSpace(item.Status) ? "Storage" : item.Status.Trim();
         existing.Notes = item.Notes;
 
@@ -301,8 +301,8 @@ public class NeutronSourceService : INeutronSourceService
             EmissionCalibrationDate = existing.EmissionCalibrationDate?.ToString("yyyy-MM-dd"),
             existing.CalibrationReference,
             existing.AnisotropyFactor,
-            existing.Am241ActivityValue,
-            existing.Am241ActivityUnitId,
+            existing.ActivityValue,
+            existing.ActivityUnitId,
             existing.Status,
             existing.Notes
         };
@@ -338,8 +338,8 @@ public class NeutronSourceService : INeutronSourceService
             EmissionCalibrationDate = item.EmissionCalibrationDate?.ToString("yyyy-MM-dd"),
             item.CalibrationReference,
             item.AnisotropyFactor,
-            item.Am241ActivityValue,
-            item.Am241ActivityUnitId,
+            item.ActivityValue,
+            item.ActivityUnitId,
             item.Status,
             item.Notes
         };
@@ -398,8 +398,8 @@ public class NeutronSourceService : INeutronSourceService
             EmissionCalibrationDate = item.EmissionCalibrationDate?.ToString("yyyy-MM-dd"),
             item.CalibrationReference,
             item.AnisotropyFactor,
-            item.Am241ActivityValue,
-            item.Am241ActivityUnitId,
+            item.ActivityValue,
+            item.ActivityUnitId,
             item.Status,
             item.Notes
         };

@@ -152,16 +152,19 @@ public class NeutronDecayCalculationService : INeutronDecayCalculationService
     }
 
     /// <summary>
-    /// حساب نشاط الأمريسيوم-241 الحالي للمصدر (عند اللحظة الحالية)
+    /// حساب النشاط الإشعاعي الحالي للمصدر (عند اللحظة الحالية)
     /// </summary>
-    public NeutronDecayResult CalculateCurrentAm241Activity(NeutronSource? source)
-        => CalculateAm241ActivityAtDate(source, DateTime.Now);
+    public NeutronDecayResult CalculateCurrentSourceActivity(NeutronSource? source)
+        => CalculateSourceActivityAtDate(source, DateTime.Now);
 
     /// <summary>
-    /// حساب نشاط الأمريسيوم-241 للمصدر عند تاريخ حساب محدد اعتماداً على CalibrationDate
-    /// كتاريخ مرجعي، ونصف عمر ثابت للأمريسيوم-241 = 432.2 سنة
+    /// حساب النشاط الإشعاعي للمصدر عند تاريخ حساب محدد اعتماداً على CalibrationDate كتاريخ
+    /// مرجعي، ونصف عمر ووحدته من NeutronSourceType.HalfLife/HalfLifeUnit الخاصين بنوع هذا
+    /// المصدر تحديداً — لا قيمة ثابتة مُفترَضة لنويدة بعينها، إذ NeutronSource قد يكون أياً من
+    /// عشرة أنواع مرجعية (Am-241/Be، Pu-238/Be، Cf-252 ...إلخ)، لكل منها نويدته الأم ونصف عمره
+    /// الخاص المُسجَّلين على NeutronSourceType.
     /// </summary>
-    public NeutronDecayResult CalculateAm241ActivityAtDate(NeutronSource? source, DateTime calculationDate)
+    public NeutronDecayResult CalculateSourceActivityAtDate(NeutronSource? source, DateTime calculationDate)
     {
         if (source == null)
         {
@@ -172,7 +175,7 @@ public class NeutronDecayCalculationService : INeutronDecayCalculationService
             };
         }
 
-        if (source.Am241ActivityValue is null || source.Am241ActivityUnitId is null)
+        if (source.ActivityValue is null || source.ActivityUnitId is null)
         {
             return new NeutronDecayResult
             {
@@ -181,7 +184,7 @@ public class NeutronDecayCalculationService : INeutronDecayCalculationService
             };
         }
 
-        if (source.Am241ActivityUnit == null)
+        if (source.ActivityUnit == null)
         {
             return new NeutronDecayResult
             {
@@ -190,7 +193,7 @@ public class NeutronDecayCalculationService : INeutronDecayCalculationService
             };
         }
 
-        double activityBq = source.Am241ActivityValue.Value * source.Am241ActivityUnit.ConversionToBq;
+        double activityBq = source.ActivityValue.Value * source.ActivityUnit.ConversionToBq;
         if (!double.IsFinite(activityBq) || activityBq <= 0)
         {
             return new NeutronDecayResult
@@ -218,10 +221,33 @@ public class NeutronDecayCalculationService : INeutronDecayCalculationService
             };
         }
 
-        // نصف عمر الأمريسيوم-241 = 432.2 سنة (يُكرر عمداً القيمة المرجعية المعتمدة في جدول
-        // Radioisotope seed data، للحفاظ على استقلالية هذه الآلة الحسابية عن أي حقن خدمات).
-        const double Am241HalfLifeYears = 432.2;
-        double halfLifeSeconds = Am241HalfLifeYears * SecondsPerYear;
+        if (source.NeutronSourceType == null)
+        {
+            return new NeutronDecayResult
+            {
+                Status = NeutronDecayCalculationStatus.MissingSourceType,
+                CurrentActivityBq = null
+            };
+        }
+
+        double halfLife = source.NeutronSourceType.HalfLife;
+        if (halfLife <= 0 || double.IsNaN(halfLife) || double.IsInfinity(halfLife))
+        {
+            return new NeutronDecayResult
+            {
+                Status = NeutronDecayCalculationStatus.InvalidHalfLife,
+                CurrentActivityBq = null
+            };
+        }
+
+        if (!TryConvertToSeconds(halfLife, source.NeutronSourceType.HalfLifeUnit, out double halfLifeSeconds))
+        {
+            return new NeutronDecayResult
+            {
+                Status = NeutronDecayCalculationStatus.UnsupportedHalfLifeUnit,
+                CurrentActivityBq = null
+            };
+        }
 
         double elapsedSeconds = (calculationDate - source.CalibrationDate.Value).TotalSeconds;
         double decayExponent = -Math.Log(2.0) * elapsedSeconds / halfLifeSeconds;

@@ -660,7 +660,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
     #region Am-241 Activity Field Validation & Audit Tests
 
     [Fact]
-    public void Create_WithNonFiniteOrNonPositiveAm241ActivityValue_ReturnsFailure()
+    public void Create_WithNonFiniteOrNonPositiveActivityValue_ReturnsFailure()
     {
         // Arrange
         var typeId = Guid.NewGuid();
@@ -673,14 +673,14 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
         }
 
         // Act & Assert
-        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-AM-1", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, Am241ActivityValue = double.NaN, Am241ActivityUnitId = unitId }).Success);
-        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-AM-1", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, Am241ActivityValue = double.PositiveInfinity, Am241ActivityUnitId = unitId }).Success);
-        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-AM-1", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, Am241ActivityValue = 0, Am241ActivityUnitId = unitId }).Success);
-        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-AM-1", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, Am241ActivityValue = -5, Am241ActivityUnitId = unitId }).Success);
+        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-AM-1", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, ActivityValue = double.NaN, ActivityUnitId = unitId }).Success);
+        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-AM-1", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, ActivityValue = double.PositiveInfinity, ActivityUnitId = unitId }).Success);
+        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-AM-1", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, ActivityValue = 0, ActivityUnitId = unitId }).Success);
+        Assert.False(_sut.Create(new NeutronSource { SourceCode = "NS-AM-1", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, ActivityValue = -5, ActivityUnitId = unitId }).Success);
     }
 
     [Fact]
-    public void Create_WithExactlyOneOfAm241ActivityValueOrUnit_ReturnsFailure()
+    public void Create_WithExactlyOneOfActivityValueOrUnit_ReturnsFailure()
     {
         // Arrange
         var typeId = Guid.NewGuid();
@@ -693,16 +693,16 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
         }
 
         // Act & Assert: value set without unit
-        var valueOnly = _sut.Create(new NeutronSource { SourceCode = "NS-AM-2", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, Am241ActivityValue = 1.0e9, Am241ActivityUnitId = null });
+        var valueOnly = _sut.Create(new NeutronSource { SourceCode = "NS-AM-2", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, ActivityValue = 1.0e9, ActivityUnitId = null });
         Assert.False(valueOnly.Success);
 
         // Act & Assert: unit set without value
-        var unitOnly = _sut.Create(new NeutronSource { SourceCode = "NS-AM-3", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, Am241ActivityValue = null, Am241ActivityUnitId = unitId });
+        var unitOnly = _sut.Create(new NeutronSource { SourceCode = "NS-AM-3", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, ActivityValue = null, ActivityUnitId = unitId });
         Assert.False(unitOnly.Success);
     }
 
     [Fact]
-    public void Update_WithExactlyOneOfAm241ActivityValueOrUnit_ReturnsFailure()
+    public void Update_WithExactlyOneOfActivityValueOrUnit_ReturnsFailure()
     {
         // Arrange
         var id = Guid.NewGuid();
@@ -716,8 +716,8 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
             db.SaveChanges();
         }
 
-        var valueOnly = new NeutronSource { Id = id, SourceCode = "NS-AM-UPD", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, Am241ActivityValue = 1.0e9, Am241ActivityUnitId = null };
-        var unitOnly = new NeutronSource { Id = id, SourceCode = "NS-AM-UPD", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, Am241ActivityValue = null, Am241ActivityUnitId = unitId };
+        var valueOnly = new NeutronSource { Id = id, SourceCode = "NS-AM-UPD", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, ActivityValue = 1.0e9, ActivityUnitId = null };
+        var unitOnly = new NeutronSource { Id = id, SourceCode = "NS-AM-UPD", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, ActivityValue = null, ActivityUnitId = unitId };
 
         // Act & Assert
         Assert.False(_sut.Update(valueOnly).Success);
@@ -725,7 +725,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
     }
 
     [Fact]
-    public void Create_WithUnknownAm241ActivityUnitId_ReturnsFailure()
+    public void Create_WithUnknownActivityUnitId_ReturnsFailure()
     {
         // Arrange
         var typeId = Guid.NewGuid();
@@ -740,8 +740,8 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
             SourceCode = "NS-AM-4",
             NeutronSourceTypeId = typeId,
             CalibratedEmissionRate = 1e6,
-            Am241ActivityValue = 1.0e9,
-            Am241ActivityUnitId = Guid.NewGuid() // does not exist
+            ActivityValue = 1.0e9,
+            ActivityUnitId = Guid.NewGuid() // does not exist
         };
 
         // Act
@@ -749,7 +749,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
 
         // Assert
         Assert.False(result.Success);
-        Assert.Contains("وحدة نشاط الأمريسيوم-241", result.Message);
+        Assert.Contains("وحدة النشاط الإشعاعي", result.Message);
     }
 
     [Fact]
@@ -770,8 +770,8 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
             SourceCode = "NS-AM-5",
             NeutronSourceTypeId = typeId,
             CalibratedEmissionRate = 1e6,
-            Am241ActivityValue = 3.7e10,
-            Am241ActivityUnitId = unitId
+            ActivityValue = 3.7e10,
+            ActivityUnitId = unitId
         };
 
         // Act
@@ -784,15 +784,15 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
         {
             var saved = db.NeutronSources.FirstOrDefault(n => n.SourceCode == "NS-AM-5");
             Assert.NotNull(saved);
-            Assert.Equal(3.7e10, saved!.Am241ActivityValue);
-            Assert.Equal(unitId, saved.Am241ActivityUnitId);
+            Assert.Equal(3.7e10, saved!.ActivityValue);
+            Assert.Equal(unitId, saved.ActivityUnitId);
         }
 
         var createLog = _fakeAuditService.LoggedEntries.First(l => l.Action == "Create" && l.TableName == "NeutronSources" && l.RecordId == item.Id);
         Assert.NotNull(createLog.NewValues);
         var doc = JsonDocument.Parse(createLog.NewValues);
-        Assert.Equal(3.7e10, doc.RootElement.GetProperty("Am241ActivityValue").GetDouble());
-        Assert.Equal(unitId, doc.RootElement.GetProperty("Am241ActivityUnitId").GetGuid());
+        Assert.Equal(3.7e10, doc.RootElement.GetProperty("ActivityValue").GetDouble());
+        Assert.Equal(unitId, doc.RootElement.GetProperty("ActivityUnitId").GetGuid());
     }
 
     [Fact]
@@ -816,8 +816,8 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
             SourceCode = "NS-AM-UPD-2",
             NeutronSourceTypeId = typeId,
             CalibratedEmissionRate = 1e6,
-            Am241ActivityValue = 1.0,
-            Am241ActivityUnitId = unitId
+            ActivityValue = 1.0,
+            ActivityUnitId = unitId
         };
 
         // Act
@@ -828,18 +828,18 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
         var updateLog = _fakeAuditService.LoggedEntries.First(l => l.Action == "Update" && l.TableName == "NeutronSources");
         Assert.NotNull(updateLog.NewValues);
         var doc = JsonDocument.Parse(updateLog.NewValues);
-        Assert.Equal(1.0, doc.RootElement.GetProperty("Am241ActivityValue").GetDouble());
-        Assert.Equal(unitId, doc.RootElement.GetProperty("Am241ActivityUnitId").GetGuid());
+        Assert.Equal(1.0, doc.RootElement.GetProperty("ActivityValue").GetDouble());
+        Assert.Equal(unitId, doc.RootElement.GetProperty("ActivityUnitId").GetGuid());
     }
 
     [Fact]
     public void GetById_WithAm241Activity_LoadsActivityUnit_AndDecayCalculationSucceeds()
     {
         // Regression test for round 127 (CodeRabbit finding on PR #14, round 126):
-        // NeutronSourceService's read methods did not Include(n => n.Am241ActivityUnit),
+        // NeutronSourceService's read methods did not Include(n => n.ActivityUnit),
         // so the non-virtual navigation stayed null after the DbContext was disposed and
         // the decay calculation always returned MissingActivityUnit even when
-        // Am241ActivityUnitId was correctly stored. This proves the fix end-to-end using
+        // ActivityUnitId was correctly stored. This proves the fix end-to-end using
         // the service's own Create + GetById, not a manually-constructed object.
 
         // Arrange
@@ -857,8 +857,8 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
             SourceCode = "NS-AM-INCLUDE",
             NeutronSourceTypeId = typeId,
             CalibratedEmissionRate = 1e6,
-            Am241ActivityValue = 3.7e10,
-            Am241ActivityUnitId = unitId,
+            ActivityValue = 3.7e10,
+            ActivityUnitId = unitId,
             CalibrationDate = DateTime.Today.AddYears(-1)
         };
         var (createSuccess, _) = _sut.Create(item);
@@ -867,11 +867,11 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
         // Act
         var fetched = _sut.GetById(item.Id);
         Assert.NotNull(fetched);
-        Assert.NotNull(fetched!.Am241ActivityUnit);
+        Assert.NotNull(fetched!.ActivityUnit);
 
         var decayService = new NeutronDecayCalculationService();
-        var currentResult = decayService.CalculateCurrentAm241Activity(fetched);
-        var atDateResult = decayService.CalculateAm241ActivityAtDate(fetched, DateTime.Today);
+        var currentResult = decayService.CalculateCurrentSourceActivity(fetched);
+        var atDateResult = decayService.CalculateSourceActivityAtDate(fetched, DateTime.Today);
 
         // Assert
         Assert.Equal(NeutronDecayCalculationStatus.Calculated, currentResult.Status);
