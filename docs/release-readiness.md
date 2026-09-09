@@ -1,9 +1,8 @@
 # منظومة مصادر — لوحة جاهزية النشر
 
 **آخر تحديث:** 9 سبتمبر 2026
-**حالة المستودع:** آخر دمج فعلي على `main` لا يزال الجولة 135 (PR #25، commit الدمج
-`8ecbdf08b75023fff64d6a663c741c2965adbe40`). الجولة 136 (ب5 — سابعة) قيد المراجعة عبر Draft PR،
-**غير مدموجة بعد**: تغليف الرسائل المتبقية في `NeutronSourceTypeService.cs`
+**حالة المستودع:** الجولة 136 مدموجة على `main` (PR #27، commit الدمج
+`b9e1898dc567cf85bae8f4ff50dea3a90a91c91c`، سابعة ضمن سلسلة ب5): تغليف الرسائل المتبقية في `NeutronSourceTypeService.cs`
 (`Create`/`Update`/`Delete`/`Restore`) عبر `TranslationHelper`، 13 مفتاح رسالة جديد وإعادة استخدام
 صريحة لمفتاح `MsgErrHalfLifeMustBePositive` الذي أنشأته الجولة 135 دون تكراره، بلا أي مساس بالثلاث
 رسائل المُترجَمة سابقاً من الجولة 110 (`MsgErrInvalidHalfLifeFinite`/`MsgErrInvalidMeanNeutronEnergyFinite`/
