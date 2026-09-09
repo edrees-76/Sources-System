@@ -318,11 +318,12 @@
                 </Border>
             </Grid>
 
+        </Grid>
 
-            <!-- ─────────────────────────────────────────────────── -->
-            <!-- المشهد 2: بطاقة النموذج / الإجراء (IsEditing)       -->
-            <!-- ─────────────────────────────────────────────────── -->
-            <Grid Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}" Panel.ZIndex="1000" FlowDirection="RightToLeft">
+        <!-- ─────────────────────────────────────────────────── -->
+        <!-- المشهد 2: بطاقة النموذج / الإجراء (IsEditing)       -->
+        <!-- ─────────────────────────────────────────────────── -->
+        <Grid Grid.RowSpan="2" Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}" Panel.ZIndex="1000" FlowDirection="RightToLeft">
                 <Border Background="#88000000">
                     <Border.InputBindings>
                         <MouseBinding MouseAction="LeftClick" Command="{Binding CancelEditCommand}"/>
@@ -833,6 +834,5 @@
                 </Border>
             </Grid>
 
-        </Grid>
     </Grid>
 </UserControl>
