@@ -724,6 +724,9 @@
     <system:String x:Key="PlaceholderSearchLocationSources">Search by source code, isotope, serial number, or manufacturer...</system:String>
     <system:String x:Key="MsgNoSourcesMatchFilter">No sources match the specified search and filter criteria</system:String>
 
+    <!-- Borrow Form Window -->
+    <system:String x:Key="TitleBorrowForm">Borrow Form</system:String>
+
 
 
 
@@ -1058,7 +1061,7 @@
 
     <!-- Source Borrowing - Dual View Screen -->
     <system:String x:Key="AddNewBorrowRequestTitle">New Source Borrowing Request</system:String>
-    <system:String x:Key="BorrowDetailsTitle">Borrowing Details &amp; Actions</system:String>
+    <system:String x:Key="BorrowDetailsTitle">Borrowing Details</system:String>
     <system:String x:Key="Step1RequestData">1. Request &amp; Source Data</system:String>
     <system:String x:Key="Step2DeliveryReview">2. Delivery &amp; Review</system:String>
     <system:String x:Key="BtnBack">Back</system:String>

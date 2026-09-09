@@ -658,3 +658,93 @@ ViewModel واحد بين المشهدين (لا ViewModel فرعي منفصل)�
 استعادة النسخة المُصلَحة) أثبت أن كلا الاختبارين يفشلان فعلاً (`لم يتم العثور على Grid التراكب`) بدون
 الإصلاح، وينجحان معه. 1153 اختباراً محلياً (Debug)، صفر فشل، صفر تجاوز (+2 عن الجولة 141). بناء
 المشروع الرئيسي بلا تحذيرات جديدة.
+
+## 12. الجولة 143 — In-View Modal Overlay لشاشة الاستعارة (BorrowView)
+
+**الحالة: Draft PR غير مدموج، بانتظار قراءة القائد للكود ثم التحقق البصري الفعلي من إدريس معاً — لا دمج قبل الاثنين.**
+
+رابع شاشة تُحوَّل لنمط التراكب المنبثق داخل العرض (In-View Modal Overlay)، إتماماً للمسار B بعد أنواع
+المصادر النيترونية (الجولة 139/140)، المواقع (الجولة 141)، والنظائر المشعة (الجولة 142).
+`BorrowView` تشترك نفس البنية: ViewModel واحد بين مشهد القائمة ومشهد النموذج (لا ViewModel فرعي
+منفصل)، ونموذج تحرير له وضعان متبادلان يحكمهما `IsNew` — وضع أ (طلب استعارة جديد، Stepper من
+خطوتين) ووضع ب (عرض وتفاصيل وإرجاع). التعديل شمل فقط: (1) حذف شرط `Visibility` المرتبط بـ
+`IsEditing` عن `StackPanel` أزرار الإجراءات العلوية (إضافة/تصدير) ليبقى ظاهراً دائماً، (2) حذف نفس
+الشرط عن `Grid` مشهد القائمة (البطاقات الإحصائية، البحث والتصفية، الجدول) ليبقى ظاهراً دائماً بغض
+النظر عن حالة التحرير، و(3) لف `Border` بطاقة النموذج (التي تحوي الشبكتين المتبادلتين حسب `IsNew`
+دون أي تعديل عليهما) بخلفية معتّمة (`#88000000`) وبطاقة مركزية ثابتة العرض (`720`) بظل
+و`Panel.ZIndex="1000"` بنفس أسلوب الجولات 140/141/142، دون إضافة أي `KeyBinding` جديد لم يكن موجوداً
+(`Escape` فقط، كما كان). أُبقيت كل الـ Bindings/Commands الحالية (`AddNewCommand`, `CurrentStep`,
+`NextStepCommand`/`PreviousStepCommand`/`SubmitCommand`/`MarkReturnedCommand`/`CancelEditCommand`)
+ومحتوى الوضعين حرفياً بلا أي تعديل. لم يُلمس `BorrowViewModel.cs` إطلاقاً. أُضيف اختبار تكامل حقيقي
+(`BorrowViewOverlayTests.cs`) يستضيف `BorrowView` داخل `Window` حقيقية فعلياً (`Show()`/
+`UpdateLayout()`, وليس فقط `Measure`/`Arrange`) للتحقق من أن الجدول يبقى ظاهراً في الحالتين
+(`IsEditing = true/false`) وأن التراكب (`Panel.ZIndex="1000"`) يظهر فقط عند `IsEditing = true`؛ لأن
+`AddNewCommand` يستدعي `LoadAvailableSources()` التي تفتح `DbContext` فعلياً، استُخدم
+`SqliteInMemoryFixture` حقيقي (بدلاً من الاعتماد الضمني على `App.ServiceProvider`) لضمان عدم تأثر
+النتيجة بتلوث الحالة الساكنة بين الاختبارات عند تشغيل الحزمة كاملة. تحقُّق يدوي (بإعادة
+`BorrowView.xaml` مؤقتاً لنسخته القديمة عبر `git stash` ثم استعادة النسخة المُصلَحة عبر
+`git stash apply`) أثبت أن كلا الاختبارين يفشلان فعلاً (`لم يتم العثور على Grid التراكب`) بدون
+الإصلاح، وينجحان معه. 1155 اختباراً محلياً (Debug)، صفر فشل، صفر تجاوز (+2 عن الجولة 142). بناء
+المشروع الرئيسي بلا تحذيرات جديدة.
+
+## 13. تصحيح معماري للجولة 143 — استبدال التراكب المنبثق داخل العرض بنافذة WPF حقيقية لشاشة الاستعارة (BorrowFormWindow)
+
+**الحالة: Draft PR #37 غير مدموج، بانتظار قراءة القائد للكود ثم التحقق البصري الفعلي من إدريس معاً — لا دمج قبل الاثنين.**
+
+قرار معماري ألغى نمط التراكب المنبثق داخل العرض (In-View Modal Overlay) الذي طبّقته الجولة 143 على
+`BorrowView` (والمُصحَّح موضعياً بعدها في نفس الفرع) واستبدله بنافذة WPF مستقلة حقيقية
+(`BorrowFormWindow.xaml`/`.xaml.cs`) بنفس نمط `LocationDetailsWindow` القائم مسبقاً في المستودع
+(شريط عنوان نظام التشغيل الأصلي، `WindowStartupLocation="CenterOwner"`، تُفتح عبر `ShowDialog()`).
+لا يُلغي هذا القرار مبادرة التراكب المنبثق لبقية الشاشات (139/140/141/142) — يقتصر فقط على `BorrowView`
+كتصحيح لاحق. التعديل: (1) حُذف `Grid` التراكب بالكامل (`Panel.ZIndex="1000"`، الخلفية المعتّمة
+`#88000000`، البطاقة المركزية بالظل) من `BorrowView.xaml`، مع بقاء "المشهد 1" (البطاقات الإحصائية،
+شريط البحث والتصفية، الجدول) ظاهراً دائماً كما كان بلا أي `Visibility` مرتبط بـ`IsEditing`؛ (2) أُنشئت
+`BorrowFormWindow.xaml`/`.xaml.cs` تحوي *محتوى* البطاقة السابقة حرفياً بلا أي تعديل على الربط أو
+الأوامر (`ScrollViewer` وما بداخله: وضعا `IsNew` — طلب استعارة جديد Stepper من خطوتين، وعرض/تفاصيل/
+إرجاع)، مع `KeyBinding` وحيد لـ`Escape` على `Window.InputBindings` (نفس السلوك السابق)، ودون
+`DataContext` في XAML — يُمرَّر من كود `BorrowView.xaml.cs`؛ (3) أُضيف مفتاح ترجمة جديد
+`TitleBorrowForm` ("نموذج الاستعارة" / "Borrow Form") في `Strings.ar.xaml`/`Strings.en.xaml` بنفس نمط
+`TitleLocationDetails`؛ (4) أُضيف منطق دورة حياة نافذة في `BorrowView.xaml.cs` (طبقة العرض حصراً، بلا
+لمس `BorrowViewModel.cs`): اشتراك بـ`PropertyChanged` على `DataContext` بعد `Loaded` وإلغاء الاشتراك
+عند `Unloaded`؛ عند تحوّل `IsEditing` إلى `true` (وبحارس ضد إعادة الدخول يمنع فتح نافذة ثانية) تُنشأ
+`BorrowFormWindow` بـ`DataContext`/`Owner` مناسبين وتُستدعى `ShowDialog()`؛ وعند تحوّلها إلى `false`
+(من `Save`/`Submit`/`MarkReturned`/`Cancel` داخل الـViewModel كما كانت) تُغلَق النافذة إن كانت مفتوحة.
+لم يُلمس `BorrowViewModel.cs` ولا أي أمر من أوامره (`AddNewCommand`, `SubmitCommand`,
+`CancelEditCommand`, `NextStepCommand`, `PreviousStepCommand`, `MarkReturnedCommand`) إطلاقاً. أُعيدت
+كتابة `BorrowViewOverlayTests.cs` بالكامل: اختبار أول يثبت أن الجدول ظاهر دائماً بغض النظر عن
+`IsEditing`؛ واختبار ثانٍ يثبت أن `AddNewCommand` يفتح فعلياً نافذة من نوع `BorrowFormWindow` (يُتحقَّق
+عبر `Application.Current.Windows`) وأن `CancelEditCommand` يُغلقها. **تسوية اختبارية موثَّقة:**
+`ShowDialog()` التي يستدعيها `BorrowView.xaml.cs` عند `IsEditing=true` تحجب مسار التنفيذ الحالي بمضخة
+رسائل متداخلة (nested message pump) خاصة بها؛ استُخدم `Dispatcher.CurrentDispatcher.BeginInvoke` مع
+`DispatcherPriority.ApplicationIdle` لجدولة التحقق من فتح النافذة واستدعاء `CancelEditCommand` بحيث
+تُنفَّذ هذه الخطوة أثناء تشغيل حلقة `ShowDialog()` المتداخلة نفسها، فتُغلَق النافذة ويعود
+`AddNewCommand.Execute` من الحجب طبيعياً — بدل خيط STA مخصص إضافي، لأن `WpfStaFixture` القائم يوفر
+بالفعل خيط STA واحد بمضخة `Dispatcher.Run()` تكفي لتشغيل `BeginInvoke` أثناء `ShowDialog()` المتداخلة.
+**تحقُّق يدوي إلزامي:** عبر `git stash push -u` (بمعرّف فريد، واستعادة بـ`git stash apply <sha>` لا
+`pop`) أُعيدت ملفات `BorrowView.xaml`/`.xaml.cs`/`BorrowFormWindow.*`/ملفي الترجمة إلى نسختها السابقة
+للتصحيح بينما بقي ملف الاختبار المُعاد كتابته كما هو — فشل البناء فعلياً بخطأ ترجمة
+(`CS0246: BorrowFormWindow could not be found`) لأن النوع غير موجود قبل التصحيح، ثم استُعيدت الملفات
+المُصحَّحة عبر `git stash apply` ونجح كلا الاختبارين. 1155 اختباراً محلياً (Debug)، صفر فشل، صفر
+تجاوز (عدد صافٍ ثابت — اختباران استُبدلا باختبارين). بناء المشروع الرئيسي بلا تحذيرات جديدة (نفس
+التحذيرات الخمسة السابقة في `LoginWindow.xaml.cs`/`ViewInstantiationTests.cs`، غير متعلقة بالاستعارة).
+
+### 13.1 إصلاح عاجل لاحق — تصفير `IsEditing` تلقائياً عند إغلاق `BorrowFormWindow` عبر ✕/Alt+F4
+
+عطل حرج اكتُشف بالاختبار البصري الفعلي بعد التصحيح المعماري أعلاه: إغلاق `BorrowFormWindow` عبر زر
+الإغلاق الأصلي لنظام التشغيل أو `Alt+F4` يستدعي فقط `Window.Close()` الافتراضي لـWPF، ولا يمر أبداً
+عبر `CancelEditCommand`، فتبقى `BorrowViewModel.IsEditing` عالقة على `true` — يمنع فتح أي نافذة جديدة
+لاحقاً ويُظهر تحذير "نافذة مفتوحة" عند التنقل أو إغلاق التطبيق، يضطر المستخدم معه لإنهاء العملية بالقوة.
+الإصلاح: أُضيف معالج `Closing` في `BorrowFormWindow.xaml.cs` يستدعي `CancelEditCommand` (بشرط
+`CanExecute`) فقط إن كانت `IsEditing` لا تزال `true` لحظة الإغلاق (أي إغلاق عبر ✕/Alt+F4، لا نجاح
+الحفظ الذي يُصفّرها الـViewModel نفسه أولاً) — عبر نفس مسار الإلغاء اليدوي تماماً، بلا لمس
+`BorrowViewModel.cs`. أُضيفت خاصية `IsClosingInProgress` لمنع استدعاء `Close()` متكرر (reentrant) من
+`BorrowView.xaml.cs` أثناء معالجة `Closing` نفسها. اختبار انحداري جديد
+(`BorrowFormWindow_ClosedViaNativeCloseButton_ResetsIsEditing_AndAllowsReopening`) يحاكي السيناريو
+تماماً: `AddNewCommand` ثم `Close()` مباشرة على كائن النافذة (لا `CancelEditCommand`)، يتحقق من عودة
+`IsEditing` إلى `false` تلقائياً، ثم يتحقق أن `AddNewCommand` التالي يفتح نافذة جديدة فعلياً لا شيء.
+تحقُّق يدوي مستقل (بإعادة `BorrowFormWindow.xaml.cs`/`BorrowView.xaml.cs` مؤقتاً للنسخة السابقة عبر
+`git checkout <commit> --`) أثبت فشل الاختبار فعلاً (`Assert.False(): Actual: True`) قبل الإصلاح
+ونجاحه بعده. طلب ثانوي في نفس الكوميت: توسيع `BorrowFormWindow` (720×720 → 900×860) لتقليل الحاجة
+للتمرير، بلا إعادة تصميم تخطيط الحقول. مسار "تفاصيل وإجراء الاستعارة" (زر العين) يستخدم نفس خاصية
+`IsEditing` وذات آلية الفتح/الإغلاق في `BorrowView.xaml.cs`، فيستفيد من الإصلاح تلقائياً دون حاجة لمسار
+منفصل. 1156 اختباراً محلياً (Debug، +1)، صفر فشل. بناء بلا تحذيرات جديدة.
