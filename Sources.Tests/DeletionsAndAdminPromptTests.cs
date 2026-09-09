@@ -36,6 +36,29 @@ namespace Sources.Tests
             PasswordPromptDialog.CustomPromptResult = null;
         }
 
+        /// <summary>
+        /// ينتظر اكتمال التحميل غير المتزامن الذي يُطلقه مُنشئ DeletionsViewModel بأسلوب
+        /// "fire-and-forget" (`_ = LoadDeletedItemsAsync();`، انظر DeletionsViewModel.cs).
+        /// بدون هذا الانتظار، الاستدعاء الصريح اللاحق لـ LoadDeletedItemsAsync() في كل اختبار
+        /// من اختبارات هذا الملف يعمل بالتوازي مع تلك المهمة الخلفية غير المنتظَرة على خيط
+        /// منفصل من ThreadPool، وكلاهما يفتح AppDbContext جديداً عبر نفس اتصال SQLite المشترك
+        /// (SqliteInMemoryFixture) في آن واحد. SqliteConnection غير آمن للاستخدام المتزامن من
+        /// عدة خيوط، فيفسد ذلك حالة الاتصال ويظهر لاحقاً كـ NullReferenceException عشوائي
+        /// التوقيت (أحياناً أثناء استعلام، وأحياناً لاحقاً داخل ResetDatabase()/Dispose()) — تحقَّق
+        /// هذا فعلياً بإعادة تشغيل نفس مهمة CI الفاشلة دون أي تعديل على الكود فنجحت (سباق زمني
+        /// متقطع، لا خلل حتمي). الاستطلاع الدوري هنا (بنفس نمط WaitForSourcesLoaded في
+        /// SourcesViewNeutronOverlayTests.cs من الجولة 144) يضمن انتهاء تحميل المُنشئ فعلياً قبل
+        /// أي استخدام لاحق للاتصال، فيزيل التزامن بدل إخفاء أعراضه.
+        /// </summary>
+        private static async Task WaitForInitialLoadAsync(DeletionsViewModel vm)
+        {
+            const int maxIterations = 200; // ~2 ثانية كحد أقصى بفاصل 10ms
+            for (int i = 0; i < maxIterations && vm.IsLoading; i++)
+            {
+                await Task.Delay(10);
+            }
+        }
+
         #region 1. Password Prompt Admin Validation Tests
 
         [Fact]
@@ -285,6 +308,7 @@ namespace Sources.Tests
 
             // Act: Instantiate DeletionsViewModel and load
             var vm = new DeletionsViewModel(_fixture.ContextFactory);
+            await WaitForInitialLoadAsync(vm);
             await vm.LoadDeletedItemsAsync();
 
             // Assert: Total deleted = 2 Sources + 1 Location + 1 User + 1 Radioisotope = 5 items
@@ -345,6 +369,7 @@ namespace Sources.Tests
             }
 
             var vm = new DeletionsViewModel(_fixture.ContextFactory);
+            await WaitForInitialLoadAsync(vm);
             await vm.LoadDeletedItemsAsync();
 
             // Act & Assert: Filter Sources
@@ -392,6 +417,7 @@ namespace Sources.Tests
             }
 
             var vm = new DeletionsViewModel(_fixture.ContextFactory);
+            await WaitForInitialLoadAsync(vm);
             await vm.LoadDeletedItemsAsync();
 
             // Act: Search for Ba-133
@@ -435,6 +461,7 @@ namespace Sources.Tests
             }
 
             var vm = new DeletionsViewModel(_fixture.ContextFactory);
+            await WaitForInitialLoadAsync(vm);
             await vm.LoadDeletedItemsAsync();
 
             // Act & Assert: Call ViewDetails for each row
@@ -891,6 +918,7 @@ namespace Sources.Tests
             mockUser.Setup(u => u.CurrentUser).Returns(adminUser);
 
             var vm = new DeletionsViewModel(_fixture.ContextFactory, userService: mockUser.Object);
+            await WaitForInitialLoadAsync(vm);
             await vm.LoadDeletedItemsAsync();
 
             var rowToRestore = vm.AllItems.FirstOrDefault(i => i.Id == loc.Id);
@@ -929,6 +957,7 @@ namespace Sources.Tests
             }
 
             var vm = new DeletionsViewModel(_fixture.ContextFactory);
+            await WaitForInitialLoadAsync(vm);
             await vm.LoadDeletedItemsAsync();
 
             var rowToRestore = vm.AllItems.FirstOrDefault(i => i.Id == loc.Id);
