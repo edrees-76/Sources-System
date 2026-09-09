@@ -1313,6 +1313,17 @@
     <system:String x:Key="MsgErrBorrowRequestNotFound">الطلب غير موجود.</system:String>
     <system:String x:Key="MsgErrReturnNotAllowedStatus">الحالة الحالية لا تسمح بالإرجاع.</system:String>
     <system:String x:Key="MsgSuccessBorrowReturned">تم تسجيل إرجاع المصدر بنجاح وعاد ليكون متاحاً في المخزن.</system:String>
+    <system:String x:Key="MsgErrInvalidLocationData">بيانات الموقع غير صالحة</system:String>
+    <system:String x:Key="MsgErrLocationNameRequired">اسم الموقع مطلوب</system:String>
+    <system:String x:Key="MsgErrLocationNameExists">اسم الموقع موجود بالفعل</system:String>
+    <system:String x:Key="MsgSuccessLocationCreated">تم إضافة الموقع بنجاح</system:String>
+    <system:String x:Key="MsgErrLocationNotFound">الموقع غير موجود</system:String>
+    <system:String x:Key="MsgSuccessLocationUpdated">تم تحديث الموقع</system:String>
+    <system:String x:Key="MsgErrCannotDeleteLocationHasSources">لا يمكن حذف الموقع "{0}" لاحتوائه على مصادر مرتبطة به</system:String>
+    <system:String x:Key="MsgSuccessLocationDeleted">تم حذف الموقع</system:String>
+    <system:String x:Key="MsgErrLocationNotDeleted">الموقع غير محذوف أصلاً</system:String>
+    <system:String x:Key="MsgErrCannotRestoreLocationNameConflict">لا يمكن استرجاع الموقع لوجود موقع نشط آخر بنفس الاسم ("{0}")</system:String>
+    <system:String x:Key="MsgSuccessLocationRestored">تم استرجاع الموقع {0}</system:String>
 
     <!-- Add/Edit Form Categories -->
     <system:String x:Key="LabelSourceCategory">فئة المصدر:</system:String>
