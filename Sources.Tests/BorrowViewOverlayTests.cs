@@ -153,6 +153,91 @@ public class BorrowViewOverlayTests
         });
     }
 
+    [Fact]
+    public void BorrowFormWindow_ClosedViaNativeCloseButton_ResetsIsEditing_AndAllowsReopening()
+    {
+        RunInSta(() =>
+        {
+            using var fixture = new SqliteInMemoryFixture();
+            var vm = CreateViewModel(fixture);
+            try
+            {
+                var view = new BorrowView { DataContext = vm };
+
+                var window = new Window
+                {
+                    Content = view,
+                    Width = 1280,
+                    Height = 800,
+                    WindowStyle = WindowStyle.None,
+                    ShowInTaskbar = false,
+                    ShowActivated = false,
+                    Left = -5000,
+                    Top = -5000
+                };
+
+                window.Show();
+                try
+                {
+                    window.UpdateLayout();
+
+                    // الخطوة 1: فتح BorrowFormWindow عبر AddNewCommand، ثم محاكاة الإغلاق عبر
+                    // زر ✕ الأصلي (Close() مباشرة على النافذة نفسها — وليس عبر CancelEditCommand)،
+                    // بنفس أسلوب الجدولة عبر Dispatcher.BeginInvoke المستخدم في الاختبار الآخر.
+                    Dispatcher.CurrentDispatcher.BeginInvoke(new System.Action(() =>
+                    {
+                        var formWindow = Application.Current.Windows
+                            .OfType<BorrowFormWindow>()
+                            .FirstOrDefault();
+
+                        Assert.NotNull(formWindow);
+                        Assert.True(vm.IsEditing);
+
+                        // محاكاة إغلاق عبر ✕ / Alt+F4: استدعاء Close() مباشرة على النافذة،
+                        // وليس عبر CancelEditCommand.
+                        formWindow!.Close();
+                    }), DispatcherPriority.ApplicationIdle);
+
+                    vm.AddNewCommand.Execute(null);
+
+                    // بعد الإغلاق عبر ✕، يجب أن تُصفَّر IsEditing تلقائياً عبر معالج Closing
+                    // في BorrowFormWindow (الذي يستدعي CancelEditCommand داخلياً)، دون أن يحتاج
+                    // المستخدم لاستدعاء زر الإلغاء يدوياً.
+                    Assert.False(vm.IsEditing);
+                    Assert.Empty(Application.Current.Windows.OfType<BorrowFormWindow>());
+
+                    // الخطوة 2: التأكد من أن نافذة جديدة فعلاً تُفتح عند استدعاء AddNewCommand
+                    // مرة أخرى (وليس لا شيء بسبب مرجع نافذة سابق عالق يمنع الفتح).
+                    BorrowFormWindow? secondFormWindow = null;
+                    Dispatcher.CurrentDispatcher.BeginInvoke(new System.Action(() =>
+                    {
+                        secondFormWindow = Application.Current.Windows
+                            .OfType<BorrowFormWindow>()
+                            .FirstOrDefault();
+
+                        Assert.NotNull(secondFormWindow);
+                        Assert.True(vm.IsEditing);
+
+                        vm.CancelEditCommand.Execute(null);
+                    }), DispatcherPriority.ApplicationIdle);
+
+                    vm.AddNewCommand.Execute(null);
+
+                    Assert.NotNull(secondFormWindow);
+                    Assert.False(vm.IsEditing);
+                }
+                finally
+                {
+                    window.Close();
+                }
+            }
+            finally
+            {
+                WeakReferenceMessenger.Default.UnregisterAll(vm);
+            }
+        });
+    }
+
     private static T? FindFirstVisualChild<T>(System.Windows.DependencyObject root) where T : System.Windows.DependencyObject
     {
         for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(root); i++)

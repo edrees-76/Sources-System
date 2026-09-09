@@ -51,7 +51,13 @@ public partial class BorrowView : UserControl
         }
         else
         {
-            _formWindow?.Close();
+            // إذا كانت النافذة بصدد الإغلاق فعلياً (مثلاً: CancelEditCommand استُدعي من داخل
+            // معالج Closing الخاص بها نتيجة إغلاق عبر ✕ أو Alt+F4)، فتجنّب استدعاء Close()
+            // مرة أخرى بشكل متكرر (reentrant)؛ ستتابع النافذة إغلاقها من تلقاء نفسها.
+            if (_formWindow != null && !_formWindow.IsClosingInProgress)
+            {
+                _formWindow.Close();
+            }
         }
     }
 
