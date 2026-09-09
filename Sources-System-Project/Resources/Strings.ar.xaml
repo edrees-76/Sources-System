@@ -1270,6 +1270,16 @@
     <system:String x:Key="TitleInventoryReportPdf">تقرير جرد المصادر المشعة</system:String>
     <system:String x:Key="TitleInventoryReportExcel">جرد المصادر</system:String>
 
+    <!-- Round 138 (ثانية ضمن طبقة ViewModels من ب5): NeutronSourceTypesViewModel.cs validation/success message localization -->
+    <system:String x:Key="MsgErrNeutronTypeCodeRequired">كود النوع المرجعي مطلوب</system:String>
+    <system:String x:Key="MsgErrNeutronTypeHalfLifePositive">يجب إدخال قيمة عمر نصف موجبة وأكبر من صفر</system:String>
+    <system:String x:Key="MsgErrPhotonToNeutronRatioInvalid">نسبة الفوتون إلى النيترون يجب أن تكون قيمة رقمية صحيحة</system:String>
+    <system:String x:Key="TitleSuccessShort">نجاح</system:String>
+    <system:String x:Key="MsgErrNeutronReferenceTypeNotFound">النوع المرجعي غير موجود</system:String>
+    <system:String x:Key="MsgConfirmDeleteNeutronType">هل أنت متأكد من حذف النوع المرجعي '{0}'؟</system:String>
+    <system:String x:Key="TitleDeleteSuccess">تم الحذف</system:String>
+    <system:String x:Key="TitleDeleteFailed">تعذر الحذف</system:String>
+
     <!-- Round 131 (فرعية ثانية لـب5): SourceService.cs validation/success message localization -->
     <system:String x:Key="MsgErrInvalidSourceData">بيانات المصدر غير صالحة</system:String>
     <system:String x:Key="MsgErrInitialActivityPositive">قيمة النشاط الابتدائي يجب أن تكون أكبر من صفر</system:String>

@@ -1273,6 +1273,16 @@
     <system:String x:Key="TitleInventoryReportPdf">Radioactive Sources Inventory Report</system:String>
     <system:String x:Key="TitleInventoryReportExcel">Sources Inventory</system:String>
 
+    <!-- Round 138 (second within the ViewModels layer of B5): NeutronSourceTypesViewModel.cs validation/success message localization -->
+    <system:String x:Key="MsgErrNeutronTypeCodeRequired">Reference type code is required</system:String>
+    <system:String x:Key="MsgErrNeutronTypeHalfLifePositive">Half-life value must be positive and greater than zero</system:String>
+    <system:String x:Key="MsgErrPhotonToNeutronRatioInvalid">Photon-to-neutron ratio must be a valid numeric value</system:String>
+    <system:String x:Key="TitleSuccessShort">Success</system:String>
+    <system:String x:Key="MsgErrNeutronReferenceTypeNotFound">Reference type does not exist</system:String>
+    <system:String x:Key="MsgConfirmDeleteNeutronType">Are you sure you want to delete reference type '{0}'?</system:String>
+    <system:String x:Key="TitleDeleteSuccess">Deleted</system:String>
+    <system:String x:Key="TitleDeleteFailed">Delete Failed</system:String>
+
     <!-- Round 131 (second sub-round of B5): SourceService.cs validation/success message localization -->
     <system:String x:Key="MsgErrInvalidSourceData">Invalid source data</system:String>
     <system:String x:Key="MsgErrInitialActivityPositive">Initial activity value must be greater than zero</system:String>
