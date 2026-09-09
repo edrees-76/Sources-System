@@ -860,3 +860,57 @@ Stepper الاستعارة ثنائي الخطوات)، رُبط كل من `Esca
 صفر فشل، صفر تجاوز (1156 + 3 اختبارات جديدة − 2 اختبارا `LocationsViewOverlayTests.cs` المحذوفَين).
 بناء المشروع الرئيسي بلا تحذيرات جديدة (نفس التحذيرات الأربعة السابقة في `LoginWindow.xaml.cs`، غير
 متعلقة بالمواقع). لا انحرافات عن عقد الجولة 145.
+
+---
+
+## 16. الجولة 146 — استبدال التراكب المنبثق داخل العرض بنافذة WPF حقيقية لشاشة النظائر المشعة (RadioisotopeFormWindow)
+
+**الحالة: Draft PR غير مدموج، بانتظار قراءة القائد للكود ثم التحقق البصري الفعلي من إدريس.**
+
+استكمال المسار المعماري الذي طبَّقته الجولتان 143 (`BorrowFormWindow`) و145 (`LocationFormWindow`) على
+آخر شاشة متبقية بنمط التراكب المنبثق: `RadioisotopesView`. أُلغي تراكب `RadioisotopesView.xaml` المنبثق
+داخل العرض (`Panel.ZIndex="1000"`، الخلفية المعتّمة `#88000000`، البطاقة المركزية بعرض `720`) المُضاف في
+الجولة 142، واستُبدل بنافذة WPF مستقلة حقيقية (`RadioisotopeFormWindow.xaml`/`.xaml.cs`) بنفس بنية
+`LocationFormWindow`: `WindowStartupLocation="CenterOwner"`، `WindowStyle="SingleBorderWindow"`،
+`ShowInTaskbar="True"` صريحتان، تُفتح عبر `ShowDialog()`. التعديل: (1) حُذف `Grid` التراكب بالكامل من
+`RadioisotopesView.xaml` (المشهد 1 — الجدول وشريط البحث — يبقى ظاهراً دائماً كما كان، بلا أي تغيير)، مع
+حذف موارد `BoolToVisibilityConverter`/`InverseBoolToVisibilityConverter` من `UserControl.Resources`
+بعد أن أصبحا بلا أي استهلاك في الملف؛ (2) أُنشئت `RadioisotopeFormWindow.xaml`/`.xaml.cs` تحوي محتوى
+نموذج الخطوتين (Stepper) حرفياً بلا أي تعديل على الربط أو الأوامر (`EditSymbol`/`EditRadiationType`/
+`EditName`/`EditArabicName`/`EditHalfLifeText`/`EditHalfLifeUnit`/`EditEnergyText`/`EditYieldText`/
+`EditGammaConstantText`/`EditNotes`/`EditEnglishNotes`/`CurrentStep`/`NextStepCommand`/
+`PreviousStepCommand`/`SaveCommand`/`CancelEditCommand`/`SuggestGammaConstantCommand`)، مع حذف زر
+الإغلاق الدائري ✕ المكرر من رأس النموذج (الإغلاق فقط عبر شريط العنوان الأصلي، `Escape`، أو زر "إلغاء")؛
+(3) مفتاح ترجمة جديد واحد `TitleRadioisotopeForm` (عنوان النافذة نفسها) أُضيف لكلا القاموسين — بقية
+عناوين النموذج (`AddRadioisotopeDataTitle`/`EditRadioisotopeDataTitle`) أُعيد استخدامها كما هي دون
+تعديل؛ (4) أُعيدت كتابة `RadioisotopesView.xaml.cs` (كانت فارغة تماماً قبل هذه الجولة، بلا أي منطق
+دورة حياة) بنفس منطق `LocationsView.xaml.cs`/`BorrowView.xaml.cs` (اشتراك `PropertyChanged` بعد
+`Loaded`، إلغاء عند `Unloaded`، حارس ضد فتح نافذة ثانية، وحارس `IsClosingInProgress` لمنع `Close()`
+متكرر). لم يُلمس `RadioisotopesViewModel.cs` إطلاقاً. **قرار مُثبَّت صريحاً (لا انحراف):** أُضيف
+`KeyBinding Key="Return" Command="{Binding SaveCommand}"` على `Window.InputBindings` — بخلاف
+`BorrowFormWindow` التي تجاهلت هذا الربط لتعدد أوامر الحفظ بين خطواتها، هنا يوجد أمر `SaveCommand`
+واحد لا لبس فيه يُستدعى من كل خطوة (الزر المرتبط به يظهر فقط في الخطوة 2 عبر `Visibility`، لكن الأمر
+نفسه هو ذاته دون تفريع)، وهذا مطابق حرفياً لسلوك التراكب القديم الذي كان يحمل هذا الـKeyBinding نفسه
+منذ الجولة 142 دون مشكلة. استُبدل `RadioisotopesViewOverlayTests.cs` (الجولة 142، يتحقق من نمط التراكب
+القديم غير الموجود بعد الآن) بملف جديد `RadioisotopeFormWindowTests.cs` بنفس منهجية
+`LocationsFormWindowTests.cs`: (أ) الجدول ظاهر دائماً بغض النظر عن `IsEditing`، (ب) `AddNewCommand`
+يفتح فعلياً نافذة `RadioisotopeFormWindow` (يُتحقَّق عبر `Application.Current.Windows` وتطابق
+`DataContext`)، و(ج) إغلاق النافذة مباشرة عبر `Close()` (محاكاة ✕ الأصلي) يُصفِّر `IsEditing` تلقائياً
+ويسمح بإعادة الفتح لاحقاً — بنفس أسلوب جدولة `Dispatcher.CurrentDispatcher.BeginInvoke` مع
+`DispatcherPriority.ApplicationIdle` أثناء حلقة `ShowDialog()` المتداخلة. **تحقُّق تجريبي إلزامي عبر
+`git stash push -u`/`git stash apply <sha>` (لا `pop`):** أُوقفت جميع ملفات الإنتاج (`RadioisotopeFormWindow.xaml`/`.xaml.cs`،
+`RadioisotopesView.xaml`/`.xaml.cs`، `Strings.ar.xaml`/`Strings.en.xaml`) بينما بقي ملف الاختبار الجديد
+كما هو؛ فشل البناء فعلياً بخطأ ترجمة (`CS0246: RadioisotopeFormWindow could not be found`) على الكود
+السابق للتصحيح، ثم استُعيدت ملفات الإصلاح كاملة (`apply` لا `pop`، والمُدخَل حُذف بعدها بـ`drop`)، ونجحت
+الاختبارات الثلاثة. **قياس أساس منفصل (baseline) أُجري بنفس الأسلوب** للتأكد من صافي عدد الاختبارات:
+1159 اختباراً محلياً (Debug) على حالة المستودع قبل هذه الجولة (تشمل تصحيح وحدات النشاط في PR #40)، صعوداً
+إلى 1160/1158 اختباراً (Debug/Release) بعد الجولة 146 — صافي +1 (اختباران قديمان حُذفا +ثلاثة اختبارات
+جديدة أُضيفت). صفر فشل، صفر تجاوز. بناء المشروع الرئيسي بلا تحذيرات جديدة (نفس التحذيرات الخمس السابقة
+في `LoginWindow.xaml.cs`/`ViewInstantiationTests.cs`، غير متعلقة بالنظائر المشعة). لا انحرافات عن عقد
+الجولة 146 غير القرار المُثبَّت أعلاه بخصوص `KeyBinding Key="Return"`.
+**انحراف عملية موثَّق (بيئي، يكرر نمط الجولة 128):** فشل تشغيل `round-implementer` كوكيل فرعي مرتين
+متتاليتين (توقف كامل — Agent stalled — بلا أي تقدّم فعلي، عدم إنشاء أي ملف أو commit في كلتا
+المحاولتين) أثناء العمل داخل نفس فرع/worktree الجلسة القائدة نفسها — بيئة عزل الوكيل الفرعي (sandbox)
+عن مسارات الـworktree غير المخصَّصة له يبدو أنها السبب المحتمل، بلا تأكيد قطعي. نُفِّذت الجولة كاملة
+مباشرة من جلسة القائد (تصميم، تنفيذ، تحقُّق TDD مزدوج بـ`git stash`، بناء واختبار كامل مرتين) بدل
+التفويض لـ`round-implementer`.

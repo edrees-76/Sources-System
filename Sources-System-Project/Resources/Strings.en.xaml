@@ -374,6 +374,7 @@
     <system:String x:Key="ColYield">Yield</system:String>
     <system:String x:Key="CtxEdit">Edit</system:String>
     <system:String x:Key="CtxDelete">Delete</system:String>
+    <system:String x:Key="TitleRadioisotopeForm">Radioisotope Form</system:String>
     <system:String x:Key="AddRadioisotopeDataTitle">➕ Add Radioisotope Data</system:String>
     <system:String x:Key="EditRadioisotopeDataTitle">✏️ Edit Radioisotope Data</system:String>
     <system:String x:Key="Step1Identity">Step 1: Isotope Identity</system:String>
