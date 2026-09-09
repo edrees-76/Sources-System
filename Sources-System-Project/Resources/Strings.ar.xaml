@@ -1059,7 +1059,7 @@
 
     <!-- شاشة الاستعارة - المشهد المزدوج -->
     <system:String x:Key="AddNewBorrowRequestTitle">طلب استعارة مصدر جديد</system:String>
-    <system:String x:Key="BorrowDetailsTitle">تفاصيل وإجراء الاستعارة</system:String>
+    <system:String x:Key="BorrowDetailsTitle">تفاصيل الاستعارة</system:String>
     <system:String x:Key="Step1RequestData">1. بيانات الطلب والمصدر</system:String>
     <system:String x:Key="Step2DeliveryReview">2. التسليم والمراجعة</system:String>
     <system:String x:Key="BtnBack">رجوع</system:String>

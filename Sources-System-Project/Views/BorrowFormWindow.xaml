@@ -6,8 +6,8 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
         Title="{DynamicResource TitleBorrowForm}"
-        Width="900" Height="860"
-        MinWidth="650" MinHeight="500" MaxHeight="860"
+        Width="820" Height="760"
+        MinWidth="650" MinHeight="500" MaxHeight="760"
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanResize"
         FlowDirection="RightToLeft"
@@ -54,13 +54,6 @@
                         <TextBlock Text="{DynamicResource AddNewBorrowRequestTitle}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                         <TextBlock Text="{DynamicResource BorrowingManagementSubtitle}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
                     </StackPanel>
-
-                    <Button Grid.Column="2" Command="{Binding CancelEditCommand}"
-                            Style="{StaticResource MaterialDesignIconButton}"
-                            Width="36" Height="36" Padding="0"
-                            ToolTip="{DynamicResource Close}">
-                        <materialDesign:PackIcon Kind="Close" Foreground="{DynamicResource TextSecondary}" Width="20" Height="20"/>
-                    </Button>
                 </Grid>
             </Border>
 
@@ -361,13 +354,6 @@
                         <TextBlock Text="{DynamicResource BorrowDetailsTitle}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                         <TextBlock Text="{Binding SelectedRequest.DisplaySourceCode, StringFormat='المصدر: {0}'}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
                     </StackPanel>
-
-                    <Button Grid.Column="2" Command="{Binding CancelEditCommand}"
-                            Style="{StaticResource MaterialDesignIconButton}"
-                            Width="36" Height="36" Padding="0"
-                            ToolTip="{DynamicResource Close}">
-                        <materialDesign:PackIcon Kind="Close" Foreground="{DynamicResource TextSecondary}" Width="20" Height="20"/>
-                    </Button>
                 </Grid>
             </Border>
 
