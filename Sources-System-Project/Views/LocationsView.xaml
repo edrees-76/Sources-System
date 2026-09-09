@@ -64,7 +64,7 @@
         </Border>
 
         <Grid Grid.Row="2">
-            <Border Style="{StaticResource ContentCard}" Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVis}}">
+            <Border Style="{StaticResource ContentCard}">
                 <DataGrid ItemsSource="{Binding Locations}" SelectedItem="{Binding Selected}" Style="{StaticResource ModernDataGrid}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource CenterAligned}"/>
@@ -159,48 +159,70 @@
                     </DataGrid.ContextMenu>
                 </DataGrid>
             </Border>
-            <Border Style="{StaticResource ContentCard}" Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}">
-                <Border.InputBindings>
-                    <KeyBinding Key="Enter" Command="{Binding SaveCommand}"/>
-                    <KeyBinding Key="Escape" Command="{Binding CancelEditCommand}"/>
-                </Border.InputBindings>
-                <StackPanel MaxWidth="500">
-                    <TextBlock Text="{DynamicResource LocationDataTitle}" Style="{StaticResource CardTitle}" FontSize="20" Margin="0,0,0,20"/>
-                    <StackPanel Margin="0,0,0,12">
-                        <TextBlock Text="{DynamicResource FieldNameReq}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding EditName}" Style="{StaticResource FormTextBox}"/>
+            <Grid Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}" Panel.ZIndex="1000" FlowDirection="RightToLeft">
+                <Border Background="#88000000">
+                    <Border.InputBindings>
+                        <MouseBinding MouseAction="LeftClick" Command="{Binding CancelEditCommand}"/>
+                    </Border.InputBindings>
+                </Border>
+
+                <Border Width="560" MaxHeight="620" VerticalAlignment="Center" HorizontalAlignment="Center"
+                        Background="{DynamicResource CardBackground}" CornerRadius="14"
+                        BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                    <Border.Effect>
+                        <DropShadowEffect Color="#000000" BlurRadius="30" ShadowDepth="6" Opacity="0.25"/>
+                    </Border.Effect>
+                    <Border.InputBindings>
+                        <KeyBinding Key="Enter" Command="{Binding SaveCommand}"/>
+                        <KeyBinding Key="Escape" Command="{Binding CancelEditCommand}"/>
+                    </Border.InputBindings>
+
+                    <StackPanel MaxWidth="500" Margin="24">
+                        <DockPanel Margin="0,0,0,20" LastChildFill="True">
+                            <Button DockPanel.Dock="Left" Command="{Binding CancelEditCommand}"
+                                    Style="{StaticResource MaterialDesignIconButton}" Width="32" Height="32" Padding="0">
+                                <materialDesign:PackIcon Kind="Close" Width="18" Height="18"/>
+                            </Button>
+                            <TextBlock Text="{DynamicResource LocationDataTitle}" Style="{StaticResource CardTitle}" FontSize="20" VerticalAlignment="Center"/>
+                        </DockPanel>
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="{DynamicResource FieldNameReq}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding EditName}" Style="{StaticResource FormTextBox}"/>
+                        </StackPanel>
+                        <UniformGrid Columns="2" Margin="0,0,0,12">
+                            <StackPanel Margin="0,0,12,0">
+                                <TextBlock Text="{DynamicResource FieldType}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
+                                <ComboBox SelectedValue="{Binding EditType}" SelectedValuePath="Tag" Style="{StaticResource FormComboBox}">
+                                    <ComboBoxItem Content="{DynamicResource LocationTypeLab}" Tag="Lab" Foreground="{DynamicResource TextPrimary}" Padding="10,8" FontFamily="Segoe UI" FontSize="14"/>
+                                    <ComboBoxItem Content="{DynamicResource LocationTypeStorage}" Tag="Storage" Foreground="{DynamicResource TextPrimary}" Padding="10,8" FontFamily="Segoe UI" FontSize="14"/>
+                                    <ComboBoxItem Content="{DynamicResource LocationTypeHospital}" Tag="Hospital" Foreground="{DynamicResource TextPrimary}" Padding="10,8" FontFamily="Segoe UI" FontSize="14"/>
+                                    <ComboBoxItem Content="{DynamicResource LocationTypeClinic}" Tag="Clinic" Foreground="{DynamicResource TextPrimary}" Padding="10,8" FontFamily="Segoe UI" FontSize="14"/>
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource FieldBuilding}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
+                                <TextBox Text="{Binding EditBuilding}" Style="{StaticResource FormTextBox}"/>
+                            </StackPanel>
+                        </UniformGrid>
+                        <UniformGrid Columns="2" Margin="0,0,0,12">
+                            <StackPanel Margin="0,0,12,0">
+                                <TextBlock Text="{DynamicResource FieldRoom}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
+                                <TextBox Text="{Binding EditRoom}" Style="{StaticResource FormTextBox}"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource FieldResponsible}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
+                                <TextBox Text="{Binding EditPerson}" Style="{StaticResource FormTextBox}"/>
+                            </StackPanel>
+                        </UniformGrid>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,12,0,0">
+                            <Button Content="{DynamicResource BtnSave}" Style="{StaticResource PrimaryButton}" Command="{Binding SaveCommand}" IsDefault="True" Margin="0,0,12,0"/>
+                            <Button Content="{DynamicResource BtnCancel}" Style="{StaticResource SecondaryButton}" Command="{Binding CancelEditCommand}" IsCancel="True"/>
+                        </StackPanel>
                     </StackPanel>
-                    <UniformGrid Columns="2" Margin="0,0,0,12">
-                        <StackPanel Margin="0,0,12,0">
-                            <TextBlock Text="{DynamicResource FieldType}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
-                            <ComboBox SelectedValue="{Binding EditType}" SelectedValuePath="Tag" Style="{StaticResource FormComboBox}">
-                                <ComboBoxItem Content="{DynamicResource LocationTypeLab}" Tag="Lab" Foreground="{DynamicResource TextPrimary}" Padding="10,8" FontFamily="Segoe UI" FontSize="14"/>
-                                <ComboBoxItem Content="{DynamicResource LocationTypeStorage}" Tag="Storage" Foreground="{DynamicResource TextPrimary}" Padding="10,8" FontFamily="Segoe UI" FontSize="14"/>
-                                <ComboBoxItem Content="{DynamicResource LocationTypeHospital}" Tag="Hospital" Foreground="{DynamicResource TextPrimary}" Padding="10,8" FontFamily="Segoe UI" FontSize="14"/>
-                                <ComboBoxItem Content="{DynamicResource LocationTypeClinic}" Tag="Clinic" Foreground="{DynamicResource TextPrimary}" Padding="10,8" FontFamily="Segoe UI" FontSize="14"/>
-                            </ComboBox>
-                        </StackPanel>
-                        <StackPanel>
-                            <TextBlock Text="{DynamicResource FieldBuilding}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
-                            <TextBox Text="{Binding EditBuilding}" Style="{StaticResource FormTextBox}"/>
-                        </StackPanel>
-                    </UniformGrid>
-                    <UniformGrid Columns="2" Margin="0,0,0,12">
-                        <StackPanel Margin="0,0,12,0">
-                            <TextBlock Text="{DynamicResource FieldRoom}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
-                            <TextBox Text="{Binding EditRoom}" Style="{StaticResource FormTextBox}"/>
-                        </StackPanel>
-                        <StackPanel>
-                            <TextBlock Text="{DynamicResource FieldResponsible}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
-                            <TextBox Text="{Binding EditPerson}" Style="{StaticResource FormTextBox}"/>
-                        </StackPanel>
-                    </UniformGrid>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,12,0,0">
-                        <Button Content="{DynamicResource BtnSave}" Style="{StaticResource PrimaryButton}" Command="{Binding SaveCommand}" IsDefault="True" Margin="0,0,12,0"/>
-                        <Button Content="{DynamicResource BtnCancel}" Style="{StaticResource SecondaryButton}" Command="{Binding CancelEditCommand}" IsCancel="True"/>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
+                </Border>
+            </Grid>
         </Grid>
     </Grid>
 </UserControl>
