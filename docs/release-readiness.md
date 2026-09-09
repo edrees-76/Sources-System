@@ -749,7 +749,78 @@ ViewModel واحد بين المشهدين (لا ViewModel فرعي منفصل)�
 `IsEditing` وذات آلية الفتح/الإغلاق في `BorrowView.xaml.cs`، فيستفيد من الإصلاح تلقائياً دون حاجة لمسار
 منفصل. 1156 اختباراً محلياً (Debug، +1)، صفر فشل. بناء بلا تحذيرات جديدة.
 
-## 14. الجولة 145 — استبدال التراكب المنبثق داخل العرض بنافذة WPF حقيقية لشاشة المواقع (LocationFormWindow)
+## 14. الجولة 144 — تصحيح معماري لأنواع المصادر النيترونية: استبدال التراكب المنبثق داخل العرض بنافذة WPF حقيقية (`NeutronSourceTypesWindow`)
+
+**الحالة: Draft PR غير مدموج، بانتظار قراءة القائد للكود ثم التحقق البصري الفعلي من إدريس معاً — لا دمج قبل الاثنين.**
+
+قرار معماري طبّق على `NeutronSourceTypesOverlay` (أول شاشة حُوِّلت لنمط التراكب المنبثق داخل العرض،
+الجولة 139/140) نفس التصحيح الذي طُبِّق على `BorrowView` في البند 13 أعلاه — إلغاء نمط التراكب
+واستبداله بنافذة WPF مستقلة حقيقية (`NeutronSourceTypesWindow.xaml`/`.xaml.cs`) بنفس نمط
+`LocationDetailsWindow`/`BorrowFormWindow` القائمين (شريط عنوان نظام التشغيل الأصلي،
+`WindowStartupLocation="CenterOwner"`، تُفتح عبر `ShowDialog()`). لا يُلغي هذا القرار مبادرة التراكب
+المنبثق لبقية الشاشات المحوَّلة (141/142) — يقتصر فقط على شاشة إدارة أنواع المصادر النيترونية
+المرجعية كتصحيح لاحق. التعديل: (1) حُذف `Grid` التراكب بالكامل (`Panel.ZIndex="1000"`، الخلفية
+المعتّمة `#88000000`، `<views:NeutronSourceTypesOverlay>` وربط `xmlns:views`) من `SourcesView.xaml`،
+مع بقاء جدول/بطاقات المصادر ظاهراً دائماً كما كان بلا أي `Visibility` مرتبط بحالة الإدارة؛ (2) حُذف
+`NeutronSourceTypesOverlay.xaml`/`.xaml.cs` بالكامل بعد تأكيد خلوّ المستودع من أي مرجع كودي متبقٍ
+لهما؛ (3) أُعيد إنشاء `NeutronSourceTypesWindow.xaml`/`.xaml.cs` (كانت قد حُذفت في الجولة 139) تحوي
+*محتوى* التراكب السابق حرفياً بلا أي تعديل على الربط أو الأوامر، بإعادة استخدام مفتاحي الترجمة
+القائمين `TitleNeutronSourceTypes`/`SubtitleNeutronTypes` دون أي مفتاح جديد، مع `KeyBinding` وحيد
+لـ`Escape` على `Window.InputBindings` (نفس السلوك السابق)، ودون `DataContext` في XAML — يُمرَّر من
+كود `SourcesView.xaml.cs`؛ لا حاجة لتسجيل `NeutronSourceTypesWindow` في حاوية DI بـ`App.xaml.cs` (تُنشأ
+مباشرة بـ`new` بنفس نمط `BorrowFormWindow`، لا `LocationDetailsWindow`)؛ (4) أُضيف منطق دورة حياة
+نافذة في `SourcesView.xaml.cs` (طبقة العرض حصراً، بلا لمس `SourcesViewModel.cs`/
+`NeutronSourceTypesViewModel.cs`): اشتراك بـ`PropertyChanged` على `DataContext` بعد `Loaded` وإلغاء
+الاشتراك عند `Unloaded`؛ عند تحوّل `IsManagingNeutronTypes` إلى `true` (وبحارس ضد إعادة الدخول يمنع
+فتح نافذة ثانية) تُنشأ `NeutronSourceTypesWindow` بـ`DataContext`/`Owner` مناسبين وتُستدعى
+`ShowDialog()`؛ وعند تحوّلها إلى `false` تُغلَق النافذة إن كانت مفتوحة وليست بصدد الإغلاق أصلاً
+(`IsClosingInProgress`)؛ (5) أُضيف معالج `Closing` في `NeutronSourceTypesWindow.xaml.cs` يستدعي
+`CloseCommand` (بشرط `CanExecute`) مباشرة — بلا حاجة لفحص حالة وسيطة كما في `BorrowFormWindow` لأن
+`CloseCommand` هنا مُعرَّف أصلاً منذ الجولة 139 كمسار إغلاق وحيد (`OnClose` + تصفير
+`IsManagingNeutronTypes`) — مع خاصية `IsClosingInProgress` لمنع استدعاء `Close()` متكرر
+(reentrant) من `SourcesView.xaml.cs`، فتُطبَّق دفعة واحدة معالجة الإغلاق عبر ✕/Alt+F4 التي احتاجت
+إصلاحاً عاجلاً لاحقاً في حالة `BorrowFormWindow` (البند 13.1)، بدل تكرار نفس العطل ثم إصلاحه لاحقاً.
+لم يُلمس `NeutronSourceTypesViewModel.cs` ولا أي أمر من أوامره (`CloseCommand` وأوامر الحفظ/التحقق
+القائمة) إطلاقاً. أُعيدت كتابة اختبار التكامل بالكامل: حُذف الاختبار القديم
+`SourcesView_ByDefault_NeutronTypesOverlayHostIsCollapsed` من `ViewInstantiationTests.cs` (كان
+يتحقق من عنصر `NeutronSourceTypesOverlay` الذي لم يعد موجوداً في `SourcesView.xaml`)، وأُضيف ملف
+اختبار تكامل جديد (`SourcesViewNeutronOverlayTests.cs`) يستضيف `SourcesView` داخل `Window` حقيقية
+فعلياً (`Show()`/`UpdateLayout()`) بثلاثة اختبارات: (أ) جدول المصادر ظاهر دائماً بغض النظر عن
+`IsManagingNeutronTypes`، (ب) `OpenNeutronSourceTypesManagementCommand` يفتح فعلياً نافذة من نوع
+`NeutronSourceTypesWindow` (يُتحقَّق عبر `Application.Current.Windows`) وأن جدول المصادر يبقى ظاهراً
+تحتها، و(ج) الإغلاق عبر ✕/Alt+F4 (محاكاة بـ`Close()` مباشرة لا `CloseCommand`) يُصفِّر
+`IsManagingNeutronTypes` تلقائياً ويسمح بإعادة الفتح لاحقاً. **تسوية اختبارية موثَّقة (نفس أسلوب
+البند 13):** `ShowDialog()` التي يستدعيها `SourcesView.xaml.cs` عند `IsManagingNeutronTypes=true`
+تحجب مسار التنفيذ الحالي بمضخة رسائل متداخلة خاصة بها؛ استُخدم `Dispatcher.CurrentDispatcher.BeginInvoke`
+مع `DispatcherPriority.ApplicationIdle` لجدولة التحقق من فتح النافذة واستدعاء `CloseCommand`/`Close()`
+بحيث تُنفَّذ هذه الخطوة أثناء تشغيل حلقة `ShowDialog()` المتداخلة نفسها. **عطل إضافي اكتُشف ثم أُصلح
+أثناء كتابة الاختبار الأول (لا علاقة له بالتحويل المعماري نفسه):** `SourcesViewModel` يُحمِّل بياناته
+بشكل غير متزامن في مُنشئه (`_ = LoadDataAsync();` تنتظر `Task.Run(...)` داخلياً)، ودالة `LoadDataAsync`
+تستدعي `_sourceService.GetDeletedSources()` مباشرة بعد `GetAllSources()` وتستخدم النتيجة فوراً
+(`deletedList.Count`) دون فحص `null`؛ إعداد الاختبار (`CreateViewModel`) لم يكن يُهيّئ Stub لهذه
+الدالة على `Mock<ISourceService>`، فأعادت Moq افتراضياً `null` (سلوك `MockBehavior.Loose` مع نوع
+مرجعي)، فرُمي `NullReferenceException` غير مُلتقَط داخل المهمة غير المتزامنة قبل الوصول لسطر
+`Sources = new ObservableCollection<Source>(allSources);`، فبقيت `Sources` فارغة دائماً وظهر جدول
+المصادر (`SourceCardsPanel`) كـ`Collapsed` خطأً — ظاهره سباق زمني (Dispatcher لم يُفرَّغ بعد) لكن
+جذره الفعلي إعداد Mock ناقص في الاختبار نفسه، لا خلل في كود الإنتاج ولا في ربط `Visibility`. أُضيف
+Stub الناقص (`mockSourceService.Setup(s => s.GetDeletedSources()).Returns(new List<Source>())`) في
+`CreateViewModel()`، إلى جانب مساعد استطلاع (`WaitForSourcesLoaded`) يُفرِّغ طابور Dispatcher دورياً
+حتى تكتمل `Sources` (بمهلة قصوى ~2 ثانية) بدل الاعتماد على توقيت تفريغ واحد غير مضمون، لتفادي سباق
+حقيقي متبقٍ في توقيت اكتمال `Task.Run` نفسه. لم يُعدَّل أي توكيد (`Assert`) لإخفاء هذا العطل. **تحقُّق
+يدوي إلزامي:** عبر `git stash push -u` (بمعرّف فريد، واستعادة بـ`git stash apply <sha>` لا `pop`) أُعيد
+تخزين ملفات الشاشة (`SourcesView.xaml`/`.xaml.cs`، ملفي `NeutronSourceTypesOverlay.*` المحذوفين،
+ملفي `NeutronSourceTypesWindow.*` الجديدين، وتعديل `ViewInstantiationTests.cs`) في stash بينما بقي
+ملف الاختبار الجديد كما هو في مجلد العمل؛ فشل البناء فعلياً بأخطاء ترجمة متعددة
+(`CS0246: NeutronSourceTypesWindow could not be found`) لأن النوع غير موجود قبل التصحيح، ثم
+استُعيدت الملفات المُصحَّحة عبر `git stash apply <sha>` وأُسقطت النسخة المخزَّنة بعدها
+(`git stash drop`)، ونجحت الاختبارات الثلاثة معاً. 1158 اختباراً محلياً (Debug)، صفر فشل، صفر تجاوز
+(−1 اختبار قديم حُذف، +3 اختبارات جديدة = +2 صافياً عن الجولة 143). بناء المشروع الرئيسي بلا تحذيرات
+جديدة (نفس التحذيرات الثلاثة المسبقة: اثنان CS8604 في `LoginWindow.xaml.cs`، وواحد CS8604 في
+`ViewInstantiationTests.cs`، غير متعلقة بهذه الجولة). لم يُلمس `App.xaml.cs` إطلاقاً (بخلاف الجولة
+139 التي احتاجت حذف تسجيل DI، لا حاجة هنا لأن `NeutronSourceTypesWindow` تُنشأ مباشرة بـ`new` لا عبر
+الحاوية).
+
+## 15. الجولة 145 — استبدال التراكب المنبثق داخل العرض بنافذة WPF حقيقية لشاشة المواقع (LocationFormWindow)
 
 **الحالة: Draft PR غير مدموج، بانتظار قراءة القائد للكود ثم التحقق البصري الفعلي من إدريس.**
 
