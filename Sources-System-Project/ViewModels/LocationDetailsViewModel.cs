@@ -235,12 +235,17 @@ public partial class LocationDetailsViewModel : ObservableObject
                 }
             }
 
+            // نفس قائمة الوحدات الثمانية المستخدمة في لوحة التحكم، بنفس ترتيب DisplayOrder في جدول ActivityUnits
             var units = new List<(string Symbol, double Factor)>
             {
-                ("Ci", 3.7e10),
-                ("mCi", 3.7e7),
+                ("Bq", 1.0),
+                ("kBq", 1e3),
+                ("MBq", 1e6),
+                ("GBq", 1e9),
+                ("TBq", 1e12),
                 ("µCi", 3.7e4),
-                ("Bq", 1.0)
+                ("mCi", 3.7e7),
+                ("Ci", 3.7e10)
             };
 
             var items = new ObservableCollection<TotalActivityItem>();

@@ -107,20 +107,17 @@
                     <TextBlock Text="إجمالي النشاط الإشعاعي بالموقع:" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <!-- كروت الوحدات المتعددة -->
-                <ItemsControl ItemsSource="{Binding TotalActivityItems}">
+                <!-- كروت الوحدات المتعددة (نفس تنسيق لوحة التحكم) -->
+                <ItemsControl ItemsSource="{Binding TotalActivityItems}" HorizontalAlignment="Left">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <UniformGrid Rows="1"/>
+                            <WrapPanel Orientation="Horizontal"/>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="{DynamicResource InputBackground}" CornerRadius="6" Padding="12,6" Margin="4,0"
-                                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding DisplayValue}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" FlowDirection="LeftToRight"/>
-                                </StackPanel>
+                            <Border Background="{StaticResource GoldBrush}" CornerRadius="6" Padding="12,5" Margin="0,0,10,5">
+                                <TextBlock Text="{Binding DisplayValue}" FontWeight="Bold" FontSize="13" Foreground="White" VerticalAlignment="Center" FlowDirection="LeftToRight"/>
                             </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
