@@ -727,3 +727,24 @@ ViewModel واحد بين المشهدين (لا ViewModel فرعي منفصل)�
 المُصحَّحة عبر `git stash apply` ونجح كلا الاختبارين. 1155 اختباراً محلياً (Debug)، صفر فشل، صفر
 تجاوز (عدد صافٍ ثابت — اختباران استُبدلا باختبارين). بناء المشروع الرئيسي بلا تحذيرات جديدة (نفس
 التحذيرات الخمسة السابقة في `LoginWindow.xaml.cs`/`ViewInstantiationTests.cs`، غير متعلقة بالاستعارة).
+
+### 13.1 إصلاح عاجل لاحق — تصفير `IsEditing` تلقائياً عند إغلاق `BorrowFormWindow` عبر ✕/Alt+F4
+
+عطل حرج اكتُشف بالاختبار البصري الفعلي بعد التصحيح المعماري أعلاه: إغلاق `BorrowFormWindow` عبر زر
+الإغلاق الأصلي لنظام التشغيل أو `Alt+F4` يستدعي فقط `Window.Close()` الافتراضي لـWPF، ولا يمر أبداً
+عبر `CancelEditCommand`، فتبقى `BorrowViewModel.IsEditing` عالقة على `true` — يمنع فتح أي نافذة جديدة
+لاحقاً ويُظهر تحذير "نافذة مفتوحة" عند التنقل أو إغلاق التطبيق، يضطر المستخدم معه لإنهاء العملية بالقوة.
+الإصلاح: أُضيف معالج `Closing` في `BorrowFormWindow.xaml.cs` يستدعي `CancelEditCommand` (بشرط
+`CanExecute`) فقط إن كانت `IsEditing` لا تزال `true` لحظة الإغلاق (أي إغلاق عبر ✕/Alt+F4، لا نجاح
+الحفظ الذي يُصفّرها الـViewModel نفسه أولاً) — عبر نفس مسار الإلغاء اليدوي تماماً، بلا لمس
+`BorrowViewModel.cs`. أُضيفت خاصية `IsClosingInProgress` لمنع استدعاء `Close()` متكرر (reentrant) من
+`BorrowView.xaml.cs` أثناء معالجة `Closing` نفسها. اختبار انحداري جديد
+(`BorrowFormWindow_ClosedViaNativeCloseButton_ResetsIsEditing_AndAllowsReopening`) يحاكي السيناريو
+تماماً: `AddNewCommand` ثم `Close()` مباشرة على كائن النافذة (لا `CancelEditCommand`)، يتحقق من عودة
+`IsEditing` إلى `false` تلقائياً، ثم يتحقق أن `AddNewCommand` التالي يفتح نافذة جديدة فعلياً لا شيء.
+تحقُّق يدوي مستقل (بإعادة `BorrowFormWindow.xaml.cs`/`BorrowView.xaml.cs` مؤقتاً للنسخة السابقة عبر
+`git checkout <commit> --`) أثبت فشل الاختبار فعلاً (`Assert.False(): Actual: True`) قبل الإصلاح
+ونجاحه بعده. طلب ثانوي في نفس الكوميت: توسيع `BorrowFormWindow` (720×720 → 900×860) لتقليل الحاجة
+للتمرير، بلا إعادة تصميم تخطيط الحقول. مسار "تفاصيل وإجراء الاستعارة" (زر العين) يستخدم نفس خاصية
+`IsEditing` وذات آلية الفتح/الإغلاق في `BorrowView.xaml.cs`، فيستفيد من الإصلاح تلقائياً دون حاجة لمسار
+منفصل. 1156 اختباراً محلياً (Debug، +1)، صفر فشل. بناء بلا تحذيرات جديدة.
