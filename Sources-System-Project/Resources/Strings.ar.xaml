@@ -371,6 +371,7 @@
     <system:String x:Key="ColYield">الاحتمالية</system:String>
     <system:String x:Key="CtxEdit">تعديل</system:String>
     <system:String x:Key="CtxDelete">حذف</system:String>
+    <system:String x:Key="TitleRadioisotopeForm">نموذج النظير المشع</system:String>
     <system:String x:Key="AddRadioisotopeDataTitle">➕ إضافة بيانات النظير المشع</system:String>
     <system:String x:Key="EditRadioisotopeDataTitle">✏️ تعديل بيانات النظير المشع</system:String>
     <system:String x:Key="Step1Identity">خطوة 1: هوية النظير</system:String>
