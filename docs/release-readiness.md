@@ -408,6 +408,29 @@ ArabicStatus` — خاصية `[NotMapped]` تُعيد نصاً عربياً دا
 XAML المثبتة، وأي خدمة أخرى لم تُراجَع بعد صراحة) ما زال مؤجَّلاً لجولات لاحقة. Draft PR #29
 (قيد المراجعة، غير مدموج).
 
+**الجولة 138 (ثانية ضمن طبقة `ViewModels` من ب5، منجزة محلياً):** غُلِّفت كل النصوص العربية الظاهرة
+للمستخدم المتبقية بلا غلاف في `NeutronSourceTypesViewModel.cs` بنفس نمط الجولة 137. 8 مفاتيح جديدة
+(`MsgErrNeutronTypeCodeRequired`، `MsgErrNeutronTypeHalfLifePositive`،
+`MsgErrPhotonToNeutronRatioInvalid`، `TitleSuccessShort`، `MsgErrNeutronReferenceTypeNotFound`،
+`MsgConfirmDeleteNeutronType`، `TitleDeleteSuccess`، `TitleDeleteFailed`) وإعادة استخدام صريحة
+لثلاثة مفاتيح قائمة (`TitleWarning`، `AlertError`، `AlertConfirmation` — الأخير بنفس نمط
+`SourcesViewModel.cs` القائم: قيمة القاموس الفعلية "تأكيد" مع ارتداد محلي مختلف "تأكيد الحذف").
+**انحرافان مسجَّلان (اكتُشفا بقراءة `Strings.ar.xaml` الفعلية قبل الكتابة، لا بعدها):**
+(1) اسم المفتاح `MsgErrNeutronTypeNotFound` الذي افترضه نص العقد الأصلي لرسالة "النوع المرجعي غير
+موجود" **مُستخدَم بالفعل** بقيمة عربية مختلفة تماماً ("نوع المصدر النيتروني المحدد غير موجود") تخدم
+ملفاً آخر خارج نطاق هذه الجولة — استُخدم اسم بديل `MsgErrNeutronReferenceTypeNotFound` تفادياً
+لتلويث مفتاح قائم (نفس مبدأ انحراف الجولة 137 حول تعارض أسماء الكبسولة). (2) نص عمر النصف في هذا
+الملف ("يجب إدخال قيمة عمر نصف موجبة وأكبر من صفر") **غير مطابق حرفياً** لقيمة المفتاح القائم
+`MsgErrHalfLifeMustBePositive` ("نصف العمر يجب أن يكون أكبر من صفر")، فأُنشئ مفتاح جديد منفصل
+`MsgErrNeutronTypeHalfLifePositive` بدل إعادة الاستخدام — بالضبط كما توقّع نص العقد عند عدم
+التطابق. لا استدعاء لـ`_auditService.Log`/`LogWithChanges` في هذا الملف أصلاً (تحقَّق منه صراحة).
+بلا أي تغيير في منطق التحقق أو شرط العمل. اختبار انحداري جديد
+(`Save_Create_WithEmptyCode_ShowsEnglishRequiredMessage_WhenEnglishLanguageActive`) بنفس آلية تبديل
+القاموس المستعملة في الجولات 130-137، يثبت أن `MsgErrNeutronTypeCodeRequired`/`TitleWarning` يظهران
+بالإنجليزية الصحيحة عبر السلوك الفعلي لـ`SaveCommand`. 1146/1144 اختباراً (Debug/Release، +1 عن
+الجولة 137)، نفس 5 تحذيرات بناء مسبقة بلا علاقة (CS8604) و0 أخطاء. النطاق المتبقي من ب5 (بقية طبقة
+`ViewModels`، نصوص XAML المثبتة، وأي خدمة أخرى لم تُراجَع بعد صراحة) ما زال مؤجَّلاً لجولات لاحقة.
+
 ### ☐ ب6 — معالج أول تشغيل
 يسأل عن مجلد النسخ الاحتياطي ويُفعّل النسخ التلقائي. الافتراضي الحالي `AutoBackupEnabled = false`.
 

@@ -135,7 +135,9 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(EditCode))
         {
-            DialogHelper.ShowWarning("كود النوع المرجعي مطلوب", "تنبيه");
+            DialogHelper.ShowWarning(
+                TranslationHelper.GetString("MsgErrNeutronTypeCodeRequired") ?? "كود النوع المرجعي مطلوب",
+                TranslationHelper.GetString("TitleWarning") ?? "تنبيه");
             return;
         }
 
@@ -146,7 +148,9 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
 
         if (EditHalfLife <= 0)
         {
-            DialogHelper.ShowWarning("يجب إدخال قيمة عمر نصف موجبة وأكبر من صفر", "تنبيه");
+            DialogHelper.ShowWarning(
+                TranslationHelper.GetString("MsgErrNeutronTypeHalfLifePositive") ?? "يجب إدخال قيمة عمر نصف موجبة وأكبر من صفر",
+                TranslationHelper.GetString("TitleWarning") ?? "تنبيه");
             return;
         }
 
@@ -171,7 +175,7 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
             if (!ScientificNotationParser.TryParse(EditPhotonToNeutronRatioText, out double ratioVal) || !double.IsFinite(ratioVal))
             {
                 DialogHelper.ShowWarning(
-                    "نسبة الفوتون إلى النيترون يجب أن تكون قيمة رقمية صحيحة",
+                    TranslationHelper.GetString("MsgErrPhotonToNeutronRatioInvalid") ?? "نسبة الفوتون إلى النيترون يجب أن تكون قيمة رقمية صحيحة",
                     TranslationHelper.GetString("TitleWarning") ?? "تنبيه");
                 return;
             }
@@ -202,14 +206,14 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
             var res = _service.Create(newType);
             if (res.Success)
             {
-                DialogHelper.ShowInfo(res.Message, "نجاح");
+                DialogHelper.ShowInfo(res.Message, TranslationHelper.GetString("TitleSuccessShort") ?? "نجاح");
                 IsEditing = false;
                 ClearForm();
                 LoadData();
             }
             else
             {
-                DialogHelper.ShowWarning(res.Message, "تنبيه");
+                DialogHelper.ShowWarning(res.Message, TranslationHelper.GetString("TitleWarning") ?? "تنبيه");
             }
         }
         else if (_editingId.HasValue)
@@ -217,7 +221,9 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
             var existing = _service.GetById(_editingId.Value);
             if (existing == null)
             {
-                DialogHelper.ShowWarning("النوع المرجعي غير موجود", "خطأ");
+                DialogHelper.ShowWarning(
+                    TranslationHelper.GetString("MsgErrNeutronReferenceTypeNotFound") ?? "النوع المرجعي غير موجود",
+                    TranslationHelper.GetString("AlertError") ?? "خطأ");
                 return;
             }
 
@@ -236,14 +242,14 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
             var res = _service.Update(existing);
             if (res.Success)
             {
-                DialogHelper.ShowInfo(res.Message, "نجاح");
+                DialogHelper.ShowInfo(res.Message, TranslationHelper.GetString("TitleSuccessShort") ?? "نجاح");
                 IsEditing = false;
                 ClearForm();
                 LoadData();
             }
             else
             {
-                DialogHelper.ShowWarning(res.Message, "تنبيه");
+                DialogHelper.ShowWarning(res.Message, TranslationHelper.GetString("TitleWarning") ?? "تنبيه");
             }
         }
     }
@@ -254,18 +260,21 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
         var target = item ?? SelectedType;
         if (target == null) return;
 
-        bool confirm = DialogHelper.ShowConfirmation($"هل أنت متأكد من حذف النوع المرجعي '{target.Code}'؟", "تأكيد الحذف");
+        string confirmTitle = TranslationHelper.GetString("AlertConfirmation") ?? "تأكيد الحذف";
+        bool confirm = DialogHelper.ShowConfirmation(
+            string.Format(TranslationHelper.GetString("MsgConfirmDeleteNeutronType") ?? "هل أنت متأكد من حذف النوع المرجعي '{0}'؟", target.Code),
+            confirmTitle);
         if (!confirm) return;
 
         var res = _service.Delete(target.Id);
         if (res.Success)
         {
-            DialogHelper.ShowInfo(res.Message, "تم الحذف");
+            DialogHelper.ShowInfo(res.Message, TranslationHelper.GetString("TitleDeleteSuccess") ?? "تم الحذف");
             LoadData();
         }
         else
         {
-            DialogHelper.ShowWarning(res.Message, "تعذر الحذف");
+            DialogHelper.ShowWarning(res.Message, TranslationHelper.GetString("TitleDeleteFailed") ?? "تعذر الحذف");
         }
     }
 

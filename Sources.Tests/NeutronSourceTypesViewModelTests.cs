@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using Moq;
+using Sources.Helpers;
 using Sources.Models;
 using Sources.Services;
+using Sources.Tests.Fixtures;
 using Sources.ViewModels;
 using Xunit;
 
@@ -144,4 +146,62 @@ public class NeutronSourceTypesViewModelTests
         Assert.NotNull(captured);
         Assert.Equal(-0.1, captured!.PhotonToNeutronDoseRatio);
     }
+
+    #region الترجمة الإنجليزية لرسائل NeutronSourceTypesViewModel.cs (Round 138)
+
+    [Fact]
+    public void Save_Create_WithEmptyCode_ShowsEnglishRequiredMessage_WhenEnglishLanguageActive()
+    {
+        WpfStaFixture.RunInSta(() =>
+        {
+            var dicts = System.Windows.Application.Current.Resources.MergedDictionaries;
+            var arabicDictIndex = -1;
+            for (int i = 0; i < dicts.Count; i++)
+            {
+                var src = dicts[i].Source?.OriginalString;
+                if (src != null && src.Contains("Strings.ar.xaml"))
+                {
+                    arabicDictIndex = i;
+                    break;
+                }
+            }
+            Assert.True(arabicDictIndex >= 0, "Strings.ar.xaml dictionary must already be loaded by WpfStaFixture.");
+
+            try
+            {
+                // Arrange: swap the active dictionary to English, mirroring App.ApplyLanguage's
+                // merged-dictionary-replacement mechanism (its own relative pack URI cannot
+                // resolve outside the packaged application, so an absolute pack URI is used here,
+                // exactly as WpfStaFixture already does for the initial Arabic dictionary).
+                dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.en.xaml", UriKind.Absolute)
+                };
+
+                var vm = CreateViewModel();
+                vm.AddNewCommand.Execute(null);
+                vm.EditCode = string.Empty;
+
+                // Act
+                vm.SaveCommand.Execute(null);
+
+                // Assert: the English dictionary text is returned via DialogHelper, not the Arabic fallback
+                Assert.Equal("Reference type code is required", DialogHelper.LastMessage);
+                Assert.Equal(TranslationHelper.GetString("MsgErrNeutronTypeCodeRequired"), DialogHelper.LastMessage);
+                Assert.Equal("Warning", DialogHelper.LastTitle);
+                Assert.NotEqual("كود النوع المرجعي مطلوب", DialogHelper.LastMessage);
+                _mockService.Verify(s => s.Create(It.IsAny<NeutronSourceType>()), Times.Never);
+            }
+            finally
+            {
+                // Restore the Arabic dictionary so subsequent STA-thread tests are unaffected
+                dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.ar.xaml", UriKind.Absolute)
+                };
+            }
+        });
+    }
+
+    #endregion
 }
