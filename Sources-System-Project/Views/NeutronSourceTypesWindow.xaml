@@ -9,6 +9,8 @@
         Width="960" Height="760"
         MinWidth="760" MinHeight="560" MaxHeight="900"
         WindowStartupLocation="CenterOwner"
+        WindowStyle="SingleBorderWindow"
+        ShowInTaskbar="True"
         ResizeMode="CanResize"
         FlowDirection="RightToLeft"
         Background="{DynamicResource WindowBackground}"
@@ -40,9 +42,6 @@
                     </StackPanel>
 
                     <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button Command="{Binding CloseCommand}" Style="{StaticResource MaterialDesignIconButton}" Width="36" Height="36" Padding="0" Margin="0,0,8,0">
-                            <materialDesign:PackIcon Kind="Close" Width="18" Height="18"/>
-                        </Button>
                         <Button Command="{Binding AddNewCommand}" Style="{DynamicResource PrimaryButton}" Margin="0,0,8,0"
                                 Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVis}}">
                             <StackPanel Orientation="Horizontal">

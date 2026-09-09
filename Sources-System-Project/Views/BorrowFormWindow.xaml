@@ -9,6 +9,8 @@
         Width="820" Height="760"
         MinWidth="650" MinHeight="500" MaxHeight="760"
         WindowStartupLocation="CenterOwner"
+        WindowStyle="SingleBorderWindow"
+        ShowInTaskbar="True"
         ResizeMode="CanResize"
         FlowDirection="RightToLeft"
         Background="{DynamicResource WindowBackground}"
