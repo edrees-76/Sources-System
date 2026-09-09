@@ -721,6 +721,9 @@
     <system:String x:Key="PlaceholderSearchLocationSources">بحث بكود المصدر، النظير، الرقم التسلسلي، أو الصانع...</system:String>
     <system:String x:Key="MsgNoSourcesMatchFilter">لا توجد مصادر تطابق معايير البحث والفلترة المحددة</system:String>
 
+    <!-- Borrow Form Window -->
+    <system:String x:Key="TitleBorrowForm">نموذج الاستعارة</system:String>
+
 
 
 

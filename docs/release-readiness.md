@@ -686,3 +686,44 @@ ViewModel واحد بين المشهدين (لا ViewModel فرعي منفصل)�
 `git stash apply`) أثبت أن كلا الاختبارين يفشلان فعلاً (`لم يتم العثور على Grid التراكب`) بدون
 الإصلاح، وينجحان معه. 1155 اختباراً محلياً (Debug)، صفر فشل، صفر تجاوز (+2 عن الجولة 142). بناء
 المشروع الرئيسي بلا تحذيرات جديدة.
+
+## 13. تصحيح معماري للجولة 143 — استبدال التراكب المنبثق داخل العرض بنافذة WPF حقيقية لشاشة الاستعارة (BorrowFormWindow)
+
+**الحالة: Draft PR #37 غير مدموج، بانتظار قراءة القائد للكود ثم التحقق البصري الفعلي من إدريس معاً — لا دمج قبل الاثنين.**
+
+قرار معماري ألغى نمط التراكب المنبثق داخل العرض (In-View Modal Overlay) الذي طبّقته الجولة 143 على
+`BorrowView` (والمُصحَّح موضعياً بعدها في نفس الفرع) واستبدله بنافذة WPF مستقلة حقيقية
+(`BorrowFormWindow.xaml`/`.xaml.cs`) بنفس نمط `LocationDetailsWindow` القائم مسبقاً في المستودع
+(شريط عنوان نظام التشغيل الأصلي، `WindowStartupLocation="CenterOwner"`، تُفتح عبر `ShowDialog()`).
+لا يُلغي هذا القرار مبادرة التراكب المنبثق لبقية الشاشات (139/140/141/142) — يقتصر فقط على `BorrowView`
+كتصحيح لاحق. التعديل: (1) حُذف `Grid` التراكب بالكامل (`Panel.ZIndex="1000"`، الخلفية المعتّمة
+`#88000000`، البطاقة المركزية بالظل) من `BorrowView.xaml`، مع بقاء "المشهد 1" (البطاقات الإحصائية،
+شريط البحث والتصفية، الجدول) ظاهراً دائماً كما كان بلا أي `Visibility` مرتبط بـ`IsEditing`؛ (2) أُنشئت
+`BorrowFormWindow.xaml`/`.xaml.cs` تحوي *محتوى* البطاقة السابقة حرفياً بلا أي تعديل على الربط أو
+الأوامر (`ScrollViewer` وما بداخله: وضعا `IsNew` — طلب استعارة جديد Stepper من خطوتين، وعرض/تفاصيل/
+إرجاع)، مع `KeyBinding` وحيد لـ`Escape` على `Window.InputBindings` (نفس السلوك السابق)، ودون
+`DataContext` في XAML — يُمرَّر من كود `BorrowView.xaml.cs`؛ (3) أُضيف مفتاح ترجمة جديد
+`TitleBorrowForm` ("نموذج الاستعارة" / "Borrow Form") في `Strings.ar.xaml`/`Strings.en.xaml` بنفس نمط
+`TitleLocationDetails`؛ (4) أُضيف منطق دورة حياة نافذة في `BorrowView.xaml.cs` (طبقة العرض حصراً، بلا
+لمس `BorrowViewModel.cs`): اشتراك بـ`PropertyChanged` على `DataContext` بعد `Loaded` وإلغاء الاشتراك
+عند `Unloaded`؛ عند تحوّل `IsEditing` إلى `true` (وبحارس ضد إعادة الدخول يمنع فتح نافذة ثانية) تُنشأ
+`BorrowFormWindow` بـ`DataContext`/`Owner` مناسبين وتُستدعى `ShowDialog()`؛ وعند تحوّلها إلى `false`
+(من `Save`/`Submit`/`MarkReturned`/`Cancel` داخل الـViewModel كما كانت) تُغلَق النافذة إن كانت مفتوحة.
+لم يُلمس `BorrowViewModel.cs` ولا أي أمر من أوامره (`AddNewCommand`, `SubmitCommand`,
+`CancelEditCommand`, `NextStepCommand`, `PreviousStepCommand`, `MarkReturnedCommand`) إطلاقاً. أُعيدت
+كتابة `BorrowViewOverlayTests.cs` بالكامل: اختبار أول يثبت أن الجدول ظاهر دائماً بغض النظر عن
+`IsEditing`؛ واختبار ثانٍ يثبت أن `AddNewCommand` يفتح فعلياً نافذة من نوع `BorrowFormWindow` (يُتحقَّق
+عبر `Application.Current.Windows`) وأن `CancelEditCommand` يُغلقها. **تسوية اختبارية موثَّقة:**
+`ShowDialog()` التي يستدعيها `BorrowView.xaml.cs` عند `IsEditing=true` تحجب مسار التنفيذ الحالي بمضخة
+رسائل متداخلة (nested message pump) خاصة بها؛ استُخدم `Dispatcher.CurrentDispatcher.BeginInvoke` مع
+`DispatcherPriority.ApplicationIdle` لجدولة التحقق من فتح النافذة واستدعاء `CancelEditCommand` بحيث
+تُنفَّذ هذه الخطوة أثناء تشغيل حلقة `ShowDialog()` المتداخلة نفسها، فتُغلَق النافذة ويعود
+`AddNewCommand.Execute` من الحجب طبيعياً — بدل خيط STA مخصص إضافي، لأن `WpfStaFixture` القائم يوفر
+بالفعل خيط STA واحد بمضخة `Dispatcher.Run()` تكفي لتشغيل `BeginInvoke` أثناء `ShowDialog()` المتداخلة.
+**تحقُّق يدوي إلزامي:** عبر `git stash push -u` (بمعرّف فريد، واستعادة بـ`git stash apply <sha>` لا
+`pop`) أُعيدت ملفات `BorrowView.xaml`/`.xaml.cs`/`BorrowFormWindow.*`/ملفي الترجمة إلى نسختها السابقة
+للتصحيح بينما بقي ملف الاختبار المُعاد كتابته كما هو — فشل البناء فعلياً بخطأ ترجمة
+(`CS0246: BorrowFormWindow could not be found`) لأن النوع غير موجود قبل التصحيح، ثم استُعيدت الملفات
+المُصحَّحة عبر `git stash apply` ونجح كلا الاختبارين. 1155 اختباراً محلياً (Debug)، صفر فشل، صفر
+تجاوز (عدد صافٍ ثابت — اختباران استُبدلا باختبارين). بناء المشروع الرئيسي بلا تحذيرات جديدة (نفس
+التحذيرات الخمسة السابقة في `LoginWindow.xaml.cs`/`ViewInstantiationTests.cs`، غير متعلقة بالاستعارة).
