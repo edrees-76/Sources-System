@@ -327,6 +327,31 @@ ArabicStatus` — خاصية `[NotMapped]` تُعيد نصاً عربياً دا
 قد تكشف نفس الفجوة. النطاق المتبقي من ب5 (`ViewModels` ونصوص XAML المثبتة) ما زال مؤجَّلاً لجولات
 لاحقة.
 
+**الجولة 135 (سادسة ضمن سلسلة ب5):** أول ملف في هذه السلسلة يجمع بين رسائل مُترجَمة سابقاً (خمس
+رسائل تحقق من كون القيمة رقماً منتهياً لنصف العمر/الطاقة/المردود/حد الإعفاء/ثابت غاما، بالمفاتيح
+`MsgErrInvalidHalfLifeFinite` وأخواتها، من الجولتين 109/110 تقريباً) ورسائل متبقية لم تُغلَّف بعد —
+وليس ملفاً كاملاً غير مُترجَم كالملفات الخمسة السابقة (`NeutronSourceService`/`SourceService`/
+`UserService`/`BorrowService`/`LocationService`). غُلِّفت كل الرسائل الـ12 المتبقية في
+`RadioisotopeService.cs` (`Create`/`Update`/`Delete`/`Restore`) بنفس نمط الجولات 130-134، مع دمج
+صريح لأربعة مفاتيح متكررة حرفياً بين الدوال: `MsgErrInvalidRadioisotopeData`
+("بيانات النظير غير صالحة"، `Create`+`Update`)، `MsgErrHalfLifeMustBePositive`
+("نصف العمر يجب أن يكون أكبر من صفر"، `Create`+`Update`)، `MsgErrRadioisotopeSymbolExists`
+("رمز النظير موجود بالفعل"، `Create`+`Update`)، و`MsgErrRadioisotopeNotFound`
+("النظير غير موجود"، `Update`+`Delete`+`Restore`). مفتاح جديد منفصل عمداً `MsgErrInvalidEnergy`
+("قيمة الطاقة غير صالحة") لعدم دمجه مع `MsgErrInvalidEnergyFinite` الأطول والمُترجَم سابقاً رغم
+تشابه الصياغة. `string.Format` (لا `GetFormat` مباشرة) لرسالتي المتغيرات
+(`MsgErrCannotRestoreRadioisotopeSymbolConflict` برمز النظير المتعارض،
+`MsgSuccessRadioisotopeRestored` باسم النظير المُسترجَع). الخمس رسائل المُترجَمة سابقاً
+(`MsgErrInvalidHalfLifeFinite`/`MsgErrInvalidEnergyFinite`/`MsgErrInvalidYieldFinite`/
+`MsgErrInvalidExemptionLimitFinite`/`MsgErrInvalidGammaConstantFinite`) بقيت بلا أي لمس. `guard.Message`
+من `AuthorizationGuard.RequireEditor` في `Delete`/`Restore` بقي دون تعديل، ونصوص
+`_auditService.LogWithChanges` الوصفية بقيت عربية دوماً بتصميم مقصود. بلا أي تغيير في منطق التحقق من
+تكرار الرمز أو فحص الارتباط بمصادر أو شرط الاسترجاع. اختبار انحداري جديد
+(`Create_Messages_UseEnglishStrings_WhenEnglishLanguageActive`) بنفس آلية تبديل القاموس المستعملة في
+الجولات 130-134، يثبت رسالة فشل واحدة (نصف عمر غير موجب) ورسالة نجاح واحدة (`Create`) بالإنجليزية
+الصحيحة. 1143/1141 اختباراً (Debug/Release، +1 عن الجولة 134). النطاق المتبقي من ب5 (`ViewModels`
+ونصوص XAML المثبتة، وأي خدمة أخرى لم تُراجَع بعد صراحة) ما زال مؤجَّلاً لجولات لاحقة.
+
 ### ☐ ب6 — معالج أول تشغيل
 يسأل عن مجلد النسخ الاحتياطي ويُفعّل النسخ التلقائي. الافتراضي الحالي `AutoBackupEnabled = false`.
 

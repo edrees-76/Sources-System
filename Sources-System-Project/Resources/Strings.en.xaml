@@ -1488,6 +1488,20 @@
     <system:String x:Key="MsgErrInvalidMeasuredActivityFinite">The measured activity value is invalid (must be a finite number)</system:String>
     <system:String x:Key="MsgErrInvalidMeanNeutronEnergyFinite">The mean neutron energy value is invalid (must be a finite number)</system:String>
     <system:String x:Key="MsgErrInvalidAmbientDoseConversionFinite">The ambient dose conversion coefficient is invalid (must be a finite number)</system:String>
+
+    <!-- Round 135 (sixth sub-round of B5): RadioisotopeService.cs remaining validation/success message localization -->
+    <system:String x:Key="MsgErrInvalidRadioisotopeData">Invalid radioisotope data</system:String>
+    <system:String x:Key="MsgErrHalfLifeMustBePositive">Half-life must be greater than zero</system:String>
+    <system:String x:Key="MsgErrInvalidEnergy">Invalid energy value</system:String>
+    <system:String x:Key="MsgErrRadioisotopeSymbolExists">Isotope symbol already exists</system:String>
+    <system:String x:Key="MsgSuccessRadioisotopeCreated">Radioisotope added successfully</system:String>
+    <system:String x:Key="MsgErrRadioisotopeNotFound">Radioisotope not found</system:String>
+    <system:String x:Key="MsgSuccessRadioisotopeUpdated">Radioisotope updated</system:String>
+    <system:String x:Key="MsgErrCannotDeleteRadioisotopeHasSources">Cannot delete an isotope linked to sources</system:String>
+    <system:String x:Key="MsgSuccessRadioisotopeDeleted">Radioisotope deleted</system:String>
+    <system:String x:Key="MsgErrRadioisotopeNotDeleted">Radioisotope is not deleted</system:String>
+    <system:String x:Key="MsgErrCannotRestoreRadioisotopeSymbolConflict">Cannot restore the isotope because another active isotope with the same symbol ({0}) exists</system:String>
+    <system:String x:Key="MsgSuccessRadioisotopeRestored">Radioisotope {0} restored</system:String>
 </ResourceDictionary>
 
 

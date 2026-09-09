@@ -39,13 +39,13 @@ public class RadioisotopeService : IRadioisotopeService
 
     public (bool Success, string Message) Create(Radioisotope item)
     {
-        if (item == null) return (false, "بيانات النظير غير صالحة");
+        if (item == null) return (false, TranslationHelper.GetString("MsgErrInvalidRadioisotopeData") ?? "بيانات النظير غير صالحة");
         if (!double.IsFinite(item.HalfLife))
             return (false, TranslationHelper.GetString("MsgErrInvalidHalfLifeFinite") ?? "قيمة نصف العمر غير صالحة (يجب أن تكون رقماً منتهياً)");
-        if (item.HalfLife <= 0) return (false, "نصف العمر يجب أن يكون أكبر من صفر");
+        if (item.HalfLife <= 0) return (false, TranslationHelper.GetString("MsgErrHalfLifeMustBePositive") ?? "نصف العمر يجب أن يكون أكبر من صفر");
         if (!double.IsFinite(item.Energy))
             return (false, TranslationHelper.GetString("MsgErrInvalidEnergyFinite") ?? "قيمة الطاقة غير صالحة (يجب أن تكون رقماً منتهياً)");
-        if (item.Energy < 0) return (false, "قيمة الطاقة غير صالحة");
+        if (item.Energy < 0) return (false, TranslationHelper.GetString("MsgErrInvalidEnergy") ?? "قيمة الطاقة غير صالحة");
         if (item.Yield.HasValue && !double.IsFinite(item.Yield.Value))
             return (false, TranslationHelper.GetString("MsgErrInvalidYieldFinite") ?? "قيمة المردود غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.ExemptionLimit.HasValue && !double.IsFinite(item.ExemptionLimit.Value))
@@ -55,8 +55,8 @@ public class RadioisotopeService : IRadioisotopeService
 
         using var db = _dbFactory.CreateDbContext();
         if (db.Radioisotopes.Any(r => r.Symbol == item.Symbol))
-            return (false, "رمز النظير موجود بالفعل");
-        
+            return (false, TranslationHelper.GetString("MsgErrRadioisotopeSymbolExists") ?? "رمز النظير موجود بالفعل");
+
         if (string.IsNullOrEmpty(item.ArabicName))
             item.ArabicName = IsotopeHelper.GetArabicNameFromSymbol(item.Symbol);
 
@@ -85,18 +85,18 @@ public class RadioisotopeService : IRadioisotopeService
             item.EnglishNotes
         };
         _auditService.LogWithChanges("Create", "Radioisotopes", item.Id, $"إضافة نظير: {item.Name}", oldValues: null, newValues: System.Text.Json.JsonSerializer.Serialize(newValuesObj));
-        return (true, "تم إضافة النظير بنجاح");
+        return (true, TranslationHelper.GetString("MsgSuccessRadioisotopeCreated") ?? "تم إضافة النظير بنجاح");
     }
 
     public (bool Success, string Message) Update(Radioisotope item)
     {
-        if (item == null) return (false, "بيانات النظير غير صالحة");
+        if (item == null) return (false, TranslationHelper.GetString("MsgErrInvalidRadioisotopeData") ?? "بيانات النظير غير صالحة");
         if (!double.IsFinite(item.HalfLife))
             return (false, TranslationHelper.GetString("MsgErrInvalidHalfLifeFinite") ?? "قيمة نصف العمر غير صالحة (يجب أن تكون رقماً منتهياً)");
-        if (item.HalfLife <= 0) return (false, "نصف العمر يجب أن يكون أكبر من صفر");
+        if (item.HalfLife <= 0) return (false, TranslationHelper.GetString("MsgErrHalfLifeMustBePositive") ?? "نصف العمر يجب أن يكون أكبر من صفر");
         if (!double.IsFinite(item.Energy))
             return (false, TranslationHelper.GetString("MsgErrInvalidEnergyFinite") ?? "قيمة الطاقة غير صالحة (يجب أن تكون رقماً منتهياً)");
-        if (item.Energy < 0) return (false, "قيمة الطاقة غير صالحة");
+        if (item.Energy < 0) return (false, TranslationHelper.GetString("MsgErrInvalidEnergy") ?? "قيمة الطاقة غير صالحة");
         if (item.Yield.HasValue && !double.IsFinite(item.Yield.Value))
             return (false, TranslationHelper.GetString("MsgErrInvalidYieldFinite") ?? "قيمة المردود غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.ExemptionLimit.HasValue && !double.IsFinite(item.ExemptionLimit.Value))
@@ -106,7 +106,7 @@ public class RadioisotopeService : IRadioisotopeService
 
         using var db = _dbFactory.CreateDbContext();
         var existing = db.Radioisotopes.Find(item.Id);
-        if (existing == null) return (false, "النظير غير موجود");
+        if (existing == null) return (false, TranslationHelper.GetString("MsgErrRadioisotopeNotFound") ?? "النظير غير موجود");
 
         var oldValuesObj = new
         {
@@ -127,7 +127,7 @@ public class RadioisotopeService : IRadioisotopeService
         string oldValuesJson = System.Text.Json.JsonSerializer.Serialize(oldValuesObj);
 
         if (db.Radioisotopes.Any(r => r.Symbol == item.Symbol && r.Id != item.Id))
-            return (false, "رمز النظير موجود بالفعل");
+            return (false, TranslationHelper.GetString("MsgErrRadioisotopeSymbolExists") ?? "رمز النظير موجود بالفعل");
 
         existing.Name = item.Name;
         existing.ArabicName = string.IsNullOrEmpty(item.ArabicName) ? IsotopeHelper.GetArabicNameFromSymbol(item.Symbol) : item.ArabicName;
@@ -163,7 +163,7 @@ public class RadioisotopeService : IRadioisotopeService
         string newValuesJson = System.Text.Json.JsonSerializer.Serialize(newValuesObj);
 
         _auditService.LogWithChanges("Update", "Radioisotopes", item.Id, $"تعديل نظير: {item.Name}", oldValuesJson, newValuesJson);
-        return (true, "تم تحديث النظير");
+        return (true, TranslationHelper.GetString("MsgSuccessRadioisotopeUpdated") ?? "تم تحديث النظير");
     }
 
     public (bool Success, string Message) Delete(Guid id)
@@ -173,9 +173,9 @@ public class RadioisotopeService : IRadioisotopeService
 
         using var db = _dbFactory.CreateDbContext();
         var item = db.Radioisotopes.Include(r => r.Sources).FirstOrDefault(r => r.Id == id);
-        if (item == null) return (false, "النظير غير موجود");
+        if (item == null) return (false, TranslationHelper.GetString("MsgErrRadioisotopeNotFound") ?? "النظير غير موجود");
         if (item.Sources.Any() || db.SourceIsotopes.Any(si => si.RadioisotopeId == id))
-            return (false, "لا يمكن حذف نظير مرتبط بمصادر");
+            return (false, TranslationHelper.GetString("MsgErrCannotDeleteRadioisotopeHasSources") ?? "لا يمكن حذف نظير مرتبط بمصادر");
 
         var oldValuesObj = new
         {
@@ -208,7 +208,7 @@ public class RadioisotopeService : IRadioisotopeService
         }
         db.SaveChanges();
         _auditService.LogWithChanges("Delete", "Radioisotopes", id, $"حذف نظير: {item.Name}", oldValuesJson, null);
-        return (true, "تم حذف النظير");
+        return (true, TranslationHelper.GetString("MsgSuccessRadioisotopeDeleted") ?? "تم حذف النظير");
     }
 
     public (bool Success, string Message) Restore(Guid id)
@@ -218,12 +218,12 @@ public class RadioisotopeService : IRadioisotopeService
 
         using var db = _dbFactory.CreateDbContext();
         var item = db.Radioisotopes.IgnoreQueryFilters().FirstOrDefault(r => r.Id == id);
-        if (item == null) return (false, "النظير غير موجود");
-        if (!item.IsDeleted) return (false, "النظير غير محذوف أصلاً");
+        if (item == null) return (false, TranslationHelper.GetString("MsgErrRadioisotopeNotFound") ?? "النظير غير موجود");
+        if (!item.IsDeleted) return (false, TranslationHelper.GetString("MsgErrRadioisotopeNotDeleted") ?? "النظير غير محذوف أصلاً");
 
         var lowerSymbol = item.Symbol.Trim().ToLower();
         if (db.Radioisotopes.Any(r => !r.IsDeleted && r.Id != id && r.Symbol.ToLower() == lowerSymbol))
-            return (false, $"لا يمكن استرجاع النظير لوجود نظير نشط آخر بنفس الرمز ({item.Symbol})");
+            return (false, string.Format(TranslationHelper.GetString("MsgErrCannotRestoreRadioisotopeSymbolConflict") ?? "لا يمكن استرجاع النظير لوجود نظير نشط آخر بنفس الرمز ({0})", item.Symbol));
 
         item.IsDeleted = false;
         item.DeletedAt = null;
@@ -249,6 +249,6 @@ public class RadioisotopeService : IRadioisotopeService
         string newValuesJson = System.Text.Json.JsonSerializer.Serialize(newValuesObj);
 
         _auditService.LogWithChanges("Restore", "Radioisotopes", id, $"استرجاع نظير: {item.DisplayName ?? item.Symbol}", null, newValuesJson);
-        return (true, $"تم استرجاع النظير {item.DisplayName ?? item.Symbol}");
+        return (true, string.Format(TranslationHelper.GetString("MsgSuccessRadioisotopeRestored") ?? "تم استرجاع النظير {0}", item.DisplayName ?? item.Symbol));
     }
 }
