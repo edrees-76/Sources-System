@@ -2172,8 +2172,9 @@
         </ScrollViewer>
     </Grid>
 
-    <views:NeutronSourceTypesOverlay Grid.RowSpan="2" Panel.ZIndex="1000"
-                                      DataContext="{Binding NeutronTypesManagementViewModel}"
-                                      Visibility="{Binding IsManagingNeutronTypes, Converter={StaticResource BoolToVis}}"/>
+    <Grid Grid.RowSpan="2" Panel.ZIndex="1000"
+          Visibility="{Binding IsManagingNeutronTypes, Converter={StaticResource BoolToVis}}">
+        <views:NeutronSourceTypesOverlay DataContext="{Binding NeutronTypesManagementViewModel}"/>
+    </Grid>
 </Grid>
 </UserControl>

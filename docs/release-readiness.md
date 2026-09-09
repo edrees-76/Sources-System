@@ -570,3 +570,45 @@ IsManaging...`/`...ManagementViewModel?` في نموذج العرض المضيف
 `ViewInstantiationTests.cs`). **التحقق البصري الحقيقي من `bin\Debug\net8.0-windows` لم يتم بعد —
 بانتظار إدريس قبل اعتبار هذا التراكب مكتملاً بصرياً.**
 - التحقق البصري من الإقلاع يلتقطه المستخدم بنفسه لا الوكيل.
+
+---
+
+## 9. الجولة 140 — إصلاح عاجل (Hotfix): عودة تراكب أنواع المصادر النيترونية منعت استخدام قسم المصادر بالكامل
+
+**الحالة: Draft PR غير مدموج، بانتظار قراءة القائد للكود ثم التحقق البصري الفعلي من إدريس معاً — لا دمج قبل الاثنين.**
+
+**العَرَض:** منذ دمج الجولة 139، ظهر تراكب `NeutronSourceTypesOverlay` دائماً فوق قسم المصادر بالكامل
+بمجرد فتحه، بلا أي استجابة لزر الإغلاق `✕`، مما منع استخدام القسم كلياً.
+
+**السبب الجذري (دقيق):** العنصر `<views:NeutronSourceTypesOverlay>` في `SourcesView.xaml` كان يحمل
+معاً `DataContext="{Binding NeutronTypesManagementViewModel}"` و
+`Visibility="{Binding IsManagingNeutronTypes, Converter={StaticResource BoolToVis}}"` على نفس
+العنصر. في WPF، إعادة تعيين `DataContext` على عنصر تجعل كل ربط آخر على نفس العنصر (بما فيه
+`Visibility`) يُقيَّم بالنسبة للـ`DataContext` الجديد لا الموروث من الأب. بما أن
+`NeutronSourceTypesViewModel` (نموذج عرض التراكب نفسه) لا يملك خاصية `IsManagingNeutronTypes`، فشل
+ربط `Visibility` بصمت وارتدّت القيمة لافتراضيها الأصلي `Visible` دائماً، بصرف النظر عن حالة
+`SourcesViewModel.IsManagingNeutronTypes` الفعلية.
+
+**الإصلاح:** لُفّ `NeutronSourceTypesOverlay` بـ`Grid` خارجي يحمل وحده `Visibility` (فيبقى ضمن سياق
+`DataContext` الموروث من `SourcesViewModel`)، بينما `DataContext` الخاص بنموذج التراكب بقي فقط على
+العنصر الداخلي `NeutronSourceTypesOverlay` نفسه. لا تغيير آخر في الملف، ولا لمسة لـ
+`NeutronSourceTypesOverlay.xaml` أو أي نموذج عرض.
+
+**الدرس المستفاد (الأهم في هذه الجولة):** جميع اختبارات الجولة 139 كانت تتحقق من نجاح الربط منطقياً
+(استدعاء أمر يضبط خاصية) لا من القيمة *المحسوبة فعلياً* لـ`Visibility` في الشجرة المرئية الحقيقية —
+فمرّت رغم الخلل الحرج. اختبار انحداري حقيقي يتحقق من القيمة النهائية لـ`Visibility` كان سيكتشف هذا
+قبل الدمج. كما تبيّن أثناء كتابة هذا الاختبار أن الربط المعتمِد على `DataContext` موروث لا يُفعَّل
+(`BindingExpression.Status` يبقى `Unattached`) إلا حين يكون العنصر متصلاً بـ`PresentationSource`
+حقيقي (نافذة مضيفة) — فاستدعاء `Measure`/`Arrange`/`UpdateLayout` وحده على عنصر معزول لا يكفي
+لتفعيل هذا النوع من الربط، ويُرجع القيمة الافتراضية للخاصية (`Visible`) بصرف النظر عن صحة XAML.
+لذلك يستضيف الاختبار الجديد `SourcesView` داخل `Window` حقيقية (خارج الشاشة، `ShowInTaskbar=false`)
+قبل قراءة `Visibility` الفعلية — تحقُّق تم التأكد منه يدوياً بإعادة الكود لحالته قبل الإصلاح ومشاهدة
+فشل الاختبار (`Visible` بدل `Collapsed` المتوقع) ثم إعادة الإصلاح ومشاهدة نجاحه.
+
+**النتائج:** 1149 اختباراً محلياً (Debug)، صفر فشل، صفر تجاوز (+1 عن الجولة 139: اختبار انحداري
+جديد `SourcesView_ByDefault_NeutronTypesOverlayHostIsCollapsed`). بناء المشروع الرئيسي بلا تحذيرات
+جديدة (التحذيران الوحيدان CS8604 مسبقان في `LoginWindow.xaml.cs`، ممنوع لمسه بقاعدة المشروع).
+
+**انحراف مسجَّل:** العقد طلب "ملف اختبار جديد"؛ الاختبار أُضيف كطريقة جديدة داخل الملف القائم
+`Sources.Tests/ViewInstantiationTests.cs` (بدل ملف منفصل) لأنه يتبع حرفياً نمط الاختبارات القائمة
+فيه (`RunInSta`, `FindVisualChildren`) وإنشاء ملف موازٍ كان سيكرر تلك الأدوات المساعدة دون فائدة.
