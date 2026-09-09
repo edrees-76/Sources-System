@@ -44,6 +44,14 @@ public partial class NeutronSourceTypesViewModel : ObservableObject
 
     private Guid? _editingId;
 
+    public Action? OnClose { get; set; }
+
+    [RelayCommand]
+    public void Close()
+    {
+        OnClose?.Invoke();
+    }
+
     public List<string> CommonUnits { get; } = new() { "years", "days", "hours", "minutes", "seconds" };
     public List<string> CommonReactions { get; } = new() { "(α,n)", "Spontaneous Fission", "(γ,n)", "(d,n)", "Other" };
 

@@ -1280,6 +1280,9 @@
     <system:String x:Key="TitleDeleteSuccess">تم الحذف</system:String>
     <system:String x:Key="TitleDeleteFailed">تعذر الحذف</system:String>
 
+    <!-- Round 139: In-View Modal Overlay — NeutronSourceTypesOverlay.xaml hint fix -->
+    <system:String x:Key="HintPhotonToNeutronRatio">نسبة جرعة الفوتون إلى النيترون</system:String>
+
     <!-- Round 131 (فرعية ثانية لـب5): SourceService.cs validation/success message localization -->
     <system:String x:Key="MsgErrInvalidSourceData">بيانات المصدر غير صالحة</system:String>
     <system:String x:Key="MsgErrInitialActivityPositive">قيمة النشاط الابتدائي يجب أن تكون أكبر من صفر</system:String>

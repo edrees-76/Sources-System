@@ -105,6 +105,8 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     [ObservableProperty] private int _neutronCurrentPage = 1;
     [ObservableProperty] private int _neutronTotalPages = 1;
     [ObservableProperty] private string _neutronPageStatusText = string.Empty;
+    [ObservableProperty] private bool _isManagingNeutronTypes;
+    [ObservableProperty] private NeutronSourceTypesViewModel? _neutronTypesManagementViewModel;
 
     partial void OnSelectedTabChanged(string value)
     {
@@ -907,13 +909,15 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     [RelayCommand]
     public void OpenNeutronSourceTypesManagement()
     {
-        var window = new NeutronSourceTypesWindow(new NeutronSourceTypesViewModel(_neutronSourceTypeService));
-        if (System.Windows.Application.Current?.MainWindow != null && System.Windows.Application.Current.MainWindow.IsVisible)
+        NeutronTypesManagementViewModel = new NeutronSourceTypesViewModel(_neutronSourceTypeService)
         {
-            window.Owner = System.Windows.Application.Current.MainWindow;
-        }
-        window.ShowDialog();
-        NeutronSourceTypes = new ObservableCollection<NeutronSourceType>(_neutronSourceTypeService?.GetAll() ?? new List<NeutronSourceType>());
+            OnClose = () =>
+            {
+                IsManagingNeutronTypes = false;
+                NeutronSourceTypes = new ObservableCollection<NeutronSourceType>(_neutronSourceTypeService?.GetAll() ?? new List<NeutronSourceType>());
+            }
+        };
+        IsManagingNeutronTypes = true;
     }
 
     [RelayCommand]
