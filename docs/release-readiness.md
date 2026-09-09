@@ -1,14 +1,15 @@
 # منظومة مصادر — لوحة جاهزية النشر
 
 **آخر تحديث:** 9 سبتمبر 2026
-**حالة المستودع:** الجولة 137 مدموجة على `main` (PR #29، commit الدمج
-`2d4419fd1fbf7ff45f7800d0c7f646e5c7983f8f`، أولى ضمن طبقة `ViewModels` من ب5): تغليف كل النصوص
-العربية المتبقية بلا غلاف في `SourcesViewModel.cs` عبر `TranslationHelper`، 10 مفاتيح رسالة جديد
-وإعادة استخدام صريحة لمفتاحين قائمين (`MsgErrCannotEditActiveBorrowSource`، `TitleSuccess`) دون
-تكرارهما، مع انحراف موثَّق باستخدام أسماء مفاتيح بديلة بلاحقة `Number` لثلاث رسائل لتفادي تعارض
-اسمي مع مفاتيح قائمة من الجولة 123 تخدم `NeutronSourceService.cs` (خارج نطاق الجولة) · 1145
-اختباراً محلياً (Debug) / 1143 محلياً (Release) للجولة 137 · تحذيرات بناء مسبقة بلا علاقة بهذه
-الجولة (CS8604 في `LoginWindow.xaml.cs`/`ViewInstantiationTests.cs`) و0 أخطاء
+**حالة المستودع:** الجولة 138 مدموجة على `main` (PR #31، commit الدمج
+`4a756185177ebaf33d1d3ba9657ebcb4c3b23ffc`، ثانية ضمن طبقة `ViewModels` من ب5): تغليف كل النصوص
+العربية المتبقية بلا غلاف في `NeutronSourceTypesViewModel.cs` عبر `TranslationHelper`، 8 مفاتيح
+رسالة جديد وإعادة استخدام صريحة لثلاثة مفاتيح قائمة (`TitleWarning`، `AlertError`،
+`AlertConfirmation`) دون تكرارها، مع انحرافين موثَّقين: اسم بديل `MsgErrNeutronReferenceTypeNotFound`
+لتفادي تعارض مع مفتاح قائم بنفس الاسم يخدم ملفاً آخر، ومفتاح منفصل `MsgErrNeutronTypeHalfLifePositive`
+لعدم تطابق النص حرفياً مع `MsgErrHalfLifeMustBePositive` القائم · 1146 اختباراً محلياً (Debug) / 1144
+محلياً (Release) للجولة 138 · تحذيرات بناء مسبقة بلا علاقة بهذه الجولة (CS8604 في
+`LoginWindow.xaml.cs`/`ViewInstantiationTests.cs`) و0 أخطاء
 
 > لوحة حالة حيّة تُحدَّث وتُصحَّح مع كل جولة. السجل التاريخي للجولات في `session-summary.md` ولا يُعدَّل.
 
@@ -407,7 +408,8 @@ ArabicStatus` — خاصية `[NotMapped]` تُعيد نصاً عربياً دا
 مسبقة بلا علاقة بهذه الجولة (CS8604) و0 أخطاء. النطاق المتبقي من ب5 (بقية طبقة `ViewModels`، نصوص
 XAML المثبتة، وأي خدمة أخرى لم تُراجَع بعد صراحة) ما زال مؤجَّلاً لجولات لاحقة.
 
-**الجولة 138 (ثانية ضمن طبقة `ViewModels` من ب5، منجزة محلياً):** غُلِّفت كل النصوص العربية الظاهرة
+**الجولة 138 (ثانية ضمن طبقة `ViewModels` من ب5 — مدموجة، PR #31، commit الدمج
+`4a756185177ebaf33d1d3ba9657ebcb4c3b23ffc`):** غُلِّفت كل النصوص العربية الظاهرة
 للمستخدم المتبقية بلا غلاف في `NeutronSourceTypesViewModel.cs` بنفس نمط الجولة 137. 8 مفاتيح جديدة
 (`MsgErrNeutronTypeCodeRequired`، `MsgErrNeutronTypeHalfLifePositive`،
 `MsgErrPhotonToNeutronRatioInvalid`، `TitleSuccessShort`، `MsgErrNeutronReferenceTypeNotFound`،
