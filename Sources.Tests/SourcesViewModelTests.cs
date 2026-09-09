@@ -907,5 +907,40 @@ public class SourcesViewModelTests : IDisposable
     }
 
     #endregion
+
+    #region Round 139: NeutronSourceTypes In-View Modal Overlay Tests
+
+    [Fact]
+    public void OpenNeutronSourceTypesManagement_SetsIsManagingNeutronTypesTrueAndCreatesManagementViewModel()
+    {
+        // Arrange
+        var vm = CreateViewModel();
+        _mockNeutronSourceTypeService.Setup(s => s.GetAll()).Returns(new List<NeutronSourceType>());
+
+        // Act
+        vm.OpenNeutronSourceTypesManagementCommand.Execute(null);
+
+        // Assert
+        Assert.True(vm.IsManagingNeutronTypes);
+        Assert.NotNull(vm.NeutronTypesManagementViewModel);
+    }
+
+    [Fact]
+    public void NeutronTypesManagementViewModel_OnClose_SetsIsManagingNeutronTypesFalse()
+    {
+        // Arrange
+        var vm = CreateViewModel();
+        _mockNeutronSourceTypeService.Setup(s => s.GetAll()).Returns(new List<NeutronSourceType>());
+        vm.OpenNeutronSourceTypesManagementCommand.Execute(null);
+        Assert.True(vm.IsManagingNeutronTypes);
+
+        // Act: simulate the user clicking the close button in the overlay
+        vm.NeutronTypesManagementViewModel!.OnClose?.Invoke();
+
+        // Assert
+        Assert.False(vm.IsManagingNeutronTypes);
+    }
+
+    #endregion
 }
 

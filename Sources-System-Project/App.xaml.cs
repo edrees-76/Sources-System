@@ -114,7 +114,6 @@ public partial class App : Application
         services.AddTransient<Sources.Views.LocationDetailsWindow>();
         services.AddTransient<Sources.Views.SourceDetailsWindow>();
         services.AddTransient<Sources.Views.NeutronSourceDetailsWindow>();
-        services.AddTransient<Sources.Views.NeutronSourceTypesWindow>();
         services.AddTransient<Sources.Views.AlertsView>();
         services.AddTransient<Sources.Views.LeakTestsView>();
         services.AddTransient<Sources.Views.IsotopeLibraryView>();

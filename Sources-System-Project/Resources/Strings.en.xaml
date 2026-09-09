@@ -1283,6 +1283,9 @@
     <system:String x:Key="TitleDeleteSuccess">Deleted</system:String>
     <system:String x:Key="TitleDeleteFailed">Delete Failed</system:String>
 
+    <!-- Round 139: In-View Modal Overlay — NeutronSourceTypesOverlay.xaml hint fix -->
+    <system:String x:Key="HintPhotonToNeutronRatio">Photon-to-Neutron Dose Ratio</system:String>
+
     <!-- Round 131 (second sub-round of B5): SourceService.cs validation/success message localization -->
     <system:String x:Key="MsgErrInvalidSourceData">Invalid source data</system:String>
     <system:String x:Key="MsgErrInitialActivityPositive">Initial activity value must be greater than zero</system:String>
