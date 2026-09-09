@@ -842,5 +842,70 @@ public class SourcesViewModelTests : IDisposable
     }
 
     #endregion
+
+    #region 5. الترجمة الإنجليزية لرسائل SourcesViewModel.cs (Round 137)
+
+    [Fact]
+    public void EditNeutronSource_WithNoStoredAm241Activity_ShowsEnglishNotRecordedDisplay_WhenEnglishLanguageActive()
+    {
+        WpfStaFixture.RunInSta(() =>
+        {
+            var dicts = System.Windows.Application.Current.Resources.MergedDictionaries;
+            var arabicDictIndex = -1;
+            for (int i = 0; i < dicts.Count; i++)
+            {
+                var src = dicts[i].Source?.OriginalString;
+                if (src != null && src.Contains("Strings.ar.xaml"))
+                {
+                    arabicDictIndex = i;
+                    break;
+                }
+            }
+            Assert.True(arabicDictIndex >= 0, "Strings.ar.xaml dictionary must already be loaded by WpfStaFixture.");
+
+            try
+            {
+                // Arrange: swap the active dictionary to English, mirroring App.ApplyLanguage's
+                // merged-dictionary-replacement mechanism (its own relative pack URI cannot
+                // resolve outside the packaged application, so an absolute pack URI is used here,
+                // exactly as WpfStaFixture already does for the initial Arabic dictionary).
+                dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.en.xaml", UriKind.Absolute)
+                };
+
+                var target = new NeutronSource
+                {
+                    Id = Guid.NewGuid(),
+                    SourceCode = "NEU-NO-AM-EN",
+                    NeutronSourceTypeId = Guid.NewGuid(),
+                    CalibratedEmissionRate = 500,
+                    CalibrationDate = DateTime.Today,
+                    ActivityValue = null,
+                    ActivityUnitId = null
+                };
+
+                var vm = CreateViewModel();
+
+                // Act
+                vm.EditNeutronSourceCommand.Execute(target);
+
+                // Assert: the English dictionary text is returned, not the Arabic fallback
+                Assert.Equal("Not recorded", vm.DisplaySourceCurrentActivity);
+                Assert.Equal(Sources.Helpers.TranslationHelper.GetString("DecayStatusNotRecorded"), vm.DisplaySourceCurrentActivity);
+                Assert.NotEqual("لم يُسجَّل", vm.DisplaySourceCurrentActivity);
+            }
+            finally
+            {
+                // Restore the Arabic dictionary so subsequent STA-thread tests are unaffected
+                dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.ar.xaml", UriKind.Absolute)
+                };
+            }
+        });
+    }
+
+    #endregion
 }
 

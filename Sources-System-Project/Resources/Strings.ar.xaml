@@ -1261,6 +1261,15 @@
     <system:String x:Key="MsgErrNeutronSourceRestoreConflict">لا يمكن استرجاع المصدر النيتروني لوجود مصدر نشط آخر بنفس الكود ({0})</system:String>
     <system:String x:Key="MsgSuccessNeutronSourceRestored">تم استرجاع المصدر النيتروني {0}</system:String>
 
+    <!-- Round 137: SourcesViewModel.cs validation/report message localization -->
+    <system:String x:Key="MsgErrNeutronServiceUnavailable">خدمة المصادر النيترونية غير متاحة</system:String>
+    <system:String x:Key="MsgErrCapsuleLengthPositiveNumber">طول الكبسولة يجب أن يكون رقماً أكبر من صفر</system:String>
+    <system:String x:Key="MsgErrCapsuleDiameterPositiveNumber">قطر الكبسولة يجب أن يكون رقماً أكبر من صفر</system:String>
+    <system:String x:Key="MsgErrActivityValueUnitTogether">الرجاء إدخال النشاط الإشعاعي مع اختيار وحدته معاً، أو تركهما فارغين.</system:String>
+    <system:String x:Key="MsgErrActivityValuePositiveNumber">قيمة النشاط الإشعاعي يجب أن تكون رقماً أكبر من صفر.</system:String>
+    <system:String x:Key="TitleInventoryReportPdf">تقرير جرد المصادر المشعة</system:String>
+    <system:String x:Key="TitleInventoryReportExcel">جرد المصادر</system:String>
+
     <!-- Round 131 (فرعية ثانية لـب5): SourceService.cs validation/success message localization -->
     <system:String x:Key="MsgErrInvalidSourceData">بيانات المصدر غير صالحة</system:String>
     <system:String x:Key="MsgErrInitialActivityPositive">قيمة النشاط الابتدائي يجب أن تكون أكبر من صفر</system:String>
@@ -1381,6 +1390,9 @@
     <system:String x:Key="DecayStatusUnsupportedHalfLifeUnit">غير محسوب — وحدة نصف العمر غير مدعومة</system:String>
     <system:String x:Key="DecayStatusDatePrecedesCalibration">غير محسوب — تاريخ الحساب يسبق تاريخ المعايرة</system:String>
     <system:String x:Key="DecayStatusInvalidCalibratedRate">غير محسوب — معدل الانبعاث المُعاير غير صالح</system:String>
+    <system:String x:Key="DecayStatusNotRecorded">لم يُسجَّل</system:String>
+    <system:String x:Key="DecayStatusMissingActivityUnit">غير محسوب — وحدة النشاط غير محمّلة</system:String>
+    <system:String x:Key="DecayStatusInvalidActivityValue">غير محسوب — قيمة النشاط غير صالحة</system:String>
     <system:String x:Key="TextCalibrationDateNotRecorded">تاريخ المعايرة غير مسجّل</system:String>
     <system:String x:Key="TextNotRecorded">غير مسجّل</system:String>
     <system:String x:Key="TextNotMeasured">غير مقاس</system:String>

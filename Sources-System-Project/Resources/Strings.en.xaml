@@ -1264,6 +1264,15 @@
     <system:String x:Key="MsgErrNeutronSourceRestoreConflict">Cannot restore the neutron source because another active source with the same code exists ({0})</system:String>
     <system:String x:Key="MsgSuccessNeutronSourceRestored">Neutron source {0} restored successfully</system:String>
 
+    <!-- Round 137: SourcesViewModel.cs validation/report message localization -->
+    <system:String x:Key="MsgErrNeutronServiceUnavailable">Neutron source service unavailable</system:String>
+    <system:String x:Key="MsgErrCapsuleLengthPositiveNumber">Capsule length must be a number greater than zero</system:String>
+    <system:String x:Key="MsgErrCapsuleDiameterPositiveNumber">Capsule diameter must be a number greater than zero</system:String>
+    <system:String x:Key="MsgErrActivityValueUnitTogether">Please enter the source activity together with its unit, or leave both empty.</system:String>
+    <system:String x:Key="MsgErrActivityValuePositiveNumber">The activity value must be a number greater than zero.</system:String>
+    <system:String x:Key="TitleInventoryReportPdf">Radioactive Sources Inventory Report</system:String>
+    <system:String x:Key="TitleInventoryReportExcel">Sources Inventory</system:String>
+
     <!-- Round 131 (second sub-round of B5): SourceService.cs validation/success message localization -->
     <system:String x:Key="MsgErrInvalidSourceData">Invalid source data</system:String>
     <system:String x:Key="MsgErrInitialActivityPositive">Initial activity value must be greater than zero</system:String>
@@ -1384,6 +1393,9 @@
     <system:String x:Key="DecayStatusUnsupportedHalfLifeUnit">Uncalculated — unsupported half-life unit</system:String>
     <system:String x:Key="DecayStatusDatePrecedesCalibration">Uncalculated — calculation date precedes calibration date</system:String>
     <system:String x:Key="DecayStatusInvalidCalibratedRate">Uncalculated — invalid calibrated emission rate</system:String>
+    <system:String x:Key="DecayStatusNotRecorded">Not recorded</system:String>
+    <system:String x:Key="DecayStatusMissingActivityUnit">Uncalculated — activity unit not loaded</system:String>
+    <system:String x:Key="DecayStatusInvalidActivityValue">Uncalculated — invalid activity value</system:String>
     <system:String x:Key="TextCalibrationDateNotRecorded">Calibration date not recorded</system:String>
     <system:String x:Key="TextNotRecorded">Not recorded</system:String>
     <system:String x:Key="TextNotMeasured">Not measured</system:String>

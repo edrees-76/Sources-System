@@ -855,11 +855,11 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
 
         DisplaySourceCurrentActivity = result.Status switch
         {
-            NeutronDecayCalculationStatus.NotRecorded => "لم يُسجَّل",
+            NeutronDecayCalculationStatus.NotRecorded => TranslationHelper.GetString("DecayStatusNotRecorded") ?? "لم يُسجَّل",
             NeutronDecayCalculationStatus.MissingCalibrationDate =>
                 TranslationHelper.GetString("DecayStatusMissingCalibrationDate") ?? "غير محسوب — تاريخ المعايرة غير مسجّل",
-            NeutronDecayCalculationStatus.MissingActivityUnit => "غير محسوب — وحدة النشاط غير محمّلة",
-            NeutronDecayCalculationStatus.InvalidActivityValue => "غير محسوب — قيمة النشاط غير صالحة",
+            NeutronDecayCalculationStatus.MissingActivityUnit => TranslationHelper.GetString("DecayStatusMissingActivityUnit") ?? "غير محسوب — وحدة النشاط غير محمّلة",
+            NeutronDecayCalculationStatus.InvalidActivityValue => TranslationHelper.GetString("DecayStatusInvalidActivityValue") ?? "غير محسوب — قيمة النشاط غير صالحة",
             NeutronDecayCalculationStatus.CalculationDatePrecedesCalibrationDate =>
                 TranslationHelper.GetString("DecayStatusDatePrecedesCalibration") ?? "غير محسوب — تاريخ الحساب يسبق تاريخ المعايرة",
             NeutronDecayCalculationStatus.MissingSource =>
@@ -870,7 +870,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                 TranslationHelper.GetString("DecayStatusInvalidHalfLife") ?? "غير محسوب — نصف العمر غير صالح",
             NeutronDecayCalculationStatus.UnsupportedHalfLifeUnit =>
                 TranslationHelper.GetString("DecayStatusUnsupportedHalfLifeUnit") ?? "غير محسوب — وحدة نصف العمر غير مدعومة",
-            _ => "لم يُسجَّل"
+            _ => TranslationHelper.GetString("DecayStatusNotRecorded") ?? "لم يُسجَّل"
         };
     }
 
@@ -884,7 +884,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         string confirmTitle = TranslationHelper.GetString("AlertConfirmation") ?? "تأكيد الحذف";
         if (!DialogHelper.ShowConfirmation(confirmMsg, confirmTitle)) return;
 
-        var result = _neutronSourceService?.Delete(target.Id) ?? (false, "خدمة المصادر النيترونية غير متاحة");
+        var result = _neutronSourceService?.Delete(target.Id) ?? (false, TranslationHelper.GetString("MsgErrNeutronServiceUnavailable") ?? "خدمة المصادر النيترونية غير متاحة");
         if (!result.Success)
         {
             ShowMessage(result.Message);
@@ -1076,7 +1076,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                 {
                     if (EditCapsuleLengthMm == null || !double.IsFinite(EditCapsuleLengthMm.Value) || EditCapsuleLengthMm.Value <= 0)
                     {
-                        ShowMessage("طول الكبسولة يجب أن يكون رقماً أكبر من صفر");
+                        ShowMessage(TranslationHelper.GetString("MsgErrCapsuleLengthPositiveNumber") ?? "طول الكبسولة يجب أن يكون رقماً أكبر من صفر");
                         return;
                     }
                 }
@@ -1084,7 +1084,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                 {
                     if (EditCapsuleDiameterMm == null || !double.IsFinite(EditCapsuleDiameterMm.Value) || EditCapsuleDiameterMm.Value <= 0)
                     {
-                        ShowMessage("قطر الكبسولة يجب أن يكون رقماً أكبر من صفر");
+                        ShowMessage(TranslationHelper.GetString("MsgErrCapsuleDiameterPositiveNumber") ?? "قطر الكبسولة يجب أن يكون رقماً أكبر من صفر");
                         return;
                     }
                 }
@@ -1103,12 +1103,12 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                 bool activityUnitProvided = EditActivityUnitId.HasValue;
                 if (activityTextProvided != activityUnitProvided)
                 {
-                    ShowMessage("الرجاء إدخال النشاط الإشعاعي مع اختيار وحدته معاً، أو تركهما فارغين.");
+                    ShowMessage(TranslationHelper.GetString("MsgErrActivityValueUnitTogether") ?? "الرجاء إدخال النشاط الإشعاعي مع اختيار وحدته معاً، أو تركهما فارغين.");
                     return;
                 }
                 if (activityTextProvided && (EditActivityValue == null || !double.IsFinite(EditActivityValue.Value) || EditActivityValue.Value <= 0))
                 {
-                    ShowMessage("قيمة النشاط الإشعاعي يجب أن تكون رقماً أكبر من صفر.");
+                    ShowMessage(TranslationHelper.GetString("MsgErrActivityValuePositiveNumber") ?? "قيمة النشاط الإشعاعي يجب أن تكون رقماً أكبر من صفر.");
                     return;
                 }
 
@@ -1137,8 +1137,8 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
 
                 var isCreatingNewNeutron = IsNew;
                 var neutronResult = IsNew 
-                    ? (_neutronSourceService?.Create(neutronSource) ?? (false, "خدمة المصادر النيترونية غير متاحة"))
-                    : (_neutronSourceService?.Update(neutronSource) ?? (false, "خدمة المصادر النيترونية غير متاحة"));
+                    ? (_neutronSourceService?.Create(neutronSource) ?? (false, TranslationHelper.GetString("MsgErrNeutronServiceUnavailable") ?? "خدمة المصادر النيترونية غير متاحة"))
+                    : (_neutronSourceService?.Update(neutronSource) ?? (false, TranslationHelper.GetString("MsgErrNeutronServiceUnavailable") ?? "خدمة المصادر النيترونية غير متاحة"));
 
                 if (neutronResult.Success)
                 {
@@ -1222,7 +1222,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                 var originalSource = _sourceService.GetSourceById(_editingId.Value) ?? SelectedSource;
                 if (originalSource != null && (originalSource.LocationId != EditLocationId || originalSource.Status != EditStatus))
                 {
-                    ShowMessage("لا يمكن تعديل الموقع أو الحالة لمصدر قيد الاستعارة النشطة حالياً");
+                    ShowMessage(TranslationHelper.GetString("MsgErrCannotEditActiveBorrowSource") ?? "لا يمكن تعديل الموقع أو الحالة لمصدر قيد الاستعارة النشطة حالياً");
                     return;
                 }
             }
@@ -1349,7 +1349,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                 }
                 else
                 {
-                    DialogHelper.ShowInfo(result.Message, "نجاح العملية");
+                    DialogHelper.ShowInfo(result.Message, TranslationHelper.GetString("TitleSuccess") ?? "نجاح العملية");
                 }
             }
             else
@@ -1393,7 +1393,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         {
             try 
             { 
-                await _reportingService.GenerateInventoryReportPdfAsync(Sources, sfd.FileName, "تقرير جرد المصادر المشعة");
+                await _reportingService.GenerateInventoryReportPdfAsync(Sources, sfd.FileName, TranslationHelper.GetString("TitleInventoryReportPdf") ?? "تقرير جرد المصادر المشعة");
                 FileHelper.OpenFile(sfd.FileName);
             }
             catch (Exception ex) { DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrExportPdf", ex.Message)); }
@@ -1408,7 +1408,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         {
             try 
             { 
-                await _reportingService.GenerateInventoryReportExcelAsync(Sources, sfd.FileName, "جرد المصادر");
+                await _reportingService.GenerateInventoryReportExcelAsync(Sources, sfd.FileName, TranslationHelper.GetString("TitleInventoryReportExcel") ?? "جرد المصادر");
                 FileHelper.OpenFile(sfd.FileName);
             }
             catch (Exception ex) { DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrExportExcel", ex.Message)); }

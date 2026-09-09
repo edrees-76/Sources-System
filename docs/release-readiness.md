@@ -381,6 +381,34 @@ ArabicStatus` — خاصية `[NotMapped]` تُعيد نصاً عربياً دا
 بالإنجليزية الصحيحة. 1144/1142 اختباراً (Debug/Release، +1 عن الجولة 135). النطاق المتبقي من ب5
 (`ViewModels` ونصوص XAML المثبتة، وأي خدمة أخرى لم تُراجَع بعد صراحة) ما زال مؤجَّلاً لجولات لاحقة.
 
+**الجولة 137 (أولى ضمن طبقة `ViewModels` من ب5):** غُلِّفت كل النصوص العربية الظاهرة للمستخدم
+المتبقية بلا غلاف في `SourcesViewModel.cs`. 10 مفاتيح جديدة: `DecayStatusNotRecorded` (نفس المفتاح
+لحالتي `NeutronDecayCalculationStatus.NotRecorded` والقيمة الافتراضية `_` في نفس تعبير `switch`، دون
+تكرار)، `DecayStatusMissingActivityUnit`، `DecayStatusInvalidActivityValue`،
+`MsgErrNeutronServiceUnavailable` (نفس المفتاح الواحد لثلاثة مواضع متطابقة نصياً عند
+`_neutronSourceService` الفارغة في `Delete`/`Create`/`Update`)، `MsgErrActivityValueUnitTogether`،
+`TitleInventoryReportPdf`، `TitleInventoryReportExcel`، وزوج جديد بأسماء غير متعارضة عمداً:
+`MsgErrCapsuleLengthPositiveNumber`/`MsgErrCapsuleDiameterPositiveNumber` و
+`MsgErrActivityValuePositiveNumber`. **انحراف مسجَّل (اكتُشف قبل الكتابة، لا بعدها):** أسماء المفاتيح
+الأصلية التي طلبها نص العقد (`MsgErrCapsuleLengthPositive`/`MsgErrCapsuleDiameterPositive`/
+`MsgErrActivityValuePositive`) تتعارض فعلياً مع ثلاثة مفاتيح موجودة مسبقاً من الجولة 123 بنفس
+الاسم تماماً لكن بنص عربي مختلف قليلاً (بلا كلمة "رقماً")، تخدم `NeutronSourceService.cs` — ملف خارج
+نطاق هذه الجولة، فتعذَّر توحيد الصياغة فيه. تفادياً لتلويث نص Enum `NeutronSourceService` القائم أو
+انتهاك تعليمة "لا تُغيّر النص، فقط غلِّفه"، استُخدمت ثلاثة أسماء مفاتيح جديدة ومختلفة بلاحقة `Number`
+تحافظ على نص `SourcesViewModel.cs` الحرفي الأصلي دون أي تعديل. مفتاحان مُعاد استخدامهما دون تكرار:
+`MsgErrCannotEditActiveBorrowSource` (أنشأته الجولة 131 لـ`SourceService.cs`، نفس النص الحرفي في
+منع تعديل الموقع/الحالة لمصدر قيد استعارة نشطة) و`TitleSuccess` (موجود مسبقاً، وحَّد الموضع الوحيد في
+الملف الذي كان يستعمل النص الحرفي "نجاح العملية" بدلاً منه، في `DialogHelper.ShowInfo` عند تعديل
+مصدر عادي ناجح). لا لمس لنصوص `_auditService.Log`/`LogWithChanges`، ولا تغيير في أي شرط تحقق. اختبار
+انحداري جديد
+(`EditNeutronSource_WithNoStoredAm241Activity_ShowsEnglishNotRecordedDisplay_WhenEnglishLanguageActive`)
+بنفس آلية تبديل القاموس المستعملة في الجولات 130-136، يثبت أن `DecayStatusNotRecorded` يظهر
+بالإنجليزية الصحيحة ("Not recorded") عبر السلوك الفعلي لـ`EditNeutronSourceCommand` لا عبر استدعاء
+`TranslationHelper` مباشرة فقط. 1145/1143 اختباراً (Debug/Release، +1 عن الجولة 136)، 5 تحذيرات بناء
+مسبقة بلا علاقة بهذه الجولة (CS8604) و0 أخطاء. النطاق المتبقي من ب5 (بقية طبقة `ViewModels`، نصوص
+XAML المثبتة، وأي خدمة أخرى لم تُراجَع بعد صراحة) ما زال مؤجَّلاً لجولات لاحقة. Draft PR #29
+(قيد المراجعة، غير مدموج).
+
 ### ☐ ب6 — معالج أول تشغيل
 يسأل عن مجلد النسخ الاحتياطي ويُفعّل النسخ التلقائي. الافتراضي الحالي `AutoBackupEnabled = false`.
 
@@ -409,6 +437,12 @@ ArabicStatus` — خاصية `[NotMapped]` تُعيد نصاً عربياً دا
 - **كنس الوسيط الشامل (مؤجَّل موثَّق):** جاني فشل CI `#100` كان اختبار `BorrowViewModel_ReceivesSourcesUpdatedMessage` عبر `WeakReferenceMessenger.Default` المشترك الذي أبلغ مستقبِلاً يحمل fixture ميتاً (`no such table: Sources`)، وعزلته الجولة 115 بحقن `IMessenger` في `BorrowViewModel`. كنس الوسيط الكامل في بقية الشاشات (سبعة ViewModels + `IDisposable` في الخمسة الناقصة + عزل وسائط الاختبارات القائمة) مؤجَّل موثَّق لما بعد النشر. **[إصلاح `IsTestMode` أُنجز في 115-ب — انظر §5.]**
 - كود الإنتاج يقرأ `DialogHelper.IsTestMode` في أربعة مواضع (`SourceNavigationHelper` ×2، `LocationsViewModel`، `PasswordPromptDialog`) كحارس تخطٍّ — وعيُ اختبارٍ مبثوثٌ في الإنتاج. لا يُعالَج الآن (نطاق 115-ب محصور بتثبيت العلم)؛ يُنظر لاحقًا في عزله خلف واجهة اختبار.
 - **حقول نصية رقمية بـ`UpdateSourceTrigger=LostFocus` قد تُحفَظ بقيمة قديمة/فارغة عند الحفظ بمفتاح Enter (اكتشاف CodeRabbit على PR #16 للجولة 128، مؤجَّل موثَّق):** `SourcesView.xaml` يحمل `<KeyBinding Key="Enter" Command="{Binding SaveCommand}"/>` على مستوى النافذة (السطر 1075)، بالإضافة إلى زر افتراضي `IsDefault="True"` مربوط بنفس `SaveCommand`. ضغط Enter أثناء تركيز المؤشّر داخل أحد صناديق النص التالية يُفعِّل `SaveCommand` عبر معالجة الإدخال الموجَّه مباشرة **دون** أن يفقد الصندوق تركيزه — فحدث `LostFocus` الذي يُشغِّل تحديث خاصية الربط لا يُطلَق أبداً، ويصل `SaveAsync` إلى القيمة القديمة (أو الفارغة عند إدخال أول) بدل ما كتبه المستخدم للتو. يمسّ سبعة حقول تشترك في نفس نمط الربط: `EditInitialActivityText` (موجود قبل ب4)، و`EditEmissionRateText`، `EditRelativeUncertaintyText`، `EditAnisotropyFactorText`، `EditCapsuleLengthText`، `EditCapsuleDiameterText` (جميعها من جولات ب4 السابقة 123-127)، و`EditActivityText` (الجولة 128 الحالية، اسمها وقت اكتشاف CodeRabbit كان `EditAm241ActivityText` قبل تعميمه بتصحيح إدريس — التي مرّرت الملاحظة أصلاً باعتبارها تكراراً حرفياً مقصوداً لنمط `EditInitialActivityText` القائم وفق نص العقد). ليس عيباً أدخلته الجولة 128 بل نمط سابق موروث عبر كل هذه الحقول؛ التأثير العملي محدود لأن حارس «كلاهما أو لا شيء» (ولمعظم الحقول: حارس `IsFinite`/`>0`) يرفض الحفظ برسالة خطأ صريحة بدل فساد صامت للبيانات — لكنها رسالة خطأ مُضلِّلة («أدخل القيمة») رغم أن المستخدم أدخلها فعلاً. **القرار: تأجيل مقصود، لا إصلاح جزئي.** إصلاح حقل واحد فقط (كما اقترح CodeRabbit بتغيير حقل النشاط وحده إلى `UpdateSourceTrigger=PropertyChanged`) يخالف تعليمات عقد الجولة 128 بتكرار النمط القائم حرفياً، ويُنشئ تبايناً محلياً بين حقل جديد وستة حقول قديمة تحمل العيب نفسه. يُحتاج جولة مخصَّصة لاحقة تُصحِّح نمط زناد الربط عبر الحقول السبعة معاً بقرار موحَّد (`PropertyChanged` أو معالجة صريحة لحدث Enter قبل تنفيذ الأمر) مع اختبار انحداري يحاكي Enter بتركيز نشط لا `LostFocus` وحده.
+
+**عمود «النشاط الحالي» غائب عن جدول المصادر النيترونية:** جدول المصادر النيترونية (`SourcesView.xaml`)
+لا يعرض عمود «النشاط الحالي» رغم أن الحساب (`_neutronDecayService.CalculateCurrentSourceActivity`
+عبر `DisplaySourceCurrentActivity`) موجود وصحيح ومُستخدَم فعلاً في نافذة التعديل. جدولا المصادر
+العادية والمحذوفة يعرضان عمود `CurrentActivityWithUnit`، بينما جدول المصادر النيترونية لا يحتويه.
+مؤجَّل لجولة XAML مستقلة قصيرة بعد إغلاق ب5، لإضافة عمود مماثل بنفس أسلوب التنسيق.
 
 **تعليق متقطّع في عدّاء GitHub:** وقع مرتين في أقل من ساعة على كود مرّ أخضر قبله وبعده، وحُصر أثره بمهلة الوظيفة والخطوة في الجولة 114. المؤشّر: خطوة اختبارات تتجاوز خمس دقائق مع أنها تنتهي في 73 ثانية. الإجراء عند تكراره: إعادة تشغيل التشغيل نفسه بلا تعديل كود، ولا يُفتح تحقيق في الحزمة إلا إن فشل التشغيل المعاد على الـ commit نفسه.
 
