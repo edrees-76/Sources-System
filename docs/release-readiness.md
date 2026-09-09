@@ -1,14 +1,14 @@
 # منظومة مصادر — لوحة جاهزية النشر
 
 **آخر تحديث:** 9 سبتمبر 2026
-**حالة المستودع:** الجولة 136 مدموجة على `main` (PR #27، commit الدمج
-`b9e1898dc567cf85bae8f4ff50dea3a90a91c91c`، سابعة ضمن سلسلة ب5): تغليف الرسائل المتبقية في `NeutronSourceTypeService.cs`
-(`Create`/`Update`/`Delete`/`Restore`) عبر `TranslationHelper`، 13 مفتاح رسالة جديد وإعادة استخدام
-صريحة لمفتاح `MsgErrHalfLifeMustBePositive` الذي أنشأته الجولة 135 دون تكراره، بلا أي مساس بالثلاث
-رسائل المُترجَمة سابقاً من الجولة 110 (`MsgErrInvalidHalfLifeFinite`/`MsgErrInvalidMeanNeutronEnergyFinite`/
-`MsgErrInvalidAmbientDoseConversionFinite`) · 1144 اختباراً محلياً (Debug) / 1142 محلياً (Release)
-للجولة 136 · تحذيرات بناء مسبقة بلا علاقة بهذه الجولة (CS8604 في
-`LoginWindow.xaml.cs`/`ViewInstantiationTests.cs`) و0 أخطاء
+**حالة المستودع:** الجولة 137 مدموجة على `main` (PR #29، commit الدمج
+`2d4419fd1fbf7ff45f7800d0c7f646e5c7983f8f`، أولى ضمن طبقة `ViewModels` من ب5): تغليف كل النصوص
+العربية المتبقية بلا غلاف في `SourcesViewModel.cs` عبر `TranslationHelper`، 10 مفاتيح رسالة جديد
+وإعادة استخدام صريحة لمفتاحين قائمين (`MsgErrCannotEditActiveBorrowSource`، `TitleSuccess`) دون
+تكرارهما، مع انحراف موثَّق باستخدام أسماء مفاتيح بديلة بلاحقة `Number` لثلاث رسائل لتفادي تعارض
+اسمي مع مفاتيح قائمة من الجولة 123 تخدم `NeutronSourceService.cs` (خارج نطاق الجولة) · 1145
+اختباراً محلياً (Debug) / 1143 محلياً (Release) للجولة 137 · تحذيرات بناء مسبقة بلا علاقة بهذه
+الجولة (CS8604 في `LoginWindow.xaml.cs`/`ViewInstantiationTests.cs`) و0 أخطاء
 
 > لوحة حالة حيّة تُحدَّث وتُصحَّح مع كل جولة. السجل التاريخي للجولات في `session-summary.md` ولا يُعدَّل.
 
@@ -405,8 +405,7 @@ ArabicStatus` — خاصية `[NotMapped]` تُعيد نصاً عربياً دا
 بالإنجليزية الصحيحة ("Not recorded") عبر السلوك الفعلي لـ`EditNeutronSourceCommand` لا عبر استدعاء
 `TranslationHelper` مباشرة فقط. 1145/1143 اختباراً (Debug/Release، +1 عن الجولة 136)، 5 تحذيرات بناء
 مسبقة بلا علاقة بهذه الجولة (CS8604) و0 أخطاء. النطاق المتبقي من ب5 (بقية طبقة `ViewModels`، نصوص
-XAML المثبتة، وأي خدمة أخرى لم تُراجَع بعد صراحة) ما زال مؤجَّلاً لجولات لاحقة. Draft PR #29
-(قيد المراجعة، غير مدموج).
+XAML المثبتة، وأي خدمة أخرى لم تُراجَع بعد صراحة) ما زال مؤجَّلاً لجولات لاحقة.
 
 ### ☐ ب6 — معالج أول تشغيل
 يسأل عن مجلد النسخ الاحتياطي ويُفعّل النسخ التلقائي. الافتراضي الحالي `AutoBackupEnabled = false`.
