@@ -1,13 +1,14 @@
 # منظومة مصادر — لوحة جاهزية النشر
 
 **آخر تحديث:** 9 سبتمبر 2026
-**حالة المستودع:** الجولة 135 مدموجة على `main` (سادسة ضمن سلسلة ب5، أول ملف في السلسلة يجمع بين
-رسائل مُترجَمة سابقاً — خمس رسائل تحقق من كون القيمة رقماً منتهياً في `RadioisotopeService.cs`، من
-الجولتين 109/110 — ورسائل متبقية لم تُغلَّف بعد، بخلاف الملفات الخمسة السابقة كاملة الترجمة دفعة
-واحدة. تغليف الرسائل الـ12 المتبقية عبر `TranslationHelper`، 12 مفتاح رسالة جديد، بلا أي مساس
-بالخمس رسائل المُترجَمة سابقاً) · آخر دمج فعلي على `main` هو الجولة 135 (PR #25، commit الدمج
-`8ecbdf08b75023fff64d6a663c741c2965adbe40`) · 1143 اختباراً محلياً (Debug) / 1141 محلياً (Release)
-للجولة 135 · تحذيرات بناء مسبقة بلا علاقة بهذه الجولة (CS8604 في
+**حالة المستودع:** آخر دمج فعلي على `main` لا يزال الجولة 135 (PR #25، commit الدمج
+`8ecbdf08b75023fff64d6a663c741c2965adbe40`). الجولة 136 (ب5 — سابعة) قيد المراجعة عبر Draft PR،
+**غير مدموجة بعد**: تغليف الرسائل المتبقية في `NeutronSourceTypeService.cs`
+(`Create`/`Update`/`Delete`/`Restore`) عبر `TranslationHelper`، 13 مفتاح رسالة جديد وإعادة استخدام
+صريحة لمفتاح `MsgErrHalfLifeMustBePositive` الذي أنشأته الجولة 135 دون تكراره، بلا أي مساس بالثلاث
+رسائل المُترجَمة سابقاً من الجولة 110 (`MsgErrInvalidHalfLifeFinite`/`MsgErrInvalidMeanNeutronEnergyFinite`/
+`MsgErrInvalidAmbientDoseConversionFinite`) · 1144 اختباراً محلياً (Debug) / 1142 محلياً (Release)
+للجولة 136 · تحذيرات بناء مسبقة بلا علاقة بهذه الجولة (CS8604 في
 `LoginWindow.xaml.cs`/`ViewInstantiationTests.cs`) و0 أخطاء
 
 > لوحة حالة حيّة تُحدَّث وتُصحَّح مع كل جولة. السجل التاريخي للجولات في `session-summary.md` ولا يُعدَّل.
@@ -354,6 +355,31 @@ ArabicStatus` — خاصية `[NotMapped]` تُعيد نصاً عربياً دا
 الجولات 130-134، يثبت رسالة فشل واحدة (نصف عمر غير موجب) ورسالة نجاح واحدة (`Create`) بالإنجليزية
 الصحيحة. 1143/1141 اختباراً (Debug/Release، +1 عن الجولة 134). النطاق المتبقي من ب5 (`ViewModels`
 ونصوص XAML المثبتة، وأي خدمة أخرى لم تُراجَع بعد صراحة) ما زال مؤجَّلاً لجولات لاحقة.
+
+**الجولة 136 (سابعة ضمن سلسلة ب5):** غُلِّفت الرسائل المتبقية في `NeutronSourceTypeService.cs`
+(`Create`/`Update`/`Delete`/`Restore`) بنفس نمط الجولات 130-135. 13 مفتاح رسالة جديد، منها 6 مفاتيح
+مُدمَجة صراحة بين الدوال: `MsgErrInvalidNeutronSourceTypeData` ("بيانات نوع المصدر غير صالحة"،
+`Create`+`Update`)، `MsgErrNeutronSourceTypeCodeRequired` و`MsgErrNeutronSourceTypeNameEnRequired`
+(`Create`+`Update`)، `MsgErrInvalidPhotonToNeutronDoseRatioFinite` (`Create`+`Update`)،
+`MsgErrNeutronSourceTypeCodeExists` ("رمز نوع المصدر موجود بالفعل"،
+`Create`+`Update`)، و`MsgErrNeutronSourceTypeNotFound` ("نوع المصدر غير موجود"،
+`Update`+`Delete`+`Restore`). مفتاح إضافي (رابع عشر إجمالاً، غير محسوب ضمن الـ13 الجديدة) مُعاد
+استخدامه لا مُكرَّراً: تحقق `HalfLife <= 0` في
+`Create`/`Update` كان يحمل نفس النص الحرفي الذي أنشأته الجولة 135 لـ`RadioisotopeService.cs`
+(`"نصف العمر يجب أن يكون أكبر من صفر"`)، فأُعيد استخدام مفتاحها `MsgErrHalfLifeMustBePositive`
+الموجود مسبقاً في المورد دون أي تكرار أو إضافة مفتاح جديد بنفس النص. `string.Format` (لا `GetFormat`
+مباشرة) لرسالتي المتغيرات (`MsgErrCannotRestoreNeutronSourceTypeCodeConflict` برمز النوع المتعارض،
+`MsgSuccessNeutronSourceTypeRestored` برمز النوع المُسترجَع). الثلاث رسائل المُترجَمة سابقاً من
+الجولة 110 (`MsgErrInvalidHalfLifeFinite`/`MsgErrInvalidMeanNeutronEnergyFinite`/
+`MsgErrInvalidAmbientDoseConversionFinite`) بقيت بلا أي لمس، وكذلك تحقق `PhotonToNeutronDoseRatio`
+غير المنتهي المُضاف في الجولة 123 (نُقل فقط إلى مفتاح جديد `MsgErrInvalidPhotonToNeutronDoseRatioFinite`
+دون تغيير في الشرط نفسه). `guard.Message` من `AuthorizationGuard.RequireEditor` في `Delete`/`Restore`
+بقي دون تعديل، ونصوص `_auditService.LogWithChanges` الوصفية بقيت عربية دوماً بتصميم مقصود. بلا أي
+تغيير في منطق التحقق من تكرار الرمز أو فحص الارتباط بمصادر نيترونية أو شرط الاسترجاع. اختبار انحداري
+جديد (`Create_Messages_UseEnglishStrings_WhenEnglishLanguageActive`) بنفس آلية تبديل القاموس
+المستعملة في الجولات 130-135، يثبت رسالة فشل واحدة (نصف عمر غير موجب) ورسالة نجاح واحدة (`Create`)
+بالإنجليزية الصحيحة. 1144/1142 اختباراً (Debug/Release، +1 عن الجولة 135). النطاق المتبقي من ب5
+(`ViewModels` ونصوص XAML المثبتة، وأي خدمة أخرى لم تُراجَع بعد صراحة) ما زال مؤجَّلاً لجولات لاحقة.
 
 ### ☐ ب6 — معالج أول تشغيل
 يسأل عن مجلد النسخ الاحتياطي ويُفعّل النسخ التلقائي. الافتراضي الحالي `AutoBackupEnabled = false`.

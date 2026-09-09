@@ -1502,6 +1502,21 @@
     <system:String x:Key="MsgErrRadioisotopeNotDeleted">Radioisotope is not deleted</system:String>
     <system:String x:Key="MsgErrCannotRestoreRadioisotopeSymbolConflict">Cannot restore the isotope because another active isotope with the same symbol ({0}) exists</system:String>
     <system:String x:Key="MsgSuccessRadioisotopeRestored">Radioisotope {0} restored</system:String>
+
+    <!-- Round 136 (seventh sub-round of B5): NeutronSourceTypeService.cs remaining validation/success message localization -->
+    <system:String x:Key="MsgErrInvalidNeutronSourceTypeData">Invalid neutron source type data</system:String>
+    <system:String x:Key="MsgErrNeutronSourceTypeCodeRequired">Neutron source type code is required</system:String>
+    <system:String x:Key="MsgErrNeutronSourceTypeNameEnRequired">English name is required</system:String>
+    <system:String x:Key="MsgErrInvalidPhotonToNeutronDoseRatioFinite">The photon-to-neutron dose ratio is invalid (must be a finite number)</system:String>
+    <system:String x:Key="MsgErrNeutronSourceTypeCodeExists">Neutron source type code already exists</system:String>
+    <system:String x:Key="MsgSuccessNeutronSourceTypeCreated">Neutron source type added successfully</system:String>
+    <system:String x:Key="MsgErrNeutronSourceTypeNotFound">Neutron source type not found</system:String>
+    <system:String x:Key="MsgSuccessNeutronSourceTypeUpdated">Neutron source type updated</system:String>
+    <system:String x:Key="MsgErrCannotDeleteNeutronSourceTypeHasSources">Cannot delete a neutron source type linked to neutron sources</system:String>
+    <system:String x:Key="MsgSuccessNeutronSourceTypeDeleted">Neutron source type deleted</system:String>
+    <system:String x:Key="MsgErrNeutronSourceTypeNotDeleted">Neutron source type is not deleted</system:String>
+    <system:String x:Key="MsgErrCannotRestoreNeutronSourceTypeCodeConflict">Cannot restore the neutron source type because another active type with the same code ({0}) exists</system:String>
+    <system:String x:Key="MsgSuccessNeutronSourceTypeRestored">Neutron source type {0} restored</system:String>
 </ResourceDictionary>
 
 

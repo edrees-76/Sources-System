@@ -59,24 +59,24 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
     /// <summary>إنشاء نوع مصدر نيتروني جديد</summary>
     public (bool Success, string Message) Create(NeutronSourceType item)
     {
-        if (item == null) return (false, "بيانات نوع المصدر غير صالحة");
-        if (string.IsNullOrWhiteSpace(item.Code)) return (false, "رمز نوع المصدر مطلوب");
-        if (string.IsNullOrWhiteSpace(item.NameEn)) return (false, "الاسم بالإنجليزية مطلوب");
+        if (item == null) return (false, TranslationHelper.GetString("MsgErrInvalidNeutronSourceTypeData") ?? "بيانات نوع المصدر غير صالحة");
+        if (string.IsNullOrWhiteSpace(item.Code)) return (false, TranslationHelper.GetString("MsgErrNeutronSourceTypeCodeRequired") ?? "رمز نوع المصدر مطلوب");
+        if (string.IsNullOrWhiteSpace(item.NameEn)) return (false, TranslationHelper.GetString("MsgErrNeutronSourceTypeNameEnRequired") ?? "الاسم بالإنجليزية مطلوب");
         if (!double.IsFinite(item.HalfLife))
             return (false, TranslationHelper.GetString("MsgErrInvalidHalfLifeFinite") ?? "قيمة نصف العمر غير صالحة (يجب أن تكون رقماً منتهياً)");
-        if (item.HalfLife <= 0) return (false, "نصف العمر يجب أن يكون أكبر من صفر");
+        if (item.HalfLife <= 0) return (false, TranslationHelper.GetString("MsgErrHalfLifeMustBePositive") ?? "نصف العمر يجب أن يكون أكبر من صفر");
         if (item.MeanNeutronEnergyMeV.HasValue && !double.IsFinite(item.MeanNeutronEnergyMeV.Value))
             return (false, TranslationHelper.GetString("MsgErrInvalidMeanNeutronEnergyFinite") ?? "قيمة متوسط طاقة النيوترونات غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.AmbientDoseConversionCoefficient.HasValue && !double.IsFinite(item.AmbientDoseConversionCoefficient.Value))
             return (false, TranslationHelper.GetString("MsgErrInvalidAmbientDoseConversionFinite") ?? "قيمة معامل تحويل التدفق إلى الجرعة المحيطية غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.PhotonToNeutronDoseRatio.HasValue && !double.IsFinite(item.PhotonToNeutronDoseRatio.Value))
-            return (false, "قيمة نسبة جرعة الفوتون إلى النيترون غير صالحة (يجب أن تكون رقماً منتهياً)");
+            return (false, TranslationHelper.GetString("MsgErrInvalidPhotonToNeutronDoseRatioFinite") ?? "قيمة نسبة جرعة الفوتون إلى النيترون غير صالحة (يجب أن تكون رقماً منتهياً)");
 
         using var db = _dbFactory.CreateDbContext();
         var trimmedCode = item.Code.Trim();
         var lowerCode = trimmedCode.ToLower();
         if (db.NeutronSourceTypes.Any(t => t.Code.ToLower() == lowerCode))
-            return (false, "رمز نوع المصدر موجود بالفعل");
+            return (false, TranslationHelper.GetString("MsgErrNeutronSourceTypeCodeExists") ?? "رمز نوع المصدر موجود بالفعل");
 
         item.Code = trimmedCode;
         var addedByUserId = _userService.CurrentUser?.Id;
@@ -105,28 +105,28 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
             item.Notes
         };
         _auditService.LogWithChanges("Create", "NeutronSourceTypes", item.Id, $"إضافة نوع مصدر نيتروني: {item.Code}", oldValues: null, newValues: System.Text.Json.JsonSerializer.Serialize(newValuesObj));
-        return (true, "تم إضافة نوع المصدر النيتروني بنجاح");
+        return (true, TranslationHelper.GetString("MsgSuccessNeutronSourceTypeCreated") ?? "تم إضافة نوع المصدر النيتروني بنجاح");
     }
 
     /// <summary>تحديث نوع مصدر نيتروني</summary>
     public (bool Success, string Message) Update(NeutronSourceType item)
     {
-        if (item == null) return (false, "بيانات نوع المصدر غير صالحة");
-        if (string.IsNullOrWhiteSpace(item.Code)) return (false, "رمز نوع المصدر مطلوب");
-        if (string.IsNullOrWhiteSpace(item.NameEn)) return (false, "الاسم بالإنجليزية مطلوب");
+        if (item == null) return (false, TranslationHelper.GetString("MsgErrInvalidNeutronSourceTypeData") ?? "بيانات نوع المصدر غير صالحة");
+        if (string.IsNullOrWhiteSpace(item.Code)) return (false, TranslationHelper.GetString("MsgErrNeutronSourceTypeCodeRequired") ?? "رمز نوع المصدر مطلوب");
+        if (string.IsNullOrWhiteSpace(item.NameEn)) return (false, TranslationHelper.GetString("MsgErrNeutronSourceTypeNameEnRequired") ?? "الاسم بالإنجليزية مطلوب");
         if (!double.IsFinite(item.HalfLife))
             return (false, TranslationHelper.GetString("MsgErrInvalidHalfLifeFinite") ?? "قيمة نصف العمر غير صالحة (يجب أن تكون رقماً منتهياً)");
-        if (item.HalfLife <= 0) return (false, "نصف العمر يجب أن يكون أكبر من صفر");
+        if (item.HalfLife <= 0) return (false, TranslationHelper.GetString("MsgErrHalfLifeMustBePositive") ?? "نصف العمر يجب أن يكون أكبر من صفر");
         if (item.MeanNeutronEnergyMeV.HasValue && !double.IsFinite(item.MeanNeutronEnergyMeV.Value))
             return (false, TranslationHelper.GetString("MsgErrInvalidMeanNeutronEnergyFinite") ?? "قيمة متوسط طاقة النيوترونات غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.AmbientDoseConversionCoefficient.HasValue && !double.IsFinite(item.AmbientDoseConversionCoefficient.Value))
             return (false, TranslationHelper.GetString("MsgErrInvalidAmbientDoseConversionFinite") ?? "قيمة معامل تحويل التدفق إلى الجرعة المحيطية غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.PhotonToNeutronDoseRatio.HasValue && !double.IsFinite(item.PhotonToNeutronDoseRatio.Value))
-            return (false, "قيمة نسبة جرعة الفوتون إلى النيترون غير صالحة (يجب أن تكون رقماً منتهياً)");
+            return (false, TranslationHelper.GetString("MsgErrInvalidPhotonToNeutronDoseRatioFinite") ?? "قيمة نسبة جرعة الفوتون إلى النيترون غير صالحة (يجب أن تكون رقماً منتهياً)");
 
         using var db = _dbFactory.CreateDbContext();
         var existing = db.NeutronSourceTypes.Find(item.Id);
-        if (existing == null) return (false, "نوع المصدر غير موجود");
+        if (existing == null) return (false, TranslationHelper.GetString("MsgErrNeutronSourceTypeNotFound") ?? "نوع المصدر غير موجود");
 
         var oldValuesObj = new
         {
@@ -149,7 +149,7 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
         var trimmedCode = item.Code.Trim();
         var lowerCode = trimmedCode.ToLower();
         if (db.NeutronSourceTypes.Any(t => t.Id != item.Id && t.Code.ToLower() == lowerCode))
-            return (false, "رمز نوع المصدر موجود بالفعل");
+            return (false, TranslationHelper.GetString("MsgErrNeutronSourceTypeCodeExists") ?? "رمز نوع المصدر موجود بالفعل");
 
         existing.Code = trimmedCode;
         existing.NameEn = item.NameEn.Trim();
@@ -186,7 +186,7 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
         string newValuesJson = System.Text.Json.JsonSerializer.Serialize(newValuesObj);
 
         _auditService.LogWithChanges("Update", "NeutronSourceTypes", item.Id, $"تعديل نوع مصدر نيتروني: {item.Code}", oldValuesJson, newValuesJson);
-        return (true, "تم تحديث نوع المصدر النيتروني");
+        return (true, TranslationHelper.GetString("MsgSuccessNeutronSourceTypeUpdated") ?? "تم تحديث نوع المصدر النيتروني");
     }
 
     /// <summary>حذف نوع مصدر نيتروني</summary>
@@ -197,10 +197,10 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
 
         using var db = _dbFactory.CreateDbContext();
         var item = db.NeutronSourceTypes.Include(t => t.NeutronSources).FirstOrDefault(t => t.Id == id);
-        if (item == null) return (false, "نوع المصدر غير موجود");
+        if (item == null) return (false, TranslationHelper.GetString("MsgErrNeutronSourceTypeNotFound") ?? "نوع المصدر غير موجود");
 
         if (item.NeutronSources.Any() || db.NeutronSources.Any(n => n.NeutronSourceTypeId == id))
-            return (false, "لا يمكن حذف نوع مصدر نيتروني مرتبط بمصادر نيترونية");
+            return (false, TranslationHelper.GetString("MsgErrCannotDeleteNeutronSourceTypeHasSources") ?? "لا يمكن حذف نوع مصدر نيتروني مرتبط بمصادر نيترونية");
 
         var oldValuesObj = new
         {
@@ -234,7 +234,7 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
 
         db.SaveChanges();
         _auditService.LogWithChanges("Delete", "NeutronSourceTypes", id, $"حذف نوع مصدر نيتروني: {item.Code}", oldValuesJson, null);
-        return (true, "تم حذف نوع المصدر النيتروني");
+        return (true, TranslationHelper.GetString("MsgSuccessNeutronSourceTypeDeleted") ?? "تم حذف نوع المصدر النيتروني");
     }
 
     /// <summary>استرجاع نوع مصدر نيتروني محذوف</summary>
@@ -245,12 +245,12 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
 
         using var db = _dbFactory.CreateDbContext();
         var item = db.NeutronSourceTypes.IgnoreQueryFilters().FirstOrDefault(t => t.Id == id);
-        if (item == null) return (false, "نوع المصدر غير موجود");
-        if (!item.IsDeleted) return (false, "نوع المصدر غير محذوف أصلاً");
+        if (item == null) return (false, TranslationHelper.GetString("MsgErrNeutronSourceTypeNotFound") ?? "نوع المصدر غير موجود");
+        if (!item.IsDeleted) return (false, TranslationHelper.GetString("MsgErrNeutronSourceTypeNotDeleted") ?? "نوع المصدر غير محذوف أصلاً");
 
         var lowerCode = item.Code.Trim().ToLower();
         if (db.NeutronSourceTypes.Any(t => !t.IsDeleted && t.Id != id && t.Code.ToLower() == lowerCode))
-            return (false, $"لا يمكن استرجاع نوع المصدر لوجود نوع نشط آخر بنفس الرمز ({item.Code})");
+            return (false, string.Format(TranslationHelper.GetString("MsgErrCannotRestoreNeutronSourceTypeCodeConflict") ?? "لا يمكن استرجاع نوع المصدر لوجود نوع نشط آخر بنفس الرمز ({0})", item.Code));
 
         item.IsDeleted = false;
         item.DeletedAt = null;
@@ -276,6 +276,6 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
         string newValuesJson = System.Text.Json.JsonSerializer.Serialize(newValuesObj);
 
         _auditService.LogWithChanges("Restore", "NeutronSourceTypes", id, $"استرجاع نوع مصدر نيتروني: {item.Code}", null, newValuesJson);
-        return (true, $"تم استرجاع نوع المصدر النيتروني {item.Code}");
+        return (true, string.Format(TranslationHelper.GetString("MsgSuccessNeutronSourceTypeRestored") ?? "تم استرجاع نوع المصدر النيتروني {0}", item.Code));
     }
 }
