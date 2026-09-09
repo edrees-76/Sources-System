@@ -819,3 +819,44 @@ Stub الناقص (`mockSourceService.Setup(s => s.GetDeletedSources()).Returns(
 `ViewInstantiationTests.cs`، غير متعلقة بهذه الجولة). لم يُلمس `App.xaml.cs` إطلاقاً (بخلاف الجولة
 139 التي احتاجت حذف تسجيل DI، لا حاجة هنا لأن `NeutronSourceTypesWindow` تُنشأ مباشرة بـ`new` لا عبر
 الحاوية).
+
+## 15. الجولة 145 — استبدال التراكب المنبثق داخل العرض بنافذة WPF حقيقية لشاشة المواقع (LocationFormWindow)
+
+**الحالة: Draft PR غير مدموج، بانتظار قراءة القائد للكود ثم التحقق البصري الفعلي من إدريس.**
+
+استكمالاً لنفس التصحيح المعماري المطبَّق على `BorrowView` في الجولة 143 (وبتضمين درس الجولة 144 حول
+شريط العنوان)، طُبِّق نفس النمط على شاشة المواقع: أُلغي تراكب `LocationsView.xaml` المنبثق داخل العرض
+(`Panel.ZIndex="1000"`، الخلفية المعتّمة `#88000000`، البطاقة المركزية) المُضاف في الجولة 141، واستُبدل
+بنافذة WPF مستقلة حقيقية (`LocationFormWindow.xaml`/`.xaml.cs`) بنفس بنية `BorrowFormWindow`:
+`WindowStyle="SingleBorderWindow"` و`ShowInTaskbar="True"` صريحتان (بدل الاعتماد على القيم الافتراضية
+— نفس الدرس الذي تسبب في إصلاح الجولة 144 العاجل لـ`NeutronSourceTypesWindow`/`BorrowFormWindow`)،
+`WindowStartupLocation="CenterOwner"`، تُفتح عبر `ShowDialog()`. `LocationsViewModel` لا تملك نموذج
+عرض فرعي منفصل (`IsEditing`/`AddNewCommand`/`EditCommand`/`SaveCommand`/`CancelEditCommand`/
+`EditName`/`EditType`/`EditBuilding`/`EditRoom`/`EditPerson` كلها مباشرة على `LocationsViewModel` نفسها
+— بنفس بنية `BorrowViewModel`/`BorrowFormWindow`)؛ لذا `DataContext` النافذة الجديدة هو نفس نسخة
+`LocationsViewModel` الممرَّرة من `LocationsView.xaml.cs`، لا نموذج فرعي جديد. التعديل: (1) حُذف
+`Grid` التراكب بالكامل من `LocationsView.xaml`، مع بقاء الجدول (`Border`/`DataGrid`) ظاهراً دائماً
+دون أي `Visibility` مرتبط بـ`IsEditing`، وبُسِّط `Grid Grid.Row="2"` الخارجي إلى `Border Grid.Row="2"`
+مباشرة بعد أن أصبح يحوي طفلاً واحداً فقط (بلا أي تغيير على أعمدة/أوامر `DataGrid`)؛ (2) أُنشئت
+`LocationFormWindow.xaml`/`.xaml.cs` تحوي محتوى البطاقة السابقة حرفياً بلا أي تعديل على الربط أو
+الأوامر (`EditName`/`EditType`/`EditBuilding`/`EditRoom`/`EditPerson`/`SaveCommand`/
+`CancelEditCommand`)، مع حذف زر الإغلاق الدائري ✕ المكرر من رأس البطاقة (الإغلاق فقط عبر شريط العنوان
+الأصلي، `Escape`، أو زر "إلغاء")، وتبسيط الرأس إلى `TextBlock` عنوان واحد يعيد استخدام مفتاح الترجمة
+القائم `LocationDataTitle` (بلا مفتاح جديد)؛ نظراً لأن `SaveCommand` هنا إجراء حفظ وحيد غير مبهم (بخلاف
+Stepper الاستعارة ثنائي الخطوات)، رُبط كل من `Escape`→`CancelEditCommand` و`Return`→`SaveCommand` على
+`Window.InputBindings`؛ (3) لا مفتاح ترجمة جديد؛ (4) أُعيدت كتابة `LocationsView.xaml.cs` بنفس منطق
+دورة حياة النافذة في `BorrowView.xaml.cs` (اشتراك `PropertyChanged` بعد `Loaded`، إلغاء عند `Unloaded`،
+حارس ضد فتح نافذة ثانية، وحارس `IsClosingInProgress` لمنع `Close()` متكرر). لم يُلمس
+`LocationsViewModel.cs` إطلاقاً. استُبدل `LocationsViewOverlayTests.cs` (الجولة 141، يتحقق من نمط
+التراكب القديم غير الموجود بعد الآن) بملف جديد `LocationsFormWindowTests.cs` بنفس منهجية
+`BorrowViewOverlayTests.cs`: (أ) الجدول ظاهر دائماً بغض النظر عن `IsEditing`، (ب) `AddNewCommand`
+يفتح فعلياً نافذة `LocationFormWindow` (يُتحقَّق عبر `Application.Current.Windows` وتطابق
+`DataContext`)، و(ج) إغلاق النافذة مباشرة عبر `Close()` (محاكاة ✕ الأصلي) يُصفِّر `IsEditing` تلقائياً
+ويسمح بإعادة الفتح لاحقاً — بنفس أسلوب جدولة `Dispatcher.CurrentDispatcher.BeginInvoke` مع
+`DispatcherPriority.ApplicationIdle` أثناء حلقة `ShowDialog()` المتداخلة. **تحقُّق تجريبي حسب ترتيب
+التنفيذ (بلا `git stash`):** كُتب ملف الاختبار الجديد أولاً مقابل `LocationsView`/`LocationsView.xaml.cs`
+غير المعدَّلة، فشل البناء فعلياً بخطأ ترجمة (`CS0246: LocationFormWindow could not be found`) لأن النوع
+غير موجود قبل التصحيح؛ ثم نُفِّذ التصحيح كاملاً، ونجحت الاختبارات الثلاثة. 1157 اختباراً محلياً (Debug)،
+صفر فشل، صفر تجاوز (1156 + 3 اختبارات جديدة − 2 اختبارا `LocationsViewOverlayTests.cs` المحذوفَين).
+بناء المشروع الرئيسي بلا تحذيرات جديدة (نفس التحذيرات الأربعة السابقة في `LoginWindow.xaml.cs`، غير
+متعلقة بالمواقع). لا انحرافات عن عقد الجولة 145.
