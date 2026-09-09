@@ -1501,6 +1501,21 @@
     <system:String x:Key="MsgErrRadioisotopeNotDeleted">النظير غير محذوف أصلاً</system:String>
     <system:String x:Key="MsgErrCannotRestoreRadioisotopeSymbolConflict">لا يمكن استرجاع النظير لوجود نظير نشط آخر بنفس الرمز ({0})</system:String>
     <system:String x:Key="MsgSuccessRadioisotopeRestored">تم استرجاع النظير {0}</system:String>
+
+    <!-- Round 136 (ب5 — سابعة): NeutronSourceTypeService.cs remaining validation/success message localization -->
+    <system:String x:Key="MsgErrInvalidNeutronSourceTypeData">بيانات نوع المصدر غير صالحة</system:String>
+    <system:String x:Key="MsgErrNeutronSourceTypeCodeRequired">رمز نوع المصدر مطلوب</system:String>
+    <system:String x:Key="MsgErrNeutronSourceTypeNameEnRequired">الاسم بالإنجليزية مطلوب</system:String>
+    <system:String x:Key="MsgErrInvalidPhotonToNeutronDoseRatioFinite">قيمة نسبة جرعة الفوتون إلى النيترون غير صالحة (يجب أن تكون رقماً منتهياً)</system:String>
+    <system:String x:Key="MsgErrNeutronSourceTypeCodeExists">رمز نوع المصدر موجود بالفعل</system:String>
+    <system:String x:Key="MsgSuccessNeutronSourceTypeCreated">تم إضافة نوع المصدر النيتروني بنجاح</system:String>
+    <system:String x:Key="MsgErrNeutronSourceTypeNotFound">نوع المصدر غير موجود</system:String>
+    <system:String x:Key="MsgSuccessNeutronSourceTypeUpdated">تم تحديث نوع المصدر النيتروني</system:String>
+    <system:String x:Key="MsgErrCannotDeleteNeutronSourceTypeHasSources">لا يمكن حذف نوع مصدر نيتروني مرتبط بمصادر نيترونية</system:String>
+    <system:String x:Key="MsgSuccessNeutronSourceTypeDeleted">تم حذف نوع المصدر النيتروني</system:String>
+    <system:String x:Key="MsgErrNeutronSourceTypeNotDeleted">نوع المصدر غير محذوف أصلاً</system:String>
+    <system:String x:Key="MsgErrCannotRestoreNeutronSourceTypeCodeConflict">لا يمكن استرجاع نوع المصدر لوجود نوع نشط آخر بنفس الرمز ({0})</system:String>
+    <system:String x:Key="MsgSuccessNeutronSourceTypeRestored">تم استرجاع نوع المصدر النيتروني {0}</system:String>
 </ResourceDictionary>
 
 
