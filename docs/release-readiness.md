@@ -357,10 +357,11 @@ ArabicStatus` — خاصية `[NotMapped]` تُعيد نصاً عربياً دا
 ونصوص XAML المثبتة، وأي خدمة أخرى لم تُراجَع بعد صراحة) ما زال مؤجَّلاً لجولات لاحقة.
 
 **الجولة 136 (سابعة ضمن سلسلة ب5):** غُلِّفت الرسائل المتبقية في `NeutronSourceTypeService.cs`
-(`Create`/`Update`/`Delete`/`Restore`) بنفس نمط الجولات 130-135. 13 مفتاح رسالة جديد، منها 5 مفاتيح
+(`Create`/`Update`/`Delete`/`Restore`) بنفس نمط الجولات 130-135. 13 مفتاح رسالة جديد، منها 6 مفاتيح
 مُدمَجة صراحة بين الدوال: `MsgErrInvalidNeutronSourceTypeData` ("بيانات نوع المصدر غير صالحة"،
 `Create`+`Update`)، `MsgErrNeutronSourceTypeCodeRequired` و`MsgErrNeutronSourceTypeNameEnRequired`
-(`Create`+`Update`)، `MsgErrNeutronSourceTypeCodeExists` ("رمز نوع المصدر موجود بالفعل"،
+(`Create`+`Update`)، `MsgErrInvalidPhotonToNeutronDoseRatioFinite` (`Create`+`Update`)،
+`MsgErrNeutronSourceTypeCodeExists` ("رمز نوع المصدر موجود بالفعل"،
 `Create`+`Update`)، و`MsgErrNeutronSourceTypeNotFound` ("نوع المصدر غير موجود"،
 `Update`+`Delete`+`Restore`). مفتاح إضافي (رابع عشر إجمالاً، غير محسوب ضمن الـ13 الجديدة) مُعاد
 استخدامه لا مُكرَّراً: تحقق `HalfLife <= 0` في
