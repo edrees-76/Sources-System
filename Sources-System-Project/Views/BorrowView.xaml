@@ -40,9 +40,8 @@
                     <TextBlock Text="{DynamicResource BorrowingManagementSubtitle}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <!-- أزرار الإجراءات العلوية: تظهر فقط عند عدم التحرير -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center"
-                            Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVis}}">
+                <!-- أزرار الإجراءات العلوية -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Command="{Binding AddNewCommand}" Style="{StaticResource PrimaryButton}" Margin="0,0,10,0" Height="40" Padding="18,0">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="PlusCircleOutline" Margin="0,0,8,0" VerticalAlignment="Center"/>
@@ -67,7 +66,7 @@
             <!-- ─────────────────────────────────────────────────── -->
             <!-- المشهد 1: قائمة الاستعارات والبحث والإحصائيات       -->
             <!-- ─────────────────────────────────────────────────── -->
-            <Grid Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVis}}">
+            <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/> <!-- البطاقات الإحصائية -->
                     <RowDefinition Height="Auto"/> <!-- شريط البحث والتصفية -->
@@ -323,14 +322,25 @@
             <!-- ─────────────────────────────────────────────────── -->
             <!-- المشهد 2: بطاقة النموذج / الإجراء (IsEditing)       -->
             <!-- ─────────────────────────────────────────────────── -->
-            <Border Style="{StaticResource ContentCard}"
-                    Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}"
-                    ClipToBounds="True">
-                <Border.InputBindings>
-                    <KeyBinding Key="Escape" Command="{Binding CancelEditCommand}"/>
-                </Border.InputBindings>
+            <Grid Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}" Panel.ZIndex="1000" FlowDirection="RightToLeft">
+                <Border Background="#88000000">
+                    <Border.InputBindings>
+                        <MouseBinding MouseAction="LeftClick" Command="{Binding CancelEditCommand}"/>
+                    </Border.InputBindings>
+                </Border>
 
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <Border Width="720" MaxHeight="720" VerticalAlignment="Center" HorizontalAlignment="Center"
+                        Background="{DynamicResource CardBackground}" CornerRadius="14"
+                        BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
+                        ClipToBounds="True">
+                    <Border.Effect>
+                        <DropShadowEffect Color="#000000" BlurRadius="30" ShadowDepth="6" Opacity="0.25"/>
+                    </Border.Effect>
+                    <Border.InputBindings>
+                        <KeyBinding Key="Escape" Command="{Binding CancelEditCommand}"/>
+                    </Border.InputBindings>
+
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <Grid>
 
                         <!-- ═══════════════════════════════════════════════ -->
@@ -819,8 +829,9 @@
                         </Grid>
 
                     </Grid>
-                </ScrollViewer>
-            </Border>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
 
         </Grid>
     </Grid>
