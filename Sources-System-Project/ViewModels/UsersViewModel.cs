@@ -195,18 +195,18 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
             var sections = new List<string>();
             if (role.RoleName == "مدير النظام")
             {
-                sections.Add("كافة أقسام المنظومة (صلاحيات كاملة)");
+                sections.Add(TranslationHelper.GetString("TextAllSystemSectionsFullAccess") ?? "كافة أقسام المنظومة (صلاحيات كاملة)");
             }
             else
             {
-                sections.Add("الصلاحيات مضبوطة بشكل فردي لكل مستخدم ضمن هذا الدور");
+                sections.Add(TranslationHelper.GetString("TextPermissionsPerUserInRole") ?? "الصلاحيات مضبوطة بشكل فردي لكل مستخدم ضمن هذا الدور");
             }
 
             list.Add(new RoleSummaryItem
             {
                 Role = role,
                 UsersCount = count,
-                Description = role.Description ?? (role.RoleName == "مدير النظام" ? "صلاحيات إدارية كاملة للتحكم في كافة موارد النظام والمستخدمين" : "صلاحيات تشغيلية واستعراض للبيانات والأقسام المسموح بها"),
+                Description = role.Description ?? (role.RoleName == "مدير النظام" ? (TranslationHelper.GetString("TextAdminRoleFullDescription") ?? "صلاحيات إدارية كاملة للتحكم في كافة موارد النظام والمستخدمين") : (TranslationHelper.GetString("TextOperationalRoleDescription") ?? "صلاحيات تشغيلية واستعراض للبيانات والأقسام المسموح بها")),
                 GrantedSections = sections
             });
         }
@@ -341,8 +341,8 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
                         diffList.Add(new AuditDiffItem
                         {
                             FieldName = TranslateFieldName(key),
-                            OldValue = string.IsNullOrEmpty(oldVal) ? "(فارغ / لم يحدد)" : oldVal,
-                            NewValue = string.IsNullOrEmpty(newVal) ? "(فارغ / لم يحدد)" : newVal,
+                            OldValue = string.IsNullOrEmpty(oldVal) ? (TranslationHelper.GetString("TextEmptyNotSpecified") ?? "(فارغ / لم يحدد)") : oldVal,
+                            NewValue = string.IsNullOrEmpty(newVal) ? (TranslationHelper.GetString("TextEmptyNotSpecified") ?? "(فارغ / لم يحدد)") : newVal,
                             HasChanged = oldVal != newVal
                         });
                     }
@@ -352,9 +352,9 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
             {
                 diffList.Add(new AuditDiffItem
                 {
-                    FieldName = "التفاصيل المسجلة",
+                    FieldName = TranslationHelper.GetString("TextRecordedDetails") ?? "التفاصيل المسجلة",
                     OldValue = "-",
-                    NewValue = target.Details ?? "لا توجد تفاصيل إضافية",
+                    NewValue = target.Details ?? (TranslationHelper.GetString("TextNoAdditionalDetails") ?? "لا توجد تفاصيل إضافية"),
                     HasChanged = false
                 });
             }
@@ -363,7 +363,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
         {
             diffList.Add(new AuditDiffItem
             {
-                FieldName = "التفاصيل",
+                FieldName = TranslationHelper.GetString("TextDetails") ?? "التفاصيل",
                 OldValue = target.OldValues ?? "-",
                 NewValue = target.NewValues ?? (target.Details ?? "-"),
                 HasChanged = true
@@ -427,10 +427,10 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
 
     private static string FormatPermissionSetDisplay(HashSet<string> set, string? raw)
     {
-        if (set.Count == 0) return "(لا توجد صلاحيات)";
+        if (set.Count == 0) return TranslationHelper.GetString("TextNoPermissions") ?? "(لا توجد صلاحيات)";
         if (string.Equals(raw?.Trim(), "All", StringComparison.OrdinalIgnoreCase) || set.SetEquals(KnownPermissionKeys))
         {
-            return "كافة الصلاحيات (All)";
+            return TranslationHelper.GetString("TextAllPermissionsLabel") ?? "كافة الصلاحيات (All)";
         }
         var translatedNames = set.Select(TranslatePermissionName);
         return string.Join("، ", translatedNames);
@@ -440,16 +440,16 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
     {
         return perm switch
         {
-            "Radioisotopes" => "النظائر المشعة",
-            "Sources" => "المصادر المشعة",
-            "Locations" => "المواقع",
-            "Borrowing" => "الاستعارة",
-            "Reports" => "التقارير",
-            "Users" => "إدارة المستخدمين",
-            "Settings" => "الإعدادات",
-            "ActivityCalculator" or "Calculator" => "الحاسبة الإشعاعية",
-            "Deletions" => "المحذوفات",
-            "All" => "كافة الصلاحيات",
+            "Radioisotopes" => TranslationHelper.GetString("PermNameRadioisotopes") ?? "النظائر المشعة",
+            "Sources" => TranslationHelper.GetString("PermNameSources") ?? "المصادر المشعة",
+            "Locations" => TranslationHelper.GetString("PermNameLocations") ?? "المواقع",
+            "Borrowing" => TranslationHelper.GetString("PermNameBorrowing") ?? "الاستعارة",
+            "Reports" => TranslationHelper.GetString("PermNameReports") ?? "التقارير",
+            "Users" => TranslationHelper.GetString("PermNameUsers") ?? "إدارة المستخدمين",
+            "Settings" => TranslationHelper.GetString("PermNameSettings") ?? "الإعدادات",
+            "ActivityCalculator" or "Calculator" => TranslationHelper.GetString("PermNameActivityCalculator") ?? "الحاسبة الإشعاعية",
+            "Deletions" => TranslationHelper.GetString("PermNameDeletions") ?? "المحذوفات",
+            "All" => TranslationHelper.GetString("PermNameAllPermissions") ?? "كافة الصلاحيات",
             _ => perm
         };
     }
@@ -458,21 +458,21 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
     {
         return key switch
         {
-            "SourceCode" => "رقم المصدر",
-            "InitialActivity" => "النشاط الابتدائي",
-            "CurrentActivity" => "النشاط الحالي",
-            "ActivityUnit" => "الوحدة",
-            "LocationId" => "معرّف الموقع",
-            "Status" => "الحالة",
-            "FullName" => "الاسم الكامل",
-            "Username" => "اسم المستخدم",
-            "Email" => "البريد الإلكتروني",
-            "RoleId" => "معرّف الدور",
-            "IsActive" => "الحساب نشط",
-            "IsEditor" => "صلاحية التعديل",
-            "Permissions" => "صلاحيات الوصول للأقسام",
-            "Purpose" => "الغرض",
-            "ExpectedReturnDate" => "تاريخ الإرجاع المتوقع",
+            "SourceCode" => TranslationHelper.GetString("FieldNameSourceCode") ?? "رقم المصدر",
+            "InitialActivity" => TranslationHelper.GetString("FieldNameInitialActivity") ?? "النشاط الابتدائي",
+            "CurrentActivity" => TranslationHelper.GetString("FieldNameCurrentActivity") ?? "النشاط الحالي",
+            "ActivityUnit" => TranslationHelper.GetString("FieldNameActivityUnit") ?? "الوحدة",
+            "LocationId" => TranslationHelper.GetString("FieldNameLocationId") ?? "معرّف الموقع",
+            "Status" => TranslationHelper.GetString("FieldNameStatus") ?? "الحالة",
+            "FullName" => TranslationHelper.GetString("FieldNameFullName") ?? "الاسم الكامل",
+            "Username" => TranslationHelper.GetString("FieldNameUsername") ?? "اسم المستخدم",
+            "Email" => TranslationHelper.GetString("FieldNameEmail") ?? "البريد الإلكتروني",
+            "RoleId" => TranslationHelper.GetString("FieldNameRoleId") ?? "معرّف الدور",
+            "IsActive" => TranslationHelper.GetString("FieldNameIsActive") ?? "الحساب نشط",
+            "IsEditor" => TranslationHelper.GetString("FieldNameIsEditor") ?? "صلاحية التعديل",
+            "Permissions" => TranslationHelper.GetString("FieldNamePermissions") ?? "صلاحيات الوصول للأقسام",
+            "Purpose" => TranslationHelper.GetString("FieldNamePurpose") ?? "الغرض",
+            "ExpectedReturnDate" => TranslationHelper.GetString("FieldNameExpectedReturnDate") ?? "تاريخ الإرجاع المتوقع",
             _ => key
         };
     }
@@ -502,7 +502,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
         if (target == null) return;
         if (target.Id == _userService.CurrentUser?.Id)
         {
-            ShowMsg("لا يمكنك تجميد حسابك الحالي");
+            ShowMsg(TranslationHelper.GetString("MsgErrCannotFreezeOwnAccount") ?? "لا يمكنك تجميد حسابك الحالي");
             return;
         }
 
@@ -693,7 +693,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
     private void Delete()
     {
         if (Selected == null) return;
-        if (!DialogHelper.ShowConfirmation("هل أنت متأكد من حذف هذا المستخدم؟", "تأكيد الحذف")) return;
+        if (!DialogHelper.ShowConfirmation(TranslationHelper.GetString("MsgConfirmDeleteUser") ?? "هل أنت متأكد من حذف هذا المستخدم؟", TranslationHelper.GetString("TitleConfirmDelete") ?? "تأكيد الحذف")) return;
         var r = _userService.DeleteUser(Selected.Id);
         ShowMsg(r.Message);
         if (r.Success) LoadData();

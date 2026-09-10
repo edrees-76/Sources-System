@@ -1548,6 +1548,66 @@
     <system:String x:Key="MsgErrNeutronSourceTypeNotDeleted">نوع المصدر غير محذوف أصلاً</system:String>
     <system:String x:Key="MsgErrCannotRestoreNeutronSourceTypeCodeConflict">لا يمكن استرجاع نوع المصدر لوجود نوع نشط آخر بنفس الرمز ({0})</system:String>
     <system:String x:Key="MsgSuccessNeutronSourceTypeRestored">تم استرجاع نوع المصدر النيتروني {0}</system:String>
+
+    <!-- Round 151: DeletionsViewModel.cs message localization -->
+    <system:String x:Key="TextBuildingLabelFormat">[مبنى {0}]</system:String>
+    <system:String x:Key="MsgErrLoadDeletionsLog">حدث خطأ أثناء تحميل سجل المحذوفات: {0}</system:String>
+    <system:String x:Key="TitleDeletionsLog">سجل المحذوفات</system:String>
+    <system:String x:Key="MsgDeletedItemDetailsFormat">المعرف: {0}&#10;نوع الكيان: {1}&#10;حذف بواسطة: {2}&#10;تاريخ الحذف: {3}</system:String>
+    <system:String x:Key="TitleDeletedItemDetails">تفاصيل العنصر المحذوف</system:String>
+    <system:String x:Key="MsgConfirmRestoreItemFormat">هل أنت متأكد من استرجاع هذا العنصر؟&#10;&#10;• النوع: {0}&#10;• المعرّف: {1} {2}</system:String>
+    <system:String x:Key="TitleConfirmRestoreItem">تأكيد استرجاع العنصر</system:String>
+    <system:String x:Key="MsgErrUnknownEntityType">نوع الكيان غير معروف</system:String>
+    <system:String x:Key="TitleRestoreSuccess">تم الاسترجاع بنجاح</system:String>
+    <system:String x:Key="TitleRestoreFailed">تعذر الاسترجاع</system:String>
+    <system:String x:Key="MsgNeutronSourceDeletedDetailsFormat">☢️ كود المصدر النيتروني: {0}&#10;🏷️ النوع المرجعي: {1} ({2})&#10;🔢 الرقم التسلسلي: {3}&#10;⚡ معدل الانبعاث: {4}&#10;📊 عدم اليقين: {5}&#10;📍 الموقع: {6}&#10;📅 تاريخ المعايرة: {7}&#10;🕒 تاريخ الحذف: {8}&#10;🛡️ حُذف بواسطة: {9}</system:String>
+    <system:String x:Key="TitleDeletedNeutronSourceDetailsFormat">تفاصيل المصدر النيتروني المحذوف — {0}</system:String>
+    <system:String x:Key="MsgLocationDeletedDetailsFormat">📍 اسم الموقع: {0}&#10;🏢 نوع الموقع: {1}&#10;🏗️ المبنى: {2}&#10;🚪 الغرفة: {3}&#10;👤 المسؤول: {4}&#10;🕒 تاريخ الحذف: {5}&#10;🛡️ حُذف بواسطة: {6}</system:String>
+    <system:String x:Key="TitleDeletedLocationDetailsFormat">تفاصيل الموقع المحذوف — {0}</system:String>
+    <system:String x:Key="MsgUserDeletedDetailsFormat">👤 الاسم الكامل: {0}&#10;🏷️ اسم المستخدم: @{1}&#10;🔑 الدور: {2}&#10;📧 البريد الإلكتروني: {3}&#10;📅 تاريخ إنشاء الحساب: {4}&#10;🕒 تاريخ الحذف: {5}&#10;🛡️ حُذف بواسطة: {6}</system:String>
+    <system:String x:Key="TitleDeletedUserDetailsFormat">تفاصيل المستخدم المحذوف — {0}</system:String>
+    <system:String x:Key="MsgRadioisotopeDeletedDetailsFormat">⚛️ رمز النظير: {0}&#10;🏷️ الاسم: {1}&#10;☢️ نوع الإشعاع: {2}&#10;⏳ نصف العمر: {3}&#10;⚡ الطاقة الأساسية: {4} keV&#10;📊 فئة الأمان: الفئة {5}&#10;📐 ثابت غاما (Γ): {6}&#10;🕒 تاريخ الحذف: {7}&#10;🛡️ حُذف بواسطة: {8}&#10;📝 الملاحظات: {9}</system:String>
+    <system:String x:Key="TitleDeletedRadioisotopeDetailsFormat">تفاصيل النظير المحذوف — {0}</system:String>
+
+    <!-- Round 151: UsersViewModel.cs message localization -->
+    <system:String x:Key="TextAllSystemSectionsFullAccess">كافة أقسام المنظومة (صلاحيات كاملة)</system:String>
+    <system:String x:Key="TextPermissionsPerUserInRole">الصلاحيات مضبوطة بشكل فردي لكل مستخدم ضمن هذا الدور</system:String>
+    <system:String x:Key="TextAdminRoleFullDescription">صلاحيات إدارية كاملة للتحكم في كافة موارد النظام والمستخدمين</system:String>
+    <system:String x:Key="TextOperationalRoleDescription">صلاحيات تشغيلية واستعراض للبيانات والأقسام المسموح بها</system:String>
+    <system:String x:Key="TextEmptyNotSpecified">(فارغ / لم يحدد)</system:String>
+    <system:String x:Key="TextRecordedDetails">التفاصيل المسجلة</system:String>
+    <system:String x:Key="TextNoAdditionalDetails">لا توجد تفاصيل إضافية</system:String>
+    <system:String x:Key="TextDetails">التفاصيل</system:String>
+    <system:String x:Key="TextNoPermissions">(لا توجد صلاحيات)</system:String>
+    <system:String x:Key="TextAllPermissionsLabel">كافة الصلاحيات (All)</system:String>
+    <system:String x:Key="PermNameRadioisotopes">النظائر المشعة</system:String>
+    <system:String x:Key="PermNameSources">المصادر المشعة</system:String>
+    <system:String x:Key="PermNameLocations">المواقع</system:String>
+    <system:String x:Key="PermNameBorrowing">الاستعارة</system:String>
+    <system:String x:Key="PermNameReports">التقارير</system:String>
+    <system:String x:Key="PermNameUsers">إدارة المستخدمين</system:String>
+    <system:String x:Key="PermNameSettings">الإعدادات</system:String>
+    <system:String x:Key="PermNameActivityCalculator">الحاسبة الإشعاعية</system:String>
+    <system:String x:Key="PermNameDeletions">المحذوفات</system:String>
+    <system:String x:Key="PermNameAllPermissions">كافة الصلاحيات</system:String>
+    <system:String x:Key="FieldNameSourceCode">رقم المصدر</system:String>
+    <system:String x:Key="FieldNameInitialActivity">النشاط الابتدائي</system:String>
+    <system:String x:Key="FieldNameCurrentActivity">النشاط الحالي</system:String>
+    <system:String x:Key="FieldNameActivityUnit">الوحدة</system:String>
+    <system:String x:Key="FieldNameLocationId">معرّف الموقع</system:String>
+    <system:String x:Key="FieldNameStatus">الحالة</system:String>
+    <system:String x:Key="FieldNameFullName">الاسم الكامل</system:String>
+    <system:String x:Key="FieldNameUsername">اسم المستخدم</system:String>
+    <system:String x:Key="FieldNameEmail">البريد الإلكتروني</system:String>
+    <system:String x:Key="FieldNameRoleId">معرّف الدور</system:String>
+    <system:String x:Key="FieldNameIsActive">الحساب نشط</system:String>
+    <system:String x:Key="FieldNameIsEditor">صلاحية التعديل</system:String>
+    <system:String x:Key="FieldNamePermissions">صلاحيات الوصول للأقسام</system:String>
+    <system:String x:Key="FieldNamePurpose">الغرض</system:String>
+    <system:String x:Key="FieldNameExpectedReturnDate">تاريخ الإرجاع المتوقع</system:String>
+    <system:String x:Key="MsgErrCannotFreezeOwnAccount">لا يمكنك تجميد حسابك الحالي</system:String>
+    <system:String x:Key="MsgConfirmDeleteUser">هل أنت متأكد من حذف هذا المستخدم؟</system:String>
+    <system:String x:Key="TitleConfirmDelete">تأكيد الحذف</system:String>
 </ResourceDictionary>
 
 

@@ -132,7 +132,7 @@ namespace Sources.ViewModels
                             EntityType = "Location",
                             EntityTypeDisplayName = TranslationHelper.GetString("EntityTypeLocation") ?? "موقع",
                             Identifier = l.LocationName,
-                            SecondaryIdentifier = !string.IsNullOrEmpty(l.Building) ? $"[مبنى {l.Building}]" : string.Empty,
+                            SecondaryIdentifier = !string.IsNullOrEmpty(l.Building) ? TranslationHelper.GetFormat("TextBuildingLabelFormat", l.Building) : string.Empty,
                             DeletedByName = l.DeletedByUser?.FullName ?? "-",
                             DeletedAt = l.DeletedAt,
                             EntityObject = l,
@@ -245,7 +245,7 @@ namespace Sources.ViewModels
             catch (Exception ex)
             {
                 LoggerService.LogError("DeletionsViewModel: Failed to load deleted items", ex);
-                DialogHelper.ShowError($"حدث خطأ أثناء تحميل سجل المحذوفات: {ex.Message}", "سجل المحذوفات");
+                DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrLoadDeletionsLog", ex.Message), TranslationHelper.GetString("TitleDeletionsLog") ?? "سجل المحذوفات");
             }
             finally
             {
@@ -331,7 +331,7 @@ namespace Sources.ViewModels
                     break;
 
                 default:
-                    DialogHelper.ShowInfo($"المعرف: {row.Identifier}\nنوع الكيان: {row.EntityTypeDisplayName}\nحذف بواسطة: {row.DeletedByName}\nتاريخ الحذف: {row.DeletedAtFormatted}", "تفاصيل العنصر المحذوف");
+                    DialogHelper.ShowInfo(TranslationHelper.GetFormat("MsgDeletedItemDetailsFormat", row.Identifier, row.EntityTypeDisplayName, row.DeletedByName, row.DeletedAtFormatted), TranslationHelper.GetString("TitleDeletedItemDetails") ?? "تفاصيل العنصر المحذوف");
                     break;
             }
         }
@@ -341,8 +341,8 @@ namespace Sources.ViewModels
         {
             if (row == null) return;
 
-            string confirmPrompt = $"هل أنت متأكد من استرجاع هذا العنصر؟\n\n• النوع: {row.EntityTypeDisplayName}\n• المعرّف: {row.Identifier} {row.SecondaryIdentifier}";
-            bool confirmed = DialogHelper.ShowConfirmation(confirmPrompt, "تأكيد استرجاع العنصر");
+            string confirmPrompt = TranslationHelper.GetFormat("MsgConfirmRestoreItemFormat", row.EntityTypeDisplayName, row.Identifier, row.SecondaryIdentifier);
+            bool confirmed = DialogHelper.ShowConfirmation(confirmPrompt, TranslationHelper.GetString("TitleConfirmRestoreItem") ?? "تأكيد استرجاع العنصر");
             if (!confirmed) return;
 
             (bool Success, string Message) result = (false, string.Empty);
@@ -365,34 +365,36 @@ namespace Sources.ViewModels
                     result = _radioisotopeService.Restore(row.Id);
                     break;
                 default:
-                    result = (false, "نوع الكيان غير معروف");
+                    result = (false, TranslationHelper.GetString("MsgErrUnknownEntityType") ?? "نوع الكيان غير معروف");
                     break;
             }
 
             if (result.Success)
             {
-                DialogHelper.ShowInfo(result.Message, "تم الاسترجاع بنجاح");
+                DialogHelper.ShowInfo(result.Message, TranslationHelper.GetString("TitleRestoreSuccess") ?? "تم الاسترجاع بنجاح");
                 await LoadDeletedItemsAsync();
             }
             else
             {
-                DialogHelper.ShowWarning(result.Message, "تعذر الاسترجاع");
+                DialogHelper.ShowWarning(result.Message, TranslationHelper.GetString("TitleRestoreFailed") ?? "تعذر الاسترجاع");
             }
         }
 
         private void ShowNeutronSourceDetailsDialog(NeutronSource ns, DeletedItemRow row)
         {
-            string info = $"☢️ كود المصدر النيتروني: {ns.SourceCode}\n" +
-                          $"🏷️ النوع المرجعي: {ns.NeutronSourceType?.Code ?? "-"} ({ns.NeutronSourceType?.NameAr ?? ns.NeutronSourceType?.NameEn ?? "-"})\n" +
-                          $"🔢 الرقم التسلسلي: {ns.SerialNumber ?? "-"}\n" +
-                          $"⚡ معدل الانبعاث: {ns.CalibratedEmissionRateFormatted}\n" +
-                          $"📊 عدم اليقين: {(ns.RelativeExpandedUncertaintyPercent.HasValue ? $"{ns.RelativeExpandedUncertaintyPercent:N1}%" : "-")}\n" +
-                          $"📍 الموقع: {ns.Location?.LocationName ?? "-"}\n" +
-                          $"📅 تاريخ المعايرة: {ns.CalibrationDate:yyyy/MM/dd}\n" +
-                          $"🕒 تاريخ الحذف: {row.DeletedAtFormatted}\n" +
-                          $"🛡️ حُذف بواسطة: {row.DeletedByName}";
+            string info = TranslationHelper.GetFormat("MsgNeutronSourceDeletedDetailsFormat",
+                ns.SourceCode,
+                ns.NeutronSourceType?.Code ?? "-",
+                ns.NeutronSourceType?.NameAr ?? ns.NeutronSourceType?.NameEn ?? "-",
+                ns.SerialNumber ?? "-",
+                ns.CalibratedEmissionRateFormatted,
+                ns.RelativeExpandedUncertaintyPercent.HasValue ? $"{ns.RelativeExpandedUncertaintyPercent:N1}%" : "-",
+                ns.Location?.LocationName ?? "-",
+                ns.CalibrationDate.HasValue ? ns.CalibrationDate.Value.ToString("yyyy/MM/dd") : string.Empty,
+                row.DeletedAtFormatted,
+                row.DeletedByName);
 
-            DialogHelper.ShowInfo(info, $"تفاصيل المصدر النيتروني المحذوف — {ns.SourceCode}");
+            DialogHelper.ShowInfo(info, TranslationHelper.GetFormat("TitleDeletedNeutronSourceDetailsFormat", ns.SourceCode));
         }
 
         // اسم بديل للأمر للتوافق
@@ -401,44 +403,47 @@ namespace Sources.ViewModels
 
         private void ShowLocationDetailsDialog(Location loc, DeletedItemRow row)
         {
-            string info = $"📍 اسم الموقع: {loc.LocationName}\n" +
-                          $"🏢 نوع الموقع: {loc.LocationType ?? "-"}\n" +
-                          $"🏗️ المبنى: {loc.Building ?? "-"}\n" +
-                          $"🚪 الغرفة: {loc.Room ?? "-"}\n" +
-                          $"👤 المسؤول: {loc.ResponsiblePerson ?? "-"}\n" +
-                          $"🕒 تاريخ الحذف: {row.DeletedAtFormatted}\n" +
-                          $"🛡️ حُذف بواسطة: {row.DeletedByName}";
+            string info = TranslationHelper.GetFormat("MsgLocationDeletedDetailsFormat",
+                loc.LocationName,
+                loc.LocationType ?? "-",
+                loc.Building ?? "-",
+                loc.Room ?? "-",
+                loc.ResponsiblePerson ?? "-",
+                row.DeletedAtFormatted,
+                row.DeletedByName);
 
-            DialogHelper.ShowInfo(info, $"تفاصيل الموقع المحذوف — {loc.LocationName}");
+            DialogHelper.ShowInfo(info, TranslationHelper.GetFormat("TitleDeletedLocationDetailsFormat", loc.LocationName));
         }
 
         private void ShowUserDetailsDialog(User user, DeletedItemRow row)
         {
-            string info = $"👤 الاسم الكامل: {user.FullName}\n" +
-                          $"🏷️ اسم المستخدم: @{user.Username}\n" +
-                          $"🔑 الدور: {user.Role?.RoleName ?? "-"}\n" +
-                          $"📧 البريد الإلكتروني: {user.Email ?? "-"}\n" +
-                          $"📅 تاريخ إنشاء الحساب: {user.CreatedAt:yyyy/MM/dd}\n" +
-                          $"🕒 تاريخ الحذف: {row.DeletedAtFormatted}\n" +
-                          $"🛡️ حُذف بواسطة: {row.DeletedByName}";
+            string info = TranslationHelper.GetFormat("MsgUserDeletedDetailsFormat",
+                user.FullName,
+                user.Username,
+                user.Role?.RoleName ?? "-",
+                user.Email ?? "-",
+                user.CreatedAt.ToString("yyyy/MM/dd"),
+                row.DeletedAtFormatted,
+                row.DeletedByName);
 
-            DialogHelper.ShowInfo(info, $"تفاصيل المستخدم المحذوف — {user.FullName}");
+            DialogHelper.ShowInfo(info, TranslationHelper.GetFormat("TitleDeletedUserDetailsFormat", user.FullName));
         }
 
         private void ShowRadioisotopeDetailsDialog(Radioisotope iso, DeletedItemRow row)
         {
-            string info = $"⚛️ رمز النظير: {iso.Symbol}\n" +
-                          $"🏷️ الاسم: {iso.DisplayName}\n" +
-                          $"☢️ نوع الإشعاع: {iso.RadiationType}\n" +
-                          $"⏳ نصف العمر: {iso.DisplayHalfLife}\n" +
-                          $"⚡ الطاقة الأساسية: {iso.Energy} keV\n" +
-                          $"📊 فئة الأمان: الفئة {iso.Category}\n" +
-                          $"📐 ثابت غاما (Γ): {(iso.GammaConstant.HasValue ? iso.GammaConstant.Value.ToString("0.####") : "-")}\n" +
-                          $"🕒 تاريخ الحذف: {row.DeletedAtFormatted}\n" +
-                          $"🛡️ حُذف بواسطة: {row.DeletedByName}\n" +
-                          $"📝 الملاحظات: {(string.IsNullOrEmpty(iso.DisplayNotes) ? "-" : iso.DisplayNotes)}";
+            string info = TranslationHelper.GetFormat("MsgRadioisotopeDeletedDetailsFormat",
+                iso.Symbol,
+                iso.DisplayName,
+                iso.RadiationType,
+                iso.DisplayHalfLife,
+                iso.Energy,
+                iso.Category,
+                iso.GammaConstant.HasValue ? iso.GammaConstant.Value.ToString("0.####") : "-",
+                row.DeletedAtFormatted,
+                row.DeletedByName,
+                string.IsNullOrEmpty(iso.DisplayNotes) ? "-" : iso.DisplayNotes);
 
-            DialogHelper.ShowInfo(info, $"تفاصيل النظير المحذوف — {iso.Symbol}");
+            DialogHelper.ShowInfo(info, TranslationHelper.GetFormat("TitleDeletedRadioisotopeDetailsFormat", iso.Symbol));
         }
     }
 }

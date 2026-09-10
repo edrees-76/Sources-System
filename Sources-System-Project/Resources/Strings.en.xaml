@@ -1548,6 +1548,66 @@
     <system:String x:Key="MsgErrNeutronSourceTypeNotDeleted">Neutron source type is not deleted</system:String>
     <system:String x:Key="MsgErrCannotRestoreNeutronSourceTypeCodeConflict">Cannot restore the neutron source type because another active type with the same code ({0}) exists</system:String>
     <system:String x:Key="MsgSuccessNeutronSourceTypeRestored">Neutron source type {0} restored</system:String>
+
+    <!-- Round 151: DeletionsViewModel.cs message localization -->
+    <system:String x:Key="TextBuildingLabelFormat">[Building {0}]</system:String>
+    <system:String x:Key="MsgErrLoadDeletionsLog">An error occurred while loading the deletions log: {0}</system:String>
+    <system:String x:Key="TitleDeletionsLog">Deletions Log</system:String>
+    <system:String x:Key="MsgDeletedItemDetailsFormat">ID: {0}&#10;Entity Type: {1}&#10;Deleted By: {2}&#10;Deletion Date: {3}</system:String>
+    <system:String x:Key="TitleDeletedItemDetails">Deleted Item Details</system:String>
+    <system:String x:Key="MsgConfirmRestoreItemFormat">Are you sure you want to restore this item?&#10;&#10;• Type: {0}&#10;• ID: {1} {2}</system:String>
+    <system:String x:Key="TitleConfirmRestoreItem">Confirm Item Restoration</system:String>
+    <system:String x:Key="MsgErrUnknownEntityType">Unknown entity type</system:String>
+    <system:String x:Key="TitleRestoreSuccess">Restored Successfully</system:String>
+    <system:String x:Key="TitleRestoreFailed">Restore Failed</system:String>
+    <system:String x:Key="MsgNeutronSourceDeletedDetailsFormat">☢️ Neutron Source Code: {0}&#10;🏷️ Reference Type: {1} ({2})&#10;🔢 Serial Number: {3}&#10;⚡ Emission Rate: {4}&#10;📊 Uncertainty: {5}&#10;📍 Location: {6}&#10;📅 Calibration Date: {7}&#10;🕒 Deletion Date: {8}&#10;🛡️ Deleted By: {9}</system:String>
+    <system:String x:Key="TitleDeletedNeutronSourceDetailsFormat">Deleted Neutron Source Details — {0}</system:String>
+    <system:String x:Key="MsgLocationDeletedDetailsFormat">📍 Location Name: {0}&#10;🏢 Location Type: {1}&#10;🏗️ Building: {2}&#10;🚪 Room: {3}&#10;👤 Responsible Person: {4}&#10;🕒 Deletion Date: {5}&#10;🛡️ Deleted By: {6}</system:String>
+    <system:String x:Key="TitleDeletedLocationDetailsFormat">Deleted Location Details — {0}</system:String>
+    <system:String x:Key="MsgUserDeletedDetailsFormat">👤 Full Name: {0}&#10;🏷️ Username: @{1}&#10;🔑 Role: {2}&#10;📧 Email: {3}&#10;📅 Account Created: {4}&#10;🕒 Deletion Date: {5}&#10;🛡️ Deleted By: {6}</system:String>
+    <system:String x:Key="TitleDeletedUserDetailsFormat">Deleted User Details — {0}</system:String>
+    <system:String x:Key="MsgRadioisotopeDeletedDetailsFormat">⚛️ Isotope Symbol: {0}&#10;🏷️ Name: {1}&#10;☢️ Radiation Type: {2}&#10;⏳ Half-Life: {3}&#10;⚡ Primary Energy: {4} keV&#10;📊 Safety Category: Category {5}&#10;📐 Gamma Constant (Γ): {6}&#10;🕒 Deletion Date: {7}&#10;🛡️ Deleted By: {8}&#10;📝 Notes: {9}</system:String>
+    <system:String x:Key="TitleDeletedRadioisotopeDetailsFormat">Deleted Isotope Details — {0}</system:String>
+
+    <!-- Round 151: UsersViewModel.cs message localization -->
+    <system:String x:Key="TextAllSystemSectionsFullAccess">All system sections (full access)</system:String>
+    <system:String x:Key="TextPermissionsPerUserInRole">Permissions are configured individually per user within this role</system:String>
+    <system:String x:Key="TextAdminRoleFullDescription">Full administrative privileges to control all system resources and users</system:String>
+    <system:String x:Key="TextOperationalRoleDescription">Operational and viewing privileges for permitted data and sections</system:String>
+    <system:String x:Key="TextEmptyNotSpecified">(Empty / Not specified)</system:String>
+    <system:String x:Key="TextRecordedDetails">Recorded Details</system:String>
+    <system:String x:Key="TextNoAdditionalDetails">No additional details</system:String>
+    <system:String x:Key="TextDetails">Details</system:String>
+    <system:String x:Key="TextNoPermissions">(No permissions)</system:String>
+    <system:String x:Key="TextAllPermissionsLabel">All Permissions (All)</system:String>
+    <system:String x:Key="PermNameRadioisotopes">Radioisotopes</system:String>
+    <system:String x:Key="PermNameSources">Radioactive Sources</system:String>
+    <system:String x:Key="PermNameLocations">Locations</system:String>
+    <system:String x:Key="PermNameBorrowing">Borrowing</system:String>
+    <system:String x:Key="PermNameReports">Reports</system:String>
+    <system:String x:Key="PermNameUsers">User Management</system:String>
+    <system:String x:Key="PermNameSettings">Settings</system:String>
+    <system:String x:Key="PermNameActivityCalculator">Radiation Calculator</system:String>
+    <system:String x:Key="PermNameDeletions">Deletions</system:String>
+    <system:String x:Key="PermNameAllPermissions">All Permissions</system:String>
+    <system:String x:Key="FieldNameSourceCode">Source Code</system:String>
+    <system:String x:Key="FieldNameInitialActivity">Initial Activity</system:String>
+    <system:String x:Key="FieldNameCurrentActivity">Current Activity</system:String>
+    <system:String x:Key="FieldNameActivityUnit">Unit</system:String>
+    <system:String x:Key="FieldNameLocationId">Location ID</system:String>
+    <system:String x:Key="FieldNameStatus">Status</system:String>
+    <system:String x:Key="FieldNameFullName">Full Name</system:String>
+    <system:String x:Key="FieldNameUsername">Username</system:String>
+    <system:String x:Key="FieldNameEmail">Email</system:String>
+    <system:String x:Key="FieldNameRoleId">Role ID</system:String>
+    <system:String x:Key="FieldNameIsActive">Account Active</system:String>
+    <system:String x:Key="FieldNameIsEditor">Edit Permission</system:String>
+    <system:String x:Key="FieldNamePermissions">Section Access Permissions</system:String>
+    <system:String x:Key="FieldNamePurpose">Purpose</system:String>
+    <system:String x:Key="FieldNameExpectedReturnDate">Expected Return Date</system:String>
+    <system:String x:Key="MsgErrCannotFreezeOwnAccount">You cannot freeze your own account</system:String>
+    <system:String x:Key="MsgConfirmDeleteUser">Are you sure you want to delete this user?</system:String>
+    <system:String x:Key="TitleConfirmDelete">Confirm Deletion</system:String>
 </ResourceDictionary>
 
 
