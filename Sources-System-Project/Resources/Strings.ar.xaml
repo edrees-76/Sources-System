@@ -474,6 +474,7 @@
     <system:String x:Key="FailedAttemptsPrefix">محاولات فاشلة:</system:String>
 
     <system:String x:Key="UserDataTitle">بيانات المستخدم</system:String>
+    <system:String x:Key="TitleUserForm">نموذج المستخدم</system:String>
     <system:String x:Key="FieldFullNameReq">الاسم الكامل *</system:String>
     <system:String x:Key="FieldUsernameReq">اسم المستخدم *</system:String>
     <system:String x:Key="FieldPassword">كلمة المرور</system:String>

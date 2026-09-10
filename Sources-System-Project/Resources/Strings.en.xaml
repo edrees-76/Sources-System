@@ -477,6 +477,7 @@
     <system:String x:Key="FailedAttemptsPrefix">Failed attempts:</system:String>
 
     <system:String x:Key="UserDataTitle">User Details</system:String>
+    <system:String x:Key="TitleUserForm">User Form</system:String>
     <system:String x:Key="FieldFullNameReq">Full Name *</system:String>
     <system:String x:Key="FieldUsernameReq">Username *</system:String>
     <system:String x:Key="FieldPassword">Password</system:String>
