@@ -337,7 +337,7 @@
                                                 <materialDesign:PackIcon Kind="TimerSandEmpty" Width="15" Height="15" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                                 <TextBlock Text="{DynamicResource FieldHalfLifeReq}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
                                             </StackPanel>
-                                            <TextBox Text="{Binding EditHalfLifeText, UpdateSourceTrigger=LostFocus}" TabIndex="5"
+                                            <TextBox Text="{Binding EditHalfLifeText, UpdateSourceTrigger=PropertyChanged}" TabIndex="5"
                                                      Style="{StaticResource FormTextBox}"
                                                      materialDesign:HintAssist.Hint="مثال: 30.17"/>
                                         </StackPanel>
@@ -364,7 +364,7 @@
                                                 <materialDesign:PackIcon Kind="Flash" Width="15" Height="15" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                                 <TextBlock Text="{DynamicResource FieldEnergy}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
                                             </StackPanel>
-                                            <TextBox Text="{Binding EditEnergyText, UpdateSourceTrigger=LostFocus}" TabIndex="7"
+                                            <TextBox Text="{Binding EditEnergyText, UpdateSourceTrigger=PropertyChanged}" TabIndex="7"
                                                      Style="{StaticResource FormTextBox}"
                                                      materialDesign:HintAssist.Hint="مثال: 661.7"/>
                                         </StackPanel>
@@ -373,7 +373,7 @@
                                                 <materialDesign:PackIcon Kind="PercentOutline" Width="15" Height="15" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                                 <TextBlock Text="{DynamicResource FieldYield}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
                                             </StackPanel>
-                                            <TextBox Text="{Binding EditYieldText, UpdateSourceTrigger=LostFocus}" TabIndex="8"
+                                            <TextBox Text="{Binding EditYieldText, UpdateSourceTrigger=PropertyChanged}" TabIndex="8"
                                                      Style="{StaticResource FormTextBox}"
                                                      materialDesign:HintAssist.Hint="مثال: 0.85"/>
                                         </StackPanel>
@@ -405,7 +405,7 @@
                                             </Button>
                                         </Grid>
 
-                                        <TextBox Text="{Binding EditGammaConstantText, UpdateSourceTrigger=LostFocus}" TabIndex="9"
+                                        <TextBox Text="{Binding EditGammaConstantText, UpdateSourceTrigger=PropertyChanged}" TabIndex="9"
                                                  Style="{StaticResource FormTextBox}"
                                                  materialDesign:HintAssist.Hint="مثال: 0.0772 (µSv·m²/(MBq·h))"
                                                  ToolTip="الوحدة الدولية المعتمدة: µSv·m²/(MBq·h) — اختياري"/>

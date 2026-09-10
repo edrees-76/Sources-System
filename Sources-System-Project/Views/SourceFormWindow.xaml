@@ -584,7 +584,7 @@
                                                 <materialDesign:PackIcon Kind="Wave" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                                 <TextBlock Text="{DynamicResource FieldEmissionRateReq}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
                                             </StackPanel>
-                                            <TextBox Text="{Binding EditEmissionRateText, UpdateSourceTrigger=LostFocus}"
+                                            <TextBox Text="{Binding EditEmissionRateText, UpdateSourceTrigger=PropertyChanged}"
                                                      Style="{StaticResource FormTextBox}"
                                                      materialDesign:HintAssist.Hint="{DynamicResource HintEmissionRateExample}"/>
                                         </StackPanel>
@@ -597,7 +597,7 @@
                                                 <materialDesign:PackIcon Kind="PercentOutline" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                                 <TextBlock Text="{DynamicResource FieldUncertaintyPercent}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
                                             </StackPanel>
-                                            <TextBox Text="{Binding EditRelativeUncertaintyText, UpdateSourceTrigger=LostFocus}"
+                                            <TextBox Text="{Binding EditRelativeUncertaintyText, UpdateSourceTrigger=PropertyChanged}"
                                                      Style="{StaticResource FormTextBox}"
                                                      materialDesign:HintAssist.Hint="{DynamicResource HintUncertaintyExample}"/>
                                         </StackPanel>
@@ -630,7 +630,7 @@
                                                 <materialDesign:PackIcon Kind="CompassOutline" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                                 <TextBlock Text="{DynamicResource FieldAnisotropyFactor}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
                                             </StackPanel>
-                                            <TextBox Text="{Binding EditAnisotropyFactorText, UpdateSourceTrigger=LostFocus}"
+                                            <TextBox Text="{Binding EditAnisotropyFactorText, UpdateSourceTrigger=PropertyChanged}"
                                                      Style="{StaticResource FormTextBox}"
                                                      materialDesign:HintAssist.Hint="{DynamicResource HintAnisotropyFactorExample}"/>
                                         </StackPanel>
@@ -643,7 +643,7 @@
                                                 <materialDesign:PackIcon Kind="Ruler" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                                 <TextBlock Text="طول الكبسولة (مم)" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
                                             </StackPanel>
-                                            <TextBox Text="{Binding EditCapsuleLengthText, UpdateSourceTrigger=LostFocus}"
+                                            <TextBox Text="{Binding EditCapsuleLengthText, UpdateSourceTrigger=PropertyChanged}"
                                                      Style="{StaticResource FormTextBox}"
                                                      materialDesign:HintAssist.Hint="مثال: 25.4"/>
                                         </StackPanel>
@@ -654,7 +654,7 @@
                                                 <materialDesign:PackIcon Kind="CircleOutline" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                                 <TextBlock Text="قطر الكبسولة (مم)" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
                                             </StackPanel>
-                                            <TextBox Text="{Binding EditCapsuleDiameterText, UpdateSourceTrigger=LostFocus}"
+                                            <TextBox Text="{Binding EditCapsuleDiameterText, UpdateSourceTrigger=PropertyChanged}"
                                                      Style="{StaticResource FormTextBox}"
                                                      materialDesign:HintAssist.Hint="مثال: 6.35"/>
                                         </StackPanel>
@@ -667,7 +667,7 @@
                                                 <materialDesign:PackIcon Kind="FlashOutline" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                                 <TextBlock Text="النشاط الإشعاعي" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
                                             </StackPanel>
-                                            <TextBox Text="{Binding EditActivityText, UpdateSourceTrigger=LostFocus}"
+                                            <TextBox Text="{Binding EditActivityText, UpdateSourceTrigger=PropertyChanged}"
                                                      Style="{StaticResource FormTextBox}"
                                                      materialDesign:HintAssist.Hint="مثال: 3.7"/>
                                         </StackPanel>
@@ -736,7 +736,7 @@
                                                 <materialDesign:PackIcon Kind="FlashOutline" Width="15" Height="15" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                                 <TextBlock Text="{DynamicResource FieldInitialActivityReq}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
                                             </StackPanel>
-                                            <TextBox Text="{Binding EditInitialActivityText, UpdateSourceTrigger=LostFocus}"
+                                            <TextBox Text="{Binding EditInitialActivityText, UpdateSourceTrigger=PropertyChanged}"
                                                      Style="{StaticResource FormTextBox}"
                                                      materialDesign:HintAssist.Hint="3.7"/>
                                         </StackPanel>

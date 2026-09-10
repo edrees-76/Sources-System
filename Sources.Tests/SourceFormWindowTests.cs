@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.EntityFrameworkCore;
@@ -355,6 +358,129 @@ public class SourceFormWindowTests : IDisposable
             foreach (var nested in FindVisualChildren<T>(child)) yield return nested;
         }
     }
+
+    /// <summary>
+    /// يبحث في الشجرة المرئية عن أول TextBox مربوط (Binding) بمسار الخاصية المحدَّدة على
+    /// TextBox.TextProperty — يُستخدَم لإيجاد الحقل الفعلي دون الاعتماد على x:Name.
+    /// </summary>
+    private static TextBox? FindTextBoxByBindingPath(DependencyObject root, string propertyPath)
+    {
+        for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = System.Windows.Media.VisualTreeHelper.GetChild(root, i);
+            if (child is TextBox textBox)
+            {
+                var expression = BindingOperations.GetBindingExpression(textBox, TextBox.TextProperty);
+                if (expression?.ParentBinding?.Path?.Path == propertyPath) return textBox;
+            }
+            var nested = FindTextBoxByBindingPath(child, propertyPath);
+            if (nested != null) return nested;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// يحاكي ضغطة مفتاح Enter (KeyDown) على العنصر المركَّز دون استدعاء LostFocus أو Focus()
+    /// على عنصر آخر — بنفس أسلوب المستخدم الفعلي الذي يضغط Enter مباشرة بعد الكتابة.
+    /// </summary>
+    private static void SimulateEnterKeyPress(UIElement element)
+    {
+        var source = PresentationSource.FromVisual(element);
+        var args = new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Enter)
+        {
+            RoutedEvent = Keyboard.KeyDownEvent
+        };
+        element.RaiseEvent(args);
+    }
+
+    /// <summary>
+    /// اختبار انحدار مشترك (الجولة 149) لخلل فقدان القيمة عند الضغط على Enter مباشرة بعد الكتابة
+    /// دون فقدان التركيز يدويًا أولاً، لكل حقل من الحقول السبعة في SourceFormWindow. الحقول
+    /// الستة الخاصة بالمصدر النيتروني تظهر في الخطوة 2 (Visibility مربوطة بـ IsNeutronForm ضمن
+    /// StackPanel الخطوة 2 — وليس الخطوة 3 كما ورد افتراضًا أوليًا في العقد؛ زر الحفظ IsDefault
+    /// نفسه غير مرئي إلا في الخطوة 3، لكن الحقول القابلة للتركيز البؤري (Focusable) والتي يمكن
+    /// محاكاة الكتابة والضغط على Enter عليها فعليًا موجودة في الخطوة 2 فقط. راجع قسم "الانحرافات"
+    /// في تقرير الالتزام لتفصيل هذا التصحيح مقابل نص العقد الحرفي).
+    /// </summary>
+    private static void AssertEnterCommitsNewValue_ForSourceField(
+        bool isNeutronForm,
+        string bindingPath,
+        string newTextValue,
+        Func<SourcesViewModel, string> readBoundText)
+    {
+        RunInSta(() =>
+        {
+            var vm = CreateViewModel();
+            try
+            {
+                if (isNeutronForm) vm.AddNewNeutronCommand.Execute(null);
+                else vm.AddNewCommand.Execute(null);
+
+                vm.NextStepCommand.Execute(null); // الانتقال إلى الخطوة 2 حيث تظهر الحقول المستهدفة
+
+                var formWindow = new SourceFormWindow
+                {
+                    DataContext = vm,
+                    WindowStartupLocation = WindowStartupLocation.Manual,
+                    ShowInTaskbar = false,
+                    ShowActivated = false,
+                    Left = -5000,
+                    Top = -5000
+                };
+
+                formWindow.Show();
+                try
+                {
+                    formWindow.UpdateLayout();
+
+                    var textBox = FindTextBoxByBindingPath(formWindow, bindingPath);
+                    Assert.NotNull(textBox);
+
+                    textBox!.Focus();
+                    textBox.Text = newTextValue;
+                    SimulateEnterKeyPress(textBox);
+
+                    Assert.Equal(newTextValue, readBoundText(vm));
+                }
+                finally
+                {
+                    formWindow.Close();
+                }
+            }
+            finally
+            {
+                WeakReferenceMessenger.Default.UnregisterAll(vm);
+            }
+        });
+    }
+
+    [Fact]
+    public void SourceFormWindow_EnterAfterTyping_CommitsNewValue_ForEditEmissionRateText()
+        => AssertEnterCommitsNewValue_ForSourceField(true, "EditEmissionRateText", "3.7E7", vm => vm.EditEmissionRateText);
+
+    [Fact]
+    public void SourceFormWindow_EnterAfterTyping_CommitsNewValue_ForEditRelativeUncertaintyText()
+        => AssertEnterCommitsNewValue_ForSourceField(true, "EditRelativeUncertaintyText", "2.5", vm => vm.EditRelativeUncertaintyText);
+
+    [Fact]
+    public void SourceFormWindow_EnterAfterTyping_CommitsNewValue_ForEditAnisotropyFactorText()
+        => AssertEnterCommitsNewValue_ForSourceField(true, "EditAnisotropyFactorText", "1.05", vm => vm.EditAnisotropyFactorText);
+
+    [Fact]
+    public void SourceFormWindow_EnterAfterTyping_CommitsNewValue_ForEditCapsuleLengthText()
+        => AssertEnterCommitsNewValue_ForSourceField(true, "EditCapsuleLengthText", "25.4", vm => vm.EditCapsuleLengthText);
+
+    [Fact]
+    public void SourceFormWindow_EnterAfterTyping_CommitsNewValue_ForEditCapsuleDiameterText()
+        => AssertEnterCommitsNewValue_ForSourceField(true, "EditCapsuleDiameterText", "6.35", vm => vm.EditCapsuleDiameterText);
+
+    [Fact]
+    public void SourceFormWindow_EnterAfterTyping_CommitsNewValue_ForEditActivityText()
+        => AssertEnterCommitsNewValue_ForSourceField(true, "EditActivityText", "3.7", vm => vm.EditActivityText);
+
+    [Fact]
+    public void SourceFormWindow_EnterAfterTyping_CommitsNewValue_ForEditInitialActivityText()
+        => AssertEnterCommitsNewValue_ForSourceField(false, "EditInitialActivityText", "3.7", vm => vm.EditInitialActivityText);
 
     [Fact]
     public void SourceFormWindow_AfterNativeClose_CanBeReopened_StartingFromFirstStep()
