@@ -987,5 +987,85 @@ namespace Sources.Tests
         }
 
         #endregion
+
+        #region 5. الترجمة الإنجليزية لرسائل DeletionsViewModel (الجولة 151)
+
+        /// <summary>
+        /// كلا المسارين المُختبَرين هنا متزامنان بالكامل (RestoreItem في حالة الكيان غير
+        /// المعروف لا يمر بأي await، وViewDetails متزامنة أصلاً) — تعمداً لتفادي مخاطر
+        /// الجمود (deadlock) الناتجة عن استدعاء دالة async تحتوي await داخل استدعاء
+        /// Dispatcher.Invoke المتزامن الذي تستعمله WpfStaFixture.RunInSta.
+        /// </summary>
+        [Fact]
+        public async Task DeletionsViewModel_Messages_UseEnglishStrings_WhenEnglishLanguageActive()
+        {
+            // Arrange
+            var loc = new Location { Id = Guid.NewGuid(), LocationName = "موقع اختبار الترجمة", Building = "7", IsDeleted = true, DeletedAt = DateTime.Now.AddDays(-1) };
+            using (var db = _fixture.ContextFactory.CreateDbContext())
+            {
+                db.Locations.Add(loc);
+                db.SaveChanges();
+            }
+
+            var vm = new DeletionsViewModel(_fixture.ContextFactory);
+            await WaitForInitialLoadAsync(vm);
+            await vm.LoadDeletedItemsAsync();
+
+            var rowToView = vm.AllItems.FirstOrDefault(i => i.Id == loc.Id);
+            Assert.NotNull(rowToView);
+
+            int arabicDictIndex = -1;
+            Sources.Tests.Fixtures.WpfStaFixture.RunInSta(() =>
+            {
+                var dicts = System.Windows.Application.Current.Resources.MergedDictionaries;
+                for (int i = 0; i < dicts.Count; i++)
+                {
+                    var src = dicts[i].Source?.OriginalString;
+                    if (src != null && src.Contains("Strings.ar.xaml"))
+                    {
+                        arabicDictIndex = i;
+                        break;
+                    }
+                }
+                Assert.True(arabicDictIndex >= 0, "Strings.ar.xaml dictionary must already be loaded by WpfStaFixture.");
+
+                var previousTestMode = DialogHelper.IsTestMode;
+                DialogHelper.IsTestMode = true;
+                try
+                {
+                    dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                    {
+                        Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.en.xaml", UriKind.Absolute)
+                    };
+
+                    // Act & Assert: failure representative — unrecognized entity type (synchronous branch, no await;
+                    // the returned Task is already RanToCompletion by the time RestoreItem returns, so blocking
+                    // on it here cannot deadlock — safe inside the outer synchronous Dispatcher.Invoke).
+#pragma warning disable xUnit1031
+                    var fakeRow = new DeletedItemRow { Id = Guid.NewGuid(), EntityType = "UnknownType", Identifier = "X" };
+                    vm.RestoreItem(fakeRow).GetAwaiter().GetResult();
+#pragma warning restore xUnit1031
+                    Assert.Equal("Unknown entity type", DialogHelper.LastMessage);
+                    Assert.Equal("Restore Failed", DialogHelper.LastTitle);
+
+                    // Act & Assert: success/display representative — deleted location details dialog (fully synchronous)
+                    vm.ViewDetails(rowToView);
+                    Assert.Equal($"Deleted Location Details — {loc.LocationName}", DialogHelper.LastTitle);
+                    Assert.Contains("Location Name: موقع اختبار الترجمة", DialogHelper.LastMessage);
+                    Assert.Contains("Building: 7", DialogHelper.LastMessage);
+                    Assert.DoesNotContain("تفاصيل الموقع المحذوف", DialogHelper.LastTitle);
+                }
+                finally
+                {
+                    DialogHelper.IsTestMode = previousTestMode;
+                    dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                    {
+                        Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.ar.xaml", UriKind.Absolute)
+                    };
+                }
+            });
+        }
+
+        #endregion
     }
 }
