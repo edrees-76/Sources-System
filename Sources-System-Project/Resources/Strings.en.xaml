@@ -728,6 +728,7 @@
 
     <!-- Borrow Form Window -->
     <system:String x:Key="TitleBorrowForm">Borrow Form</system:String>
+    <system:String x:Key="TitleSourceForm">Source Form</system:String>
 
 
 

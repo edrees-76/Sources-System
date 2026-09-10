@@ -8,6 +8,7 @@ namespace Sources.Views;
 public partial class SourcesView : UserControl
 {
     private NeutronSourceTypesWindow? _neutronTypesWindow;
+    private SourceFormWindow? _formWindow;
 
     public SourcesView()
     {
@@ -39,8 +40,15 @@ public partial class SourcesView : UserControl
 
     private void DataContext_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName != nameof(SourcesViewModel.IsManagingNeutronTypes)) return;
         if (DataContext is not SourcesViewModel vm) return;
+
+        if (e.PropertyName == nameof(SourcesViewModel.IsEditing))
+        {
+            HandleIsEditingChanged(vm);
+            return;
+        }
+
+        if (e.PropertyName != nameof(SourcesViewModel.IsManagingNeutronTypes)) return;
 
         if (vm.IsManagingNeutronTypes)
         {
@@ -63,6 +71,46 @@ public partial class SourcesView : UserControl
             {
                 _neutronTypesWindow.Close();
             }
+        }
+    }
+
+    /// <summary>
+    /// يفتح/يغلق نافذة نموذج المصدر (SourceFormWindow) تبعاً لخاصية IsEditing.
+    /// هذه النافذة تخدم معالج المصدر العادي والمصدر النيتروني معاً، لأن الشاشة تستخدم
+    /// معالجاً واحداً ذا مفتاح تبديل داخلي (IsNeutronForm) وليس معالجَين مستقلين.
+    /// </summary>
+    private void HandleIsEditingChanged(SourcesViewModel vm)
+    {
+        if (vm.IsEditing)
+        {
+            if (_formWindow != null) return; // منع فتح نافذة ثانية عند إعادة الدخول
+
+            _formWindow = new SourceFormWindow
+            {
+                DataContext = vm,
+                Owner = Window.GetWindow(this)
+            };
+            _formWindow.Closed += FormWindow_Closed;
+            _formWindow.ShowDialog();
+        }
+        else
+        {
+            // إذا كانت النافذة بصدد الإغلاق فعلياً (مثلاً: CancelEditCommand استُدعي من داخل
+            // معالج Closing الخاص بها نتيجة إغلاق عبر ✕ أو Alt+F4)، فتجنّب استدعاء Close()
+            // مرة أخرى بشكل متكرر (reentrant)؛ ستتابع النافذة إغلاقها من تلقاء نفسها.
+            if (_formWindow != null && !_formWindow.IsClosingInProgress)
+            {
+                _formWindow.Close();
+            }
+        }
+    }
+
+    private void FormWindow_Closed(object? sender, System.EventArgs e)
+    {
+        if (_formWindow != null)
+        {
+            _formWindow.Closed -= FormWindow_Closed;
+            _formWindow = null;
         }
     }
 

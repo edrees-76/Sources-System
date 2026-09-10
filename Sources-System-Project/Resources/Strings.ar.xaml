@@ -725,6 +725,7 @@
 
     <!-- Borrow Form Window -->
     <system:String x:Key="TitleBorrowForm">نموذج الاستعارة</system:String>
+    <system:String x:Key="TitleSourceForm">نموذج المصدر</system:String>
 
 
 
