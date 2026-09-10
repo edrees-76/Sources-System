@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Messaging;
 using Moq;
@@ -41,6 +44,40 @@ public class RadioisotopeFormWindowTests
             if (nested != null) return nested;
         }
         return null;
+    }
+
+    /// <summary>
+    /// يبحث في الشجرة المرئية عن أول TextBox مربوط (Binding) بمسار الخاصية المحدَّدة على
+    /// TextBox.TextProperty — يُستخدَم لإيجاد الحقل الفعلي دون الاعتماد على x:Name.
+    /// </summary>
+    private static TextBox? FindTextBoxByBindingPath(System.Windows.DependencyObject root, string propertyPath)
+    {
+        for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = System.Windows.Media.VisualTreeHelper.GetChild(root, i);
+            if (child is TextBox textBox)
+            {
+                var expression = BindingOperations.GetBindingExpression(textBox, TextBox.TextProperty);
+                if (expression?.ParentBinding?.Path?.Path == propertyPath) return textBox;
+            }
+            var nested = FindTextBoxByBindingPath(child, propertyPath);
+            if (nested != null) return nested;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// يحاكي ضغطة مفتاح Enter (KeyDown) على العنصر المركَّز دون استدعاء LostFocus أو Focus()
+    /// على عنصر آخر — بنفس أسلوب المستخدم الفعلي الذي يضغط Enter مباشرة بعد الكتابة.
+    /// </summary>
+    private static void SimulateEnterKeyPress(UIElement element)
+    {
+        var source = PresentationSource.FromVisual(element);
+        var args = new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Enter)
+        {
+            RoutedEvent = Keyboard.KeyDownEvent
+        };
+        element.RaiseEvent(args);
     }
 
     [Fact]
@@ -239,4 +276,115 @@ public class RadioisotopeFormWindowTests
             }
         });
     }
+
+    /// <summary>
+    /// اختبار انحدار مشترك (الجولة 149، مُعاد كتابته بالكامل بعد اكتشاف بصري فعلي أظهر أن
+    /// النسخة الأولى من هذا الاختبار كانت تُصدر نجاحاً زائفاً): النسخة الأولى كانت تكتب القيمة
+    /// الجديدة مباشرة عبر `textBox.Text = newTextValue` ثم تتحقق فوراً من أن خاصية الـViewModel
+    /// المرتبطة تساوي هذه القيمة — لكن مع UpdateSourceTrigger=PropertyChanged فإن تعيين `Text`
+    /// برمجياً يُحدِّث خاصية الربط **فوراً وبشكل متزامن في نفس السطر**، قبل أن تُحاكى ضغطة Enter
+    /// أصلاً. فكان التأكيد ينجح دائماً بصرف النظر عمّا فعلته ضغطة Enter فعلياً — أي أن الاختبار لم
+    /// يكن يفحص مسار الحفظ الحقيقي إطلاقاً، بل فقط أن تعيين TextBox.Text يُحدِّث الربط (بديهي).
+    /// هذه النسخة تُصلح ذلك جذرياً: تُحرِّر نظيراً **موجوداً فعلاً** (وليس نموذجاً جديداً فارغاً)
+    /// عبر EditCommand الحقيقي، وتتحقق ليس من خاصية الـViewModel النصية بل من **القيمة الفعلية
+    /// التي وصلت لطبقة الخدمة IRadioisotopeService.Update عبر Moq Callback** — وهذا هو الدليل
+    /// الوحيد على أن الحفظ الحقيقي (الذي تستدعيه ضغطة Enter عبر KeyBinding/IsDefault) استخدم
+    /// القيمة الجديدة لا القديمة. كما تتحقق أن Update استُدعيت مرة واحدة بالضبط (لا حفظ مزدوج
+    /// من تضارب KeyBinding مع IsDefault) وأن IsEditing أصبحت false (نجاح حقيقي أغلق النافذة،
+    /// لا رسالة نجاح كاذبة).
+    /// </summary>
+    private static void AssertEnterCommitsNewValue_ForRadioisotopeField(
+        string bindingPath,
+        string newTextValue,
+        System.Func<Radioisotope, double?> readPersistedValue,
+        double expectedPersistedValue)
+    {
+        RunInSta(() =>
+        {
+            var existing = new Radioisotope
+            {
+                Id = System.Guid.NewGuid(),
+                Name = "Co-60",
+                ArabicName = "كوبالت-60",
+                Symbol = "Co-60",
+                RadiationType = "Gamma",
+                HalfLife = 5.27,
+                HalfLifeUnit = "years",
+                Energy = 1.17,
+                Yield = 1.0,
+                GammaConstant = 0.351,
+                Notes = "",
+                EnglishNotes = ""
+            };
+
+            var mockService = new Mock<IRadioisotopeService>();
+            mockService.Setup(s => s.GetAll()).Returns(new List<Radioisotope> { existing });
+            Radioisotope? persistedItem = null;
+            int updateCallCount = 0;
+            mockService.Setup(s => s.Update(It.IsAny<Radioisotope>()))
+                .Callback<Radioisotope>(item => { persistedItem = item; updateCallCount++; })
+                .Returns((true, "تم تحديث النظير"));
+
+            var vm = new RadioisotopesViewModel(mockService.Object);
+            try
+            {
+                vm.LoadData();
+                vm.Selected = vm.Radioisotopes.First(r => r.Id == existing.Id);
+                vm.EditCommand.Execute(null); // يملأ كل الحقول من العنصر القائم، IsEditing=true، الخطوة 1
+                vm.NextStepCommand.Execute(null); // الانتقال إلى الخطوة 2 حيث تظهر الحقول الفنية
+
+                var formWindow = new RadioisotopeFormWindow
+                {
+                    DataContext = vm,
+                    WindowStartupLocation = WindowStartupLocation.Manual,
+                    ShowInTaskbar = false,
+                    ShowActivated = false,
+                    Left = -5000,
+                    Top = -5000
+                };
+
+                formWindow.Show();
+                try
+                {
+                    formWindow.UpdateLayout();
+
+                    var textBox = FindTextBoxByBindingPath(formWindow, bindingPath);
+                    Assert.NotNull(textBox);
+
+                    textBox!.Focus();
+                    textBox.Text = newTextValue;
+                    SimulateEnterKeyPress(textBox);
+
+                    Assert.Equal(1, updateCallCount); // حفظ واحد بالضبط، لا حفظ مزدوج
+                    Assert.NotNull(persistedItem);
+                    Assert.Equal(expectedPersistedValue, readPersistedValue(persistedItem!) ?? double.NaN, precision: 4);
+                    Assert.False(vm.IsEditing); // النافذة أُغلقت فعلاً — نجاح حقيقي لا رسالة كاذبة
+                }
+                finally
+                {
+                    formWindow.Close();
+                }
+            }
+            finally
+            {
+                WeakReferenceMessenger.Default.UnregisterAll(vm);
+            }
+        });
+    }
+
+    [Fact]
+    public void RadioisotopeFormWindow_EnterAfterTyping_PersistsNewValue_ForEditHalfLifeText()
+        => AssertEnterCommitsNewValue_ForRadioisotopeField("EditHalfLifeText", "45.5", r => r.HalfLife, 45.5);
+
+    [Fact]
+    public void RadioisotopeFormWindow_EnterAfterTyping_PersistsNewValue_ForEditEnergyText()
+        => AssertEnterCommitsNewValue_ForRadioisotopeField("EditEnergyText", "661.7", r => r.Energy, 661.7);
+
+    [Fact]
+    public void RadioisotopeFormWindow_EnterAfterTyping_PersistsNewValue_ForEditYieldText()
+        => AssertEnterCommitsNewValue_ForRadioisotopeField("EditYieldText", "0.85", r => r.Yield, 0.85);
+
+    [Fact]
+    public void RadioisotopeFormWindow_EnterAfterTyping_PersistsNewValue_ForEditGammaConstantText()
+        => AssertEnterCommitsNewValue_ForRadioisotopeField("EditGammaConstantText", "0.0772", r => r.GammaConstant, 0.0772);
 }
