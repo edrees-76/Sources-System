@@ -10,10 +10,7 @@ namespace Sources.Tests;
 
 public class TranslationKeysTests
 {
-    private static readonly HashSet<string> KnownDeadKeys = new()
-    {
-        "LabelSerialShort" // Unused key in English dictionary, excluded per Round 100 specifications
-    };
+    private static readonly HashSet<string> KnownDeadKeys = new();
 
     private static string GetProjectDirectory()
     {

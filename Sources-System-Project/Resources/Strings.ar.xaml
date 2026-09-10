@@ -701,7 +701,7 @@
     <system:String x:Key="MsgThemeDark">تم تفعيل الوضع الداكن</system:String>
     <system:String x:Key="MsgThemeLight">تم تفعيل الوضع الفاتح</system:String>
     <system:String x:Key="MsgLangArabic">تم تعيين اللغة العربية</system:String>
-    <system:String x:Key="MsgLangEnglish">Language set to English</system:String>
+    <system:String x:Key="MsgLangEnglish">تم تعيين اللغة إلى الإنجليزية</system:String>
 
     <!-- Main Navigation / Session -->
     <system:String x:Key="MsgErrSavePending">يرجى حفظ التغييرات أو إلغاؤها قبل الانتقال إلى قسم آخر.</system:String>
@@ -1082,6 +1082,7 @@
     <!-- حالة فارغة - شاشة المصادر -->
     <system:String x:Key="EmptySourcesTitle">لا توجد مصادر مسجّلة بعد</system:String>
     <system:String x:Key="EmptySourcesSubtitle">ابدأ بإضافة أول مصدر إشعاعي لتتبع نشاطه وإدارة دورة حياته بشكل كامل</system:String>
+    <system:String x:Key="LabelSerialShort">الرقم التسلسلي: </system:String>
     <!-- تبويبات المصادر والمصادر المحذوفة -->
     <system:String x:Key="TabActiveSources">المصادر النشطة</system:String>
     <system:String x:Key="TabDeletedSources">المصادر المحذوفة</system:String>
