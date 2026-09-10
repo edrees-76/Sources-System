@@ -472,8 +472,57 @@ public class DashboardLogicTests
     }
 
     #endregion
+
+    #region Total Sources Card — Neutron Inclusion (Round 154)
+
+    [Fact]
+    public async Task DashboardViewModel_TotalSources_CombinesRegularAndNeutronCounts()
+    {
+        // Arrange
+        var mockSourceService = new Mock<ISourceService>();
+        var mockIsotopeService = new Mock<IRadioisotopeService>();
+        var mockLocationService = new Mock<ILocationService>();
+        var mockDecayService = new Mock<IDecayCalculationService>();
+        var mockBorrowService = new Mock<IBorrowService>();
+        var mockSettingsService = new Mock<ISystemSettingsService>();
+        var mockNeutronSourceService = new Mock<INeutronSourceService>();
+
+        const int regularCount = 28;
+        const int neutronCount = 4;
+
+        mockSourceService.Setup(s => s.GetAllSources()).Returns(
+            Enumerable.Range(1, regularCount).Select(i => new Source { SourceCode = $"S-{i}" }).ToList());
+        mockNeutronSourceService.Setup(s => s.GetAll()).Returns(
+            Enumerable.Range(1, neutronCount).Select(i => new NeutronSource { SourceCode = $"N-{i}" }).ToList());
+        mockBorrowService.Setup(s => s.GetAll()).Returns(new List<BorrowRequest>());
+
+        DashboardViewModel? dashboardVm = null;
+        try
+        {
+            // Act
+            dashboardVm = new DashboardViewModel(
+                mockSourceService.Object,
+                mockIsotopeService.Object,
+                mockLocationService.Object,
+                mockDecayService.Object,
+                mockBorrowService.Object,
+                mockSettingsService.Object,
+                alertService: null,
+                globalSearchService: null,
+                neutronSourceService: mockNeutronSourceService.Object);
+
+            await dashboardVm.LoadDataAsync();
+
+            // Assert
+            Assert.Equal(regularCount + neutronCount, dashboardVm.TotalSources);
+            Assert.Contains(regularCount.ToString(), dashboardVm.SourcesBreakdownText);
+            Assert.Contains(neutronCount.ToString(), dashboardVm.SourcesBreakdownText);
+        }
+        finally
+        {
+            dashboardVm?.Dispose();
+        }
+    }
+
+    #endregion
 }
-
-
-
-

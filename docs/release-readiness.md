@@ -1163,3 +1163,55 @@ Stepper الاستعارة ثنائي الخطوات)، رُبط كل من `Esca
 مدمِّر يتطلب إذناً صريحاً. السبب الجذري: اتُّخذ قرار عدم تحديث التوثيق قياساً على الجولة 147 وحدها
 (التي لم تُحدِّثه)، بينما الجولات 144/145/146 حدَّثته جميعاً — أي أن الجولة 147 هي الاستثناء لا القاعدة.
 (الجولة 147 نفسها لا تزال غير مُوثَّقة في هذين الملفين؛ لم تُضَف رجعياً هنا لأنها خارج نطاق هذه الجولة.)
+
+---
+
+## 18. الجولة 154 — إدراج المصادر النيترونية ضمن بطاقة «عدد المصادر» في لوحة القيادة
+
+**عيب سابق الوجود أُغلق في هذه الجولة:** بطاقة «عدد المصادر» الأولى في `DashboardView.xaml`
+(`TotalSources`, يُحسَب في `DashboardViewModel.LoadDataAsync()`) كانت تُبنى حصراً من
+`_sourceService.GetAllSources()` — المصادر العادية فقط. `INeutronSourceService` لم يكن مُشاراً إليه
+إطلاقاً في `DashboardViewModel.cs`، فكل مصدر نيتروني نشط كان غائباً بنيوياً عن هذا الرقم رغم ظهوره
+الصحيح في بطاقة `NeutronSourcesCount` المنفصلة بشاشة `SourcesView`.
+
+**القرار المعماري (مُعتمَد مسبقاً من إدريس، نُفِّذ كما هو):** `TotalSources` نفسها أصبحت **الرقم
+المُجمَّع** (عادي + نيتروني نشط) بلا بطاقة جديدة منفصلة — تحقَّق أولاً بالبحث الشامل عن كل استخدامات
+`.TotalSources` المربوطة بـ`DashboardViewModel` أن `DashboardView.xaml` السطر 316 هو الرابط
+الوحيد، فلا شيء آخر يعتمد على أن معناها «عادي فقط». أُضيفت خاصية نصية مُلاحَظة جديدة
+`SourcesBreakdownText` (`ObservableProperty`) تُحسَب في `LoadDataAsync()` بعد معرفة كلا العددين، عبر
+مفتاح ترجمة قالب جديد `LabelSourcesBreakdown` (`"{0} عادي + {1} نيتروني"` عربياً،
+`"{0} regular + {1} neutron"` إنجليزياً) و`string.Format` (لا `GetFormat` مباشرة، كي لا يُعاد اسم
+المفتاح كارتداد غير آمن). أُضيف صف ثالث (`RowDefinition Height="Auto"`) أسفل الرقم الكبير في البطاقة
+الأولى بـ`DashboardView.xaml` يعرض هذا النص، بنفس نمط النصوص الفرعية القائمة أسفل عناوين المخططات في
+نفس الملف (`FontSize="11"`, `Foreground="{DynamicResource TextSecondary}"`,
+`HorizontalAlignment="Center"`, `Margin="0,2,0,0"` — مطابق حرفياً لـ`HistogramSubtitle`/
+`ChartSourcesByIsotopeSubtitle`/`ChartSourcesByLocationSubtitle`).
+
+**التنفيذ:** حقن اختياري جديد `INeutronSourceService? neutronSourceService = null` أُضيف كآخر وسيط في
+مُنشئ `DashboardViewModel` (لا وسيط إلزامي جديد — يحافظ على توافق ثلاثة ملفات اختبار قائمة تبني
+الكائن بالوسطاء الستة الإلزاميين فقط)، بنفس نمط الارتداد القائم لـ`alertService`/`globalSearchService`
+(`App.ServiceProvider?.GetService(typeof(INeutronSourceService)) as INeutronSourceService`).
+`LoadDataAsync()` يستدعي `_neutronSourceService?.GetAll() ?? new List<NeutronSource>()` — نفس الدالة
+والنمط الآمن من القيمة الفارغة المُستعمَلين فعلياً في `SourcesViewModel.cs` لحساب `NeutronSourcesCount`
+(وليس `GetTotalCount()` التي لم تُستعمَل هنا لأن دلالتها الدقيقة مقارنة بـ`GetAll()` غير مؤكَّدة).
+`TotalSources = sources.Count + neutronSources.Count`. لا مساس بـ`UpdateTotalActivityItems()` ولا أي
+من مخطط Bq/Ci/Histogram/منحنى التحلل/توزيع النظائر — خارج النطاق كما نصّ العقد صراحة، ولا يوجد نسبة
+تغيير («عن اليوم السابق») لهذه البطاقة أصلاً فلا شيء يلزم إبقاؤه متسقاً هناك.
+
+**مواضع أخرى لمفهوم «عدد المصادر» عُثر عليها ولم تُمَس عمداً (خارج نطاق هذه الجولة):**
+`SourceService.GetTotalSourcesCount()`، منطق تصدير `SettingsViewModel`، و`LocationDetailsViewModel.
+TotalSourcesCount` — لكل منها استهلاك مختلف عن بطاقة اللوحة، ولم يطلب العقد تغييرها.
+
+**الاختبار:** اختبار جديد `DashboardViewModel_TotalSources_CombinesRegularAndNeutronCounts` في
+`DashboardLogicTests.cs` يُمثِّل خدمتي `ISourceService`/`INeutronSourceService` بعددين مختلفين (28
+عادياً، 4 نيترونياً)، يبني `DashboardViewModel` بحقن `neutronSourceService` صراحة، يستدعي
+`LoadDataAsync()`، ويؤكد `TotalSources == 32` واحتواء `SourcesBreakdownText` على كلا الرقمين
+كنصين فرعيين. الكائن يُتخلَّص منه (`Dispose()`) في `finally` لأن `DashboardViewModel` ينفّذ
+`IDisposable` ويستعمل `WeakReferenceMessenger`.
+
+**النتائج:** 1188 اختباراً (Debug) و1186 (Release) محلياً — بصفر فشل وصفر تجاوز في كلتيهما (+1 اختبار
+جديد بهذه الجولة في كل تشغيل عن قاعدة ما قبلها). فارق الاختبارين بين Debug/Release بنيوي سابق الوجود
+لا علاقة له بهذه الجولة (مطابق لما سجّلته الجولات 146/148). بناء `Debug`/`Release`: صفر أخطاء، نفس
+خمس تحذيرات `CS8604` سابقة الوجود فقط (`LoginWindow.xaml.cs` سطرا 104 و199 عبر مساري csproj،
+و`ViewInstantiationTests.cs`)، لا تحذير جديد من الملفات المعدَّلة. لا ترحيل EF ولا تغيير مخطط قاعدة
+بيانات في هذه الجولة.

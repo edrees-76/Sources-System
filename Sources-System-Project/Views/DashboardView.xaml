@@ -306,6 +306,7 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <!-- Header -->
                             <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,4">
@@ -313,8 +314,10 @@
                                 <TextBlock Text="{DynamicResource TotalSources}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                             <!-- Big Number -->
-                            <TextBlock Grid.Row="1" Text="{Binding TotalSources}" FontSize="36" FontWeight="Bold" 
+                            <TextBlock Grid.Row="1" Text="{Binding TotalSources}" FontSize="36" FontWeight="Bold"
                                        Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <!-- Breakdown: regular vs. neutron -->
+                            <TextBlock Grid.Row="2" Text="{Binding SourcesBreakdownText}" FontSize="11" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,2,0,0"/>
                         </Grid>
                     </Border>
 
