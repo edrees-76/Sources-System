@@ -144,6 +144,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     private readonly ISystemSettingsService _settingsService;
     private readonly IAlertService? _alertService;
     private readonly IGlobalSearchService _globalSearchService;
+    private readonly INeutronSourceService? _neutronSourceService;
 
     // ─── البحث الموحّد في لوحة القيادة (Global Search) ───
     [ObservableProperty] private string _globalSearchQuery = string.Empty;
@@ -161,6 +162,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
 
     // ─── بطاقة 1: عدد المصادر ───
     [ObservableProperty] private int _totalSources;
+    [ObservableProperty] private string _sourcesBreakdownText = string.Empty;
     [ObservableProperty] private bool _isArabic;
     [ObservableProperty] private Thickness _axisOverlayMargin;
     [ObservableProperty] private Thickness _axisOverlayThickness;
@@ -414,7 +416,8 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         IBorrowService borrowService,
         ISystemSettingsService settingsService,
         IAlertService? alertService = null,
-        IGlobalSearchService? globalSearchService = null)
+        IGlobalSearchService? globalSearchService = null,
+        INeutronSourceService? neutronSourceService = null)
     {
         _sourceService = sourceService;
         _isotopeService = isotopeService;
@@ -424,6 +427,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         _settingsService = settingsService;
         _alertService = alertService ?? (App.ServiceProvider?.GetService(typeof(IAlertService)) as IAlertService);
         _globalSearchService = globalSearchService ?? (App.ServiceProvider?.GetService(typeof(IGlobalSearchService)) as IGlobalSearchService)!;
+        _neutronSourceService = neutronSourceService ?? (App.ServiceProvider?.GetService(typeof(INeutronSourceService)) as INeutronSourceService);
 
         InitDrawMarginFrames();
         InitFilterOptions();
@@ -469,11 +473,16 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         try
         {
             var sources = await Task.Run(() => _sourceService.GetAllSources());
+            var neutronSources = await Task.Run(() => _neutronSourceService?.GetAll() ?? new List<NeutronSource>()) ?? new List<NeutronSource>();
 
             // ═══ تعبئة الجدول الرئيسي والبطاقة الأولى فوراً على خيط الواجهة ═══
             RunOnUI(() =>
             {
-                TotalSources = sources.Count;
+                TotalSources = sources.Count + neutronSources.Count;
+                SourcesBreakdownText = string.Format(
+                    TranslationHelper.GetString("LabelSourcesBreakdown") ?? "{0} عادي + {1} نيتروني",
+                    sources.Count,
+                    neutronSources.Count);
                 _allSourceRows = sources.OrderBy(s => s.SourceCode).Select((s, index) => new DashboardSourceRow
                 {
                     RowNumber = index + 1,

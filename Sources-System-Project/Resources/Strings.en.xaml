@@ -257,6 +257,7 @@
     <!-- New keys for Redesigned Dashboard -->
     <system:String x:Key="LabelChangeFromYesterday">Change from yesterday</system:String>
     <system:String x:Key="LabelTotalActivity">Total Activity</system:String>
+    <system:String x:Key="LabelSourcesBreakdown">{0} regular + {1} neutron</system:String>
     <system:String x:Key="StatusStored">Stored</system:String>
     <system:String x:Key="StatusActionRequired">Requires Action</system:String>
     <system:String x:Key="CurrentDateMarker">Current Date</system:String>

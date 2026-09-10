@@ -255,6 +255,7 @@
     <!-- New keys for Redesigned Dashboard -->
     <system:String x:Key="LabelChangeFromYesterday">التغير عن اليوم السابق</system:String>
     <system:String x:Key="LabelTotalActivity">إجمالي النشاط</system:String>
+    <system:String x:Key="LabelSourcesBreakdown">{0} عادي + {1} نيتروني</system:String>
     <system:String x:Key="StatusStored">مخزن</system:String>
     <system:String x:Key="StatusActionRequired">يحتاج إجراء</system:String>
     <system:String x:Key="CurrentDateMarker">Current Date</system:String>
