@@ -5,10 +5,11 @@
     <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>  <!-- 0: Header -->
-            <RowDefinition Height="Auto"/>  <!-- 1: Stat Summary Cards -->
-            <RowDefinition Height="Auto"/>  <!-- 2: Filter Card -->
-            <RowDefinition Height="*"/>     <!-- 3: Table & Content -->
-            <RowDefinition Height="Auto"/>  <!-- 4: Pagination Footer -->
+            <RowDefinition Height="Auto"/>  <!-- 1: Message Banner (Round 152) -->
+            <RowDefinition Height="Auto"/>  <!-- 2: Stat Summary Cards -->
+            <RowDefinition Height="Auto"/>  <!-- 3: Filter Card -->
+            <RowDefinition Height="*"/>     <!-- 4: Table & Content -->
+            <RowDefinition Height="Auto"/>  <!-- 5: Pagination Footer -->
         </Grid.RowDefinitions>
 
         <!-- ══ 0: ترويسة الصفحة والأزرار العلوية ══ -->
@@ -41,8 +42,23 @@
             </StackPanel>
         </DockPanel>
 
-        <!-- ══ 1: بطاقات الإحصائيات السريعة ══ -->
-        <Grid Grid.Row="1" Margin="0,0,0,16">
+        <!-- بانر الإشعار والرسائل التفاعلية (الجولة 152) -->
+        <Border x:Name="MessageBanner" Grid.Row="1" Visibility="{Binding HasMessage, Converter={StaticResource BoolToVis}}"
+                Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="1.5"
+                CornerRadius="8" Padding="14,10" Margin="0,0,0,16">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.12" Color="{StaticResource PrimaryColor}"/>
+            </Border.Effect>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <materialDesign:PackIcon Kind="InformationOutline" Width="20" Height="20"
+                                         Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <TextBlock x:Name="MessageBannerText" Text="{Binding Message}" FontSize="13" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ══ 2: بطاقات الإحصائيات السريعة ══ -->
+        <Grid Grid.Row="2" Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="12"/>
@@ -166,8 +182,8 @@
             </Border>
         </Grid>
 
-        <!-- ══ 2: شريط الفلاتر والبحث ══ -->
-        <Border Grid.Row="2" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="16,12" Margin="0,0,0,16"
+        <!-- ══ 3: شريط الفلاتر والبحث ══ -->
+        <Border Grid.Row="3" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="16,12" Margin="0,0,0,16"
                 BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
             <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <!-- مربع البحث -->
@@ -220,8 +236,8 @@
             </WrapPanel>
         </Border>
 
-        <!-- ══ 3: جدول التنبيهات الرئيسي ══ -->
-        <Grid Grid.Row="3">
+        <!-- ══ 4: جدول التنبيهات الرئيسي ══ -->
+        <Grid Grid.Row="4">
             <Border Style="{StaticResource ContentCard}">
                 <Grid>
                     <!-- الجدول -->
@@ -350,8 +366,8 @@
             </Border>
         </Grid>
 
-        <!-- ══ 4: شريط التنقل بين الصفحات (Pagination) ══ -->
-        <Border Grid.Row="4" Margin="0,12,0,0" Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="12,8"
+        <!-- ══ 5: شريط التنقل بين الصفحات (Pagination) ══ -->
+        <Border Grid.Row="5" Margin="0,12,0,0" Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="12,8"
                 BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
             <Grid>
                 <Grid.ColumnDefinitions>
