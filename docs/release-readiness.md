@@ -543,6 +543,55 @@ XAML المثبتة، وأي خدمة أخرى لم تُراجَع بعد صرا
   والتوثيق والبناء مباشرة من جلسة القائد بنفس نمط التحقق المعتاد (بناء واختبار كامل مرتين، فحص نطاق
   الملفات) بدل التفويض الكامل.
 
+**الجولة 152 (إصلاح خلل قديم — خارج سلسلة ب5، اكتُشف أثناء الاختبار البصري الفعلي لـPR #46):**
+اكتشف إدريس بصرياً أن حفظ تعديل مستخدم في `UsersView` لا يُظهر أي رسالة نجاح رغم نجاح العملية فعلياً.
+تشخيص القائد بأدلة `git diff`/`git log` مباشرة نفى أي علاقة بالجولة 151 (لا `Save()` ولا `ShowMsg` ولا
+`UserService.UpdateUser` ولا `UsersView.xaml` ضمن ديف تلك الجولة إطلاقاً) وحدَّد السبب الجذري الحقيقي:
+`UsersViewModel.cs` يُعيِّن `Message`/`HasMessage` بشكل صحيح دوماً (عبر `ShowMsg`)، لكن `UsersView.xaml`
+لم يربط هاتين الخاصيتين بأي عنصر مرئي إطلاقاً منذ البداية — خلل قديم موجود في `main` قبل أي جولة ترجمة،
+وليس تراجعاً.
+- **فحص موسَّع (الخطوة 1 من العقد):** بحث عن كل ViewModel يحمل زوج `_message`/`_hasMessage` (6 ملفات:
+  `AlertsViewModel`, `LocationsViewModel`, `NeutronSourceTypesViewModel`, `RadioisotopesViewModel`,
+  `SourcesViewModel`, `UsersViewModel`) وقورن كل واحد بالـXAML المقابل له:
+  - `LocationsView.xaml` **الوحيد** المربوط بشكل صحيح أصلاً (النمط المرجعي: `Border` بـ
+    `Visibility="{Binding HasMessage, Converter={StaticResource BoolToVis}}"` يحوي `TextBlock`
+    بـ`{Binding Message}` وزر إغلاق مرتبط بـ`CloseMessageCommand`).
+  - **`AlertsView.xaml`, `RadioisotopesView.xaml`, `SourcesView.xaml`, `UsersView.xaml`** — أربع
+    شاشات إضافية غير `UsersView.xaml` تعاني من نفس الخلل بالضبط (الـViewModel يُعيِّن `Message`/
+    `HasMessage` فعلياً عبر `ShowMsg` أو تعيين مباشر، والـXAML لا يربطهما بأي عنصر). أُدرجت الأربعة
+    ضمن نطاق هذه الجولة كما نص العقد.
+  - `NeutronSourceTypesViewModel.cs` **استُبعِدت عمداً**: تحمل حقل `_hasMessage` فقط بلا حقل `_message`
+    مقابل (لا زوج كامل)، ولا يُعيَّن `_hasMessage` في أي مكان بالملف إطلاقاً (حقل ميت حقيقي) — هذه
+    الشاشة تستخدم `DialogHelper.ShowInfo`/`ShowWarning` الفعلية للتغذية الراجعة (12 استدعاءً)، فهي لا
+    تعاني من نفس الخلل أصلاً، وإصلاحها يتطلب تعديل الـViewModel (حذف حقل ميت أو إضافة `_message`) وهو
+    خارج القيد الصارم "لا تغيير في أي ViewModel" لهذه الجولة.
+- **الإصلاح (XAML فقط، بلا لمس أي ViewModel):** أُضيف بانر بنفس نمط `LocationsView.xaml` تماماً (نفس
+  اسم المحوِّل `BoolToVis`، نفس تركيب `Border`+`PackIcon`+`TextBlock`) في الملفات الأربعة:
+  - `UsersView.xaml`: صف جديد (`Row 1`) بين ترويسة الصفحة وتبويبات التنقل؛ تحوَّلت فهارس صفوف التبويبات
+    والمحتوى من 1/2 إلى 2/3.
+  - `SourcesView.xaml`: استُخدم صف علوي فارغ كان موجوداً أصلاً بلا استخدام (`Grid.Row="0"` في الشبكة
+    الخارجية) — بلا أي تغيير في فهارس الصفوف الأخرى.
+  - `RadioisotopesView.xaml`: صف جديد (`Row 1`) بين شريط البحث ومحتوى الجدول؛ تحوَّل فهرس صف الجدول من
+    1 إلى 2.
+  - `AlertsView.xaml`: صف جديد (`Row 1`) بعد الترويسة؛ تحوَّلت فهارس بطاقات الإحصائيات/الفلاتر/الجدول/
+    الترقيم من 1-4 إلى 2-5.
+  - **انحراف موثَّق عن التطابق الحرفي مع نمط `LocationsView.xaml`:** زر الإغلاق (`CloseMessageCommand`)
+    حُذف من البانر في الشاشات الأربع لأن أياً من ViewModels الأربعة لا يملك أمر `CloseMessageCommand`
+    (تحقَّق فعلياً بالبحث — لا وجود له)، وإضافته تتطلب تعديل ViewModel وهو ممنوع صراحة في هذه الجولة.
+    البانر يبقى ظاهراً حتى تُستبدَل الرسالة برسالة تالية (سلوك مقبول، موثَّق لا مسكوت عنه).
+  - أُضيف `x:Name="MessageBanner"`/`x:Name="MessageBannerText"` لعنصري `Border`/`TextBlock` في الشاشات
+    الأربع لتمكين الاختبارات الآلية من تحديدهما (`FindName`)، بلا أي أثر وظيفي على العرض.
+- **الاختبارات:** ملف جديد `Sources.Tests/MessageBannerBindingTests.cs` بأربعة اختبارات انحدارية (واحد
+  لكل شاشة) تستضيف الـView فعلياً داخل `Window` حقيقية (`Show()` + `UpdateLayout()`)، بنفس نمط
+  `SourcesViewNeutronOverlayTests.cs` المعتمد في هذا المشروع — لا فحص XAML ساكن. كل اختبار يثبت: (1)
+  البانر مخفي (`Visibility.Collapsed`) قبل تعيين أي رسالة (الحالة الافتراضية `HasMessage=false`)، (2)
+  يصبح ظاهراً (`Visibility.Visible`) فعلياً بعد `vm.HasMessage = true`، (3) نص `TextBlock` المعروض
+  يطابق حرفياً `vm.Message` المُعيَّن — لا فحص وجود الربط فقط. 1187/1185 اختباراً (Debug/Release، +4/+4
+  عن الجولة 151)، نفس تحذيرات البناء المسبقة بلا علاقة (CS8604) و0 أخطاء.
+- **البند مُغلَق:** خلل بانر الرسائل القديم في الشاشات الخمس (`UsersView` + أربع شاشات مُكتشَفة) مُصلَح
+  بالكامل الآن. `NeutronSourceTypesViewModel`/`Window` مستبعدة عمداً (تغذية راجعة صحيحة فعلاً عبر
+  `DialogHelper`، لا خلل حقيقي فيها).
+
 ### ☐ ب6 — معالج أول تشغيل
 يسأل عن مجلد النسخ الاحتياطي ويُفعّل النسخ التلقائي. الافتراضي الحالي `AutoBackupEnabled = false`.
 

@@ -7,8 +7,24 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
+
+                <!-- بانر الإشعار والرسائل التفاعلية (الجولة 152) -->
+                <Border x:Name="MessageBanner" Grid.Row="1" Visibility="{Binding HasMessage, Converter={StaticResource BoolToVis}}"
+                        Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="1.5"
+                        CornerRadius="8" Padding="14,10" Margin="0,0,0,16">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.12" Color="{StaticResource PrimaryColor}"/>
+                    </Border.Effect>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="InformationOutline" Width="20" Height="20"
+                                                 Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBlock x:Name="MessageBannerText" Text="{Binding Message}" FontSize="13" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
 
                 <!-- ─── شريط البحث والأزرار العلوية ─── -->
                 <Grid Grid.Row="0" Margin="0,0,0,20">
@@ -78,7 +94,7 @@
                 </Grid>
 
                 <!-- ─── جدول النظائر المشعة ─── -->
-                <Border Grid.Row="1" Background="{DynamicResource CardBackground}" 
+                <Border Grid.Row="2" Background="{DynamicResource CardBackground}"
                         CornerRadius="10" BorderBrush="{DynamicResource BorderColor}" 
                         BorderThickness="1" ClipToBounds="True">
                     <Border.Effect>

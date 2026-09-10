@@ -102,8 +102,9 @@
     <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/> <!-- Row 0: Header Banner -->
-            <RowDefinition Height="Auto"/> <!-- Row 1: Tabs Navigation -->
-            <RowDefinition Height="*"/>    <!-- Row 2: Tab Content -->
+            <RowDefinition Height="Auto"/> <!-- Row 1: Message Banner (Round 152) -->
+            <RowDefinition Height="Auto"/> <!-- Row 2: Tabs Navigation -->
+            <RowDefinition Height="*"/>    <!-- Row 3: Tab Content -->
         </Grid.RowDefinitions>
 
         <!-- ═══════════════════════════════════════════════════════ -->
@@ -210,9 +211,26 @@
         </Border>
 
         <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- 1.5 بانر الإشعار والرسائل التفاعلية (الجولة 152)       -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <Border x:Name="MessageBanner" Grid.Row="1" Visibility="{Binding HasMessage, Converter={StaticResource BoolToVis}}"
+                Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="1.5"
+                CornerRadius="8" Padding="14,10" Margin="0,0,0,16">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.12" Color="{StaticResource PrimaryColor}"/>
+            </Border.Effect>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <materialDesign:PackIcon Kind="InformationOutline" Width="20" Height="20"
+                                         Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <TextBlock x:Name="MessageBannerText" Text="{Binding Message}" FontSize="13" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
         <!-- 2. مركز التبويبات العلوي                              -->
         <!-- ═══════════════════════════════════════════════════════ -->
-        <DockPanel Grid.Row="1" Margin="0,0,0,16">
+        <DockPanel Grid.Row="2" Margin="0,0,0,16">
             <WrapPanel DockPanel.Dock="Right">
                 <Button Style="{StaticResource UsersManagementTabBtn}" Command="{Binding SelectTabCommand}" CommandParameter="UsersManagement">
                     <StackPanel Orientation="Horizontal">
@@ -240,7 +258,7 @@
         <!-- ═══════════════════════════════════════════════════════ -->
         <!-- 3. محتوى التبويبات                                    -->
         <!-- ═══════════════════════════════════════════════════════ -->
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="3">
 
             <!-- ─────────────────────────────────────────────────── -->
             <!-- التبويب 1: إدارة المستخدمين (List ↔ Form)            -->
