@@ -1766,6 +1766,16 @@
     <system:String x:Key="RptTextNoNeutronSources">لا توجد مصادر نيترونية مسجلة</system:String>
     <system:String x:Key="RptFooterPageLabel" xml:space="preserve">الصفحة </system:String>
     <system:String x:Key="RptFooterOfLabel" xml:space="preserve"> من </system:String>
+
+    <!-- First-Run Setup Wizard -->
+    <system:String x:Key="FirstRunWizardTitle">معالج الإعداد الأول</system:String>
+    <system:String x:Key="FirstRunWizardWelcome">مرحباً بك في منظومة مصادر. لنقم بضبط بعض الإعدادات الأساسية قبل البدء.</system:String>
+    <system:String x:Key="FirstRunWizardBackupPathLabel">مجلد الحفظ الاحتياطي</system:String>
+    <system:String x:Key="FirstRunWizardAutoBackupLabel">تفعيل النسخ الاحتياطي التلقائي</system:String>
+    <system:String x:Key="FirstRunWizardFinishButton">إنهاء</system:String>
+    <system:String x:Key="FirstRunWizardSkipButton">تخطي</system:String>
+    <system:String x:Key="FirstRunWizardTrialNoticeTitle">الوضع التجريبي</system:String>
+    <system:String x:Key="FirstRunWizardTrialNoticeMessage">أنت تستخدم النسخة التجريبية حالياً. سيلزم ضبط إعدادات النسخ الاحتياطي من شاشة الإعدادات بعد تفعيل المنظومة.</system:String>
 </ResourceDictionary>
 
 
