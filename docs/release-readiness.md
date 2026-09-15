@@ -1553,8 +1553,9 @@ worktree الفرع القائم — الوكيل الفرعي عزل نفسه �
 (خاصية `IsTrialMode` وتنفيذ `OpenActivationCommand` عبر خطاف اختباري جديد
 `MainViewModel.TestActivationSerialOverride` بنفس نمط `PasswordPromptDialog.CustomPromptResult`).
 
-**النتائج:** Release 1220/1220 نجاح (0 فشل/0 تجاوز). بناء `Release`: صفر أخطاء، تحذير واحد فقط
-(`CS8604` سابق الوجود في `ViewInstantiationTests.cs`، غير متعلق بهذه الجولة). لا ترحيل EF ولا تغيير
+**النتائج:** Release 1220/1220 نجاح (0 فشل/0 تجاوز). بناء `Release`: صفر أخطاء، نفس خمس تحذيرات
+`CS8604` سابقة الوجود بالضبط (`LoginWindow.xaml.cs` سطرا 104 و199 عبر مساري csproj،
+و`ViewInstantiationTests.cs` سطر 218) — لا تحذيرات جديدة من هذه الجولة. لا ترحيل EF ولا تغيير
 مخطط قاعدة بيانات في هذه الجولة.
 
 ### انحراف تنفيذي مُسجَّل
