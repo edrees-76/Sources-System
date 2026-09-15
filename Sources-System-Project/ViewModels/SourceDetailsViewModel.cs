@@ -69,7 +69,9 @@ public partial class SourceDetailsViewModel : ObservableObject
     public string LocationName => Source.Location?.LocationName ?? "—";
     public string CalibrationDateDisplay => Source.CalibrationDate.ToString("yyyy-MM-dd");
     public string Manufacturer => string.IsNullOrWhiteSpace(Source.Manufacturer) ? "—" : Source.Manufacturer;
-    public string SourceTypeDisplay => Source.IsSealed ? "مصدر مختوم" : "غير مختوم";
+    public string SourceTypeDisplay => Source.IsSealed
+        ? TranslationHelper.GetString("LabelSealedSourceType") ?? "مصدر مختوم"
+        : TranslationHelper.GetString("LabelUnsealedSourceType") ?? "غير مختوم";
 
     // ── 3. بطاقة النظائر والنشاط (Isotopes & Activity Card) ──
     public ObservableCollection<SourceDetailsIsotopeItem> Isotopes { get; } = new();
@@ -170,17 +172,17 @@ public partial class SourceDetailsViewModel : ObservableObject
             if (doseResult.IsAllNonGamma)
             {
                 HasDoseRateWarning = true;
-                DoseRateWarningText = "غير مؤثر عند هذه المسافة (أشعة ألفا/بيتا فقط ممتصة بغلاف المصدر والهواء)";
+                DoseRateWarningText = TranslationHelper.GetString("MsgDoseRateNonGammaOnly") ?? "غير مؤثر عند هذه المسافة (أشعة ألفا/بيتا فقط ممتصة بغلاف المصدر والهواء)";
             }
             else if (doseResult.HasMissingData)
             {
                 HasDoseRateWarning = true;
-                DoseRateWarningText = "بيانات ثابت غاما غير مسجلة للنظير";
+                DoseRateWarningText = TranslationHelper.GetString("MsgDoseRateMissingGammaConstant") ?? "بيانات ثابت غاما غير مسجلة للنظير";
             }
             else if (!doseResult.HasContributingIsotopes && doseResult.Contributions.Count > 0)
             {
                 HasDoseRateWarning = true;
-                DoseRateWarningText = "لا توجد مساهمة إشعاعية غاما عند 1 متر";
+                DoseRateWarningText = TranslationHelper.GetString("MsgDoseRateNoContributionAt1m") ?? "لا توجد مساهمة إشعاعية غاما عند 1 متر";
             }
 
             foreach (var c in doseResult.Contributions)
@@ -196,9 +198,9 @@ public partial class SourceDetailsViewModel : ObservableObject
 
                 string statusDesc = c.Status switch
                 {
-                    DoseRateContributionStatus.Contributing => "مساهم",
-                    DoseRateContributionStatus.NonGammaEmitter => $"غير مساهم ({c.Isotope?.RadiationType ?? "α/β"})",
-                    DoseRateContributionStatus.MissingGammaConstant => "بيانات Γ غير مسجلة",
+                    DoseRateContributionStatus.Contributing => TranslationHelper.GetString("LabelDoseRateContributing") ?? "مساهم",
+                    DoseRateContributionStatus.NonGammaEmitter => TranslationHelper.GetFormat("LabelDoseRateNonContributingFormat", c.Isotope?.RadiationType ?? "α/β"),
+                    DoseRateContributionStatus.MissingGammaConstant => TranslationHelper.GetString("LabelDoseRateMissingGammaConstant") ?? "بيانات Γ غير مسجلة",
                     _ => c.StatusText
                 };
 
@@ -251,7 +253,7 @@ public partial class SourceDetailsViewModel : ObservableObject
             var dialog = new OpenFileDialog
             {
                 Title = TranslationHelper.GetString("BtnAttachCertificate") ?? "إرفاق شهادة أو مستند",
-                Filter = "كل الملفات (*.*)|*.*|ملفات PDF (*.pdf)|*.pdf|مستندات Word (*.docx;*.doc)|*.docx;*.doc|صور (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg",
+                Filter = TranslationHelper.GetString("FilterAttachCertificateFiles") ?? "كل الملفات (*.*)|*.*|ملفات PDF (*.pdf)|*.pdf|مستندات Word (*.docx;*.doc)|*.docx;*.doc|صور (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg",
                 Multiselect = false
             };
 
@@ -259,14 +261,14 @@ public partial class SourceDetailsViewModel : ObservableObject
 
             if (_certificateService == null)
             {
-                DialogHelper.ShowError("خدمة الشهادات غير متوفرة", "خطأ");
+                DialogHelper.ShowError(TranslationHelper.GetString("MsgErrCertificateServiceUnavailable") ?? "خدمة الشهادات غير متوفرة", TranslationHelper.GetString("AlertError") ?? "خطأ");
                 return;
             }
 
             var attachedBy = _userService?.CurrentUser?.FullName;
             if (string.IsNullOrWhiteSpace(attachedBy))
             {
-                attachedBy = "غير معروف";
+                attachedBy = TranslationHelper.GetString("TextUnknown") ?? "غير معروف";
                 LoggerService.LogWarning($"SourceDetailsViewModel.AttachCertificate: Current user is null or empty when attaching certificate for Source {Source.Id}. Falling back to '{attachedBy}'.");
             }
             _certificateService.AttachCertificate(Source.Id, "Standard", dialog.FileName, attachedBy);
@@ -279,7 +281,7 @@ public partial class SourceDetailsViewModel : ObservableObject
         catch (Exception ex)
         {
             LoggerService.LogError("SourceDetailsViewModel: Failed to attach certificate", ex);
-            DialogHelper.ShowError($"تعذر إرفاق الشهادة: {ex.Message}", "خطأ");
+            DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrAttachCertificateFailedFormat", ex.Message), TranslationHelper.GetString("AlertError") ?? "خطأ");
         }
     }
 
@@ -293,7 +295,7 @@ public partial class SourceDetailsViewModel : ObservableObject
             var fullPath = Path.Combine(_certificateService.GetCertificatesFolder(), cert.StoredFileName);
             if (!File.Exists(fullPath))
             {
-                DialogHelper.ShowWarning("ملف الشهادة غير موجود على القرص.", "تنبيه");
+                DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrCertificateFileNotFound") ?? "ملف الشهادة غير موجود على القرص.", TranslationHelper.GetString("TitleWarning") ?? "تنبيه");
                 return;
             }
 
@@ -306,7 +308,7 @@ public partial class SourceDetailsViewModel : ObservableObject
         catch (Exception ex)
         {
             LoggerService.LogError("SourceDetailsViewModel: Failed to open certificate", ex);
-            DialogHelper.ShowError($"تعذر فتح الشهادة: {ex.Message}", "خطأ");
+            DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrOpenCertificateFailedFormat", ex.Message), TranslationHelper.GetString("AlertError") ?? "خطأ");
         }
     }
 
@@ -322,7 +324,9 @@ public partial class SourceDetailsViewModel : ObservableObject
             {
                 Title = TranslationHelper.GetString("BtnDownloadCertificate") ?? "تنزيل نسخة من الشهادة",
                 FileName = cert.OriginalFileName,
-                Filter = !string.IsNullOrEmpty(ext) ? $"ملف (*{ext})|*{ext}|كل الملفات (*.*)|*.*" : "كل الملفات (*.*)|*.*"
+                Filter = !string.IsNullOrEmpty(ext)
+                    ? TranslationHelper.GetFormat("FilterByExtensionFormat", ext)
+                    : TranslationHelper.GetString("FilterAllFiles") ?? "كل الملفات (*.*)|*.*"
             };
 
             if (dialog.ShowDialog() != true) return;
@@ -336,13 +340,13 @@ public partial class SourceDetailsViewModel : ObservableObject
             }
             else
             {
-                DialogHelper.ShowError("تعذر تنزيل الشهادة. تأكد من وجود الملف الأصلي.", "خطأ");
+                DialogHelper.ShowError(TranslationHelper.GetString("MsgErrDownloadCertificateFailed") ?? "تعذر تنزيل الشهادة. تأكد من وجود الملف الأصلي.", TranslationHelper.GetString("AlertError") ?? "خطأ");
             }
         }
         catch (Exception ex)
         {
             LoggerService.LogError("SourceDetailsViewModel: Failed to download certificate", ex);
-            DialogHelper.ShowError($"تعذر تنزيل الشهادة: {ex.Message}", "خطأ");
+            DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrDownloadCertificateFailedFormat", ex.Message), TranslationHelper.GetString("AlertError") ?? "خطأ");
         }
     }
 
@@ -362,7 +366,7 @@ public partial class SourceDetailsViewModel : ObservableObject
             var deletedBy = _userService?.CurrentUser?.FullName;
             if (string.IsNullOrWhiteSpace(deletedBy))
             {
-                deletedBy = "غير معروف";
+                deletedBy = TranslationHelper.GetString("TextUnknown") ?? "غير معروف";
                 LoggerService.LogWarning($"SourceDetailsViewModel.DeleteCertificate: Current user is null or empty when deleting certificate {cert.Id} for Source {Source.Id}. Falling back to '{deletedBy}'.");
             }
             _certificateService.DeleteCertificate(cert.Id, deletedBy);
@@ -375,7 +379,7 @@ public partial class SourceDetailsViewModel : ObservableObject
         catch (Exception ex)
         {
             LoggerService.LogError("SourceDetailsViewModel: Failed to delete certificate", ex);
-            DialogHelper.ShowError($"تعذر حذف الشهادة: {ex.Message}", "خطأ");
+            DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrDeleteCertificateFailedFormat", ex.Message), TranslationHelper.GetString("AlertError") ?? "خطأ");
         }
     }
 

@@ -122,7 +122,7 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
         PagedRecords = new ObservableCollection<LeakTestRecord>(paged);
         OnPropertyChanged(nameof(HasRecords));
 
-        PageStatusText = $"عرض {paged.Count} من أصل {TotalRecordsCount} سجل (الصفحة {CurrentPage} من {TotalPages})";
+        PageStatusText = TranslationHelper.GetFormat("MsgPageStatus", paged.Count, TotalRecordsCount, CurrentPage, TotalPages);
         FirstPageCommand.NotifyCanExecuteChanged();
         PreviousPageCommand.NotifyCanExecuteChanged();
         NextPageCommand.NotifyCanExecuteChanged();
@@ -207,7 +207,7 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
     {
         IsEditingRecord = false;
         _editingRecordId = null;
-        ModalTitle = "تسجيل اختبار تسرب جديد";
+        ModalTitle = TranslationHelper.GetString("MsgAddLeakTest") ?? "تسجيل اختبار تسرب جديد";
 
         FormSourceId = preselectedSource?.Id ?? SealedSources.FirstOrDefault()?.Id;
         FormTestDate = DateTime.Today;
@@ -228,7 +228,7 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
 
         IsEditingRecord = true;
         _editingRecordId = record.Id;
-        ModalTitle = $"تعديل فحص تسرب — {record.Source?.SourceCode}";
+        ModalTitle = TranslationHelper.GetFormat("MsgEditLeakTestFormat", record.Source?.SourceCode ?? string.Empty);
 
         FormSourceId = record.SourceId;
         FormTestDate = record.TestDate;
@@ -253,19 +253,25 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
     {
         if (!FormSourceId.HasValue || FormSourceId.Value == Guid.Empty)
         {
-            DialogHelper.ShowWarning("يرجى اختيار المصدر المشع الخاضع للفحص", "بيانات ناقصة");
+            DialogHelper.ShowWarning(
+                TranslationHelper.GetString("MsgErrSelectSource") ?? "يرجى اختيار المصدر المشع الخاضع للفحص",
+                TranslationHelper.GetString("TitleIncompleteData") ?? "بيانات ناقصة");
             return;
         }
 
         if (FormTestDate > DateTime.Today.AddDays(1))
         {
-            DialogHelper.ShowWarning("لا يمكن أن يكون تاريخ الفحص في المستقبل", "تاريخ غير صحيح");
+            DialogHelper.ShowWarning(
+                TranslationHelper.GetString("MsgErrFutureTestDate") ?? "لا يمكن أن يكون تاريخ الفحص في المستقبل",
+                TranslationHelper.GetString("TitleInvalidDate") ?? "تاريخ غير صحيح");
             return;
         }
 
         if (FormNextDueDate < FormTestDate)
         {
-            DialogHelper.ShowWarning("تاريخ الاستحقاق القادم يجب أن يكون بعد تاريخ الفحص الحالي", "تاريخ غير صحيح");
+            DialogHelper.ShowWarning(
+                TranslationHelper.GetString("MsgErrDueDateBeforeTestDate") ?? "تاريخ الاستحقاق القادم يجب أن يكون بعد تاريخ الفحص الحالي",
+                TranslationHelper.GetString("TitleInvalidDate") ?? "تاريخ غير صحيح");
             return;
         }
 
@@ -278,7 +284,9 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
             }
             else
             {
-                DialogHelper.ShowWarning("النشاط الإشعاعي المقاس يجب أن يكون رقماً موجباً", "قيمة غير صالحة");
+                DialogHelper.ShowWarning(
+                    TranslationHelper.GetString("MsgErrInvalidActivityValue") ?? "النشاط الإشعاعي المقاس يجب أن يكون رقماً موجباً",
+                    TranslationHelper.GetString("TitleInvalidValue") ?? "قيمة غير صالحة");
                 return;
             }
         }
@@ -308,7 +316,7 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
                     WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
                 }
                 catch { }
-                DialogHelper.ShowInfo(message, "نجاح العملية");
+                DialogHelper.ShowInfo(message, TranslationHelper.GetString("TitleSuccess") ?? "نجاح العملية");
             }
             else
             {
@@ -339,7 +347,7 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
                     WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
                 }
                 catch { }
-                DialogHelper.ShowInfo(message, "نجاح العملية");
+                DialogHelper.ShowInfo(message, TranslationHelper.GetString("TitleSuccess") ?? "نجاح العملية");
             }
             else
             {
@@ -354,8 +362,8 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
         if (record == null) return;
 
         bool confirm = DialogHelper.ShowConfirmation(
-            $"هل أنت متأكد من حذف سجل فحص التسرب للمصدر \u2066{record.Source?.SourceCode}\u2069 بتاريخ \u2066{record.TestDate:yyyy/MM/dd}\u2069؟",
-            "تأكيد الحذف");
+            TranslationHelper.GetFormat("MsgConfirmDeleteLeakTestFormat", $"⁦{record.Source?.SourceCode}⁩", $"⁦{record.TestDate:yyyy/MM/dd}⁩"),
+            TranslationHelper.GetString("TitleConfirmDelete") ?? "تأكيد الحذف");
 
         if (!confirm) return;
 
@@ -368,7 +376,7 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
                 WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
             }
             catch { }
-            DialogHelper.ShowInfo(message, "نجاح الحذف");
+            DialogHelper.ShowInfo(message, TranslationHelper.GetString("TitleLeakTestDeleteSuccess") ?? "نجاح الحذف");
         }
         else
         {
@@ -385,18 +393,18 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
         string lre = "\u202A";
         string pdf = "\u202C";
 
-        string details = $"كود المصدر: {lre}{record.Source?.SourceCode ?? "—"}{pdf}\n" +
-                         $"النظير المشع: {lre}{record.Source?.DisplayIsotopes ?? "—"}{pdf}\n" +
-                         $"تاريخ الفحص: {lre}{record.TestDate:yyyy-MM-dd}{pdf}\n" +
-                         $"تاريخ الاستحقاق القادم: {lre}{record.NextDueDate:yyyy-MM-dd}{pdf}\n" +
-                         $"نتيجة الفحص: {record.ArabicResult}\n" +
-                         $"النشاط المقاس: {lre}{(record.MeasuredActivityBq.HasValue ? record.MeasuredActivityBq.Value.ToString("N2") + " Bq" : "غير محدد")}{pdf}\n" +
-                         $"القائم بالفحص / المفتش: {lre}{(!string.IsNullOrWhiteSpace(record.InspectorName) ? record.InspectorName : record.PerformedByUser?.FullName ?? "—")}{pdf}\n" +
-                         $"رقم شهادة الفحص: {lre}{record.CertificateNumber ?? "—"}{pdf}\n" +
-                         $"تاريخ الإدخال في النظام: {lre}{record.CreatedAt:yyyy-MM-dd HH:mm}{pdf}\n" +
-                         $"ملاحظات: {record.Notes ?? "لا توجد"}";
+        string details = $"{TranslationHelper.GetString("LabelSourceCode") ?? "كود المصدر:"} {lre}{record.Source?.SourceCode ?? "—"}{pdf}\n" +
+                         $"{TranslationHelper.GetString("LabelLeakTestRadioisotope") ?? "النظير المشع:"} {lre}{record.Source?.DisplayIsotopes ?? "—"}{pdf}\n" +
+                         $"{TranslationHelper.GetString("LabelLeakTestDate") ?? "تاريخ الفحص:"} {lre}{record.TestDate:yyyy-MM-dd}{pdf}\n" +
+                         $"{TranslationHelper.GetString("LabelLeakTestNextDueDate") ?? "تاريخ الاستحقاق القادم:"} {lre}{record.NextDueDate:yyyy-MM-dd}{pdf}\n" +
+                         $"{TranslationHelper.GetString("LabelLeakTestResult") ?? "نتيجة الفحص:"} {record.ArabicResult}\n" +
+                         $"{TranslationHelper.GetString("LabelLeakTestMeasuredActivity") ?? "النشاط المقاس:"} {lre}{(record.MeasuredActivityBq.HasValue ? record.MeasuredActivityBq.Value.ToString("N2") + " Bq" : TranslationHelper.GetString("TextUnspecified") ?? "غير محدد")}{pdf}\n" +
+                         $"{TranslationHelper.GetString("LabelLeakTestInspector") ?? "القائم بالفحص / المفتش:"} {lre}{(!string.IsNullOrWhiteSpace(record.InspectorName) ? record.InspectorName : record.PerformedByUser?.FullName ?? "—")}{pdf}\n" +
+                         $"{TranslationHelper.GetString("LabelLeakTestCertificateNumber") ?? "رقم شهادة الفحص:"} {lre}{record.CertificateNumber ?? "—"}{pdf}\n" +
+                         $"{TranslationHelper.GetString("LabelLeakTestCreatedAt") ?? "تاريخ الإدخال في النظام:"} {lre}{record.CreatedAt:yyyy-MM-dd HH:mm}{pdf}\n" +
+                         $"{TranslationHelper.GetString("LabelNotes") ?? "ملاحظات:"} {record.Notes ?? (TranslationHelper.GetString("TextNoNotes") ?? "لا توجد")}";
 
-        DialogHelper.ShowInfo(details, "تفاصيل سجل اختبار التسرب", record.Source?.ImagePath);
+        DialogHelper.ShowInfo(details, TranslationHelper.GetString("TitleLeakTestDetails") ?? "تفاصيل سجل اختبار التسرب", record.Source?.ImagePath);
     }
 
     // ─── أوامر التصدير ───
@@ -413,12 +421,12 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
         {
             try
             {
-                await _reportingService.GenerateLeakTestsReportPdfAsync(AllFilteredRecords, sfd.FileName, "تقرير اختبارات التسرب والمسح الإشعاعي الدوري");
+                await _reportingService.GenerateLeakTestsReportPdfAsync(AllFilteredRecords, sfd.FileName, TranslationHelper.GetString("ReportTitleLeakTestsPdf") ?? "تقرير اختبارات التسرب والمسح الإشعاعي الدوري");
                 FileHelper.OpenFile(sfd.FileName);
             }
             catch (Exception ex)
             {
-                DialogHelper.ShowError($"فشل تصدير ملف PDF: {ex.Message}");
+                DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrExportPdfFailedFormat", ex.Message));
             }
         }
     }
@@ -436,12 +444,12 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
         {
             try
             {
-                await _reportingService.GenerateLeakTestsReportExcelAsync(AllFilteredRecords, sfd.FileName, "اختبارات التسرب");
+                await _reportingService.GenerateLeakTestsReportExcelAsync(AllFilteredRecords, sfd.FileName, TranslationHelper.GetString("ReportTitleLeakTestsExcel") ?? "اختبارات التسرب");
                 FileHelper.OpenFile(sfd.FileName);
             }
             catch (Exception ex)
             {
-                DialogHelper.ShowError($"فشل تصدير ملف Excel: {ex.Message}");
+                DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrExportExcelFailedFormat", ex.Message));
             }
         }
     }

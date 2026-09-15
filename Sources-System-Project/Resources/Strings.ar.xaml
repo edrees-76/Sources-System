@@ -1609,6 +1609,65 @@
     <system:String x:Key="MsgErrCannotFreezeOwnAccount">لا يمكنك تجميد حسابك الحالي</system:String>
     <system:String x:Key="MsgConfirmDeleteUser">هل أنت متأكد من حذف هذا المستخدم؟</system:String>
     <system:String x:Key="TitleConfirmDelete">تأكيد الحذف</system:String>
+
+    <!-- الجولة 156: ترجمة Dashboard/LeakTests/Settings/SourceDetails/Borrow (ب5 — الدفعة 2، موسَّعة) -->
+    <system:String x:Key="TextSourceUnit">مصدر</system:String>
+    <system:String x:Key="LabelSeverityCritical">حرج</system:String>
+    <system:String x:Key="LabelSeverityWarning">تحذير</system:String>
+
+    <system:String x:Key="MsgPageStatus">عرض {0} من أصل {1} سجل (الصفحة {2} من {3})</system:String>
+    <system:String x:Key="MsgAddLeakTest">تسجيل اختبار تسرب جديد</system:String>
+    <system:String x:Key="MsgEditLeakTestFormat">تعديل فحص تسرب — {0}</system:String>
+    <system:String x:Key="MsgErrSelectSource">يرجى اختيار المصدر المشع الخاضع للفحص</system:String>
+    <system:String x:Key="TitleIncompleteData">بيانات ناقصة</system:String>
+    <system:String x:Key="MsgErrFutureTestDate">لا يمكن أن يكون تاريخ الفحص في المستقبل</system:String>
+    <system:String x:Key="TitleInvalidDate">تاريخ غير صحيح</system:String>
+    <system:String x:Key="MsgErrDueDateBeforeTestDate">تاريخ الاستحقاق القادم يجب أن يكون بعد تاريخ الفحص الحالي</system:String>
+    <system:String x:Key="MsgErrInvalidActivityValue">النشاط الإشعاعي المقاس يجب أن يكون رقماً موجباً</system:String>
+    <system:String x:Key="TitleInvalidValue">قيمة غير صالحة</system:String>
+    <system:String x:Key="MsgConfirmDeleteLeakTestFormat">هل أنت متأكد من حذف سجل فحص التسرب للمصدر {0} بتاريخ {1}؟</system:String>
+    <system:String x:Key="TitleLeakTestDeleteSuccess">نجاح الحذف</system:String>
+    <system:String x:Key="LabelLeakTestRadioisotope">النظير المشع:</system:String>
+    <system:String x:Key="LabelLeakTestDate">تاريخ الفحص:</system:String>
+    <system:String x:Key="LabelLeakTestNextDueDate">تاريخ الاستحقاق القادم:</system:String>
+    <system:String x:Key="LabelLeakTestResult">نتيجة الفحص:</system:String>
+    <system:String x:Key="LabelLeakTestMeasuredActivity">النشاط المقاس:</system:String>
+    <system:String x:Key="LabelLeakTestInspector">القائم بالفحص / المفتش:</system:String>
+    <system:String x:Key="LabelLeakTestCertificateNumber">رقم شهادة الفحص:</system:String>
+    <system:String x:Key="LabelLeakTestCreatedAt">تاريخ الإدخال في النظام:</system:String>
+    <system:String x:Key="TextNoNotes">لا توجد</system:String>
+    <system:String x:Key="TitleLeakTestDetails">تفاصيل سجل اختبار التسرب</system:String>
+    <system:String x:Key="ReportTitleLeakTestsPdf">تقرير اختبارات التسرب والمسح الإشعاعي الدوري</system:String>
+    <system:String x:Key="ReportTitleLeakTestsExcel">اختبارات التسرب</system:String>
+    <system:String x:Key="MsgErrExportPdfFailedFormat">فشل تصدير ملف PDF: {0}</system:String>
+    <system:String x:Key="MsgErrExportExcelFailedFormat">فشل تصدير ملف Excel: {0}</system:String>
+
+    <system:String x:Key="FilterBackupFiles">ملفات النسخ الاحتياطي (*.zip;*.db)|*.zip;*.db|Zip Archives (*.zip)|*.zip|Database files (*.db)|*.db</system:String>
+
+    <system:String x:Key="LabelSealedSourceType">مصدر مختوم</system:String>
+    <system:String x:Key="LabelUnsealedSourceType">غير مختوم</system:String>
+    <system:String x:Key="MsgDoseRateNonGammaOnly">غير مؤثر عند هذه المسافة (أشعة ألفا/بيتا فقط ممتصة بغلاف المصدر والهواء)</system:String>
+    <system:String x:Key="MsgDoseRateMissingGammaConstant">بيانات ثابت غاما غير مسجلة للنظير</system:String>
+    <system:String x:Key="MsgDoseRateNoContributionAt1m">لا توجد مساهمة إشعاعية غاما عند 1 متر</system:String>
+    <system:String x:Key="LabelDoseRateContributing">مساهم</system:String>
+    <system:String x:Key="LabelDoseRateNonContributingFormat">غير مساهم ({0})</system:String>
+    <system:String x:Key="LabelDoseRateMissingGammaConstant">بيانات Γ غير مسجلة</system:String>
+    <system:String x:Key="FilterAttachCertificateFiles">كل الملفات (*.*)|*.*|ملفات PDF (*.pdf)|*.pdf|مستندات Word (*.docx;*.doc)|*.docx;*.doc|صور (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg</system:String>
+    <system:String x:Key="MsgErrCertificateServiceUnavailable">خدمة الشهادات غير متوفرة</system:String>
+    <system:String x:Key="TextUnknown">غير معروف</system:String>
+    <system:String x:Key="MsgErrAttachCertificateFailedFormat">تعذر إرفاق الشهادة: {0}</system:String>
+    <system:String x:Key="MsgErrCertificateFileNotFound">ملف الشهادة غير موجود على القرص.</system:String>
+    <system:String x:Key="MsgErrOpenCertificateFailedFormat">تعذر فتح الشهادة: {0}</system:String>
+    <system:String x:Key="FilterByExtensionFormat">ملف (*{0})|*{0}|كل الملفات (*.*)|*.*</system:String>
+    <system:String x:Key="FilterAllFiles">كل الملفات (*.*)|*.*</system:String>
+    <system:String x:Key="MsgErrDownloadCertificateFailed">تعذر تنزيل الشهادة. تأكد من وجود الملف الأصلي.</system:String>
+    <system:String x:Key="MsgErrDownloadCertificateFailedFormat">تعذر تنزيل الشهادة: {0}</system:String>
+    <system:String x:Key="MsgErrDeleteCertificateFailedFormat">تعذر حذف الشهادة: {0}</system:String>
+
+    <system:String x:Key="MsgConfirmDeliverSourceFormat" xml:space="preserve">سيتم تسليم المصدر ({0}) إلى ({1}).&#xA;هل أنت متأكد من المتابعة؟</system:String>
+    <system:String x:Key="MsgSuccessExportPdf">تم تصدير التقرير كملف PDF بنجاح.</system:String>
+    <system:String x:Key="MsgSuccessExportExcel">تم تصدير البيانات إلى ملف Excel بنجاح.</system:String>
+    <system:String x:Key="MsgErrExportFailedFormat">خطأ في التصدير: {0}</system:String>
 </ResourceDictionary>
 
 
