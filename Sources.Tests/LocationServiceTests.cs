@@ -19,6 +19,7 @@ public class LocationServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
     private readonly SqliteInMemoryFixture _fixture;
     private readonly FakeAuditService _fakeAuditService;
     private readonly FakeUserService _fakeUserService;
+    private readonly FakeLicenseService _fakeLicenseService = new();
     private readonly LocationService _sut;
 
     public LocationServiceTests(SqliteInMemoryFixture fixture)
@@ -48,7 +49,7 @@ public class LocationServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
             db.SaveChanges();
         }
 
-        _sut = new LocationService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService);
+        _sut = new LocationService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService, _fakeLicenseService);
     }
 
     public void Dispose()

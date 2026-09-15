@@ -5,6 +5,7 @@ using Sources.Helpers;
 using Sources.Interfaces;
 using Sources.Models;
 using Sources.Services;
+using Sources.Tests.Fakes;
 using Sources.ViewModels;
 using Xunit;
 
@@ -34,7 +35,7 @@ public class MainViewModelLogoutTests : IDisposable
 
     private MainViewModel CreateViewModel()
     {
-        return new MainViewModel(_mockUserService.Object, _mockAlertService.Object, _mockSettingsService.Object);
+        return new MainViewModel(_mockUserService.Object, _mockAlertService.Object, _mockSettingsService.Object, new FakeLicenseService());
     }
 
     [Fact]

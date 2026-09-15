@@ -8,6 +8,7 @@ using Sources.Data;
 using Sources.Helpers;
 using Sources.Models;
 using Sources.Services;
+using Sources.Tests.Fakes;
 using Sources.Tests.Fixtures;
 using Sources.ViewModels;
 using Sources.Views;
@@ -493,7 +494,7 @@ namespace Sources.Tests
             var mockAlertService = new Mock<IAlertService>();
             var mockSettingsService = new Mock<ISystemSettingsService>();
 
-            var vm = new MainViewModel(mockUserService.Object, mockAlertService.Object, mockSettingsService.Object);
+            var vm = new MainViewModel(mockUserService.Object, mockAlertService.Object, mockSettingsService.Object, new FakeLicenseService());
 
             PasswordPromptDialog.CustomPromptResult = true;
 
@@ -521,7 +522,7 @@ namespace Sources.Tests
             var mockAlertService = new Mock<IAlertService>();
             var mockSettingsService = new Mock<ISystemSettingsService>();
 
-            var vm = new MainViewModel(mockUserService.Object, mockAlertService.Object, mockSettingsService.Object);
+            var vm = new MainViewModel(mockUserService.Object, mockAlertService.Object, mockSettingsService.Object, new FakeLicenseService());
             vm.NavigateTo("Dashboard");
             Assert.Equal("Dashboard", vm.CurrentViewName);
 
@@ -576,7 +577,7 @@ namespace Sources.Tests
             var mockUserService = new Mock<IUserService>();
             mockUserService.Setup(u => u.CurrentUser).Returns(adminUser);
             var auditService = new AuditService(_fixture.ContextFactory, mockUserService.Object);
-            var sourceService = new SourceService(_fixture.ContextFactory, new DecayCalculationService(), auditService, mockUserService.Object);
+            var sourceService = new SourceService(_fixture.ContextFactory, new DecayCalculationService(), auditService, mockUserService.Object, new FakeLicenseService());
 
             var deletedSourceId = Guid.Empty;
             using (var db = _fixture.ContextFactory.CreateDbContext())
@@ -632,7 +633,7 @@ namespace Sources.Tests
             var mockUserService = new Mock<IUserService>();
             mockUserService.Setup(u => u.CurrentUser).Returns(adminUser);
             var auditService = new AuditService(_fixture.ContextFactory, mockUserService.Object);
-            var locationService = new LocationService(_fixture.ContextFactory, auditService, mockUserService.Object);
+            var locationService = new LocationService(_fixture.ContextFactory, auditService, mockUserService.Object, new FakeLicenseService());
 
             // Act
             var (success, message) = locationService.Restore(locationId);
@@ -697,7 +698,7 @@ namespace Sources.Tests
             var mockUserService = new Mock<IUserService>();
             mockUserService.Setup(u => u.CurrentUser).Returns(adminUser);
             var auditService = new AuditService(_fixture.ContextFactory, mockUserService.Object);
-            var userService = new UserService(_fixture.ContextFactory, auditService);
+            var userService = new UserService(_fixture.ContextFactory, auditService, new FakeLicenseService());
             userService.Login("admin_usr", "AdminPass123!");
 
             // Act
@@ -751,7 +752,7 @@ namespace Sources.Tests
             var mockUserService = new Mock<IUserService>();
             mockUserService.Setup(u => u.CurrentUser).Returns(adminUser);
             var auditService = new AuditService(_fixture.ContextFactory, mockUserService.Object);
-            var isotopeService = new RadioisotopeService(_fixture.ContextFactory, auditService, mockUserService.Object);
+            var isotopeService = new RadioisotopeService(_fixture.ContextFactory, auditService, mockUserService.Object, new FakeLicenseService());
 
             // Act
             var (success, message) = isotopeService.Restore(isotopeId);
@@ -812,7 +813,7 @@ namespace Sources.Tests
             var mockUserService = new Mock<IUserService>();
             mockUserService.Setup(u => u.CurrentUser).Returns(adminUser);
             var auditService = new AuditService(_fixture.ContextFactory, mockUserService.Object);
-            var sourceService = new SourceService(_fixture.ContextFactory, new DecayCalculationService(), auditService, mockUserService.Object);
+            var sourceService = new SourceService(_fixture.ContextFactory, new DecayCalculationService(), auditService, mockUserService.Object, new FakeLicenseService());
 
             // Act
             var (success, message) = sourceService.RestoreSource(sourceId);
@@ -883,7 +884,7 @@ namespace Sources.Tests
             var mockUserService = new Mock<IUserService>();
             mockUserService.Setup(u => u.CurrentUser).Returns(adminUser);
             var auditService = new AuditService(_fixture.ContextFactory, mockUserService.Object);
-            var userService = new UserService(_fixture.ContextFactory, auditService);
+            var userService = new UserService(_fixture.ContextFactory, auditService, new FakeLicenseService());
             userService.Login("admin_conflict_caller", "Pass123!");
 
             // Act
@@ -917,7 +918,7 @@ namespace Sources.Tests
             var adminUser = new User { Id = Guid.NewGuid(), Username = "admin", Role = new Role { RoleName = "مدير النظام", Permissions = "All" }, Permissions = "All", IsEditor = true };
             mockUser.Setup(u => u.CurrentUser).Returns(adminUser);
 
-            var vm = new DeletionsViewModel(_fixture.ContextFactory, userService: mockUser.Object);
+            var vm = new DeletionsViewModel(_fixture.ContextFactory, userService: mockUser.Object, licenseService: new FakeLicenseService());
             await WaitForInitialLoadAsync(vm);
             await vm.LoadDeletedItemsAsync();
 

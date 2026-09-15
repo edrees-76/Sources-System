@@ -10,6 +10,7 @@ using Sources.Data;
 using Sources.Helpers;
 using Sources.Models;
 using Sources.Services;
+using Sources.Tests.Fakes;
 using Sources.Tests.Fixtures;
 using Sources.ViewModels;
 using Xunit;
@@ -128,7 +129,7 @@ public class NeutronCalibrationInputTests : IDisposable
 
         var mockAudit = new Mock<IAuditService>();
         var mockUser = new Mock<IUserService>();
-        var realNeutronService = new NeutronSourceService(_fixture.ContextFactory, mockAudit.Object, mockUser.Object);
+        var realNeutronService = new NeutronSourceService(_fixture.ContextFactory, mockAudit.Object, mockUser.Object, new FakeLicenseService());
 
         var vm = CreateViewModel(realNeutronService);
 
@@ -378,7 +379,7 @@ public class NeutronCalibrationInputTests : IDisposable
     {
         var mockAudit = new Mock<IAuditService>();
         var mockUser = new Mock<IUserService>();
-        var realNeutronService = new NeutronSourceService(_fixture.ContextFactory, mockAudit.Object, mockUser.Object);
+        var realNeutronService = new NeutronSourceService(_fixture.ContextFactory, mockAudit.Object, mockUser.Object, new FakeLicenseService());
 
         var vm = CreateViewModel(realNeutronService);
         vm.AddNewNeutron();

@@ -1207,6 +1207,16 @@
     <system:String x:Key="MsgErrReadOnlyUser">You do not have edit permission. Your account is view-only.</system:String>
     <system:String x:Key="MsgErrNoSectionPermission">You do not have permission to access this section.</system:String>
     <system:String x:Key="MsgErrOperationAdminOnly">This operation is restricted to system administrators.</system:String>
+    <system:String x:Key="MsgErrTrialModeWriteBlocked">Trial mode: you cannot add, edit, or delete data before activation.</system:String>
+    <system:String x:Key="MsgErrLicenseSerialEmpty">Please enter the serial number.</system:String>
+    <system:String x:Key="MsgErrLicenseSerialInvalid">The serial number is incorrect. Please check it and try again.</system:String>
+    <system:String x:Key="MsgErrLicensePersistFailed">The serial was verified successfully, but the activation state could not be saved locally. Please try again.</system:String>
+    <system:String x:Key="MsgSuccessLicenseActivated">The system has been activated successfully.</system:String>
+    <system:String x:Key="TextTrialModeBanner">Trial mode — adding, editing, and deleting are disabled until activation. Click here to activate.</system:String>
+    <system:String x:Key="TitleActivationDialog">Activate System</system:String>
+    <system:String x:Key="PromptActivationSerial">Enter the activation serial number</system:String>
+    <system:String x:Key="PlaceholderActivationSerial">e.g. SRC-XXXX-XXXX</system:String>
+    <system:String x:Key="BtnActivate">Activate</system:String>
     <system:String x:Key="HeaderEntityType">Entity Type</system:String>
     <system:String x:Key="HeaderIdentifier">Name / Identifier</system:String>
     <system:String x:Key="HeaderDeletedBy">Deleted By</system:String>

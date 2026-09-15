@@ -7,6 +7,7 @@ using Sources.Data;
 using Sources.Messages;
 using Sources.Models;
 using Sources.Services;
+using Sources.Tests.Fakes;
 using Sources.Tests.Fixtures;
 using Sources.Tests.Helpers;
 using Xunit;
@@ -19,6 +20,7 @@ public class LeakTestServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
     private readonly SqliteInMemoryFixture _fixture;
     private readonly Mock<IAuditService> _mockAuditService;
     private readonly Mock<IUserService> _mockUserService;
+    private readonly FakeLicenseService _fakeLicenseService = new();
     private readonly ISystemSettingsService _settingsService;
     private readonly LeakTestService _leakTestService;
 
@@ -35,13 +37,14 @@ public class LeakTestServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
 
         _mockAuditService = new Mock<IAuditService>();
         _mockUserService = new Mock<IUserService>();
-        _settingsService = new SystemSettingsService(_fixture.ContextFactory);
+        _settingsService = new SystemSettingsService(_fixture.ContextFactory, _fakeLicenseService);
 
         _leakTestService = new LeakTestService(
             _fixture.ContextFactory,
             _mockAuditService.Object,
             _mockUserService.Object,
-            _settingsService);
+            _settingsService,
+            _fakeLicenseService);
 
         SeedData();
     }

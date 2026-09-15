@@ -13,12 +13,14 @@ public class RadioisotopeService : IRadioisotopeService
     private readonly IDbContextFactory<AppDbContext> _dbFactory;
     private readonly IAuditService _auditService;
     private readonly IUserService _userService;
+    private readonly ILicenseService _licenseService;
 
-    public RadioisotopeService(IDbContextFactory<AppDbContext> dbFactory, IAuditService auditService, IUserService userService)
+    public RadioisotopeService(IDbContextFactory<AppDbContext> dbFactory, IAuditService auditService, IUserService userService, ILicenseService licenseService)
     {
         _dbFactory = dbFactory;
         _auditService = auditService;
         _userService = userService;
+        _licenseService = licenseService;
     }
 
     public List<Radioisotope> GetAll()
@@ -39,6 +41,9 @@ public class RadioisotopeService : IRadioisotopeService
 
     public (bool Success, string Message) Create(Radioisotope item)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService);
+        if (!activation.Allowed) return (false, activation.Message);
+
         if (item == null) return (false, TranslationHelper.GetString("MsgErrInvalidRadioisotopeData") ?? "بيانات النظير غير صالحة");
         if (!double.IsFinite(item.HalfLife))
             return (false, TranslationHelper.GetString("MsgErrInvalidHalfLifeFinite") ?? "قيمة نصف العمر غير صالحة (يجب أن تكون رقماً منتهياً)");
@@ -90,6 +95,9 @@ public class RadioisotopeService : IRadioisotopeService
 
     public (bool Success, string Message) Update(Radioisotope item)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService);
+        if (!activation.Allowed) return (false, activation.Message);
+
         if (item == null) return (false, TranslationHelper.GetString("MsgErrInvalidRadioisotopeData") ?? "بيانات النظير غير صالحة");
         if (!double.IsFinite(item.HalfLife))
             return (false, TranslationHelper.GetString("MsgErrInvalidHalfLifeFinite") ?? "قيمة نصف العمر غير صالحة (يجب أن تكون رقماً منتهياً)");
@@ -168,6 +176,9 @@ public class RadioisotopeService : IRadioisotopeService
 
     public (bool Success, string Message) Delete(Guid id)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService);
+        if (!activation.Allowed) return (false, activation.Message);
+
         var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Radioisotopes");
         if (!guard.Allowed) return (false, guard.Message);
 
@@ -213,6 +224,9 @@ public class RadioisotopeService : IRadioisotopeService
 
     public (bool Success, string Message) Restore(Guid id)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService);
+        if (!activation.Allowed) return (false, activation.Message);
+
         var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Radioisotopes");
         if (!guard.Allowed) return (false, guard.Message);
 

@@ -9,6 +9,7 @@ using Moq;
 using Sources.Data;
 using Sources.Models;
 using Sources.Services;
+using Sources.Tests.Fakes;
 using Sources.Tests.Fixtures;
 using Xunit;
 
@@ -18,6 +19,7 @@ public class BackupScanAndSettingsIntegrityTests : IDisposable
 {
     private readonly SqliteInMemoryFixture _fixture;
     private readonly string _testTempDir;
+    private readonly FakeLicenseService _fakeLicenseService = new();
 
     public BackupScanAndSettingsIntegrityTests()
     {
@@ -203,7 +205,7 @@ public class BackupScanAndSettingsIntegrityTests : IDisposable
     public void GetSetting_WhenStoredValueIsCorrupt_ReturnsDefaultAndRecordsCorruptedKey()
     {
         // Arrange
-        var sut = new SystemSettingsService(_fixture.ContextFactory);
+        var sut = new SystemSettingsService(_fixture.ContextFactory, _fakeLicenseService);
         sut.SaveSetting("LeakTestIntervalMonths", "not_a_number");
 
         // Act
@@ -218,7 +220,7 @@ public class BackupScanAndSettingsIntegrityTests : IDisposable
     public void GetSetting_WhenStoredValueIsCorrupt_RecordsKeyOnlyOnce()
     {
         // Arrange
-        var sut = new SystemSettingsService(_fixture.ContextFactory);
+        var sut = new SystemSettingsService(_fixture.ContextFactory, _fakeLicenseService);
         sut.SaveSetting("CorruptedSetting", "invalid_value");
 
         // Act: قراءة متكررة 3 مرات
@@ -235,7 +237,7 @@ public class BackupScanAndSettingsIntegrityTests : IDisposable
     public void GetSetting_WhenStoredValueIsValid_DoesNotRecordCorruption()
     {
         // Arrange
-        var sut = new SystemSettingsService(_fixture.ContextFactory);
+        var sut = new SystemSettingsService(_fixture.ContextFactory, _fakeLicenseService);
         sut.SaveSetting("ValidKey", "42");
 
         // Act
@@ -250,7 +252,7 @@ public class BackupScanAndSettingsIntegrityTests : IDisposable
     public void ClearCache_ClearsCorruptedKeys()
     {
         // Arrange
-        var sut = new SystemSettingsService(_fixture.ContextFactory);
+        var sut = new SystemSettingsService(_fixture.ContextFactory, _fakeLicenseService);
         sut.SaveSetting("CorruptedKey", "invalid");
         sut.GetSetting<int>("CorruptedKey", 5);
         Assert.NotEmpty(sut.CorruptedKeys);
@@ -266,8 +268,8 @@ public class BackupScanAndSettingsIntegrityTests : IDisposable
     public void TwoServiceInstances_DoNotShareCache()
     {
         // Arrange: نموذجان منفصلان من الخدمة
-        var sut1 = new SystemSettingsService(_fixture.ContextFactory);
-        var sut2 = new SystemSettingsService(_fixture.ContextFactory);
+        var sut1 = new SystemSettingsService(_fixture.ContextFactory, _fakeLicenseService);
+        var sut2 = new SystemSettingsService(_fixture.ContextFactory, _fakeLicenseService);
 
         sut1.SaveSetting("IsolatedKey", "Value1");
 
@@ -644,7 +646,7 @@ public class BackupScanAndSettingsIntegrityTests : IDisposable
     public void GetSetting_WhenCorruptValueIsVeryLong_RecordsCorruptedKeyWithoutThrowing()
     {
         // Arrange: قيمة تالفة بطول 200 حرف
-        var sut = new SystemSettingsService(_fixture.ContextFactory);
+        var sut = new SystemSettingsService(_fixture.ContextFactory, _fakeLicenseService);
         var longCorruptValue = new string('x', 200);
         sut.SaveSetting("LongCorruptKey", longCorruptValue);
 

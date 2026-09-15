@@ -22,6 +22,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
     private readonly SqliteInMemoryFixture _fixture;
     private readonly FakeAuditService _fakeAuditService;
     private readonly FakeUserService _fakeUserService;
+    private readonly FakeLicenseService _fakeLicenseService = new();
     private readonly SystemSettingsService _settingsService;
     private readonly BorrowService _borrowService;
     private readonly IMessenger _messenger = new WeakReferenceMessenger();
@@ -33,8 +34,8 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
 
         _fakeAuditService = new FakeAuditService();
         _fakeUserService = new FakeUserService();
-        _settingsService = new SystemSettingsService(_fixture.ContextFactory);
-        _borrowService = new BorrowService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService, _settingsService);
+        _settingsService = new SystemSettingsService(_fixture.ContextFactory, _fakeLicenseService);
+        _borrowService = new BorrowService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService, _fakeLicenseService, _settingsService);
     }
 
     public void Dispose()

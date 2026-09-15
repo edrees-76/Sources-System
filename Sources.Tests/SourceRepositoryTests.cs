@@ -19,6 +19,7 @@ public class SourceRepositoryTests : IClassFixture<SqliteInMemoryFixture>, IDisp
     private readonly FakeAuditService _auditService;
     private readonly FakeUserService _userService;
     private readonly SourceService _sourceService;
+    private readonly FakeLicenseService _fakeLicenseService = new();
 
     // كيانات أساسية مشتركة في الاختبارات
     private Radioisotope _isoCs137 = null!;
@@ -41,7 +42,8 @@ public class SourceRepositoryTests : IClassFixture<SqliteInMemoryFixture>, IDisp
             _fixture.ContextFactory,
             _decayService,
             _auditService,
-            _userService);
+            _userService,
+            _fakeLicenseService);
 
         SeedCommonLookupData();
     }

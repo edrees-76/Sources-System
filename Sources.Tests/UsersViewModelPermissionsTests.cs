@@ -6,6 +6,7 @@ using Moq;
 using Sources.Data;
 using Sources.Models;
 using Sources.Services;
+using Sources.Tests.Fakes;
 using Sources.ViewModels;
 using Xunit;
 
@@ -251,7 +252,7 @@ public class UsersViewModelPermissionsTests
         var mockSettingsService = new Mock<ISystemSettingsService>();
 
         // Act
-        var mainVm = new MainViewModel(mockUserService.Object, mockAlertService.Object, mockSettingsService.Object);
+        var mainVm = new MainViewModel(mockUserService.Object, mockAlertService.Object, mockSettingsService.Object, new FakeLicenseService());
 
         // Assert - يرى رابط المحذوفات حصراً
         Assert.True(mainVm.CanSeeDeletions);
@@ -278,7 +279,7 @@ public class UsersViewModelPermissionsTests
         var mockSettingsService = new Mock<ISystemSettingsService>();
 
         // Act
-        var mainVm = new MainViewModel(mockUserService.Object, mockAlertService.Object, mockSettingsService.Object);
+        var mainVm = new MainViewModel(mockUserService.Object, mockAlertService.Object, mockSettingsService.Object, new FakeLicenseService());
 
         // Assert - يرى الإعدادات ولكن لا يرى المحذوفات إطلاقاً (كسر الاقتران القديم)
         Assert.True(mainVm.CanSeeSettings);
@@ -304,7 +305,7 @@ public class UsersViewModelPermissionsTests
         var mockSettingsService = new Mock<ISystemSettingsService>();
 
         // Act
-        var mainVm = new MainViewModel(mockUserService.Object, mockAlertService.Object, mockSettingsService.Object);
+        var mainVm = new MainViewModel(mockUserService.Object, mockAlertService.Object, mockSettingsService.Object, new FakeLicenseService());
 
         // Assert - يرى إدارة المستخدمين ولكن لا يرى المحذوفات إطلاقاً
         Assert.True(mainVm.CanSeeUsers);
@@ -330,7 +331,7 @@ public class UsersViewModelPermissionsTests
         var mockSettingsService = new Mock<ISystemSettingsService>();
 
         // Act
-        var mainVm = new MainViewModel(mockUserService.Object, mockAlertService.Object, mockSettingsService.Object);
+        var mainVm = new MainViewModel(mockUserService.Object, mockAlertService.Object, mockSettingsService.Object, new FakeLicenseService());
 
         // Assert - مدير النظام يرى رابط المحذوفات دائماً
         Assert.True(mainVm.CanSeeDeletions);

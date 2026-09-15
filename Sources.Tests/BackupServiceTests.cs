@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Data.Sqlite;
 using Sources.Services;
+using Sources.Tests.Fakes;
 using Xunit;
 
 namespace Sources.Tests;
@@ -16,6 +17,7 @@ public class BackupServiceTests : IDisposable
     private readonly string _dbPath;
     private readonly string _backupDir;
     private readonly BackupService _sut;
+    private readonly FakeLicenseService _fakeLicenseService = new();
 
     public BackupServiceTests()
     {
@@ -26,7 +28,7 @@ public class BackupServiceTests : IDisposable
         Directory.CreateDirectory(_testRoot);
         Directory.CreateDirectory(_backupDir);
 
-        _sut = new BackupService(_dbPath, _backupDir);
+        _sut = new BackupService(_dbPath, _backupDir, licenseService: _fakeLicenseService);
     }
 
     private void CreateValidSqliteDatabase(string path, string tableName = "Sources", string sampleData = "SRC-TEST-001", bool includeInitialSchemaMigration = true)

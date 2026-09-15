@@ -14,13 +14,15 @@ public class SourceService : ISourceService
     private readonly IDecayCalculationService _decayService;
     private readonly IAuditService _auditService;
     private readonly IUserService _userService;
+    private readonly ILicenseService _licenseService;
 
-    public SourceService(IDbContextFactory<AppDbContext> dbFactory, IDecayCalculationService decayService, IAuditService auditService, IUserService userService)
+    public SourceService(IDbContextFactory<AppDbContext> dbFactory, IDecayCalculationService decayService, IAuditService auditService, IUserService userService, ILicenseService licenseService)
     {
         _dbFactory = dbFactory;
         _decayService = decayService;
         _auditService = auditService;
         _userService = userService;
+        _licenseService = licenseService;
     }
 
     public List<Source> GetAllSources()
@@ -68,6 +70,9 @@ public class SourceService : ISourceService
 
     public (bool Success, string Message) CreateSource(Source source, List<SourceIsotope>? isotopes = null)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService);
+        if (!activation.Allowed) return (false, activation.Message);
+
         if (source == null) return (false, TranslationHelper.GetString("MsgErrInvalidSourceData") ?? "بيانات المصدر غير صالحة");
         if (!double.IsFinite(source.InitialActivityValue))
             return (false, TranslationHelper.GetString("MsgErrInvalidInitialActivityFinite") ?? "قيمة النشاط الابتدائي غير صالحة (يجب أن تكون رقماً منتهياً)");
@@ -156,6 +161,9 @@ public class SourceService : ISourceService
 
     public (bool Success, string Message) UpdateSource(Source source, List<SourceIsotope>? isotopes = null)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService);
+        if (!activation.Allowed) return (false, activation.Message);
+
         if (source == null) return (false, TranslationHelper.GetString("MsgErrInvalidSourceData") ?? "بيانات المصدر غير صالحة");
         if (!double.IsFinite(source.InitialActivityValue))
             return (false, TranslationHelper.GetString("MsgErrInvalidInitialActivityFinite") ?? "قيمة النشاط الابتدائي غير صالحة (يجب أن تكون رقماً منتهياً)");
@@ -293,6 +301,9 @@ public class SourceService : ISourceService
 
     public (bool Success, string Message) DeleteSource(Guid id)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService);
+        if (!activation.Allowed) return (false, activation.Message);
+
         var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Sources");
         if (!guard.Allowed) return (false, guard.Message);
 
@@ -379,6 +390,9 @@ public class SourceService : ISourceService
 
     public (bool Success, string Message) RestoreSource(Guid id)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService);
+        if (!activation.Allowed) return (false, activation.Message);
+
         var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Sources");
         if (!guard.Allowed) return (false, guard.Message);
 

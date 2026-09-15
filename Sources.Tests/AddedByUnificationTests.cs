@@ -17,6 +17,7 @@ public class AddedByUnificationTests : IClassFixture<SqliteInMemoryFixture>, IDi
     private readonly SqliteInMemoryFixture _fixture;
     private readonly FakeAuditService _fakeAuditService;
     private readonly FakeUserService _fakeUserService;
+    private readonly FakeLicenseService _fakeLicenseService = new();
     private readonly SourceService _sourceService;
     private readonly LocationService _locationService;
     private readonly RadioisotopeService _radioisotopeService;
@@ -60,12 +61,12 @@ public class AddedByUnificationTests : IClassFixture<SqliteInMemoryFixture>, IDi
         _fakeAuditService = new FakeAuditService();
         _fakeUserService = new FakeUserService { CurrentUser = _testUser };
 
-        _sourceService = new SourceService(_fixture.ContextFactory, new DecayCalculationService(), _fakeAuditService, _fakeUserService);
-        _locationService = new LocationService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService);
-        _radioisotopeService = new RadioisotopeService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService);
-        _borrowService = new BorrowService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService);
-        _neutronSourceService = new NeutronSourceService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService);
-        _neutronSourceTypeService = new NeutronSourceTypeService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService);
+        _sourceService = new SourceService(_fixture.ContextFactory, new DecayCalculationService(), _fakeAuditService, _fakeUserService, _fakeLicenseService);
+        _locationService = new LocationService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService, _fakeLicenseService);
+        _radioisotopeService = new RadioisotopeService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService, _fakeLicenseService);
+        _borrowService = new BorrowService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService, _fakeLicenseService);
+        _neutronSourceService = new NeutronSourceService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService, _fakeLicenseService);
+        _neutronSourceTypeService = new NeutronSourceTypeService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService, _fakeLicenseService);
     }
 
     public void Dispose()

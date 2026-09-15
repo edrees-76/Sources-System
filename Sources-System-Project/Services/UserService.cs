@@ -12,6 +12,7 @@ public class UserService : IUserService
 {
     private readonly IDbContextFactory<AppDbContext> _dbFactory;
     private readonly IAuditService? _auditService;
+    private readonly ILicenseService? _licenseService;
     private User? _currentUser;
 
     /// <summary>أقصى عدد محاولات فاشلة قبل قفل الحساب</summary>
@@ -22,10 +23,11 @@ public class UserService : IUserService
     public User? CurrentUser => _currentUser;
     public bool IsLoggedIn => _currentUser != null;
 
-    public UserService(IDbContextFactory<AppDbContext> dbFactory, IAuditService? auditService = null)
+    public UserService(IDbContextFactory<AppDbContext> dbFactory, IAuditService? auditService = null, ILicenseService? licenseService = null)
     {
         _dbFactory = dbFactory;
         _auditService = auditService;
+        _licenseService = licenseService;
     }
 
     public (bool Success, string Message) Login(string username, string password)
@@ -114,6 +116,9 @@ public class UserService : IUserService
 
     public (bool Success, string Message) CreateUser(User user, string password)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService!);
+        if (!activation.Allowed) return (false, activation.Message);
+
         var guard = AuthorizationGuard.RequireAdmin(CurrentUser);
         if (!guard.Allowed) return (false, guard.Message);
 
@@ -150,6 +155,9 @@ public class UserService : IUserService
 
     public (bool Success, string Message) UpdateUser(User user)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService!);
+        if (!activation.Allowed) return (false, activation.Message);
+
         var guard = AuthorizationGuard.RequireAdmin(CurrentUser);
         if (!guard.Allowed) return (false, guard.Message);
 
@@ -200,6 +208,9 @@ public class UserService : IUserService
 
     public (bool Success, string Message) ResetPassword(Guid userId, string newPassword)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService!);
+        if (!activation.Allowed) return (false, activation.Message);
+
         var guard = AuthorizationGuard.RequireAdmin(CurrentUser);
         if (!guard.Allowed) return (false, guard.Message);
 
@@ -224,6 +235,9 @@ public class UserService : IUserService
     /// <summary>فك قفل حساب المستخدم</summary>
     public (bool Success, string Message) UnlockAccount(Guid userId)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService!);
+        if (!activation.Allowed) return (false, activation.Message);
+
         var guard = AuthorizationGuard.RequireAdmin(CurrentUser);
         if (!guard.Allowed) return (false, guard.Message);
 
@@ -251,6 +265,9 @@ public class UserService : IUserService
 
     public (bool Success, string Message) DeleteUser(Guid userId)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService!);
+        if (!activation.Allowed) return (false, activation.Message);
+
         var guard = AuthorizationGuard.RequireAdmin(CurrentUser);
         if (!guard.Allowed) return (false, guard.Message);
 
@@ -283,6 +300,9 @@ public class UserService : IUserService
 
     public (bool Success, string Message) RestoreUser(Guid userId)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService!);
+        if (!activation.Allowed) return (false, activation.Message);
+
         var guard = AuthorizationGuard.RequireAdmin(CurrentUser);
         if (!guard.Allowed) return (false, guard.Message);
 
@@ -311,6 +331,9 @@ public class UserService : IUserService
     /// <summary>تجميد أو تنشيط حساب مستخدم</summary>
     public (bool Success, string Message) ToggleUserFreeze(Guid userId)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService!);
+        if (!activation.Allowed) return (false, activation.Message);
+
         var guard = AuthorizationGuard.RequireAdmin(CurrentUser);
         if (!guard.Allowed) return (false, guard.Message);
 

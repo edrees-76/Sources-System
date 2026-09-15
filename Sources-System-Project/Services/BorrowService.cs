@@ -14,16 +14,19 @@ public class BorrowService : IBorrowService
     private readonly IAuditService _auditService;
     private readonly IUserService _userService;
     private readonly ISystemSettingsService? _settingsService;
+    private readonly ILicenseService _licenseService;
 
     public BorrowService(
-        IDbContextFactory<AppDbContext> dbFactory, 
-        IAuditService auditService, 
+        IDbContextFactory<AppDbContext> dbFactory,
+        IAuditService auditService,
         IUserService userService,
+        ILicenseService licenseService,
         ISystemSettingsService? settingsService = null)
     {
         _dbFactory = dbFactory;
         _auditService = auditService;
         _userService = userService;
+        _licenseService = licenseService;
         _settingsService = settingsService;
     }
 
@@ -112,6 +115,9 @@ public class BorrowService : IBorrowService
 
     public (bool Success, string Message) CreateRequest(BorrowRequest request)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService);
+        if (!activation.Allowed) return (false, activation.Message);
+
         try
         {
             using var db = _dbFactory.CreateDbContext();
@@ -172,6 +178,9 @@ public class BorrowService : IBorrowService
 
     public (bool Success, string Message) MarkReturned(Guid requestId, Guid returnedByUserId, DateTime actualReturnDate, string? notes = null)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService);
+        if (!activation.Allowed) return (false, activation.Message);
+
         try
         {
             using var db = _dbFactory.CreateDbContext();

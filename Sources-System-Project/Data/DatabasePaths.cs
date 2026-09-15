@@ -29,4 +29,18 @@ public static class DatabasePaths
         Directory.CreateDirectory(AppDataDirectory);
         return AppDataDirectory;
     }
+
+    /// <summary>مجلد بيانات الترخيص المشتركة بين كل المستخدمين على الجهاز (ProgramData) — يحتاج صلاحيات مدير للكتابة أول مرة فقط عبر المثبِّت.</summary>
+    public static string LicenseDirectory => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+        "Sources");
+
+    /// <summary>مسار ملف علامة التفعيل المشفَّرة (DPAPI، نطاق الجهاز).</summary>
+    public static string LicenseFilePath => Path.Combine(LicenseDirectory, "license.dat");
+
+    public static string EnsureLicenseDirectory()
+    {
+        Directory.CreateDirectory(LicenseDirectory);
+        return LicenseDirectory;
+    }
 }

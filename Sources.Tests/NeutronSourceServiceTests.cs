@@ -19,6 +19,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
     private readonly FakeUserService _fakeUserService;
     private readonly NeutronSourceService _sut;
     private readonly LocationService _locationService;
+    private readonly FakeLicenseService _fakeLicenseService = new();
 
     public NeutronSourceServiceTests(SqliteInMemoryFixture fixture)
     {
@@ -38,8 +39,8 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
             IsEditor = true
         };
         _fakeUserService = new FakeUserService(user);
-        _sut = new NeutronSourceService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService);
-        _locationService = new LocationService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService);
+        _sut = new NeutronSourceService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService, _fakeLicenseService);
+        _locationService = new LocationService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService, _fakeLicenseService);
     }
 
     public void Dispose()

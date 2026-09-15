@@ -41,4 +41,13 @@ public static class AuthorizationGuard
 
         return (true, string.Empty);
     }
+
+    /// <summary>يتطلب منظومة مُفعَّلة (غير وضع تجريبي). يُستعمل لمنع كل عمليات الكتابة قبل التفعيل.</summary>
+    public static (bool Allowed, string Message) RequireActivated(ILicenseService license)
+    {
+        if (license == null || !license.IsActivated)
+            return (false, TranslationHelper.GetString("MsgErrTrialModeWriteBlocked")
+                ?? "النسخة تجريبية: لا يمكن إضافة أو تعديل أو حذف البيانات قبل التفعيل.");
+        return (true, string.Empty);
+    }
 }

@@ -16,12 +16,14 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
     private readonly IDbContextFactory<AppDbContext> _dbFactory;
     private readonly IAuditService _auditService;
     private readonly IUserService _userService;
+    private readonly ILicenseService _licenseService;
 
-    public NeutronSourceTypeService(IDbContextFactory<AppDbContext> dbFactory, IAuditService auditService, IUserService userService)
+    public NeutronSourceTypeService(IDbContextFactory<AppDbContext> dbFactory, IAuditService auditService, IUserService userService, ILicenseService licenseService)
     {
         _dbFactory = dbFactory;
         _auditService = auditService;
         _userService = userService;
+        _licenseService = licenseService;
     }
 
     /// <summary>جلب جميع أنواع المصادر النيترونية النشطة</summary>
@@ -59,6 +61,9 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
     /// <summary>إنشاء نوع مصدر نيتروني جديد</summary>
     public (bool Success, string Message) Create(NeutronSourceType item)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService);
+        if (!activation.Allowed) return (false, activation.Message);
+
         if (item == null) return (false, TranslationHelper.GetString("MsgErrInvalidNeutronSourceTypeData") ?? "بيانات نوع المصدر غير صالحة");
         if (string.IsNullOrWhiteSpace(item.Code)) return (false, TranslationHelper.GetString("MsgErrNeutronSourceTypeCodeRequired") ?? "رمز نوع المصدر مطلوب");
         if (string.IsNullOrWhiteSpace(item.NameEn)) return (false, TranslationHelper.GetString("MsgErrNeutronSourceTypeNameEnRequired") ?? "الاسم بالإنجليزية مطلوب");
@@ -111,6 +116,9 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
     /// <summary>تحديث نوع مصدر نيتروني</summary>
     public (bool Success, string Message) Update(NeutronSourceType item)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService);
+        if (!activation.Allowed) return (false, activation.Message);
+
         if (item == null) return (false, TranslationHelper.GetString("MsgErrInvalidNeutronSourceTypeData") ?? "بيانات نوع المصدر غير صالحة");
         if (string.IsNullOrWhiteSpace(item.Code)) return (false, TranslationHelper.GetString("MsgErrNeutronSourceTypeCodeRequired") ?? "رمز نوع المصدر مطلوب");
         if (string.IsNullOrWhiteSpace(item.NameEn)) return (false, TranslationHelper.GetString("MsgErrNeutronSourceTypeNameEnRequired") ?? "الاسم بالإنجليزية مطلوب");
@@ -192,6 +200,9 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
     /// <summary>حذف نوع مصدر نيتروني</summary>
     public (bool Success, string Message) Delete(Guid id)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService);
+        if (!activation.Allowed) return (false, activation.Message);
+
         var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Sources");
         if (!guard.Allowed) return (false, guard.Message);
 
@@ -240,6 +251,9 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
     /// <summary>استرجاع نوع مصدر نيتروني محذوف</summary>
     public (bool Success, string Message) Restore(Guid id)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService);
+        if (!activation.Allowed) return (false, activation.Message);
+
         var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Sources");
         if (!guard.Allowed) return (false, guard.Message);
 

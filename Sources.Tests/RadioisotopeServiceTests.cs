@@ -20,6 +20,7 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
     private readonly FakeAuditService _fakeAuditService;
     private readonly FakeUserService _fakeUserService;
     private readonly RadioisotopeService _sut;
+    private readonly FakeLicenseService _fakeLicenseService = new();
 
     public RadioisotopeServiceTests(SqliteInMemoryFixture fixture)
     {
@@ -48,7 +49,7 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
             db.SaveChanges();
         }
 
-        _sut = new RadioisotopeService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService);
+        _sut = new RadioisotopeService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService, _fakeLicenseService);
     }
 
     public void Dispose()

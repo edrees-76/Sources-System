@@ -24,6 +24,7 @@ public class SourcesOrderingTests : IClassFixture<SqliteInMemoryFixture>, IDispo
     private readonly BorrowService _borrowService;
     private readonly LeakTestService _leakTestService;
     private readonly AlertService _alertService;
+    private readonly FakeLicenseService _fakeLicenseService = new();
 
     private Radioisotope _testIsotope = null!;
     private ActivityUnit _testUnit = null!;
@@ -38,30 +39,34 @@ public class SourcesOrderingTests : IClassFixture<SqliteInMemoryFixture>, IDispo
         _decayService = new DecayCalculationService();
         _auditService = new FakeAuditService();
         _userService = new FakeUserService();
-        _settingsService = new SystemSettingsService(_fixture.ContextFactory);
+        _settingsService = new SystemSettingsService(_fixture.ContextFactory, _fakeLicenseService);
 
         _sourceService = new SourceService(
             _fixture.ContextFactory,
             _decayService,
             _auditService,
-            _userService);
+            _userService,
+            _fakeLicenseService);
 
         _borrowService = new BorrowService(
             _fixture.ContextFactory,
             _auditService,
             _userService,
+            _fakeLicenseService,
             _settingsService);
 
         _leakTestService = new LeakTestService(
             _fixture.ContextFactory,
             _auditService,
             _userService,
-            _settingsService);
+            _settingsService,
+            _fakeLicenseService);
 
         _alertService = new AlertService(
             _fixture.ContextFactory,
             _decayService,
-            _settingsService);
+            _settingsService,
+            _fakeLicenseService);
 
         SeedData();
     }
