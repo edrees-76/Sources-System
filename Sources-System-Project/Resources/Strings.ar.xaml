@@ -1191,6 +1191,59 @@
     <system:String x:Key="HelpIsotopeLibrarySectionOrnlDesc">يحتوي على نظائر مشعة معتمدة مع قيم ثابت غاما النوعي (Γ) بالوحدة الدولية (µSv·m²/(MBq·h)) والوحدة التقليدية (mrem·h⁻¹·µCi⁻¹)، بالإضافة إلى سُمك درع الرصاص لتوهين 95% ومعامل التوهين الخطي المتوسط (µ). تُستخدم هذه البيانات حصراً في الحسابات التقديرية لمعدل الجرعة عند مسافة 1 متر.</system:String>
     <system:String x:Key="HelpIsotopeLibrarySectionIcrp">2. مرجع بيانات الانحلال الإشعاعي (ICRP Publication 107)</system:String>
     <system:String x:Key="HelpIsotopeLibrarySectionIcrpDesc">يغطي 1252 نظيراً مشعاً كمصدر احتياطي للبيانات الفيزيائية العامة (نصف العمر، نمط الانحلال B-/Alpha/EC، والطاقات المنبعثة). تنبيه: لا يتضمن هذا المرجع ثوابت غاما نوعية لحساب الجرعة، وتُعرض بياناته لأغراض الاسترشاد العلمي فقط.</system:String>
+
+    <!-- 13. Leak Tests -->
+    <system:String x:Key="HelpTopicLeakTestsTitle">13. اختبارات التسرب الدورية (Leak/Wipe Tests)</system:String>
+    <system:String x:Key="HelpTopicLeakTestsSubtitle">تسجيل ومتابعة اختبارات التسرب والمسح الإشعاعي الدورية للمصادر المغلقة</system:String>
+    <system:String x:Key="HelpBtnGoToLeakTests">الانتقال إلى شاشة اختبارات التسرب</system:String>
+    <system:String x:Key="HelpLeakTestsLeadText">تتيح شاشة اختبارات التسرب تسجيل نتائج الفحص الدوري للمصادر المغلقة (Sealed Sources) للتأكد من سلامة الاحتواء وعدم تسرب المادة المشعة، ومتابعة مواعيد الاستحقاق القادمة تلقائياً.</system:String>
+    <system:String x:Key="HelpLeakTestsSectionWorkflow">تسجيل اختبار تسرب جديد</system:String>
+    <system:String x:Key="HelpLeakTestsStep1Title">الخطوة 1: اختيار المصدر المغلق</system:String>
+    <system:String x:Key="HelpLeakTestsStep1Desc">تظهر في القائمة المصادر المغلقة قيد الاستخدام أو التخزين حالياً فقط، اختر المصدر المطلوب فحصه.</system:String>
+    <system:String x:Key="HelpLeakTestsStep2Title">الخطوة 2: إدخال تاريخ الفحص</system:String>
+    <system:String x:Key="HelpLeakTestsStep2Desc">أدخل تاريخ إجراء الفحص، وستقترح المنظومة تاريخ الاستحقاق القادم تلقائياً بناءً على الفاصل الزمني المحدد في إعدادات النظام (6 أشهر افتراضياً، قابل للتعديل).</system:String>
+    <system:String x:Key="HelpLeakTestsStep3Title">الخطوة 3: تسجيل النتيجة والبيانات التكميلية</system:String>
+    <system:String x:Key="HelpLeakTestsStep3Desc">اختر نتيجة الفحص، ويمكنك إضافة النشاط المقاس بوحدة Bq (اختياري)، واسم الفاحص، ورقم الشهادة، وأي ملاحظات، ثم اضغط حفظ.</system:String>
+    <system:String x:Key="HelpLeakTestsResultsTitle">النتائج الثلاث الممكنة</system:String>
+    <system:String x:Key="HelpLeakTestsResultBullet1">✔ ناجح (سليم): لا يوجد تسرب مكتشف.</system:String>
+    <system:String x:Key="HelpLeakTestsResultBullet2">✖ راسب (تسرب): تم اكتشاف تسرب يستوجب إجراءً فورياً.</system:String>
+    <system:String x:Key="HelpLeakTestsResultBullet3">➖ غير حاسم: النتيجة غير قاطعة وتحتاج لإعادة الفحص.</system:String>
+    <system:String x:Key="HelpLeakTestsTip1">💡 يمكن تعديل أو حذف أي سجل اختبار سابق، كما يمكن تصدير قائمة اختبارات التسرب بصيغتي PDF أو Excel من نفس الشاشة.</system:String>
+    <system:String x:Key="HelpLeakTestsSectionAlerts">الربط مع لوحة القيادة والتنبيهات</system:String>
+    <system:String x:Key="HelpLeakTestsWarning1">⚠ عند اقتراب تاريخ الاستحقاق القادم يظهر تنبيه تحذيري (Due Soon) في لوحة القيادة وشاشة التنبيهات، وعند تجاوزه دون تسجيل فحص جديد يتحول التنبيه إلى تنبيه حرج (Overdue).</system:String>
+
+    <!-- 14. Deletions -->
+    <system:String x:Key="HelpTopicDeletionsTitle">14. سجل المحذوفات واستعادتها</system:String>
+    <system:String x:Key="HelpTopicDeletionsSubtitle">استعراض العناصر المحذوفة (حذف ناعم) واستعادتها بعد التحقق من صلاحية المدير</system:String>
+    <system:String x:Key="HelpBtnGoToDeletions">الانتقال إلى سجل المحذوفات</system:String>
+    <system:String x:Key="HelpDeletionsLeadText">تعرض هذه الشاشة العناصر التي تم حذفها حذفاً ناعماً (Soft Delete) عبر خمسة أنواع من الكيانات، مع إمكانية استعادة أي عنصر بدلاً من فقدانه نهائياً.</system:String>
+    <system:String x:Key="HelpDeletionsSectionWorkflow">استعادة عنصر محذوف</system:String>
+    <system:String x:Key="HelpDeletionsWarning1">⚠ الدخول إلى هذه الشاشة يتطلب إدخال كلمة مرور مدير النظام؛ ستظهر نافذة تأكيد صلاحية المدير قبل فتح الشاشة، فلا داعي للاستغراب عند ظهورها.</system:String>
+    <system:String x:Key="HelpDeletionsStep1Title">الخطوة 1: فتح شاشة المحذوفات</system:String>
+    <system:String x:Key="HelpDeletionsStep1Desc">من القائمة الرئيسية، اختر 'المحذوفات' لفتح سجل المحذوفات الموحّد.</system:String>
+    <system:String x:Key="HelpDeletionsStep2Title">الخطوة 2: إدخال كلمة مرور المدير</system:String>
+    <system:String x:Key="HelpDeletionsStep2Desc">أدخل كلمة مرور مدير النظام عند ظهور نافذة التحقق للسماح بالوصول إلى السجل الحساس.</system:String>
+    <system:String x:Key="HelpDeletionsStep3Title">الخطوة 3: التصفية حسب النوع أو البحث</system:String>
+    <system:String x:Key="HelpDeletionsStep3Desc">اختر أحد الأنواع الخمسة (المصادر، المصادر النيوترونية، المواقع، المستخدمين، النظائر المشعة) أو استخدم مربع البحث لتحديد العنصر، وتعرض كل صفوف السجل ما تم حذفه ومن قام بحذفه وتاريخ الحذف.</system:String>
+    <system:String x:Key="HelpDeletionsStep4Title">الخطوة 4: تأكيد الاستعادة</system:String>
+    <system:String x:Key="HelpDeletionsStep4Desc">اضغط زر 'استعادة' بجانب العنصر المطلوب وأكد العملية؛ يعود العنصر فوراً إلى قوائم الجرد النشطة.</system:String>
+
+    <!-- 15. Neutron Sources -->
+    <system:String x:Key="HelpTopicNeutronSourcesTitle">15. المصادر النيوترونية</system:String>
+    <system:String x:Key="HelpTopicNeutronSourcesSubtitle">بيانات المعايرة والاضمحلال الخاصة بالمصادر النيوترونية ضمن شاشة المصادر</system:String>
+    <system:String x:Key="HelpNeutronSourcesLeadText">لا توجد شاشة مستقلة للمصادر النيوترونية؛ فهي تظهر كتبويب داخل شاشة المصادر نفسها، وتحمل كل مصدر نيوتروني بيانات معايرة خاصة به من شهادته.</system:String>
+    <system:String x:Key="HelpNeutronSourcesSectionAccess">كيفية الوصول للمصادر النيوترونية</system:String>
+    <system:String x:Key="HelpNeutronSourcesStep1Title">الخطوة 1: الانتقال إلى شاشة المصادر</system:String>
+    <system:String x:Key="HelpNeutronSourcesStep1Desc">اضغط الزر أدناه للانتقال إلى شاشة المصادر.</system:String>
+    <system:String x:Key="HelpNeutronSourcesStep2Title">الخطوة 2: اختيار تبويب 'المصادر النيوترونية'</system:String>
+    <system:String x:Key="HelpNeutronSourcesStep2Desc">من داخل شاشة المصادر، اختر يدوياً تبويب 'المصادر النيوترونية' لعرض وإدارة هذه المصادر؛ فهي لا تُفتح تلقائياً.</system:String>
+    <system:String x:Key="HelpNeutronSourcesSectionCertificate">بيانات شهادة المعايرة لكل مصدر</system:String>
+    <system:String x:Key="HelpNeutronSourcesCertBullet1">معدل الانبعاث الابتدائي (n/s) كما ورد في شهادة المعايرة.</system:String>
+    <system:String x:Key="HelpNeutronSourcesCertBullet2">تاريخ معايرة معدل الانبعاث المسجل في الشهادة.</system:String>
+    <system:String x:Key="HelpNeutronSourcesCertBullet3">نسبة عدم اليقين الموسّعة النسبية (%) الخاصة بالقياس.</system:String>
+    <system:String x:Key="HelpNeutronSourcesCertBullet4">مرجع شهادة المعايرة (الجهة المصدرة ورقم التقرير).</system:String>
+    <system:String x:Key="HelpNeutronSourcesWarning1">⚠ نصف العمر يُؤخذ من نوع المصدر المرجعي، أما معامل اللاتماثل الزاوي (Anisotropy Factor) فهو خاصية لكل مصدر نيوتروني بعينه من شهادته الخاصة؛ إذا كان هذا المعامل مفقوداً من الشهادة فإن الحساب لا يمكن أن يتم، ولا يجوز افتراض أي قيمة له (لا يُفترض أنه يساوي 1 أو أي رقم آخر).</system:String>
+
     <!-- Deletions & Admin Password Prompt (Round 81) -->
     <system:String x:Key="MenuDeletions">المحذوفات</system:String>
     <system:String x:Key="NavDeletions">سجل المحذوفات الإداري</system:String>

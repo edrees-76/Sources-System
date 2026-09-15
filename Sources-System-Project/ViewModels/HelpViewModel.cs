@@ -651,6 +651,154 @@ public partial class HelpViewModel : ObservableObject
                         }
                     }
                 }
+            },
+
+            // ════════════════════════════════════════════════════════
+            // 13. اختبارات التسرب الدورية (Leak/Wipe Tests)
+            // ════════════════════════════════════════════════════════
+            new HelpTopic
+            {
+                Id = "LeakTests",
+                TitleKey = "HelpTopicLeakTestsTitle",
+                SubtitleKey = "HelpTopicLeakTestsSubtitle",
+                IconKind = "TestTube",
+                TargetViewName = "LeakTests",
+                TargetViewButtonTextKey = "HelpBtnGoToLeakTests",
+                Roles = new() { HelpRoles.All, HelpRoles.SafetyOfficer },
+                Keywords = "اختبار تسرب دوري مسح إشعاعي مصادر مغلقة leak test wipe test survey",
+                Sections = new()
+                {
+                    new HelpSection
+                    {
+                        Blocks = new()
+                        {
+                            new HelpParagraphBlock { TextKey = "HelpLeakTestsLeadText", IsLead = true }
+                        }
+                    },
+                    new HelpSection
+                    {
+                        TitleKey = "HelpLeakTestsSectionWorkflow",
+                        IconKind = "ClipboardPulseOutline",
+                        Blocks = new()
+                        {
+                            new HelpStepBlock { StepNumber = "1", TitleKey = "HelpLeakTestsStep1Title", DescriptionKey = "HelpLeakTestsStep1Desc" },
+                            new HelpStepBlock { StepNumber = "2", TitleKey = "HelpLeakTestsStep2Title", DescriptionKey = "HelpLeakTestsStep2Desc" },
+                            new HelpStepBlock { StepNumber = "3", TitleKey = "HelpLeakTestsStep3Title", DescriptionKey = "HelpLeakTestsStep3Desc" },
+                            new HelpBulletListBlock
+                            {
+                                TitleKey = "HelpLeakTestsResultsTitle",
+                                ItemKeys = new()
+                                {
+                                    "HelpLeakTestsResultBullet1",
+                                    "HelpLeakTestsResultBullet2",
+                                    "HelpLeakTestsResultBullet3"
+                                }
+                            },
+                            new HelpTipBlock { TextKey = "HelpLeakTestsTip1" }
+                        }
+                    },
+                    new HelpSection
+                    {
+                        TitleKey = "HelpLeakTestsSectionAlerts",
+                        IconKind = "AlertDecagram",
+                        Blocks = new()
+                        {
+                            new HelpWarningBlock { TextKey = "HelpLeakTestsWarning1" }
+                        }
+                    }
+                }
+            },
+
+            // ════════════════════════════════════════════════════════
+            // 14. سجل المحذوفات واستعادتها
+            // ════════════════════════════════════════════════════════
+            new HelpTopic
+            {
+                Id = "Deletions",
+                TitleKey = "HelpTopicDeletionsTitle",
+                SubtitleKey = "HelpTopicDeletionsSubtitle",
+                IconKind = "DeleteRestore",
+                TargetViewName = "Deletions",
+                TargetViewButtonTextKey = "HelpBtnGoToDeletions",
+                Roles = new() { HelpRoles.All, HelpRoles.SafetyOfficer },
+                Keywords = "محذوفات استعادة حذف ناعم صلاحية مدير كلمة مرور deletions restore soft delete admin",
+                Sections = new()
+                {
+                    new HelpSection
+                    {
+                        Blocks = new()
+                        {
+                            new HelpParagraphBlock { TextKey = "HelpDeletionsLeadText", IsLead = true }
+                        }
+                    },
+                    new HelpSection
+                    {
+                        TitleKey = "HelpDeletionsSectionWorkflow",
+                        IconKind = "Restore",
+                        Blocks = new()
+                        {
+                            new HelpWarningBlock { TextKey = "HelpDeletionsWarning1" },
+                            new HelpStepBlock { StepNumber = "1", TitleKey = "HelpDeletionsStep1Title", DescriptionKey = "HelpDeletionsStep1Desc" },
+                            new HelpStepBlock { StepNumber = "2", TitleKey = "HelpDeletionsStep2Title", DescriptionKey = "HelpDeletionsStep2Desc" },
+                            new HelpStepBlock { StepNumber = "3", TitleKey = "HelpDeletionsStep3Title", DescriptionKey = "HelpDeletionsStep3Desc" },
+                            new HelpStepBlock { StepNumber = "4", TitleKey = "HelpDeletionsStep4Title", DescriptionKey = "HelpDeletionsStep4Desc" }
+                        }
+                    }
+                }
+            },
+
+            // ════════════════════════════════════════════════════════
+            // 15. المصادر النيوترونية
+            // ════════════════════════════════════════════════════════
+            new HelpTopic
+            {
+                Id = "NeutronSources",
+                TitleKey = "HelpTopicNeutronSourcesTitle",
+                SubtitleKey = "HelpTopicNeutronSourcesSubtitle",
+                IconKind = "RadioactiveCircleOutline",
+                TargetViewName = "Sources",
+                TargetViewButtonTextKey = "HelpBtnGoToSources",
+                Roles = new() { HelpRoles.All, HelpRoles.SafetyOfficer },
+                Keywords = "مصادر نيوترونية معايرة معدل انبعاث شهادة اضمحلال تباين neutron sources calibration emission rate",
+                Sections = new()
+                {
+                    new HelpSection
+                    {
+                        Blocks = new()
+                        {
+                            new HelpParagraphBlock { TextKey = "HelpNeutronSourcesLeadText", IsLead = true }
+                        }
+                    },
+                    new HelpSection
+                    {
+                        TitleKey = "HelpNeutronSourcesSectionAccess",
+                        IconKind = "TabArrowRight",
+                        Blocks = new()
+                        {
+                            new HelpStepBlock { StepNumber = "1", TitleKey = "HelpNeutronSourcesStep1Title", DescriptionKey = "HelpNeutronSourcesStep1Desc" },
+                            new HelpStepBlock { StepNumber = "2", TitleKey = "HelpNeutronSourcesStep2Title", DescriptionKey = "HelpNeutronSourcesStep2Desc" }
+                        }
+                    },
+                    new HelpSection
+                    {
+                        TitleKey = "HelpNeutronSourcesSectionCertificate",
+                        IconKind = "CertificateOutline",
+                        Blocks = new()
+                        {
+                            new HelpBulletListBlock
+                            {
+                                ItemKeys = new()
+                                {
+                                    "HelpNeutronSourcesCertBullet1",
+                                    "HelpNeutronSourcesCertBullet2",
+                                    "HelpNeutronSourcesCertBullet3",
+                                    "HelpNeutronSourcesCertBullet4"
+                                }
+                            },
+                            new HelpWarningBlock { TextKey = "HelpNeutronSourcesWarning1" }
+                        }
+                    }
+                }
             }
         };
     }
