@@ -1678,6 +1678,94 @@
     <system:String x:Key="MsgSuccessExportPdf">The report was successfully exported as a PDF file.</system:String>
     <system:String x:Key="MsgSuccessExportExcel">The data was successfully exported to an Excel file.</system:String>
     <system:String x:Key="MsgErrExportFailedFormat">Export error: {0}</system:String>
+
+    <!-- Round 158: PDF/Excel export headers and titles localization (ReportingService.cs) -->
+    <system:String x:Key="RptColLocationName">Location Name</system:String>
+    <system:String x:Key="RptColLocationType">Type</system:String>
+    <system:String x:Key="RptColBuilding">Building</system:String>
+    <system:String x:Key="RptColRoom">Room</system:String>
+    <system:String x:Key="RptColResponsiblePerson">Responsible Person</system:String>
+    <system:String x:Key="RptColSourceCount">Source Count</system:String>
+    <system:String x:Key="RptColAddedBy">Added By</system:String>
+    <system:String x:Key="RptSheetLocations">Locations &amp; Storage</system:String>
+    <system:String x:Key="RptTitleLocationsPdf">Sources System — Locations &amp; Storage Report</system:String>
+    <system:String x:Key="RptLabelReportDate">Report Date:</system:String>
+    <system:String x:Key="RptColSourceCode">Source Code</system:String>
+    <system:String x:Key="RptColIsotope">Isotope</system:String>
+    <system:String x:Key="RptColCurrentActivity">Current Activity</system:String>
+    <system:String x:Key="RptColLocation">Location</system:String>
+    <system:String x:Key="RptColStatus">Status</system:String>
+    <system:String x:Key="RptSheetInventory">Sources Inventory</system:String>
+    <system:String x:Key="RptSheetBorrowHistory">Borrow History</system:String>
+    <system:String x:Key="RptTitleBorrowHistoryPdf">Sources System — Borrow History Report</system:String>
+    <system:String x:Key="RptColBorrower">Borrower</system:String>
+    <system:String x:Key="RptColPurpose">Purpose</system:String>
+    <system:String x:Key="RptColReturnDate">Return Date</system:String>
+    <system:String x:Key="RptColRequestDate">Request Date</system:String>
+    <system:String x:Key="RptSheetLowActivityAlerts">Low Activity Alerts</system:String>
+    <system:String x:Key="RptTitleLowActivityAlertsPdf">Sources System — Low Activity Alerts Report</system:String>
+    <system:String x:Key="RptLabelExtractDate">Extraction Date:</system:String>
+    <system:String x:Key="RptColSourceShort">Source</system:String>
+    <system:String x:Key="RptColSeverity">Severity</system:String>
+    <system:String x:Key="RptColLastCalibrationDateExcel">Last Calibration Date</system:String>
+    <system:String x:Key="RptColCalibrationDatePdf">Calibration Date</system:String>
+    <system:String x:Key="RptTitleGeneralReportPdf">Sources System — Comprehensive General Report</system:String>
+    <system:String x:Key="RptSectionInventory">1. Sources &amp; Radioactive Materials Inventory Report</system:String>
+    <system:String x:Key="RptSectionBorrowing">2. Borrow History Report</system:String>
+    <system:String x:Key="RptSectionLowActivity">3. Low Radioactive Activity Sources Report</system:String>
+    <system:String x:Key="RptSectionLowActivityAlerts">4. Low Activity Alerts</system:String>
+    <system:String x:Key="RptSheetLowActivity">Low Activity Sources</system:String>
+    <system:String x:Key="RptColFullName">Full Name</system:String>
+    <system:String x:Key="RptColUsername">Username</system:String>
+    <system:String x:Key="RptColRoleExcel">Role / Permission</system:String>
+    <system:String x:Key="RptColRolePdf">Role</system:String>
+    <system:String x:Key="RptColEmail">Email</system:String>
+    <system:String x:Key="RptColLockStatus">Lock Status</system:String>
+    <system:String x:Key="RptColLastLogin">Last Login</system:String>
+    <system:String x:Key="RptSheetUsers">Users &amp; Staff</system:String>
+    <system:String x:Key="RptTitleUsersPdf">Sources System — Staff &amp; Users Report</system:String>
+    <system:String x:Key="RptColUser">User</system:String>
+    <system:String x:Key="RptColOperationTypeExcel">Operation Type</system:String>
+    <system:String x:Key="RptColOperationTypePdf">Operation</system:String>
+    <system:String x:Key="RptColAffectedTableExcel">Affected Table</system:String>
+    <system:String x:Key="RptColAffectedTablePdf">Table</system:String>
+    <system:String x:Key="RptColDetails">Details</system:String>
+    <system:String x:Key="RptColDateTime">Date &amp; Time</system:String>
+    <system:String x:Key="RptSheetAuditLogs">Audit &amp; Activity Log</system:String>
+    <system:String x:Key="RptTitleAuditLogsPdf">Sources System — Audit &amp; Activity Log Report</system:String>
+    <system:String x:Key="RptSheetLeakTestsDefault">Leak Tests</system:String>
+    <system:String x:Key="RptTitlePrefixSystem" xml:space="preserve">Sources System — </system:String>
+    <system:String x:Key="RptTitleLeakTestsExcelDefault">Periodic Leak Test Report</system:String>
+    <system:String x:Key="RptLabelExtractionReportDate">Report Extraction Date:</system:String>
+    <system:String x:Key="RptColSourceCodeAlt">Source Code</system:String>
+    <system:String x:Key="RptColIsotopeRadioactive">Radioactive Isotope</system:String>
+    <system:String x:Key="RptColTestDate">Test Date</system:String>
+    <system:String x:Key="RptColNextDue">Next Due Date</system:String>
+    <system:String x:Key="RptColResult">Result</system:String>
+    <system:String x:Key="RptColMeasuredActivityExcel">Measured Activity (Bq)</system:String>
+    <system:String x:Key="RptColInspectorExcel">Inspector / Performed By</system:String>
+    <system:String x:Key="RptColCertificateNumber">Certificate Number</system:String>
+    <system:String x:Key="RptColNotes">Notes</system:String>
+    <system:String x:Key="RptTitleLeakTestsPdfDefault">Periodic Leak Test Report (Leak/Wipe Tests)</system:String>
+    <system:String x:Key="RptColMeasuredActivityPdf">Activity (Bq)</system:String>
+    <system:String x:Key="RptColInspectorPdf">Inspector / Examiner</system:String>
+    <system:String x:Key="RptSheetFailedLeakTestsDefault">Failed Tests</system:String>
+    <system:String x:Key="RptTitleFailedLeakTestsSheetDefault">Sources That Failed Leak Test</system:String>
+    <system:String x:Key="RptTitleFailedLeakTestsDefault">Report of Sources That Failed Leak Test</system:String>
+    <system:String x:Key="RptLabelExportDate">Export Date:</system:String>
+    <system:String x:Key="RptColFailedTestDate">Failed Test Date</system:String>
+    <system:String x:Key="RptColSourceStatus">Source Status</system:String>
+    <system:String x:Key="RptColTestNotes">Test Notes</system:String>
+    <system:String x:Key="RptTitleNeutronExcelDefault">Neutron Sources Inventory</system:String>
+    <system:String x:Key="RptSheetNeutronDefault">Neutron Sources</system:String>
+    <system:String x:Key="RptColReferenceType">Reference Type</system:String>
+    <system:String x:Key="RptColCalibratedEmissionRate">Calibrated Emission Rate (n/s)</system:String>
+    <system:String x:Key="RptColUncertaintyPercentExcel">Uncertainty %</system:String>
+    <system:String x:Key="RptColUncertaintyPdf">Uncertainty</system:String>
+    <system:String x:Key="RptTitleNeutronPdfDefault">Neutron Sources Inventory Report</system:String>
+    <system:String x:Key="RptTextNoNeutronSources">No neutron sources recorded</system:String>
+    <system:String x:Key="RptFooterPageLabel" xml:space="preserve">Page </system:String>
+    <system:String x:Key="RptFooterOfLabel" xml:space="preserve"> of </system:String>
 </ResourceDictionary>
 
 
