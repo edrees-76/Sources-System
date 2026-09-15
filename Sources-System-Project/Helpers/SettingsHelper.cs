@@ -158,6 +158,12 @@ public static class SettingsHelper
         set => Write("SavedUsername", value);
     }
 
+    public static bool FirstRunWizardCompleted
+    {
+        get => Read("FirstRunWizardCompleted") == "True";
+        set => Write("FirstRunWizardCompleted", value ? "True" : "False");
+    }
+
     public static void ClearAllUserSettingsForTesting()
     {
         if (File.Exists(SettingsFile))

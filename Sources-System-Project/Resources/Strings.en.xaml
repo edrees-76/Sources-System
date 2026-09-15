@@ -1766,6 +1766,16 @@
     <system:String x:Key="RptTextNoNeutronSources">No neutron sources recorded</system:String>
     <system:String x:Key="RptFooterPageLabel" xml:space="preserve">Page </system:String>
     <system:String x:Key="RptFooterOfLabel" xml:space="preserve"> of </system:String>
+
+    <!-- First-Run Setup Wizard -->
+    <system:String x:Key="FirstRunWizardTitle">First-Run Setup Wizard</system:String>
+    <system:String x:Key="FirstRunWizardWelcome">Welcome to Sources System. Let's set up a few basic settings before you begin.</system:String>
+    <system:String x:Key="FirstRunWizardBackupPathLabel">Backup Folder</system:String>
+    <system:String x:Key="FirstRunWizardAutoBackupLabel">Enable Automatic Backup</system:String>
+    <system:String x:Key="FirstRunWizardFinishButton">Finish</system:String>
+    <system:String x:Key="FirstRunWizardSkipButton">Skip</system:String>
+    <system:String x:Key="FirstRunWizardTrialNoticeTitle">Trial Mode</system:String>
+    <system:String x:Key="FirstRunWizardTrialNoticeMessage">You are currently using the trial version. Backup settings will need to be configured from the Settings screen after activating the system.</system:String>
 </ResourceDictionary>
 
 

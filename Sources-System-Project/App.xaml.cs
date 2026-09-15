@@ -91,7 +91,14 @@ public partial class App : Application
             LoggerService.LogInfo("تم بدء تشغيل منظومة مصادر بنجاح");
             base.OnStartup(e);
 
+            if (!SettingsHelper.FirstRunWizardCompleted)
+            {
+                var wizard = ServiceProvider.GetRequiredService<Sources.Views.FirstRunWizardWindow>();
+                wizard.ShowDialog();
+            }
+
             var splash = ServiceProvider.GetRequiredService<Sources.Views.SplashWindow>();
+            Application.Current.MainWindow = splash;
             splash.Show();
         }
         catch (Exception ex)
@@ -109,6 +116,7 @@ public partial class App : Application
 
         // Views
         services.AddTransient<Sources.Views.SplashWindow>();
+        services.AddTransient<Sources.Views.FirstRunWizardWindow>();
         services.AddTransient<Sources.Views.LoginWindow>();
         services.AddTransient<Sources.Views.ScreensaverWindow>();
         services.AddTransient<Sources.Views.LocationDetailsWindow>();
@@ -160,6 +168,7 @@ public partial class App : Application
         services.AddTransient<AlertsViewModel>();
         services.AddTransient<UsersViewModel>();
         services.AddTransient<SettingsViewModel>();
+        services.AddTransient<FirstRunWizardViewModel>();
         services.AddTransient<ActivityCalculatorViewModel>();
         services.AddTransient<IsotopeLibraryViewModel>();
         services.AddTransient<HelpViewModel>();
