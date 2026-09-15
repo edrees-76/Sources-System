@@ -13,12 +13,14 @@ public class LocationService : ILocationService
     private readonly IDbContextFactory<AppDbContext> _dbFactory;
     private readonly IAuditService _auditService;
     private readonly IUserService _userService;
+    private readonly ILicenseService _licenseService;
 
-    public LocationService(IDbContextFactory<AppDbContext> dbFactory, IAuditService auditService, IUserService userService)
+    public LocationService(IDbContextFactory<AppDbContext> dbFactory, IAuditService auditService, IUserService userService, ILicenseService licenseService)
     {
         _dbFactory = dbFactory;
         _auditService = auditService;
         _userService = userService;
+        _licenseService = licenseService;
     }
 
     public List<Location> GetAll()
@@ -58,6 +60,9 @@ public class LocationService : ILocationService
 
     public (bool Success, string Message) Create(Location item)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService);
+        if (!activation.Allowed) return (false, activation.Message);
+
         if (item == null) return (false, TranslationHelper.GetString("MsgErrInvalidLocationData") ?? "بيانات الموقع غير صالحة");
         if (string.IsNullOrWhiteSpace(item.LocationName)) return (false, TranslationHelper.GetString("MsgErrLocationNameRequired") ?? "اسم الموقع مطلوب");
 
@@ -89,6 +94,9 @@ public class LocationService : ILocationService
 
     public (bool Success, string Message) Update(Location item)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService);
+        if (!activation.Allowed) return (false, activation.Message);
+
         if (item == null) return (false, TranslationHelper.GetString("MsgErrInvalidLocationData") ?? "بيانات الموقع غير صالحة");
         if (string.IsNullOrWhiteSpace(item.LocationName)) return (false, TranslationHelper.GetString("MsgErrLocationNameRequired") ?? "اسم الموقع مطلوب");
 
@@ -134,6 +142,9 @@ public class LocationService : ILocationService
 
     public (bool Success, string Message) Delete(Guid id)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService);
+        if (!activation.Allowed) return (false, activation.Message);
+
         var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Locations");
         if (!guard.Allowed) return (false, guard.Message);
 
@@ -171,6 +182,9 @@ public class LocationService : ILocationService
 
     public (bool Success, string Message) Restore(Guid id)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService);
+        if (!activation.Allowed) return (false, activation.Message);
+
         var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Locations");
         if (!guard.Allowed) return (false, guard.Message);
 

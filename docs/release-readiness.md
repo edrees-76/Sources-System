@@ -1475,3 +1475,94 @@ worktree الفرع القائم — الوكيل الفرعي عزل نفسه �
 في أكثر من ملف هذه الجولة، فمن المرجَّح أن الرقم 322/44 مبالَغ فيه أيضاً بدرجة مشابهة؛ يُنصَح بإعادة
 تدقيق سريع (لا إعادة اكتشاف كاملة) لبقية الـ44 ملفاً قبل الجولة القادمة من هذه السلسلة، بدل الاعتماد
 على أرقام الجولة 150 كما هي.
+
+## 22. الجولة 157 — نظام التفعيل والنسخة التجريبية (ب9)
+
+### القرار المعماري
+
+عند أول تثبيت تعمل المنظومة في وضع تجريبي: كل الشاشات ظاهرة وقابلة للتصفح الكامل، لكن أي عملية كتابة
+بيانات (إضافة/تعديل/حذف) تُمنَع في طبقة الخدمة وتُعرِض رسالة توضّح أن النسخة تجريبية. شريط علوي ثابت
+(`DockPanel.Dock="Top"` في `MainWindow.xaml`، فوق شريط التنقل السفلي وقبل محتوى الشاشة الرئيسي مباشرة)
+يظهر عبر كل شاشات القشرة الرئيسية طالما `MainViewModel.IsTrialMode == true`، والنقر عليه يفتح
+`ActivationDialog` (بنفس القالب البصري لـ`PasswordPromptDialog` بعد الجولة 155). عند إدخال رقم تسلسلي
+صحيح: تُفعَّل المنظومة فوراً بلا إعادة تشغيل (`IsTrialMode = false` مباشرة)، وتُحفَظ علامة التفعيل
+محلياً عبر DPAPI (`ProtectedData`, `DataProtectionScope.LocalMachine`) في
+`%ProgramData%\Sources\license.dat` (مسار جديد أُضيف إلى `DatabasePaths.cs`:
+`LicenseDirectory`/`LicenseFilePath`/`EnsureLicenseDirectory()`، اتساقاً مع قاعدة "كل المسارات من
+`DatabasePaths`"). التحقق عبر تجزئة SHA-256 مقابل قائمة ثابتة صغيرة من التجزئات المُضمَّنة في الكود
+(`LicenseService._validHashes`) — لا رقم تسلسلي صريح في الكود المصدري، ولا ربط بمعرِّف جهاز.
+
+**تنبيه صريح لإدريس:** الرقم التسلسلي المُضمَّن حالياً في `LicenseService.cs` هو رقم عنصر نائب
+(placeholder) بقيمة `"SOURCES-2026-TRIAL-ACTIVATE"` فقط لأغراض هذه الجولة. **يجب استبدال/إضافة
+التجزئة الحقيقية في `_validHashes` قبل أي إصدار للإنتاج** — لا تُعامَل هذه القيمة كنهائية.
+
+### ثغرة تفويض قائمة أصلاً — اكتُشفت أثناء هذه الجولة، لم تُصلَح
+
+فحص الكود الفعلي (لا افتراض) أظهر أن `SourceService`، `NeutronSourceService`، `NeutronSourceTypeService`،
+`LocationService`، و`RadioisotopeService` كانت تستدعي `AuthorizationGuard.RequireEditor` فقط في دوال
+`Delete`/`Restore` — دوال `Create`/`Update` في هذه الخدمات الخمس لم تكن محمية بأي فحص تفويض إطلاقاً قبل
+هذه الجولة (ثغرة غير متعلقة بب9 لكنها تتقاطع معها). **بموجب النطاق الصارم لهذه الجولة، أُضيف فحص
+`RequireActivated` فقط لهذه الدوال — لم تُضَف حماية `RequireEditor` الناقصة**، لأن ذلك يتجاوز نطاق
+"فحص التفعيل" المُتَّفق عليه ويُعَدّ تغيير منطق أعمال إضافي. **هذا اكتشاف مفتوح يحتاج جولة منفصلة
+مستقبلية** لإغلاقه بشكل صريح (إضافة `RequireEditor` لدوال `Create`/`Update` في الخدمات الخمس).
+
+### قائمة الدوال الأربعين المحمية بـ`RequireActivated`
+
+12 خدمة، 40 دالة كتابة. القائمة الكاملة موثَّقة في تقرير التنفيذ المرفق بهذه الجولة. ترتيب الفحص حيث
+يتقاطع `RequireActivated` مع `RequireEditor`/`RequireAdmin` القائمين: **`RequireActivated` أولاً**
+دائماً (رسالة الوضع التجريبي تسبق رسالة "لا تملك صلاحية")، تحقيقاً لمعيار القبول رقم 1 في العقد.
+
+### قرارات النطاق (ماذا استُثني ولماذا)
+
+- **`BackupService.CreateBackup`**: مسموح في الوضع التجريبي — النسخة ستكون فارغة أصلاً، لا ضرر منها.
+- **`BackupService.RestoreBackup`**: محمي — يُدخِل بيانات فعلية من ملف خارجي، بالضبط ما يجب منعه.
+- **`SystemResetService.ResetSystemAsync`**: خارج النطاق كلياً — أداة إدارية استثنائية لها فحص خاص بها
+  (`RequiredResetPhrase`)، ولا معنى لتصفير قاعدة بيانات فارغة أصلاً.
+- **`AlertService.GenerateAlerts`**, **`BorrowService.CheckAndUpdateOverdue`**,
+  **`SourceService.UpdateAllCurrentActivities`/`UpdateCurrentActivity`**: استُثنيت لأنها إعادة حساب
+  آلية لقيم مُشتَقة تعمل تلقائياً عند فتح كل شاشة (Dashboard/Alerts/Borrow) — حظرها كان سيُظهر رسالة
+  رفض في كل تنقّل عادي بالوضع التجريبي، وهي ليست إدخال بيانات من المستخدم أصلاً.
+- **`IsotopeImportService`**: تُقرأ من مسار مطوِّر مُثبَّت (`D:\tmp\LibParser\isotopes_data.json`) غير
+  موجود على أي تثبيت فعلي — أداة تطوير غير قابلة للوصول في الإصدار الفعلي.
+- **`TestDataGeneratorService`**: مُقيَّدة بالكامل بـ`#if DEBUG`، غير موجودة في بناء `Release`.
+- **`AuditService.Log`/`LogWithChanges`**: آثار جانبية داخلية تُستدعى بعد أن يكون فحص التفويض/الترخيص
+  الخاص بالمُستدعي قد نجح فعلاً (أو ضمن مسارات إعادة حساب آلية مُستثناة) — حظرها مباشرة كان سيُسبِّب
+  ازدواج فحص أو، أسوأ، فقدان سجل تدقيق بصمت لهذه الجولة نفسها.
+
+### مخاطر متبقية مُوثَّقة (لم تُصلَح، خارج نطاق هذه الجولة)
+
+- **`SystemSettingsService.ResetToDefaults`** يستدعي داخلياً `SaveSettings` (المحمية الآن). لم يُتحقَّق
+  من أن نتيجة `(false, message)` من `SaveSettings` تُعاد فعلياً للمُستدعي أم تُبتلَع بصمت — `ResetToDefaults`
+  دالة `void` أصلاً، فأي رفض من الحارس سيُصبح بصمت بحكم التوقيع، وهو سلوك قائم مسبقاً لا علاقة له بهذه
+  الجولة تحديداً.
+- **`AutoBackupService`** يستدعي `BackupService.CreateBackup()` (مسموح) ثم `SystemSettingsService.SaveSetting()`
+  (محمية الآن) لتسجيل وقت آخر نسخة احتياطية. في الوضع التجريبي سيُرفَض هذا الحفظ بصمت (لأن `SaveSetting`
+  دالة `void`)، فقد تتكرر عملية `CreateBackup` أكثر من المطلوب أثناء الفترة التجريبية. غير ضار (قاعدة
+  بيانات فارغة) لكن يستحق الرصد.
+- عدة دوال `void` (`AlertService.MarkAsRead`/`DismissAlert`/`MarkAllAsRead`،
+  `SystemSettingsService.SaveSetting`/`SaveSettings`) لا تملك قناة إعادة رسالة، فالرفض في الوضع التجريبي
+  صامت من منظور المُستدعي المباشر (لا استثناء، لا رسالة) — الواجهة لا تُظهر تنبيهاً منفصلاً لهذه الحالات
+  تحديداً، بعكس دوال `(bool, string)`.
+
+### الاختبارات
+
+جميع اختبارات الخدمات الاثنتي عشرة المُعدَّلة زُوِّدت بـ`FakeLicenseService` (`IsActivated = true`
+افتراضياً، جديد ضمن `Sources.Tests/Fakes/`) للحفاظ على سلوكها القائم بلا تغيير. أُضيف `LicenseServiceTests.cs`
+(تفعيل رقم صحيح/خاطئ، حالة الغياب الافتراضية، استمرارية الحفظ عبر DPAPI)، `LicenseGuardRejectionTests.cs`
+(تأكيد الرفض الفعلي لكل خدمة من الاثنتي عشرة عند `IsActivated == false`)، و`MainViewModelActivationTests.cs`
+(خاصية `IsTrialMode` وتنفيذ `OpenActivationCommand` عبر خطاف اختباري جديد
+`MainViewModel.TestActivationSerialOverride` بنفس نمط `PasswordPromptDialog.CustomPromptResult`).
+
+**النتائج:** Release 1220/1220 نجاح (0 فشل/0 تجاوز). بناء `Release`: صفر أخطاء، نفس خمس تحذيرات
+`CS8604` سابقة الوجود بالضبط (`LoginWindow.xaml.cs` سطرا 104 و199 عبر مساري csproj،
+و`ViewInstantiationTests.cs` سطر 218) — لا تحذيرات جديدة من هذه الجولة. لا ترحيل EF ولا تغيير
+مخطط قاعدة بيانات في هذه الجولة.
+
+### انحراف تنفيذي مُسجَّل
+
+نفس نمط الجولات 128/143/151/156: تعذَّر تشغيل `round-implementer` داخل نفس worktree الفرع القائم
+(`round-157-license-trial-mode` محجوز بواسطة worktree آخر) — الوكيل عُزل تلقائياً في worktree منفصل
+(`agent-<id>`, فرع محلي `round157-impl` مبنيّ فوق نفس Commit الأساس) ونُفِّذ العمل بالكامل من هناك، مع
+دفع الفرع المحلي إلى الفرع البعيد الصحيح `round-157-license-trial-mode` عبر مسار مرجعي صريح
+(`git push origin round157-impl:round-157-license-trial-mode`) بدل الاعتماد على تطابق أسماء الفروع
+محلياً وبعيداً.

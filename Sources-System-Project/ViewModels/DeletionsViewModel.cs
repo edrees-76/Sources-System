@@ -59,17 +59,19 @@ namespace Sources.ViewModels
             ILocationService? locationService = null,
             IUserService? userService = null,
             IRadioisotopeService? radioisotopeService = null,
-            INeutronSourceService? neutronSourceService = null)
+            INeutronSourceService? neutronSourceService = null,
+            ILicenseService? licenseService = null)
         {
             _dbFactory = dbFactory;
             var defaultUserSvc = userService ?? new UserService(dbFactory);
             var defaultAuditSvc = new AuditService(dbFactory, defaultUserSvc);
+            var defaultLicenseSvc = licenseService ?? new LicenseService();
 
             _userService = defaultUserSvc;
-            _sourceService = sourceService ?? new SourceService(dbFactory, new DecayCalculationService(), defaultAuditSvc, defaultUserSvc);
-            _locationService = locationService ?? new LocationService(dbFactory, defaultAuditSvc, defaultUserSvc);
-            _radioisotopeService = radioisotopeService ?? new RadioisotopeService(dbFactory, defaultAuditSvc, defaultUserSvc);
-            _neutronSourceService = neutronSourceService ?? new NeutronSourceService(dbFactory, defaultAuditSvc, defaultUserSvc);
+            _sourceService = sourceService ?? new SourceService(dbFactory, new DecayCalculationService(), defaultAuditSvc, defaultUserSvc, defaultLicenseSvc);
+            _locationService = locationService ?? new LocationService(dbFactory, defaultAuditSvc, defaultUserSvc, defaultLicenseSvc);
+            _radioisotopeService = radioisotopeService ?? new RadioisotopeService(dbFactory, defaultAuditSvc, defaultUserSvc, defaultLicenseSvc);
+            _neutronSourceService = neutronSourceService ?? new NeutronSourceService(dbFactory, defaultAuditSvc, defaultUserSvc, defaultLicenseSvc);
 
             _ = LoadDeletedItemsAsync();
         }

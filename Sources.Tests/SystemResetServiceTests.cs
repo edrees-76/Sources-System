@@ -8,6 +8,7 @@ using Moq;
 using Sources.Data;
 using Sources.Models;
 using Sources.Services;
+using Sources.Tests.Fakes;
 using Sources.Tests.Fixtures;
 using Sources.Tests.Helpers;
 using Xunit;
@@ -21,6 +22,7 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
     private readonly Mock<ISystemSettingsService> _mockSettingsService;
     private readonly Mock<ISourceCertificateService> _mockCertificateService;
     private readonly SystemResetService _sut;
+    private readonly FakeLicenseService _fakeLicenseService = new();
     private string? _tempCertFolder;
 
     public SystemResetServiceTests(SqliteInMemoryFixture fixture)
@@ -290,7 +292,7 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
         File.WriteAllText(file2, "Certificate Data 2");
 
         var auditMock = new Mock<IAuditService>();
-        var realCertService = new SourceCertificateService(_fixture.ContextFactory, auditMock.Object, _tempCertFolder);
+        var realCertService = new SourceCertificateService(_fixture.ContextFactory, auditMock.Object, _fakeLicenseService, _tempCertFolder);
 
         var sutWithRealCertService = new SystemResetService(
             _fixture.ContextFactory,
@@ -469,7 +471,7 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
                 .Returns((false, "Simulated backup disk full", null));
 
             var auditMock = new Mock<IAuditService>();
-            var realCertService = new SourceCertificateService(_fixture.ContextFactory, auditMock.Object, tempFolder);
+            var realCertService = new SourceCertificateService(_fixture.ContextFactory, auditMock.Object, _fakeLicenseService, tempFolder);
 
             var sut = new SystemResetService(
                 _fixture.ContextFactory,

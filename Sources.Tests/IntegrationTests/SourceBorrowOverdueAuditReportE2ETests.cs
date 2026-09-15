@@ -28,6 +28,7 @@ public class SourceBorrowOverdueAuditReportE2ETests : IClassFixture<SqliteInMemo
     private readonly SourceService _sourceService;
     private readonly BorrowService _borrowService;
     private readonly ReportingService _reportingService;
+    private readonly FakeLicenseService _fakeLicenseService = new();
 
     private Radioisotope _testIsotope = null!;
     private ActivityUnit _testUnit = null!;
@@ -65,8 +66,8 @@ public class SourceBorrowOverdueAuditReportE2ETests : IClassFixture<SqliteInMemo
         // استخدام خدمة التدقيق الحقيقية المتصلة بقاعدة البيانات
         _auditService = new AuditService(_fixture.ContextFactory, _fakeUserService);
         _decayService = new DecayCalculationService();
-        _sourceService = new SourceService(_fixture.ContextFactory, _decayService, _auditService, _fakeUserService);
-        _borrowService = new BorrowService(_fixture.ContextFactory, _auditService, _fakeUserService);
+        _sourceService = new SourceService(_fixture.ContextFactory, _decayService, _auditService, _fakeUserService, _fakeLicenseService);
+        _borrowService = new BorrowService(_fixture.ContextFactory, _auditService, _fakeUserService, _fakeLicenseService);
         _reportingService = new ReportingService();
 
         SeedMasterData(role);

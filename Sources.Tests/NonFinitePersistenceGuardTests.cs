@@ -9,6 +9,7 @@ using Sources.Data;
 using Sources.Helpers;
 using Sources.Models;
 using Sources.Services;
+using Sources.Tests.Fakes;
 using Sources.Tests.Fixtures;
 using Sources.ViewModels;
 using Xunit;
@@ -23,6 +24,7 @@ public class NonFinitePersistenceGuardTests : IDisposable
     private readonly Mock<IUserService> _mockUser;
     private readonly Mock<IDecayCalculationService> _mockDecay;
     private readonly Mock<ISystemSettingsService> _mockSettings;
+    private readonly FakeLicenseService _fakeLicenseService = new();
 
     public NonFinitePersistenceGuardTests()
     {
@@ -49,7 +51,7 @@ public class NonFinitePersistenceGuardTests : IDisposable
     [Fact]
     public void RadioisotopeService_Create_WithNaNFields_FailsAndDoesNotPersist()
     {
-        var service = new RadioisotopeService(_fixture.ContextFactory, _mockAudit.Object, _mockUser.Object);
+        var service = new RadioisotopeService(_fixture.ContextFactory, _mockAudit.Object, _mockUser.Object, _fakeLicenseService);
 
         // HalfLife = NaN
         var iso1 = new Radioisotope { Name = "Test1", Symbol = "T-1", HalfLife = double.NaN, Energy = 100 };
@@ -83,7 +85,7 @@ public class NonFinitePersistenceGuardTests : IDisposable
     [Fact]
     public void RadioisotopeService_Create_WithInfinity_Fails()
     {
-        var service = new RadioisotopeService(_fixture.ContextFactory, _mockAudit.Object, _mockUser.Object);
+        var service = new RadioisotopeService(_fixture.ContextFactory, _mockAudit.Object, _mockUser.Object, _fakeLicenseService);
 
         var iso = new Radioisotope { Name = "TestInf", Symbol = "T-Inf", HalfLife = double.PositiveInfinity, Energy = 100 };
         var res = service.Create(iso);
@@ -96,7 +98,7 @@ public class NonFinitePersistenceGuardTests : IDisposable
     [Fact]
     public void RadioisotopeService_Create_WithValidData_Succeeds()
     {
-        var service = new RadioisotopeService(_fixture.ContextFactory, _mockAudit.Object, _mockUser.Object);
+        var service = new RadioisotopeService(_fixture.ContextFactory, _mockAudit.Object, _mockUser.Object, _fakeLicenseService);
 
         var iso = new Radioisotope { Name = "Cobalt-60", Symbol = "Co-60", HalfLife = 5.27, Energy = 1173.2, GammaConstant = 0.305 };
         var res = service.Create(iso);
@@ -109,7 +111,7 @@ public class NonFinitePersistenceGuardTests : IDisposable
     [Fact]
     public void RadioisotopeService_Update_WithNaN_FailsAndPreservesOriginalValue()
     {
-        var service = new RadioisotopeService(_fixture.ContextFactory, _mockAudit.Object, _mockUser.Object);
+        var service = new RadioisotopeService(_fixture.ContextFactory, _mockAudit.Object, _mockUser.Object, _fakeLicenseService);
         var id = Guid.NewGuid();
 
         using (var db = _fixture.CreateContext())
@@ -161,7 +163,7 @@ public class NonFinitePersistenceGuardTests : IDisposable
             db.SaveChanges();
         }
 
-        var service = new NeutronSourceService(_fixture.ContextFactory, _mockAudit.Object, _mockUser.Object);
+        var service = new NeutronSourceService(_fixture.ContextFactory, _mockAudit.Object, _mockUser.Object, _fakeLicenseService);
 
         // EmissionRate = NaN
         var s1 = new NeutronSource { SourceCode = "NS-1", NeutronSourceTypeId = typeId, CalibratedEmissionRate = double.NaN };
@@ -204,7 +206,7 @@ public class NonFinitePersistenceGuardTests : IDisposable
             db.SaveChanges();
         }
 
-        var service = new NeutronSourceService(_fixture.ContextFactory, _mockAudit.Object, _mockUser.Object);
+        var service = new NeutronSourceService(_fixture.ContextFactory, _mockAudit.Object, _mockUser.Object, _fakeLicenseService);
 
         var updateItem = new NeutronSource
         {
@@ -242,7 +244,7 @@ public class NonFinitePersistenceGuardTests : IDisposable
             db.SaveChanges();
         }
 
-        var service = new SourceService(_fixture.ContextFactory, _mockDecay.Object, _mockAudit.Object, _mockUser.Object);
+        var service = new SourceService(_fixture.ContextFactory, _mockDecay.Object, _mockAudit.Object, _mockUser.Object, _fakeLicenseService);
 
         // Single source with InitialActivity = NaN
         var src1 = new Source
@@ -303,7 +305,7 @@ public class NonFinitePersistenceGuardTests : IDisposable
             db.SaveChanges();
         }
 
-        var service = new SourceService(_fixture.ContextFactory, _mockDecay.Object, _mockAudit.Object, _mockUser.Object);
+        var service = new SourceService(_fixture.ContextFactory, _mockDecay.Object, _mockAudit.Object, _mockUser.Object, _fakeLicenseService);
 
         var updateItem = new Source
         {
@@ -352,7 +354,7 @@ public class NonFinitePersistenceGuardTests : IDisposable
             db.SaveChanges();
         }
 
-        var service = new LeakTestService(_fixture.ContextFactory, _mockAudit.Object, _mockUser.Object, _mockSettings.Object);
+        var service = new LeakTestService(_fixture.ContextFactory, _mockAudit.Object, _mockUser.Object, _mockSettings.Object, _fakeLicenseService);
 
         var rec1 = new LeakTestRecord { SourceId = srcId, MeasuredActivityBq = double.NaN };
         var res1 = service.AddRecord(rec1);
@@ -391,7 +393,7 @@ public class NonFinitePersistenceGuardTests : IDisposable
             db.SaveChanges();
         }
 
-        var service = new LeakTestService(_fixture.ContextFactory, _mockAudit.Object, _mockUser.Object, _mockSettings.Object);
+        var service = new LeakTestService(_fixture.ContextFactory, _mockAudit.Object, _mockUser.Object, _mockSettings.Object, _fakeLicenseService);
 
         var updateRec = new LeakTestRecord { Id = recId, SourceId = srcId, MeasuredActivityBq = double.NaN };
         var res = service.UpdateRecord(updateRec);
@@ -412,7 +414,7 @@ public class NonFinitePersistenceGuardTests : IDisposable
     [Fact]
     public void NeutronSourceTypeService_Create_WithNaNOrInfinity_FailsAndDoesNotPersist()
     {
-        var service = new NeutronSourceTypeService(_fixture.ContextFactory, _mockAudit.Object, _mockUser.Object);
+        var service = new NeutronSourceTypeService(_fixture.ContextFactory, _mockAudit.Object, _mockUser.Object, _fakeLicenseService);
 
         // HalfLife = NaN
         var t1 = new NeutronSourceType { Code = "TYPE-1", NameEn = "Type 1", HalfLife = double.NaN };
@@ -442,7 +444,7 @@ public class NonFinitePersistenceGuardTests : IDisposable
             db.SaveChanges();
         }
 
-        var service = new NeutronSourceTypeService(_fixture.ContextFactory, _mockAudit.Object, _mockUser.Object);
+        var service = new NeutronSourceTypeService(_fixture.ContextFactory, _mockAudit.Object, _mockUser.Object, _fakeLicenseService);
 
         var updateItem = new NeutronSourceType
         {

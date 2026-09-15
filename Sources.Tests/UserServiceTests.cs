@@ -7,6 +7,7 @@ using Sources.Data;
 using Sources.Helpers;
 using Sources.Models;
 using Sources.Services;
+using Sources.Tests.Fakes;
 using Sources.Tests.Fixtures;
 using Xunit;
 
@@ -15,6 +16,7 @@ namespace Sources.Tests;
 public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposable
 {
     private readonly SqliteInMemoryFixture _fixture;
+    private readonly FakeLicenseService _fakeLicenseService = new();
     private readonly UserService _userService;
 
     private Role _adminRole = null!;
@@ -25,7 +27,7 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
         _fixture = fixture;
         _fixture.ResetDatabase();
 
-        _userService = new UserService(_fixture.ContextFactory);
+        _userService = new UserService(_fixture.ContextFactory, licenseService: _fakeLicenseService);
 
         SeedRoles();
     }
@@ -432,7 +434,7 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     {
         // Arrange
         var mockAuditService = new Moq.Mock<IAuditService>();
-        var userServiceWithAudit = new UserService(_fixture.ContextFactory, mockAuditService.Object);
+        var userServiceWithAudit = new UserService(_fixture.ContextFactory, mockAuditService.Object, _fakeLicenseService);
         LoginAsAdmin(userServiceWithAudit);
         var user = CreateTestUser(
             username: "audit_unlock_user",
@@ -507,7 +509,7 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     {
         // Arrange
         var mockAuditService = new Moq.Mock<IAuditService>();
-        var userServiceWithAudit = new UserService(_fixture.ContextFactory, mockAuditService.Object);
+        var userServiceWithAudit = new UserService(_fixture.ContextFactory, mockAuditService.Object, _fakeLicenseService);
         LoginAsAdmin(userServiceWithAudit);
         var user = CreateTestUser(username: "audit_reset_pw", password: "OldPassword123");
         string oldHash = user.PasswordHash;
@@ -604,7 +606,7 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     {
         // Arrange
         var mockAuditService = new Moq.Mock<IAuditService>();
-        var userServiceWithAudit = new UserService(_fixture.ContextFactory, mockAuditService.Object);
+        var userServiceWithAudit = new UserService(_fixture.ContextFactory, mockAuditService.Object, _fakeLicenseService);
         LoginAsAdmin(userServiceWithAudit);
         var user = CreateTestUser(username: "audit_freeze_user", password: "Pass", isActive: true);
 
@@ -862,7 +864,7 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     {
         // Arrange
         var mockAuditService = new Moq.Mock<IAuditService>();
-        var userServiceWithAudit = new UserService(_fixture.ContextFactory, mockAuditService.Object);
+        var userServiceWithAudit = new UserService(_fixture.ContextFactory, mockAuditService.Object, _fakeLicenseService);
         LoginAsAdmin(userServiceWithAudit);
         var user = CreateTestUser(username: "audit_user_update", password: "Password123", permissions: "Sources");
 

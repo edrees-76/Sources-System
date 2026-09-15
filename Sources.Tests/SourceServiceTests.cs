@@ -20,6 +20,7 @@ public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
     private readonly FakeAuditService _auditService;
     private readonly FakeUserService _userService;
     private readonly SourceService _sourceService;
+    private readonly FakeLicenseService _fakeLicenseService = new();
 
     private Radioisotope _isoCs137 = null!;
     private Radioisotope _isoCo60 = null!;
@@ -47,7 +48,8 @@ public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             _fixture.ContextFactory,
             _decayService,
             _auditService,
-            _userService);
+            _userService,
+            _fakeLicenseService);
     }
 
     public void Dispose()

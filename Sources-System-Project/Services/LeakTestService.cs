@@ -15,17 +15,20 @@ public class LeakTestService : ILeakTestService
     private readonly IAuditService _auditService;
     private readonly IUserService _userService;
     private readonly ISystemSettingsService _settingsService;
+    private readonly ILicenseService _licenseService;
 
     public LeakTestService(
         IDbContextFactory<AppDbContext> dbFactory,
         IAuditService auditService,
         IUserService userService,
-        ISystemSettingsService settingsService)
+        ISystemSettingsService settingsService,
+        ILicenseService licenseService)
     {
         _dbFactory = dbFactory;
         _auditService = auditService;
         _userService = userService;
         _settingsService = settingsService;
+        _licenseService = licenseService;
     }
 
     public DateTime CalculateNextDueDate(DateTime testDate, int? customIntervalMonths = null)
@@ -146,6 +149,9 @@ public class LeakTestService : ILeakTestService
 
     public (bool Success, string Message, LeakTestRecord? Record) AddRecord(LeakTestRecord record)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService);
+        if (!activation.Allowed) return (false, activation.Message, null);
+
         if (record == null) return (false, "سجل الفحص غير صالح", null);
         if (record.SourceId == Guid.Empty) return (false, "يجب تحديد المصدر المشع", null);
         if (record.MeasuredActivityBq.HasValue && !double.IsFinite(record.MeasuredActivityBq.Value))
@@ -179,6 +185,9 @@ public class LeakTestService : ILeakTestService
 
     public (bool Success, string Message) UpdateRecord(LeakTestRecord record)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService);
+        if (!activation.Allowed) return (false, activation.Message);
+
         if (record == null) return (false, "سجل الفحص غير صالح");
         if (record.MeasuredActivityBq.HasValue && !double.IsFinite(record.MeasuredActivityBq.Value))
             return (false, TranslationHelper.GetString("MsgErrInvalidMeasuredActivityFinite") ?? "قيمة النشاط المقاس غير صالحة (يجب أن تكون رقماً منتهياً)");
@@ -236,6 +245,9 @@ public class LeakTestService : ILeakTestService
 
     public (bool Success, string Message) DeleteRecord(Guid id)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService);
+        if (!activation.Allowed) return (false, activation.Message);
+
         using var db = _dbFactory.CreateDbContext();
         var record = db.LeakTestRecords.Include(r => r.Source).FirstOrDefault(r => r.Id == id);
         if (record == null) return (false, "سجل الفحص غير موجود");

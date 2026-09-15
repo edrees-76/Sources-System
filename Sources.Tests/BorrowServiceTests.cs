@@ -18,6 +18,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
     private readonly SqliteInMemoryFixture _fixture;
     private readonly FakeAuditService _fakeAuditService;
     private readonly FakeUserService _fakeUserService;
+    private readonly FakeLicenseService _fakeLicenseService = new();
     private readonly BorrowService _sut;
 
     private Radioisotope _testIsotope = null!;
@@ -32,7 +33,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
 
         _fakeAuditService = new FakeAuditService();
         _fakeUserService = new FakeUserService();
-        _sut = new BorrowService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService);
+        _sut = new BorrowService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService, _fakeLicenseService);
 
         SeedCommonData();
     }
@@ -491,7 +492,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
     {
         // Arrange: Create a broken context factory that throws an exception
         var throwingFactory = new ThrowingDbContextFactory();
-        var serviceWithThrowingFactory = new BorrowService(throwingFactory, _fakeAuditService, _fakeUserService);
+        var serviceWithThrowingFactory = new BorrowService(throwingFactory, _fakeAuditService, _fakeUserService, _fakeLicenseService);
 
         // Act
         serviceWithThrowingFactory.CheckAndUpdateOverdue();
@@ -806,10 +807,10 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         db.SaveChanges();
 
         // Create a fake settings service configured with threshold = 5 days
-        var settingsService = new SystemSettingsService(_fixture.ContextFactory);
+        var settingsService = new SystemSettingsService(_fixture.ContextFactory, _fakeLicenseService);
         settingsService.SaveSetting("DueSoonDaysThreshold", "5");
 
-        var serviceWithSettings = new BorrowService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService, settingsService);
+        var serviceWithSettings = new BorrowService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService, _fakeLicenseService, settingsService);
 
         // Act: Threshold = 5 -> only reqIn3Days is within 5 days
         var count5Days = serviceWithSettings.GetDueSoonCount();

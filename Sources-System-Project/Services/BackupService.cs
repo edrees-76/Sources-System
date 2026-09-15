@@ -16,11 +16,13 @@ public class BackupService : IBackupService
     private readonly string _dbPath;
     private readonly string _backupDir;
     private readonly string _certificatesFolder;
+    private readonly ILicenseService? _licenseService;
 
-    public BackupService() : this(null, null, null) { }
+    public BackupService() : this(null, null, null, null) { }
 
-    public BackupService(string? customDbPath = null, string? customBackupDir = null, string? customCertificatesFolder = null)
+    public BackupService(string? customDbPath = null, string? customBackupDir = null, string? customCertificatesFolder = null, ILicenseService? licenseService = null)
     {
+        _licenseService = licenseService;
         _dbPath = !string.IsNullOrEmpty(customDbPath) ? customDbPath : DatabasePaths.DbPath;
         _backupDir = !string.IsNullOrEmpty(customBackupDir) ? customBackupDir : DatabasePaths.BackupsDirectory;
         _certificatesFolder = !string.IsNullOrEmpty(customCertificatesFolder)
@@ -134,6 +136,9 @@ public class BackupService : IBackupService
     /// <summary>استعادة من نسخة احتياطية (يدعم ZIP الجديد و DB القديم)</summary>
     public (bool Success, string Message) RestoreBackup(string backupFilePath)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService!);
+        if (!activation.Allowed) return (false, activation.Message);
+
         string? safetyCertDir = null;
         try
         {

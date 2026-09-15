@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Sources.Data;
 using Sources.Models;
 using Sources.Services;
+using Sources.Tests.Fakes;
 using Sources.Tests.Fixtures;
 using Xunit;
 
@@ -17,12 +18,13 @@ namespace Sources.Tests;
 public class SystemSettingsServiceTests : IDisposable
 {
     private readonly SqliteInMemoryFixture _fixture;
+    private readonly FakeLicenseService _fakeLicenseService = new();
     private readonly SystemSettingsService _sut;
 
     public SystemSettingsServiceTests()
     {
         _fixture = new SqliteInMemoryFixture();
-        _sut = new SystemSettingsService(_fixture.ContextFactory);
+        _sut = new SystemSettingsService(_fixture.ContextFactory, _fakeLicenseService);
 
         // إبطال وتصفير الكاش الثابت (Static Cache) وقاعدة البيانات قبل كل اختبار
         // استدعاء SaveSetting يضع _cache = null داخلياً، ثم ResetDatabase ينظف الجداول

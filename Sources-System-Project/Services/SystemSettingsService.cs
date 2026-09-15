@@ -17,9 +17,12 @@ public class SystemSettingsService : ISystemSettingsService
 
     public IReadOnlyCollection<string> CorruptedKeys => _corruptedKeys.Keys.ToList().AsReadOnly();
 
-    public SystemSettingsService(IDbContextFactory<AppDbContext> dbFactory)
+    private readonly ILicenseService _licenseService;
+
+    public SystemSettingsService(IDbContextFactory<AppDbContext> dbFactory, ILicenseService licenseService)
     {
         _dbFactory = dbFactory;
+        _licenseService = licenseService;
     }
 
     public Dictionary<string, string> GetAllSettings()
@@ -64,6 +67,8 @@ public class SystemSettingsService : ISystemSettingsService
 
     public void SaveSetting(string key, string value)
     {
+        if (!AuthorizationGuard.RequireActivated(_licenseService).Allowed) return;
+
         using var db = _dbFactory.CreateDbContext();
         var setting = db.AppSettings.Find(key);
         if (setting == null)
@@ -81,6 +86,8 @@ public class SystemSettingsService : ISystemSettingsService
 
     public void SaveSettings(Dictionary<string, string> settings)
     {
+        if (!AuthorizationGuard.RequireActivated(_licenseService).Allowed) return;
+
         using var db = _dbFactory.CreateDbContext();
         foreach (var kvp in settings)
         {

@@ -1205,6 +1205,16 @@
     <system:String x:Key="MsgErrReadOnlyUser">لا تملك صلاحية التعديل. حسابك للاطّلاع فقط.</system:String>
     <system:String x:Key="MsgErrNoSectionPermission">لا تملك صلاحية الوصول إلى هذا القسم.</system:String>
     <system:String x:Key="MsgErrOperationAdminOnly">هذه العملية مقصورة على مدير النظام.</system:String>
+    <system:String x:Key="MsgErrTrialModeWriteBlocked">النسخة تجريبية: لا يمكن إضافة أو تعديل أو حذف البيانات قبل التفعيل.</system:String>
+    <system:String x:Key="MsgErrLicenseSerialEmpty">الرجاء إدخال الرقم التسلسلي.</system:String>
+    <system:String x:Key="MsgErrLicenseSerialInvalid">الرقم التسلسلي غير صحيح. الرجاء التأكد منه والمحاولة مرة أخرى.</system:String>
+    <system:String x:Key="MsgErrLicensePersistFailed">تم التحقق من الرقم بنجاح لكن تعذّر حفظ حالة التفعيل محلياً. حاول مرة أخرى.</system:String>
+    <system:String x:Key="MsgSuccessLicenseActivated">تم تفعيل المنظومة بنجاح.</system:String>
+    <system:String x:Key="TextTrialModeBanner">النسخة تجريبية — كل الإضافة والتعديل والحذف ممنوعة حتى التفعيل. اضغط هنا للتفعيل.</system:String>
+    <system:String x:Key="TitleActivationDialog">تفعيل المنظومة</system:String>
+    <system:String x:Key="PromptActivationSerial">أدخل الرقم التسلسلي للتفعيل</system:String>
+    <system:String x:Key="PlaceholderActivationSerial">مثال: SRC-XXXX-XXXX</system:String>
+    <system:String x:Key="BtnActivate">تفعيل</system:String>
     <system:String x:Key="HeaderEntityType">نوع الكيان</system:String>
     <system:String x:Key="HeaderIdentifier">الاسم / المعرّف</system:String>
     <system:String x:Key="HeaderDeletedBy">حُذف بواسطة</system:String>

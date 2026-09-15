@@ -12,15 +12,18 @@ public class SourceCertificateService : ISourceCertificateService
 {
     private readonly IDbContextFactory<AppDbContext> _dbFactory;
     private readonly IAuditService _auditService;
+    private readonly ILicenseService _licenseService;
     private readonly string _certificatesFolder;
 
     public SourceCertificateService(
         IDbContextFactory<AppDbContext> dbFactory,
         IAuditService auditService,
+        ILicenseService licenseService,
         string? customCertificatesFolder = null)
     {
         _dbFactory = dbFactory;
         _auditService = auditService;
+        _licenseService = licenseService;
         _certificatesFolder = !string.IsNullOrEmpty(customCertificatesFolder)
             ? customCertificatesFolder
             : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Certificates");
@@ -54,6 +57,9 @@ public class SourceCertificateService : ISourceCertificateService
 
     public SourceCertificate AttachCertificate(Guid sourceId, string sourceType, string filePath, string attachedBy)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService);
+        if (!activation.Allowed) throw new InvalidOperationException(activation.Message);
+
         if (!File.Exists(filePath))
             throw new FileNotFoundException("الملف المطلوب إرفاقه غير موجود", filePath);
 
@@ -89,6 +95,9 @@ public class SourceCertificateService : ISourceCertificateService
 
     public bool DeleteCertificate(Guid certificateId, string deletedBy)
     {
+        var activation = AuthorizationGuard.RequireActivated(_licenseService);
+        if (!activation.Allowed) return false;
+
         using var db = _dbFactory.CreateDbContext();
         var cert = db.SourceCertificates.FirstOrDefault(c => c.Id == certificateId);
         if (cert == null)

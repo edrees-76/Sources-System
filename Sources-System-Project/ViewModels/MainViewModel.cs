@@ -17,6 +17,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly IUserService _userService;
     private readonly IAlertService _alertService;
     private readonly ISystemSettingsService _settingsService;
+    private readonly ILicenseService _licenseService;
 
     [ObservableProperty] private ObservableObject? _currentView;
     [ObservableProperty] private string _currentViewName = "Dashboard";
@@ -25,19 +26,26 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string _currentUserRole = string.Empty;
     [ObservableProperty] private bool _isDarkMode;
     [ObservableProperty] private bool _isSidebarCollapsed;
-    
+    [ObservableProperty] private bool _isTrialMode;
+
     // ─── التنبيهات ───
     [ObservableProperty] private System.Collections.ObjectModel.ObservableCollection<Sources.Models.AlertNotification> _notifications = new();
     [ObservableProperty] private int _unreadNotificationsCount;
     private System.Windows.Threading.DispatcherTimer? _alertTimer;
 
-    public MainViewModel(IUserService userService, IAlertService alertService, ISystemSettingsService settingsService)
+    /// <summary>خاصية اختبارية: عند تعيينها في وضع الاختبار (DialogHelper.IsTestMode)، يُستعمل
+    /// هذا الرقم مباشرة كمُدخل للتفعيل بدل فتح ActivationDialog الفعلية.</summary>
+    public static string? TestActivationSerialOverride { get; set; }
+
+    public MainViewModel(IUserService userService, IAlertService alertService, ISystemSettingsService settingsService, ILicenseService licenseService)
     {
         _userService = userService;
         _alertService = alertService;
         _settingsService = settingsService;
+        _licenseService = licenseService;
         IsDarkMode = SettingsHelper.IsDarkMode;
-        
+        IsTrialMode = !_licenseService.IsActivated;
+
         // التسجيل لاستقبال رسائل تحديث المصادر وتحديث التنبيهات فورياً
         WeakReferenceMessenger.Default.Register<Sources.Messages.SourcesUpdatedMessage>(this, (r, m) =>
         {
@@ -256,6 +264,39 @@ public partial class MainViewModel : ObservableObject, IDisposable
                 LoggerService.LogError("MainViewModel: MarkAllNotificationsAsRead failed", ex);
             }
         });
+    }
+
+    [RelayCommand]
+    public void OpenActivation()
+    {
+        if (DialogHelper.IsTestMode)
+        {
+            if (!string.IsNullOrEmpty(TestActivationSerialOverride))
+            {
+                var (testSuccess, testMessage) = _licenseService.Activate(TestActivationSerialOverride);
+                if (testSuccess)
+                {
+                    IsTrialMode = false;
+                    DialogHelper.ShowInfo(testMessage, TranslationHelper.GetString("TitleActivationDialog") ?? "تفعيل المنظومة");
+                }
+            }
+            return;
+        }
+
+        var dialog = new Sources.Views.ActivationDialog(_licenseService);
+        if (Application.Current?.MainWindow != null)
+        {
+            dialog.Owner = Application.Current.MainWindow;
+        }
+
+        var result = dialog.ShowDialog();
+        if (result == true && dialog.Result)
+        {
+            IsTrialMode = false;
+            DialogHelper.ShowInfo(
+                dialog.SuccessMessage ?? TranslationHelper.GetString("MsgSuccessLicenseActivated") ?? "تم تفعيل المنظومة بنجاح.",
+                TranslationHelper.GetString("TitleActivationDialog") ?? "تفعيل المنظومة");
+        }
     }
 
     [RelayCommand]

@@ -6,6 +6,7 @@ using Moq;
 using Sources.Data;
 using Sources.Models;
 using Sources.Services;
+using Sources.Tests.Fakes;
 using Sources.Tests.Fixtures;
 using Sources.Tests.Helpers;
 using Xunit;
@@ -18,6 +19,7 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
     private readonly DecayCalculationService _decayService;
     private readonly ISystemSettingsService _settingsService;
     private readonly AlertService _alertService;
+    private readonly FakeLicenseService _fakeLicenseService = new();
 
     // كائنات مرجعية مشتركة
     private Radioisotope _isoCs137 = null!; // T½ = 30.08 years
@@ -32,12 +34,13 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
         _fixture.ResetDatabase();
 
         _decayService = new DecayCalculationService();
-        _settingsService = new SystemSettingsService(_fixture.ContextFactory);
+        _settingsService = new SystemSettingsService(_fixture.ContextFactory, _fakeLicenseService);
 
         _alertService = new AlertService(
             _fixture.ContextFactory,
             _decayService,
-            _settingsService);
+            _settingsService,
+            _fakeLicenseService);
 
         SeedLookupData();
     }

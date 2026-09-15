@@ -19,6 +19,7 @@ public class NeutronSourceIsolationTests : IClassFixture<SqliteInMemoryFixture>,
     private readonly LocationService _locationService;
     private readonly FakeAuditService _fakeAuditService;
     private readonly FakeUserService _fakeUserService;
+    private readonly FakeLicenseService _fakeLicenseService = new();
 
     public NeutronSourceIsolationTests(SqliteInMemoryFixture fixture)
     {
@@ -28,8 +29,8 @@ public class NeutronSourceIsolationTests : IClassFixture<SqliteInMemoryFixture>,
         _fakeAuditService = new FakeAuditService();
         _fakeUserService = new FakeUserService();
         _decayService = new DecayCalculationService();
-        _sourceService = new SourceService(_fixture.ContextFactory, _decayService, _fakeAuditService, _fakeUserService);
-        _locationService = new LocationService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService);
+        _sourceService = new SourceService(_fixture.ContextFactory, _decayService, _fakeAuditService, _fakeUserService, _fakeLicenseService);
+        _locationService = new LocationService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService, _fakeLicenseService);
     }
 
     public void Dispose()

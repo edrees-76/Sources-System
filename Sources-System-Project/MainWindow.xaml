@@ -360,6 +360,23 @@
                 </Grid>
             </Border>
 
+            <!-- ─── شريط الوضع التجريبي (يظهر فوق كل الشاشات حتى التفعيل) ─── -->
+            <Border DockPanel.Dock="Top"
+                    Background="{StaticResource DangerBrush}"
+                    Visibility="{Binding IsTrialMode, Converter={StaticResource BoolToVis}}"
+                    Cursor="Hand">
+                <Border.InputBindings>
+                    <MouseBinding MouseAction="LeftClick" Command="{Binding OpenActivationCommand}"/>
+                </Border.InputBindings>
+                <TextBlock Text="{DynamicResource TextTrialModeBanner}"
+                           Foreground="White"
+                           FontWeight="Bold"
+                           FontSize="13"
+                           HorizontalAlignment="Center"
+                           Margin="0,8"
+                           TextWrapping="Wrap"/>
+            </Border>
+
             <!-- ─── المحتوى الرئيسي ─── -->
             <DockPanel Background="{DynamicResource MainBackground}">
                 <!-- ترويسة المحتوى مع جرس التنبيهات -->

@@ -16,6 +16,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
 {
     private readonly SqliteInMemoryFixture _fixture;
     private readonly FakeAuditService _auditService;
+    private readonly FakeLicenseService _fakeLicenseService = new();
     private readonly Role _adminRole;
     private readonly Role _userRole;
 
@@ -157,7 +158,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
     [Fact]
     public void UserService_CreateUser_EnforcesAdminGuard()
     {
-        var userService = new UserService(_fixture.ContextFactory, _auditService);
+        var userService = new UserService(_fixture.ContextFactory, _auditService, _fakeLicenseService);
         var newUser = new User { Username = "u_new", FullName = "New", RoleId = _userRole.Id };
 
         // 1. Null user
@@ -183,7 +184,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
     [Fact]
     public void UserService_UpdateUser_EnforcesAdminGuard()
     {
-        var userService = new UserService(_fixture.ContextFactory, _auditService);
+        var userService = new UserService(_fixture.ContextFactory, _auditService, _fakeLicenseService);
         var target = CreateNormalUser("target_up");
 
         // 1. Null user
@@ -210,7 +211,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
     [Fact]
     public void UserService_ResetPassword_EnforcesAdminGuard_AndPreventsPrivilegeEscalation()
     {
-        var userService = new UserService(_fixture.ContextFactory, _auditService);
+        var userService = new UserService(_fixture.ContextFactory, _auditService, _fakeLicenseService);
         var target = CreateNormalUser("target_reset");
 
         // 1. Null user
@@ -236,7 +237,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
     [Fact]
     public void ResetPassword_WhenCallerIsNotAdmin_DoesNotChangeAdminPassword()
     {
-        var userService = new UserService(_fixture.ContextFactory, _auditService);
+        var userService = new UserService(_fixture.ContextFactory, _auditService, _fakeLicenseService);
         var adminUser = CreateAdminUser("admin_target");
         string originalHash = adminUser.PasswordHash;
 
@@ -258,7 +259,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
     [Fact]
     public void UserService_UnlockAccount_EnforcesAdminGuard()
     {
-        var userService = new UserService(_fixture.ContextFactory, _auditService);
+        var userService = new UserService(_fixture.ContextFactory, _auditService, _fakeLicenseService);
         var locked = CreateNormalUser("locked_user");
         using (var db = _fixture.CreateContext())
         {
@@ -291,7 +292,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
     [Fact]
     public void UserService_DeleteUser_EnforcesAdminGuard()
     {
-        var userService = new UserService(_fixture.ContextFactory, _auditService);
+        var userService = new UserService(_fixture.ContextFactory, _auditService, _fakeLicenseService);
         var toDelete = CreateNormalUser("to_delete_user");
 
         // 1. Null user
@@ -317,7 +318,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
     [Fact]
     public void UserService_RestoreUser_EnforcesAdminGuard()
     {
-        var userService = new UserService(_fixture.ContextFactory, _auditService);
+        var userService = new UserService(_fixture.ContextFactory, _auditService, _fakeLicenseService);
         var toRestore = CreateNormalUser("to_restore_user");
         using (var db = _fixture.CreateContext())
         {
@@ -350,7 +351,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
     [Fact]
     public void UserService_ToggleUserFreeze_EnforcesAdminGuard()
     {
-        var userService = new UserService(_fixture.ContextFactory, _auditService);
+        var userService = new UserService(_fixture.ContextFactory, _auditService, _fakeLicenseService);
         var toFreeze = CreateNormalUser("to_freeze_user");
 
         // 1. Null user
@@ -382,7 +383,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
     {
         var fakeUser = new FakeUserService();
         fakeUser.CurrentUser = null;
-        var sourceService = new SourceService(_fixture.ContextFactory, new DecayCalculationService(), _auditService, fakeUser);
+        var sourceService = new SourceService(_fixture.ContextFactory, new DecayCalculationService(), _auditService, fakeUser, _fakeLicenseService);
 
         var loc = new Location { Id = Guid.NewGuid(), LocationName = "موقع 1" };
         var iso = new Radioisotope { Id = Guid.NewGuid(), Symbol = "Cs-137", Name = "Cesium-137", HalfLife = 30.17, RadiationType = "Gamma" };
@@ -448,7 +449,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
     {
         var fakeUser = new FakeUserService();
         fakeUser.CurrentUser = null;
-        var neutronService = new NeutronSourceService(_fixture.ContextFactory, _auditService, fakeUser);
+        var neutronService = new NeutronSourceService(_fixture.ContextFactory, _auditService, fakeUser, _fakeLicenseService);
 
         var loc = new Location { Id = Guid.NewGuid(), LocationName = "موقع نيوتروني" };
         var type = new NeutronSourceType { Id = Guid.NewGuid(), Code = "Am-Be", NameEn = "Americium Beryllium" };
@@ -501,7 +502,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
     {
         var fakeUser = new FakeUserService();
         fakeUser.CurrentUser = null;
-        var isoService = new RadioisotopeService(_fixture.ContextFactory, _auditService, fakeUser);
+        var isoService = new RadioisotopeService(_fixture.ContextFactory, _auditService, fakeUser, _fakeLicenseService);
 
         var iso = new Radioisotope { Id = Guid.NewGuid(), Symbol = "Na-22", Name = "Sodium-22", HalfLife = 2.6, RadiationType = "Beta+" };
         using (var db = _fixture.CreateContext())
@@ -549,7 +550,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
     {
         var fakeUser = new FakeUserService();
         fakeUser.CurrentUser = null;
-        var locService = new LocationService(_fixture.ContextFactory, _auditService, fakeUser);
+        var locService = new LocationService(_fixture.ContextFactory, _auditService, fakeUser, _fakeLicenseService);
 
         var loc = new Location { Id = Guid.NewGuid(), LocationName = "غرفة التخزين 102" };
         using (var db = _fixture.CreateContext())
@@ -597,7 +598,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
     {
         var fakeUser = new FakeUserService();
         fakeUser.CurrentUser = null;
-        var typeService = new NeutronSourceTypeService(_fixture.ContextFactory, _auditService, fakeUser);
+        var typeService = new NeutronSourceTypeService(_fixture.ContextFactory, _auditService, fakeUser, _fakeLicenseService);
 
         var type = new NeutronSourceType { Id = Guid.NewGuid(), Code = "Cf-252", NameEn = "Californium-252" };
         using (var db = _fixture.CreateContext())
@@ -643,7 +644,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
     [Fact]
     public void UserService_HasPermission_DelegatesToCurrentUser_HasSectionPermission()
     {
-        var userService = new UserService(_fixture.ContextFactory, _auditService);
+        var userService = new UserService(_fixture.ContextFactory, _auditService, _fakeLicenseService);
 
         // 1. No user logged in -> false
         Assert.False(userService.HasPermission("Sources"));

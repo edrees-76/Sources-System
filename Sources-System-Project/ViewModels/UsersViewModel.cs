@@ -493,6 +493,10 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
         {
             LoadData();
         }
+        else
+        {
+            DialogHelper.ShowError(r.Message);
+        }
     }
 
     [RelayCommand]
@@ -509,6 +513,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
         var r = _userService.ToggleUserFreeze(target.Id);
         ShowMsg(r.Message);
         if (r.Success) LoadData();
+        else DialogHelper.ShowError(r.Message);
     }
 
     // ─── تصدير التقارير ───
@@ -664,6 +669,10 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
                 IsEditing = false;
                 LoadData();
             }
+            else
+            {
+                DialogHelper.ShowError(r.Message);
+            }
         }
         else
         {
@@ -686,6 +695,10 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
                 IsEditing = false;
                 LoadData();
             }
+            else
+            {
+                DialogHelper.ShowError(r.Message);
+            }
         }
     }
 
@@ -697,6 +710,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
         var r = _userService.DeleteUser(Selected.Id);
         ShowMsg(r.Message);
         if (r.Success) LoadData();
+        else DialogHelper.ShowError(r.Message);
     }
 
     [RelayCommand]

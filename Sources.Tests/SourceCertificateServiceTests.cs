@@ -7,6 +7,7 @@ using Moq;
 using Sources.Data;
 using Sources.Models;
 using Sources.Services;
+using Sources.Tests.Fakes;
 using Sources.Tests.Fixtures;
 using Xunit;
 
@@ -19,6 +20,7 @@ public class SourceCertificateServiceTests : IClassFixture<SqliteInMemoryFixture
     private readonly string _testCertFolder;
     private readonly string _tempFilesFolder;
     private readonly SourceCertificateService _sut;
+    private readonly FakeLicenseService _fakeLicenseService = new();
 
     public SourceCertificateServiceTests(SqliteInMemoryFixture fixture)
     {
@@ -33,7 +35,7 @@ public class SourceCertificateServiceTests : IClassFixture<SqliteInMemoryFixture
         Directory.CreateDirectory(_testCertFolder);
         Directory.CreateDirectory(_tempFilesFolder);
 
-        _sut = new SourceCertificateService(_fixture.ContextFactory, _auditMock.Object, _testCertFolder);
+        _sut = new SourceCertificateService(_fixture.ContextFactory, _auditMock.Object, _fakeLicenseService, _testCertFolder);
     }
 
     public void Dispose()
@@ -167,7 +169,7 @@ public class SourceCertificateServiceTests : IClassFixture<SqliteInMemoryFixture
         File.WriteAllText(Path.Combine(testCertsDir, "guid1.pdf"), "Fake Certificate 1");
         File.WriteAllText(Path.Combine(testCertsDir, "guid2.docx"), "Fake Certificate 2");
 
-        var backupService = new BackupService(testDbPath, testBackupsDir, testCertsDir);
+        var backupService = new BackupService(testDbPath, testBackupsDir, testCertsDir, _fakeLicenseService);
 
         try
         {
@@ -232,7 +234,7 @@ public class SourceCertificateServiceTests : IClassFixture<SqliteInMemoryFixture
         }
         SqliteConnection.ClearAllPools();
 
-        var backupService = new BackupService(testDbPath, testBackupsDir, testCertsDir);
+        var backupService = new BackupService(testDbPath, testBackupsDir, testCertsDir, _fakeLicenseService);
 
         try
         {
@@ -293,7 +295,7 @@ public class SourceCertificateServiceTests : IClassFixture<SqliteInMemoryFixture
             zip.CreateEntryFromFile(certTemp, "Certificates/new_cert.pdf");
         }
 
-        var backupService = new BackupService(testDbPath, testBackupsDir, testCertsDir);
+        var backupService = new BackupService(testDbPath, testBackupsDir, testCertsDir, _fakeLicenseService);
 
         try
         {
@@ -348,7 +350,7 @@ public class SourceCertificateServiceTests : IClassFixture<SqliteInMemoryFixture
             zip.CreateEntryFromFile(dummyFile, "dummy.txt");
         }
 
-        var backupService = new BackupService(testDbPath, testBackupsDir, testCertsDir);
+        var backupService = new BackupService(testDbPath, testBackupsDir, testCertsDir, _fakeLicenseService);
 
         try
         {
