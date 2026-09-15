@@ -188,6 +188,7 @@ public partial class LocationsViewModel : ObservableObject, IEditableViewModel
         var r = IsNew ? _service.Create(item) : _service.Update(item);
         ShowMsg(r.Message);
         if (r.Success) { IsEditing = false; LoadData(); }
+        else { DialogHelper.ShowError(r.Message); }
     }
 
     [RelayCommand]

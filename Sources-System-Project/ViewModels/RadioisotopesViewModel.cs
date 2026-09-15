@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using MaterialDesignThemes.Wpf;
+using Sources.Helpers;
 using Sources.Models;
 using Sources.Services;
 using Sources.Interfaces;
@@ -307,6 +308,7 @@ public partial class RadioisotopesViewModel : ObservableObject, IEditableViewMod
         else
         {
             ShowMsg(r.Message);
+            DialogHelper.ShowError(r.Message);
         }
     }
 
