@@ -21,7 +21,27 @@
         <KeyBinding Key="Escape" Command="{Binding CancelEditCommand}"/>
     </Window.InputBindings>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <DockPanel LastChildFill="True">
+        <Border DockPanel.Dock="Top" Visibility="{Binding HasMessage, Converter={StaticResource BoolToVis}}"
+                Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="1.5"
+                CornerRadius="8" Padding="14,10" Margin="24,24,24,0">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.12" Color="{StaticResource PrimaryColor}"/>
+            </Border.Effect>
+            <DockPanel LastChildFill="True">
+                <Button DockPanel.Dock="Left" Style="{StaticResource MaterialDesignIconButton}"
+                        Command="{Binding CloseMessageCommand}" Width="28" Height="28" Padding="0" VerticalAlignment="Center">
+                    <materialDesign:PackIcon Kind="Close" Width="16" Height="16" Foreground="{DynamicResource TextSecondary}"/>
+                </Button>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <materialDesign:PackIcon Kind="InformationOutline" Width="20" Height="20"
+                                             Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <TextBlock Text="{Binding Message}" FontSize="13" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/> <!-- Row 0: Form Header Bar -->
@@ -520,5 +540,6 @@
                 </Grid>
             </Border>
         </Grid>
-    </ScrollViewer>
+        </ScrollViewer>
+    </DockPanel>
 </Window>
