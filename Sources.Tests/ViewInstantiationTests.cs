@@ -292,6 +292,60 @@ public class ViewInstantiationTests
     }
 
     [Fact]
+    public void PasswordPromptDialog_CancelButtonClick_SetsResultToFalse()
+    {
+        RunInSta(() =>
+        {
+            var dialog = new Sources.Views.PasswordPromptDialog("عنوان اختبار", "نص تنبيه اختبار");
+
+            // CancelButton_Click يضبط DialogResult، وهذا صالح فقط بعد فتح النافذة عبر
+            // ShowDialog() (انظر نفس النمط في LocationsFormWindowTests.cs). لذا نُجدوِل
+            // النقر عبر Dispatcher.BeginInvoke ليُنفَّذ أثناء حلقة ShowDialog() المتداخلة نفسها.
+            // النافذة تُغلق نفسها ضمن المعالج (Close())، فلا حاجة لإغلاق إضافي بعد عودة ShowDialog.
+            Dispatcher.CurrentDispatcher.BeginInvoke(new System.Action(() =>
+            {
+                var content = dialog.Content as FrameworkElement;
+                Assert.NotNull(content);
+                content.Measure(new System.Windows.Size(480, 320));
+                content.Arrange(new System.Windows.Rect(0, 0, 480, 320));
+                content.UpdateLayout();
+
+                var cancelButton = dialog.FindName("CancelButton") as System.Windows.Controls.Button;
+                Assert.NotNull(cancelButton);
+
+                cancelButton.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+            }), DispatcherPriority.ApplicationIdle);
+
+            dialog.ShowDialog();
+
+            Assert.False(dialog.Result);
+            Assert.False(dialog.DialogResult);
+        });
+    }
+
+    // ملاحظة على أسلوب الاختبار: ConfirmButton_Click في PasswordPromptDialog يقرأ IUserService
+    // مباشرة عبر App.ServiceProvider (خاصية ذات setter خاص لا تدعم الحقن في الاختبارات، على خلاف
+    // ما هو متاح في هذا المشروع لاختبارات أخرى). لا يوجد نمط قائم في مشروع الاختبارات لحقن
+    // App.ServiceProvider لهذا الحوار تحديداً، لذا نتحقق من مسار التأكيد (Confirm) عبر خُطّاف
+    // الاختبار الرسمي PasswordPromptDialog.CustomPromptResult مع RequestAdminAccess() تماماً كما هو
+    // مستخدم في DeletionsAndAdminPromptTests.cs (RequestAdminAccess_HonorsCustomPromptResult) بدل
+    // استدعاء ConfirmButton_Click مباشرة.
+    [Fact]
+    public void PasswordPromptDialog_RequestAdminAccess_ConfirmPath_HonorsCustomPromptResultTrue()
+    {
+        Sources.Views.PasswordPromptDialog.CustomPromptResult = true;
+        try
+        {
+            var granted = Sources.Views.PasswordPromptDialog.RequestAdminAccess("عنوان اختبار", "نص تنبيه اختبار");
+            Assert.True(granted);
+        }
+        finally
+        {
+            Sources.Views.PasswordPromptDialog.CustomPromptResult = null;
+        }
+    }
+
+    [Fact]
     public void BorrowView_WhenOpeningDetailsCard_RendersSuccessfullyWithoutBindingExceptions()
     {
         RunInSta(() =>

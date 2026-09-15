@@ -1289,3 +1289,71 @@ Release 1188/1188 نجاح (0 فشل/0 تجاوز) — فارق الاختبار
 `LoginWindow.xaml.cs` سطرا 104 و199 (عبر مساري csproj)، و`ViewInstantiationTests.cs` (اختبار
 `ExitWarningDialog` القائم أصلاً، لا علاقة له بالاختبارين الجديدين). لا ترحيل EF ولا تغيير مخطط قاعدة
 بيانات في هذه الجولة. `DialogHelper.cs` لم يُمَس — توقيعاته ومنطقه كما هما تماماً.
+
+## 20. الجولة 155 — توحيد تصميم `PasswordPromptDialog` على نمط بطاقة تسجيل الدخول
+
+**النطاق:** إعادة تصميم بصري بحت لـ`Sources-System-Project/Views/PasswordPromptDialog.xaml` فقط. هذا
+هو الاستثناء الذي أجّلته الجولة 153 صراحةً (البند 19 أعلاه): تلك الجولة وحّدت فقط آلية `AlertDialog`
+المشتركة التي يُنشئها `DialogHelper.cs`، واستبعدت `PasswordPromptDialog` بقرار مسبق لأنها نافذة WPF
+مستقلة تماماً عن `DialogHelper` (لا تُفتح عبره، بل عبر `PasswordPromptDialog.RequestAdminAccess`
+المستدعاة مباشرة من الشيفرة). هذه الجولة توحّد **المظهر البصري فقط** لتطابق نمط بطاقة تسجيل الدخول
+(الشارة الدائرية المركزية + العنوان + ذيل بخط فاصل رفيع بدل الرأس المتدرّج)، دون أي تغيير على آلية
+النافذة المنفصلة نفسها — تبقى `PasswordPromptDialog` نافذة WPF قائمة بذاتها تُفتح عبر `ShowDialog()`،
+لا حواراً مُمرَّراً عبر `DialogHelper`.
+
+**التغيير البصري:** أُزيل الرأس المتدرّج (`HeaderBorder` بخلفية `LinearGradientBrush` من
+`PrimaryLightColor` إلى `PrimaryColor`) وزر الإغلاق الأبيض المدمج بداخله، واستُبدلا بنفس رأس
+`AlertDialog`/بطاقة الدخول: `Grid` علوي بزر إغلاق صغير أعلى اليمين (`MaterialDesignIconButton`,
+أيقونة `Close`, `Foreground="{DynamicResource TextSecondary}"`) و`StackPanel` مُوسَّط يضم شارة دائرية
+(`IconBadge`, 64×64, `CornerRadius="32"`, `Background="{DynamicResource PrimaryBrush}"`) بداخلها أيقونة
+`ShieldLockOutline` بيضاء 32×32 (نفس الأيقونة التي كانت مستخدمة سابقاً في `SecurityIcon` داخل الرأس
+المتدرّج، أُعيد استخدام نفس `x:Name="SecurityIcon"` والنوع لتفادي ازدواج بصري مع أيقونة `KeyVariant`
+الموجودة أصلاً في حاوية حقل كلمة المرور)، يليها `TitleText` بخط `FontSize="18" FontWeight="Bold"`
+مُوسَّط. أُضيف `BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"` على `MainBorder`
+(لم يكن موجوداً سابقاً، مطابقةً لـ`AlertDialog`). ذيل الأزرار: أُزيلت خلفية `SidebarBackground` الداكنة
+وأُضيف بدلاً منها خط فاصل رفيع (`Border Height="1" Background="{DynamicResource BorderColor}"`) فوق
+الأزرار مباشرة على خلفية البطاقة نفسها، وأُزيلت تجاوزات `Foreground="White"`/`BorderBrush="#55FFFFFF"`
+المُثبَّتة يدوياً على `CancelButton` (كانت ضرورية فقط للتباين فوق الرأس الداكن القديم، غير لازمة الآن
+فوق `CardBackground`). لا تغيير في هوامش/حشوة الجسم (`PromptText` وحاوية `TxtPassword`) بخلاف تعديل
+طفيف لحشوة الحاوية الخارجية (`Padding="25,4,25,20"`) لمطابقة إيقاع تباعد الرأس الجديد.
+
+**أسماء العناصر ومنطق الكود-خلف (بلا أي تغيير):** `TxtPassword`, `PromptText`, `TitleText`,
+`ConfirmButton`, `CancelButton` بقيت كما هي حرفياً. `PasswordPromptDialog.xaml.cs` **فرق صفري تماماً**
+(تحقَّق منه القائد عبر `git diff` بعد التعديل) — `ConfirmButton_Click`, `CancelButton_Click`,
+`CloseButton_Click`, `TxtPassword_KeyDown`, `ValidateAdminPassword`, `RequestAdminAccess`,
+`RequestAdminAccessAsync`, `Result`, `CustomPromptResult` كلها كما هي بالضبط.
+
+**اختباران جديدان في `Sources.Tests/ViewInstantiationTests.cs`:**
+1. `PasswordPromptDialog_CancelButtonClick_SetsResultToFalse` — يُثير `CancelButton.Click` برمجياً
+   ويؤكِّد `dialog.Result == false`. بخلاف اختباري `AlertDialog` في الجولة 153 (اللذين يُغلقان الحوار عبر
+   `.Close()` فقط دون `ShowDialog()`)، فإن `CancelButton_Click` في `PasswordPromptDialog` يضبط
+   `DialogResult` أيضاً — وهذه الخاصية في WPF يُسمح بضبطها فقط بعد فتح النافذة عبر `ShowDialog()`. لذا
+   استُخدم نمط `Dispatcher.CurrentDispatcher.BeginInvoke(..., DispatcherPriority.ApplicationIdle)`
+   القائم فعلياً في `LocationsFormWindowTests.cs`/`SourceFormWindowTests.cs`/إلخ لجدولة النقر أثناء حلقة
+   `ShowDialog()` المتداخلة نفسها، ثم التأكيد على `dialog.Result`/`dialog.DialogResult` بعد عودة
+   `ShowDialog()`.
+2. `PasswordPromptDialog_RequestAdminAccess_ConfirmPath_HonorsCustomPromptResultTrue` — **انحراف موثَّق
+   عن نص العقد المفضَّل** (خيار الحقن المباشر لـ`ConfirmButton_Click`): `ConfirmButton_Click` يقرأ
+   `IUserService` عبر `App.ServiceProvider` مباشرة (خاصية `static IServiceProvider ServiceProvider
+   { get; private set; }` — `setter` خاص، لا يوجد أي نمط قائم في `Sources.Tests` لحقن هذه الخاصية من
+   اختبار). لذا طبَّقنا البديل الذي أجازه العقد صراحة عند تعذُّر الحقن: استخدام خُطّاف الاختبار الرسمي
+   `PasswordPromptDialog.CustomPromptResult` مع `RequestAdminAccess()` (نفس نمط
+   `RequestAdminAccess_HonorsCustomPromptResult` القائم في `DeletionsAndAdminPromptTests.cs`) بدل
+   استدعاء `ConfirmButton_Click` عبر `RaiseEvent` مباشرة. هذا يختبر مسار "منح الوصول = true" الكامل
+   (`RequestAdminAccess` يُعيد `CustomPromptResult.Value` دون فتح أي نافذة فعلية في وضع الاختبار)
+   لا نقرة الزر ذاتها على عنصر UI، وهو ما وثَّقه العقد كتنازل مقبول.
+
+**النتائج:** Debug 1192/1192 نجاح (0 فشل/0 تجاوز، +2 عن قاعدة الجولة 153/154 بسبب الاختبارين الجديدين).
+Release 1190/1190 نجاح (0 فشل/0 تجاوز) — فارق الاختبارين بين Debug/Release هو نفس الفارق البنيوي
+سابق الوجود الموثَّق في البند 19 (`TestDataGeneratorTests.cs` مُقيَّد بـ`#if DEBUG`)، لا علاقة له بهذه
+الجولة. بناء `Debug`/`Release` (بناء كامل غير تزايدي `--no-incremental` للتحقق): صفر أخطاء، نفس خمس
+تحذيرات `CS8604` سابقة الوجود بالضبط (`LoginWindow.xaml.cs` سطرا 104 و199 عبر مساري csproj،
+و`ViewInstantiationTests.cs` سطر 218 اختبار `ExitWarningDialog` القائم أصلاً) — لا تحذيرات جديدة. لا
+ترحيل EF ولا تغيير مخطط قاعدة بيانات في هذه الجولة.
+
+**الحالة المتبقية غير المُوحَّدة بصرياً:** آلية `MessageBanner` المضمَّنة في خمس شاشات (SourcesView,
+UsersView, RadioisotopesView, IsotopeLibraryView, AlertsView) تبقى خارج نطاق التوحيد — وهي آلية مختلفة
+جوهرياً (شريط رسائل مُضمَّن داخل الشاشة نفسها، لا نافذة منبثقة مستقلة)، فلا معنى لتطبيق نمط "بطاقة
+نافذة" عليها. بعد هذه الجولة، آليتا الحوار المنبثق الوحيدتان في النظام (`AlertDialog` عبر `DialogHelper`
+و`PasswordPromptDialog` المستقلة) موحَّدتان بصرياً بنفس نمط بطاقة تسجيل الدخول؛ `MessageBanner` يبقى
+الاستثناء الوحيد المتبقي عمداً.
