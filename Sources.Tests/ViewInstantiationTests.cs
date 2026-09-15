@@ -248,6 +248,50 @@ public class ViewInstantiationTests
     }
 
     [Fact]
+    public void AlertDialog_QuestionMode_YesButtonClick_SetsResultToYes()
+    {
+        RunInSta(() =>
+        {
+            var dialog = new AlertDialog("هل أنت متأكد؟", "تأكيد", "Question", isQuestion: true);
+
+            var content = dialog.Content as FrameworkElement;
+            Assert.NotNull(content);
+            content.Measure(new System.Windows.Size(520, 260));
+            content.Arrange(new System.Windows.Rect(0, 0, 520, 260));
+            content.UpdateLayout();
+
+            var yesButton = dialog.FindName("YesButton") as System.Windows.Controls.Button;
+            Assert.NotNull(yesButton);
+
+            yesButton.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+
+            Assert.Equal(AlertDialog.AlertResult.Yes, dialog.Result);
+        });
+    }
+
+    [Fact]
+    public void AlertDialog_QuestionMode_NoButtonClick_SetsResultToNo()
+    {
+        RunInSta(() =>
+        {
+            var dialog = new AlertDialog("هل أنت متأكد؟", "تأكيد", "Question", isQuestion: true);
+
+            var content = dialog.Content as FrameworkElement;
+            Assert.NotNull(content);
+            content.Measure(new System.Windows.Size(520, 260));
+            content.Arrange(new System.Windows.Rect(0, 0, 520, 260));
+            content.UpdateLayout();
+
+            var noButton = dialog.FindName("NoButton") as System.Windows.Controls.Button;
+            Assert.NotNull(noButton);
+
+            noButton.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+
+            Assert.Equal(AlertDialog.AlertResult.No, dialog.Result);
+        });
+    }
+
+    [Fact]
     public void BorrowView_WhenOpeningDetailsCard_RendersSuccessfullyWithoutBindingExceptions()
     {
         RunInSta(() =>

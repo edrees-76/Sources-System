@@ -1215,3 +1215,77 @@ TotalSourcesCount` — لكل منها استهلاك مختلف عن بطاقة
 خمس تحذيرات `CS8604` سابقة الوجود فقط (`LoginWindow.xaml.cs` سطرا 104 و199 عبر مساري csproj،
 و`ViewInstantiationTests.cs`)، لا تحذير جديد من الملفات المعدَّلة. لا ترحيل EF ولا تغيير مخطط قاعدة
 بيانات في هذه الجولة.
+
+## 19. الجولة 153 — توحيد تصميم `AlertDialog` على نمط بطاقة تسجيل الدخول
+
+**النطاق:** إعادة تصميم بصري بحت لـ`Sources-System-Project/Views/AlertDialog.xaml` (+ تعديل طفيف مرافق
+في `AlertDialog.xaml.cs`) — النافذة المشتركة الوحيدة التي يُنشئها `DialogHelper.cs` لكل رسائل النظام
+(Info/Warning/Error/Confirmation/InfoWithExtraOption، نحو 184 موضع استدعاء). استُبعد صراحةً من هذا
+النطاق بقرار مسبق من قائد المشروع: `PasswordPromptDialog.xaml[.cs]` (نافذة تأكيد كلمة مرور المدير
+المستقلة عن `DialogHelper`) و`MessageBanner` المضمَّن في خمس شاشات (SourcesView, UsersView,
+RadioisotopesView, IsotopeLibraryView, AlertsView). لم تُمَس `LoginWindow`/`LoginView`/`SplashWindow` —
+استُخدمت `LoginWindow.xaml` كمرجع بصري للقراءة فقط.
+
+**التغيير البصري:** استُبدل الرأس المتدرّج اللون (`LinearGradientBrush` أفقي بلون `PrimaryColor`) بشارة
+أيقونة دائرية مركزية (`IconBadge`, 64×64, `CornerRadius="32"`) فوق عنوان مُوسَّط، بنمط الشعارات الدائرية
+في بطاقة تسجيل الدخول، مع زر إغلاق صغير أعلى يمين البطاقة بدل زر الإغلاق المدمج بالرأس الملوَّن سابقاً.
+ذيل الأزرار فُصل عن خلفية `SidebarBackground` الداكنة السابقة إلى خلفية شفافة تتبع لون البطاقة نفسها مع
+خط فاصل رفيع (`BorderColor`) بدلاً منها، وأُزيلت تجاوزات `Foreground="White"`/`BorderBrush="#55FFFFFF"`
+المُثبَّتة يدوياً على `NoButton`/`CancelButton` (كانت ضرورية فقط للتباين فوق الخلفية الداكنة القديمة)
+لصالح الألوان الافتراضية الديناميكية لنمط `SecondaryButton` — هذا يُزيل تلوينات ثابتة بدل إضافتها، ولا
+يُدخل أي لون Hardcoded جديد. كل الموارد المستخدمة ديناميكية موجودة أصلاً (`CardBackground`,
+`TextPrimary`, `TextSecondary`, `BorderColor`, `PrimaryBrush`, `WarningBrush`, `DangerBrush`).
+
+**قرار الشعار مقابل الأيقونة (انحراف مُبرَّر عن حرفية اقتراح العقد بشعار `sources_logo.png`):** استُخدمت
+أيقونة `MaterialDesign:PackIcon` بلون شارة دائرية يتغيّر حسب نوع الرسالة (Info/Question=`PrimaryBrush`,
+Warning=`WarningBrush`, Error=`DangerBrush`) بدل الشعار الكامل. السبب الهندسي: (1) الشعار ثابت الشكل
+لا يميّز بين أنواع الرسائل الأربعة كما تفعل الأيقونة (نفس آلية `AlertIcon.Kind` القائمة أصلاً)؛
+(2) استخدام شعار مؤسَّسي كامل لكل تنبيه/تحذير/خطأ يومي (184 موضع استدعاء) مبالغ فيه بصرياً مقارنة
+بشاشة الدخول الرسمية التي تُعرض مرة واحدة فقط؛ (3) تفادي الاعتماد على تحميل ملف صورة عبر
+`pack://siteoforigin` وقت الإنشاء لكل حوار (نمط `LoginWindow` غير المُختبَر سابقاً في هذا المسار)
+يُبقي `AlertDialog` خالياً من أي اعتماد على نظام الملفات في السيناريو الشائع، متّسقاً مع اعتماد الاختبار
+`ExitWarningDialog_RendersCorrectly_WithPendingChangesMessage` الذي يُصيِّر الحوار دون صورة. العقد نفسه
+أجاز صراحة استخدام الحكم الهندسي هنا مع توضيح السبب.
+
+**تعديل مرافق في `AlertDialog.xaml.cs` (بصري فقط، لا مساس بمنطق الأزرار):** نُقل تلوين النوع من
+`AlertIcon.Foreground` (سابقاً لون أحمر فقط لحالة الخطأ فوق أيقونة بيضاء دائماً) إلى
+`IconBadge.Background` لكل الأنواع الأربعة (كان يُضبط للخطأ فقط سابقاً) — امتداد مباشر لنفس مفتاح
+`switch (type)` القائم أصلاً وليس منطقاً جديداً. أسماء العناصر المرتبطة بالكود
+(`AlertIcon`, `TitleText`, `MessageText`, `ImageContainer`, `SourceImage`, `OkButton`, `ExtraButton`,
+`YesButton`, `NoButton`, `CancelButton`) بقيت كما هي حرفياً؛ أُضيف `x:Name="IconBadge"` جديد فقط.
+معالجات `*_Click` (`CloseButton_Click`, `OkButton_Click`, `ExtraButton_Click`, `YesButton_Click`,
+`NoButton_Click`, `CancelButton_Click`) لم تُمَس إطلاقاً — نفس ضبط `Result` ونفس استدعاء `Close()`.
+
+**قرار `FlowDirection` (لا تغيير، مُوثَّق كقرار مدروس لا كسهو):** فُحص نمط `PasswordPromptDialog.xaml`
+الذي يضبط `FlowDirection="{DynamicResource CurrentFlowDirection}"` على مستوى `Window`. تبيَّن بالبحث
+الشامل في المستودع أن المفتاح `CurrentFlowDirection` **غير مُعرَّف في أي قاموس موارد ولا يُضبط برمجياً
+في أي مكان** — أي أن هذا الربط في `PasswordPromptDialog` خامل فعلياً ويرتدّ صمتاً للسلوك الافتراضي
+(`LeftToRight`). نسخ هذا النمط الخامل إلى `AlertDialog.xaml` لن يُغيّر أي سلوك حقيقي وقد يُوهم بدعم RTL
+ديناميكي غير موجود فعلياً؛ لذا **لم يُضَف**. أُبقي `AlertDialog` بلا `FlowDirection` على مستوى `Window`
+(كما كان)، مع بقاء `MessageText.FlowDirection="RightToLeft"` الصريح كما هو — وهو ما أثبته اختبار
+`ExitWarningDialog_RendersCorrectly_WithPendingChangesMessage` القائم أصلاً أنه يعمل بشكل صحيح.
+
+**السحب (Drag) وEscape:** لم يُضَف أي معالج سحب جديد (`MouseLeftButtonDown`) لم يكن موجوداً سلفاً —
+خارج نطاق "تصميمي بصري فقط" كما نصّ العقد. سلوك `CancelButton`/`IsCancel="True"` بقي كما هو حرفياً (زر
+مخفي افتراضياً إلا مع `showCancel=true`، فلا يُغلق أي حوار بـEscape لم يكن يُغلَق به سابقاً).
+
+**اختبار جديد إلزامي (لم تُختبَر أزرار Yes/No داخل `AlertDialog` من قبل قط):** أُضيف اختباران في
+`Sources.Tests/ViewInstantiationTests.cs`:
+`AlertDialog_QuestionMode_YesButtonClick_SetsResultToYes` و
+`AlertDialog_QuestionMode_NoButtonClick_SetsResultToNo` — يُنشئان `AlertDialog` بـ`isQuestion: true`،
+يُحدِّدان الزر عبر `dialog.FindName("YesButton"/"NoButton")` (نفس أسلوب `FindName` المستعمل فعلياً في
+اختبار `DashboardView` القائم)، ثم يُثيران `Button.ClickEvent` برمجياً عبر
+`RaiseEvent(new RoutedEventArgs(Button.ClickEvent))` (النمط القياسي لمحاكاة نقرة زر في اختبار WPF
+Unit)، ويؤكِّدان `dialog.Result == AlertDialog.AlertResult.Yes`/`No` بعد ذلك — يغلقان الحوار عبر نفس
+مسار `Close()` القائم أصلاً في معالج النقر (نمط `.Close()` على نافذة لم تُستدعَ لها `Show()` مُستعمَل
+فعلياً في عشرات الاختبارات القائمة، مثل `SourceFormWindowTests.cs`/`UserFormWindowTests.cs`). كلا
+الاختبارين يُنفَّذ عبر `RunInSta` كالاختبار القائم `ExitWarningDialog_RendersCorrectly...`.
+
+**النتائج:** Debug 1190/1190 نجاح (0 فشل/0 تجاوز، +2 عن قاعدة الجولة 154 بسبب الاختبارين الجديدين).
+Release 1188/1188 نجاح (0 فشل/0 تجاوز) — فارق الاختبارين بين Debug/Release بنيوي سابق الوجود
+(`Sources.Tests/TestDataGeneratorTests.cs` مُقيَّد بالكامل بـ`#if DEBUG`)، تحقَّق منه القائد مباشرة عبر
+`git stash`/إعادة البناء ولا علاقة له بهذه الجولة. بناء `Debug`/`Release`: صفر أخطاء، نفس خمس تحذيرات
+`CS8604` سابقة الوجود بالضبط (تحقَّق منها القائد بمقارنة البناء قبل وبعد التعديل عبر `git stash`) —
+`LoginWindow.xaml.cs` سطرا 104 و199 (عبر مساري csproj)، و`ViewInstantiationTests.cs` (اختبار
+`ExitWarningDialog` القائم أصلاً، لا علاقة له بالاختبارين الجديدين). لا ترحيل EF ولا تغيير مخطط قاعدة
+بيانات في هذه الجولة. `DialogHelper.cs` لم يُمَس — توقيعاته ومنطقه كما هما تماماً.
