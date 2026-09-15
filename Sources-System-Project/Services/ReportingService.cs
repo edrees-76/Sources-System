@@ -22,6 +22,18 @@ namespace Sources.Services
 
         private static readonly char[] InvalidSheetChars = { '\\', '/', '?', '*', '[', ']', ':' };
 
+        /// <summary>
+        /// الجولة 158: مصدر معرفة اللغة النشطة لتوطين تصدير PDF/Excel هو SettingsHelper.Language
+        /// (وليس Thread.CurrentUICulture)، تماشياً مع القرار المعتمد في عقد الجولة.
+        /// </summary>
+        private static bool IsEnglish() => SettingsHelper.Language == "en";
+
+        /// <summary>
+        /// الجولة 158: دالة موحَّدة لجلب نص مُترجَم مع قيمة احتياطية عربية، بنفس نمط الدوال
+        /// المساعدة الخمس الموجودة مسبقاً (GetNoDataText وأخواتها).
+        /// </summary>
+        private static string T(string key, string arFallback) => TranslationHelper.GetString(key) ?? arFallback;
+
         public static string SanitizeSheetName(string? name, string defaultName = "تقرير")
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -115,10 +127,10 @@ namespace Sources.Services
             await Task.Run(() =>
             {
                 using var workbook = new XLWorkbook();
-                var worksheet = workbook.Worksheets.Add("المواقع والمخازن");
-                worksheet.RightToLeft = true;
+                var worksheet = workbook.Worksheets.Add(T("RptSheetLocations", "المواقع والمخازن"));
+                worksheet.RightToLeft = !IsEnglish();
 
-                string[] headers = { "#", "اسم الموقع", "النوع", "المبنى", "الغرفة", "المسؤول", "عدد المصادر", "أُضيف بواسطة" };
+                string[] headers = { "#", T("RptColLocationName", "اسم الموقع"), T("RptColLocationType", "النوع"), T("RptColBuilding", "المبنى"), T("RptColRoom", "الغرفة"), T("RptColResponsiblePerson", "المسؤول"), T("RptColSourceCount", "عدد المصادر"), T("RptColAddedBy", "أُضيف بواسطة") };
                 for (int i = 0; i < headers.Length; i++)
                 {
                     worksheet.Cell(1, i + 1).Value = headers[i];
@@ -168,14 +180,14 @@ namespace Sources.Services
                         page.Margin(2, Unit.Centimetre);
                         page.PageColor(Colors.White);
                         page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
-                        page.ContentFromRightToLeft();
+                        if (IsEnglish()) page.ContentFromLeftToRight(); else page.ContentFromRightToLeft();
 
                         page.Header().Row(row =>
                         {
                             row.RelativeItem().Column(column =>
                             {
-                                column.Item().Text("منظومة مصادر — تقرير المواقع والمخازن").FontSize(20).SemiBold().FontColor(Colors.Blue.Darken2);
-                                column.Item().Text($"تاريخ التقرير: {DateTime.Now:yyyy/MM/dd}").FontSize(12).FontColor(Colors.Grey.Darken1);
+                                column.Item().Text(T("RptTitleLocationsPdf", "منظومة مصادر — تقرير المواقع والمخازن")).FontSize(20).SemiBold().FontColor(Colors.Blue.Darken2);
+                                column.Item().Text($"{T("RptLabelReportDate", "تاريخ التقرير:")} {DateTime.Now:yyyy/MM/dd}").FontSize(12).FontColor(Colors.Grey.Darken1);
                                 column.Item().PaddingVertical(10).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
                             });
                         });
@@ -199,13 +211,13 @@ namespace Sources.Services
                                 table.Header(header =>
                                 {
                                     header.Cell().Element(HeaderStyle).Text("#");
-                                    header.Cell().Element(HeaderStyle).Text("اسم الموقع");
-                                    header.Cell().Element(HeaderStyle).Text("النوع");
-                                    header.Cell().Element(HeaderStyle).Text("المبنى");
-                                    header.Cell().Element(HeaderStyle).Text("الغرفة");
-                                    header.Cell().Element(HeaderStyle).Text("المسؤول");
-                                    header.Cell().Element(HeaderStyle).Text("عدد المصادر");
-                                    header.Cell().Element(HeaderStyle).Text("أُضيف بواسطة");
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColLocationName", "اسم الموقع"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColLocationType", "النوع"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColBuilding", "المبنى"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColRoom", "الغرفة"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColResponsiblePerson", "المسؤول"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColSourceCount", "عدد المصادر"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColAddedBy", "أُضيف بواسطة"));
 
                                     static IContainer HeaderStyle(IContainer c) => c.Background(Colors.Blue.Medium).PaddingVertical(6).AlignCenter().DefaultTextStyle(x => x.SemiBold().FontColor(Colors.White));
                                 });
@@ -256,13 +268,13 @@ namespace Sources.Services
             await Task.Run(() =>
             {
                 using var workbook = new XLWorkbook();
-                var sheetName = SanitizeSheetName(reportTitle, "جرد المصادر");
+                var sheetName = SanitizeSheetName(reportTitle, T("RptSheetInventory", "جرد المصادر"));
                 var worksheet = workbook.Worksheets.Add(sheetName);
-                
-                worksheet.RightToLeft = true;
+
+                worksheet.RightToLeft = !IsEnglish();
 
                 // Headers
-                string[] headers = { "#", "رقم المصدر", "النظير", "النشاط الحالي", "الموقع", "الحالة", "أُضيف بواسطة" };
+                string[] headers = { "#", T("RptColSourceCode", "رقم المصدر"), T("RptColIsotope", "النظير"), T("RptColCurrentActivity", "النشاط الحالي"), T("RptColLocation", "الموقع"), T("RptColStatus", "الحالة"), T("RptColAddedBy", "أُضيف بواسطة") };
                 for (int i = 0; i < headers.Length; i++)
                 {
                     worksheet.Cell(1, i + 1).Value = headers[i];
@@ -303,8 +315,8 @@ namespace Sources.Services
                         
                         // Use Arial for Arabic characters support
                         page.DefaultTextStyle(x => x.FontSize(11).FontFamily("Arial"));
-                        page.ContentFromRightToLeft();
- 
+                        if (IsEnglish()) page.ContentFromLeftToRight(); else page.ContentFromRightToLeft();
+
                         page.Header().Element(c => ComposeHeaderInventory(c, reportTitle));
                         page.Content().Element(x => ComposeContentInventory(x, sources));
                         page.Footer().Element(ComposeFooter);
@@ -323,7 +335,7 @@ namespace Sources.Services
                 row.RelativeItem().Column(column =>
                 {
                     column.Item().Text(reportTitle).FontSize(24).SemiBold().FontColor(Colors.Blue.Medium);
-                    column.Item().PaddingTop(5).Text($"تاريخ التقرير: {DateTime.Now:yyyy/MM/dd}").FontSize(12).FontColor(Colors.Grey.Medium);
+                    column.Item().PaddingTop(5).Text($"{T("RptLabelReportDate", "تاريخ التقرير:")} {DateTime.Now:yyyy/MM/dd}").FontSize(12).FontColor(Colors.Grey.Medium);
                     column.Item().PaddingVertical(10).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
                 });
             });
@@ -352,12 +364,12 @@ namespace Sources.Services
                     table.Header(header =>
                     {
                         header.Cell().Element(HeaderStyle).Text("#");
-                        header.Cell().Element(HeaderStyle).Text("رقم المصدر");
-                        header.Cell().Element(HeaderStyle).Text("النظير");
-                        header.Cell().Element(HeaderStyle).Text("النشاط الحالي");
-                        header.Cell().Element(HeaderStyle).Text("الموقع");
-                        header.Cell().Element(HeaderStyle).Text("الحالة");
-                        header.Cell().Element(HeaderStyle).Text("أُضيف بواسطة");
+                        header.Cell().Element(HeaderStyle).Text(T("RptColSourceCode", "رقم المصدر"));
+                        header.Cell().Element(HeaderStyle).Text(T("RptColIsotope", "النظير"));
+                        header.Cell().Element(HeaderStyle).Text(T("RptColCurrentActivity", "النشاط الحالي"));
+                        header.Cell().Element(HeaderStyle).Text(T("RptColLocation", "الموقع"));
+                        header.Cell().Element(HeaderStyle).Text(T("RptColStatus", "الحالة"));
+                        header.Cell().Element(HeaderStyle).Text(T("RptColAddedBy", "أُضيف بواسطة"));
 
                         static IContainer HeaderStyle(IContainer container)
                         {
@@ -399,9 +411,9 @@ namespace Sources.Services
         {
             container.AlignCenter().Text(x =>
             {
-                x.Span("الصفحة ");
+                x.Span(T("RptFooterPageLabel", "الصفحة "));
                 x.CurrentPageNumber();
-                x.Span(" من ");
+                x.Span(T("RptFooterOfLabel", " من "));
                 x.TotalPages();
             });
         }
@@ -411,10 +423,10 @@ namespace Sources.Services
             await Task.Run(() =>
             {
                 using var workbook = new XLWorkbook();
-                var worksheet = workbook.Worksheets.Add("سجل الاستعارات");
-                worksheet.RightToLeft = true;
+                var worksheet = workbook.Worksheets.Add(T("RptSheetBorrowHistory", "سجل الاستعارات"));
+                worksheet.RightToLeft = !IsEnglish();
 
-                string[] headers = { "#", "رقم المصدر", "المستعير", "الغرض", "تاريخ الإرجاع", "الحالة", "المسؤول", "تاريخ الطلب" };
+                string[] headers = { "#", T("RptColSourceCode", "رقم المصدر"), T("RptColBorrower", "المستعير"), T("RptColPurpose", "الغرض"), T("RptColReturnDate", "تاريخ الإرجاع"), T("RptColStatus", "الحالة"), T("RptColResponsiblePerson", "المسؤول"), T("RptColRequestDate", "تاريخ الطلب") };
                 for (int i = 0; i < headers.Length; i++)
                 {
                     worksheet.Cell(1, i + 1).Value = headers[i];
@@ -457,14 +469,14 @@ namespace Sources.Services
                          page.Margin(2, Unit.Centimetre);
                          page.PageColor(Colors.White);
                          page.DefaultTextStyle(x => x.FontSize(11).FontFamily("Arial"));
-                         page.ContentFromRightToLeft();
+                         if (IsEnglish()) page.ContentFromLeftToRight(); else page.ContentFromRightToLeft();
 
                          page.Header().Row(row =>
                          {
                              row.RelativeItem().Column(column =>
                              {
-                                 column.Item().Text("منظومة مصادر — تقرير استعارة المصادر").FontSize(20).SemiBold().FontColor(Colors.Blue.Darken2);
-                                 column.Item().Text($"تاريخ التقرير: {DateTime.Now:yyyy/MM/dd}").FontSize(14).FontColor(Colors.Grey.Darken1);
+                                 column.Item().Text(T("RptTitleBorrowHistoryPdf", "منظومة مصادر — تقرير استعارة المصادر")).FontSize(20).SemiBold().FontColor(Colors.Blue.Darken2);
+                                 column.Item().Text($"{T("RptLabelReportDate", "تاريخ التقرير:")} {DateTime.Now:yyyy/MM/dd}").FontSize(14).FontColor(Colors.Grey.Darken1);
                              });
                          });
 
@@ -487,13 +499,13 @@ namespace Sources.Services
                                  table.Header(header =>
                                  {
                                      header.Cell().Element(HeaderStyle).Text("#");
-                                     header.Cell().Element(HeaderStyle).Text("رقم المصدر");
-                                     header.Cell().Element(HeaderStyle).Text("المستعير");
-                                     header.Cell().Element(HeaderStyle).Text("الغرض");
-                                     header.Cell().Element(HeaderStyle).Text("تاريخ الإرجاع");
-                                     header.Cell().Element(HeaderStyle).Text("الحالة");
-                                     header.Cell().Element(HeaderStyle).Text("المسؤول");
-                                     header.Cell().Element(HeaderStyle).Text("تاريخ الطلب");
+                                     header.Cell().Element(HeaderStyle).Text(T("RptColSourceCode", "رقم المصدر"));
+                                     header.Cell().Element(HeaderStyle).Text(T("RptColBorrower", "المستعير"));
+                                     header.Cell().Element(HeaderStyle).Text(T("RptColPurpose", "الغرض"));
+                                     header.Cell().Element(HeaderStyle).Text(T("RptColReturnDate", "تاريخ الإرجاع"));
+                                     header.Cell().Element(HeaderStyle).Text(T("RptColStatus", "الحالة"));
+                                     header.Cell().Element(HeaderStyle).Text(T("RptColResponsiblePerson", "المسؤول"));
+                                     header.Cell().Element(HeaderStyle).Text(T("RptColRequestDate", "تاريخ الطلب"));
 
                                      static IContainer HeaderStyle(IContainer container)
                                      {
@@ -542,10 +554,10 @@ namespace Sources.Services
             await Task.Run(() =>
             {
                 using var workbook = new XLWorkbook();
-                var worksheet = workbook.Worksheets.Add("تنبيهات انخفاض النشاط");
-                worksheet.RightToLeft = true;
+                var worksheet = workbook.Worksheets.Add(T("RptSheetLowActivityAlerts", "تنبيهات انخفاض النشاط"));
+                worksheet.RightToLeft = !IsEnglish();
 
-                string[] headers = { "#", "رقم المصدر", "النظير", "الخطورة", "تاريخ آخر معايرة", "الحالة", "النشاط الحالي", "المسؤول" };
+                string[] headers = { "#", T("RptColSourceCode", "رقم المصدر"), T("RptColIsotope", "النظير"), T("RptColSeverity", "الخطورة"), T("RptColLastCalibrationDateExcel", "تاريخ آخر معايرة"), T("RptColStatus", "الحالة"), T("RptColCurrentActivity", "النشاط الحالي"), T("RptColResponsiblePerson", "المسؤول") };
                 for (int i = 0; i < headers.Length; i++)
                 {
                     worksheet.Cell(1, i + 1).Value = headers[i];
@@ -588,14 +600,14 @@ namespace Sources.Services
                         page.Size(PageSizes.A4);
                         page.Margin(1.5f, Unit.Centimetre);
                         page.DefaultTextStyle(x => x.FontSize(11).FontFamily("Arial"));
-                        page.ContentFromRightToLeft();
+                        if (IsEnglish()) page.ContentFromLeftToRight(); else page.ContentFromRightToLeft();
 
                         page.Header().Row(row =>
                         {
                             row.RelativeItem().Column(column =>
                             {
-                                column.Item().Text("منظومة مصادر — تقرير تنبيهات انخفاض النشاط").FontSize(22).SemiBold().FontColor(Colors.Red.Medium);
-                                column.Item().Text($"تاريخ الاستخراج: {DateTime.Now:yyyy/MM/dd HH:mm}").FontSize(12).FontColor(Colors.Grey.Darken2);
+                                column.Item().Text(T("RptTitleLowActivityAlertsPdf", "منظومة مصادر — تقرير تنبيهات انخفاض النشاط")).FontSize(22).SemiBold().FontColor(Colors.Red.Medium);
+                                column.Item().Text($"{T("RptLabelExtractDate", "تاريخ الاستخراج:")} {DateTime.Now:yyyy/MM/dd HH:mm}").FontSize(12).FontColor(Colors.Grey.Darken2);
                             });
                         });
 
@@ -616,13 +628,13 @@ namespace Sources.Services
                             table.Header(header =>
                             {
                                 header.Cell().Element(BlockStyle).Text("#");
-                                header.Cell().Element(BlockStyle).Text("المصدر");
-                                header.Cell().Element(BlockStyle).Text("النظير");
-                                header.Cell().Element(BlockStyle).Text("الخطورة");
-                                header.Cell().Element(BlockStyle).Text("تاريخ المعايرة");
-                                header.Cell().Element(BlockStyle).Text("النشاط الحالي");
-                                header.Cell().Element(BlockStyle).Text("الحالة");
-                                header.Cell().Element(BlockStyle).Text("المسؤول");
+                                header.Cell().Element(BlockStyle).Text(T("RptColSourceShort", "المصدر"));
+                                header.Cell().Element(BlockStyle).Text(T("RptColIsotope", "النظير"));
+                                header.Cell().Element(BlockStyle).Text(T("RptColSeverity", "الخطورة"));
+                                header.Cell().Element(BlockStyle).Text(T("RptColCalibrationDatePdf", "تاريخ المعايرة"));
+                                header.Cell().Element(BlockStyle).Text(T("RptColCurrentActivity", "النشاط الحالي"));
+                                header.Cell().Element(BlockStyle).Text(T("RptColStatus", "الحالة"));
+                                header.Cell().Element(BlockStyle).Text(T("RptColResponsiblePerson", "المسؤول"));
 
                                 static IContainer BlockStyle(IContainer container) => container.Background(Colors.Red.Lighten4).Padding(5).BorderBottom(1).BorderColor(Colors.Red.Medium);
                             });
@@ -664,9 +676,9 @@ namespace Sources.Services
                 using var workbook = new XLWorkbook();
                 
                 // 1. Inventory Sheet
-                var wsInventory = workbook.Worksheets.Add("جرد المصادر");
-                wsInventory.RightToLeft = true;
-                string[] invHeaders = { "#", "رقم المصدر", "النظير", "النشاط الحالي", "الموقع", "الحالة", "أُضيف بواسطة" };
+                var wsInventory = workbook.Worksheets.Add(T("RptSheetInventory", "جرد المصادر"));
+                wsInventory.RightToLeft = !IsEnglish();
+                string[] invHeaders = { "#", T("RptColSourceCode", "رقم المصدر"), T("RptColIsotope", "النظير"), T("RptColCurrentActivity", "النشاط الحالي"), T("RptColLocation", "الموقع"), T("RptColStatus", "الحالة"), T("RptColAddedBy", "أُضيف بواسطة") };
                 for (int i = 0; i < invHeaders.Length; i++)
                 {
                     wsInventory.Cell(1, i + 1).Value = invHeaders[i];
@@ -689,9 +701,9 @@ namespace Sources.Services
                 wsInventory.Columns().AdjustToContents();
 
                 // 2. Borrowing Sheet
-                var wsBorrowing = workbook.Worksheets.Add("سجل الاستعارات");
-                wsBorrowing.RightToLeft = true;
-                string[] borHeaders = { "#", "رقم المصدر", "المستعير", "الغرض", "تاريخ الإرجاع", "الحالة", "المسؤول", "تاريخ الطلب" };
+                var wsBorrowing = workbook.Worksheets.Add(T("RptSheetBorrowHistory", "سجل الاستعارات"));
+                wsBorrowing.RightToLeft = !IsEnglish();
+                string[] borHeaders = { "#", T("RptColSourceCode", "رقم المصدر"), T("RptColBorrower", "المستعير"), T("RptColPurpose", "الغرض"), T("RptColReturnDate", "تاريخ الإرجاع"), T("RptColStatus", "الحالة"), T("RptColResponsiblePerson", "المسؤول"), T("RptColRequestDate", "تاريخ الطلب") };
                 for (int i = 0; i < borHeaders.Length; i++)
                 {
                     wsBorrowing.Cell(1, i + 1).Value = borHeaders[i];
@@ -715,9 +727,9 @@ namespace Sources.Services
                 wsBorrowing.Columns().AdjustToContents();
 
                 // 3. Low Activity Sheet
-                var wsLowAct = workbook.Worksheets.Add("المصادر منخفضة النشاط");
-                wsLowAct.RightToLeft = true;
-                string[] lowActHeaders = { "#", "رقم المصدر", "النظير", "النشاط الحالي", "الموقع", "الحالة", "أُضيف بواسطة" };
+                var wsLowAct = workbook.Worksheets.Add(T("RptSheetLowActivity", "المصادر منخفضة النشاط"));
+                wsLowAct.RightToLeft = !IsEnglish();
+                string[] lowActHeaders = { "#", T("RptColSourceCode", "رقم المصدر"), T("RptColIsotope", "النظير"), T("RptColCurrentActivity", "النشاط الحالي"), T("RptColLocation", "الموقع"), T("RptColStatus", "الحالة"), T("RptColAddedBy", "أُضيف بواسطة") };
                 for (int i = 0; i < lowActHeaders.Length; i++)
                 {
                     wsLowAct.Cell(1, i + 1).Value = lowActHeaders[i];
@@ -740,9 +752,9 @@ namespace Sources.Services
                 wsLowAct.Columns().AdjustToContents();
 
                 // 4. Low Activity Alerts Sheet
-                var wsAlerts = workbook.Worksheets.Add("تنبيهات انخفاض النشاط");
-                wsAlerts.RightToLeft = true;
-                string[] alertHeaders = { "#", "رقم المصدر", "النظير", "الخطورة", "تاريخ آخر معايرة", "الحالة", "النشاط الحالي", "المسؤول" };
+                var wsAlerts = workbook.Worksheets.Add(T("RptSheetLowActivityAlerts", "تنبيهات انخفاض النشاط"));
+                wsAlerts.RightToLeft = !IsEnglish();
+                string[] alertHeaders = { "#", T("RptColSourceCode", "رقم المصدر"), T("RptColIsotope", "النظير"), T("RptColSeverity", "الخطورة"), T("RptColLastCalibrationDateExcel", "تاريخ آخر معايرة"), T("RptColStatus", "الحالة"), T("RptColCurrentActivity", "النشاط الحالي"), T("RptColResponsiblePerson", "المسؤول") };
                 for (int i = 0; i < alertHeaders.Length; i++)
                 {
                     wsAlerts.Cell(1, i + 1).Value = alertHeaders[i];
@@ -785,14 +797,14 @@ namespace Sources.Services
                         page.Size(PageSizes.A4);
                         page.Margin(1.5f, Unit.Centimetre);
                         page.DefaultTextStyle(x => x.FontSize(11).FontFamily("Arial"));
-                        page.ContentFromRightToLeft();
+                        if (IsEnglish()) page.ContentFromLeftToRight(); else page.ContentFromRightToLeft();
 
                         page.Header().Row(row =>
                         {
                             row.RelativeItem().Column(column =>
                             {
-                                column.Item().Text("منظومة مصادر — التقرير العام الشامل").FontSize(22).SemiBold().FontColor(Colors.Blue.Darken2);
-                                column.Item().Text($"تاريخ الاستخراج: {DateTime.Now:yyyy/MM/dd HH:mm}").FontSize(12).FontColor(Colors.Grey.Darken2);
+                                column.Item().Text(T("RptTitleGeneralReportPdf", "منظومة مصادر — التقرير العام الشامل")).FontSize(22).SemiBold().FontColor(Colors.Blue.Darken2);
+                                column.Item().Text($"{T("RptLabelExtractDate", "تاريخ الاستخراج:")} {DateTime.Now:yyyy/MM/dd HH:mm}").FontSize(12).FontColor(Colors.Grey.Darken2);
                                 column.Item().PaddingVertical(10).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
                             });
                         });
@@ -800,11 +812,11 @@ namespace Sources.Services
                         page.Content().Column(column =>
                         {
                             // 1. Inventory Section
-                            column.Item().PaddingVertical(10).Text("1. تقرير جرد المصادر والمواد المشعة").FontSize(16).SemiBold().FontColor(Colors.Blue.Medium);
+                            column.Item().PaddingVertical(10).Text(T("RptSectionInventory", "1. تقرير جرد المصادر والمواد المشعة")).FontSize(16).SemiBold().FontColor(Colors.Blue.Medium);
                             column.Item().Element(c => ComposeContentInventory(c, inventory));
 
                             // 2. Borrowing Section
-                            column.Item().PaddingTop(20).PaddingBottom(10).Text("2. تقرير سجل الاستعارات").FontSize(16).SemiBold().FontColor(Colors.Blue.Medium);
+                            column.Item().PaddingTop(20).PaddingBottom(10).Text(T("RptSectionBorrowing", "2. تقرير سجل الاستعارات")).FontSize(16).SemiBold().FontColor(Colors.Blue.Medium);
                             column.Item().Table(table =>
                             {
                                 table.ColumnsDefinition(columns =>
@@ -819,11 +831,11 @@ namespace Sources.Services
                                 table.Header(header =>
                                 {
                                     header.Cell().Element(HeaderStyle).Text("#");
-                                    header.Cell().Element(HeaderStyle).Text("رقم المصدر");
-                                    header.Cell().Element(HeaderStyle).Text("المستعير");
-                                    header.Cell().Element(HeaderStyle).Text("الغرض");
-                                    header.Cell().Element(HeaderStyle).Text("تاريخ الإرجاع");
-                                    header.Cell().Element(HeaderStyle).Text("الحالة");
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColSourceCode", "رقم المصدر"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColBorrower", "المستعير"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColPurpose", "الغرض"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColReturnDate", "تاريخ الإرجاع"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColStatus", "الحالة"));
                                     static IContainer HeaderStyle(IContainer c) => c.Background(Colors.Blue.Medium).PaddingVertical(6).AlignCenter().DefaultTextStyle(x => x.SemiBold().FontColor(Colors.White));
                                 });
 
@@ -850,11 +862,11 @@ namespace Sources.Services
                             });
 
                             // 3. Low Activity Section
-                            column.Item().PaddingTop(20).PaddingBottom(10).Text("3. تقرير المصادر منخفضة النشاط الإشعاعي").FontSize(16).SemiBold().FontColor(Colors.Blue.Medium);
+                            column.Item().PaddingTop(20).PaddingBottom(10).Text(T("RptSectionLowActivity", "3. تقرير المصادر منخفضة النشاط الإشعاعي")).FontSize(16).SemiBold().FontColor(Colors.Blue.Medium);
                             column.Item().Element(c => ComposeContentInventory(c, lowActivity)); // Reuses inventory table format with empty check
 
                             // 4. Low Activity Alert Section
-                            column.Item().PaddingTop(20).PaddingBottom(10).Text("4. تنبيهات انخفاض النشاط").FontSize(16).SemiBold().FontColor(Colors.Red.Medium);
+                            column.Item().PaddingTop(20).PaddingBottom(10).Text(T("RptSectionLowActivityAlerts", "4. تنبيهات انخفاض النشاط")).FontSize(16).SemiBold().FontColor(Colors.Red.Medium);
                             column.Item().Table(table =>
                             {
                                 table.ColumnsDefinition(columns =>
@@ -869,11 +881,11 @@ namespace Sources.Services
                                 table.Header(header =>
                                 {
                                     header.Cell().Element(HeaderStyle).Text("#");
-                                    header.Cell().Element(HeaderStyle).Text("المصدر");
-                                    header.Cell().Element(HeaderStyle).Text("النظير");
-                                    header.Cell().Element(HeaderStyle).Text("الخطورة");
-                                    header.Cell().Element(HeaderStyle).Text("تاريخ المعايرة");
-                                    header.Cell().Element(HeaderStyle).Text("النشاط الحالي");
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColSourceShort", "المصدر"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColIsotope", "النظير"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColSeverity", "الخطورة"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColCalibrationDatePdf", "تاريخ المعايرة"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColCurrentActivity", "النشاط الحالي"));
                                     static IContainer HeaderStyle(IContainer c) => c.Background(Colors.Red.Lighten4).Padding(5).BorderBottom(1).BorderColor(Colors.Red.Medium);
                                 });
 
@@ -910,10 +922,10 @@ namespace Sources.Services
             await Task.Run(() =>
             {
                 using var workbook = new XLWorkbook();
-                var worksheet = workbook.Worksheets.Add("المستخدمين والكوادر");
-                worksheet.RightToLeft = true;
+                var worksheet = workbook.Worksheets.Add(T("RptSheetUsers", "المستخدمين والكوادر"));
+                worksheet.RightToLeft = !IsEnglish();
 
-                string[] headers = { "#", "الاسم الكامل", "اسم المستخدم", "الدور / الصلاحية", "البريد الإلكتروني", "الحالة", "حالة القفل", "آخر تسجيل دخول" };
+                string[] headers = { "#", T("RptColFullName", "الاسم الكامل"), T("RptColUsername", "اسم المستخدم"), T("RptColRoleExcel", "الدور / الصلاحية"), T("RptColEmail", "البريد الإلكتروني"), T("RptColStatus", "الحالة"), T("RptColLockStatus", "حالة القفل"), T("RptColLastLogin", "آخر تسجيل دخول") };
                 for (int i = 0; i < headers.Length; i++)
                 {
                     worksheet.Cell(1, i + 1).Value = headers[i];
@@ -956,9 +968,9 @@ namespace Sources.Services
                         page.Margin(2, Unit.Centimetre);
                         page.PageColor(Colors.White);
                         page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
-                        page.ContentFromRightToLeft();
+                        if (IsEnglish()) page.ContentFromLeftToRight(); else page.ContentFromRightToLeft();
 
-                        page.Header().Element(c => ComposeHeader(c, "منظومة مصادر — تقرير الكوادر والمستخدمين"));
+                        page.Header().Element(c => ComposeHeader(c, T("RptTitleUsersPdf", "منظومة مصادر — تقرير الكوادر والمستخدمين")));
 
                         page.Content().PaddingVertical(1, Unit.Centimetre).Column(column =>
                         {
@@ -978,12 +990,12 @@ namespace Sources.Services
                                 table.Header(header =>
                                 {
                                     header.Cell().Element(HeaderStyle).Text("#");
-                                    header.Cell().Element(HeaderStyle).Text("الاسم الكامل");
-                                    header.Cell().Element(HeaderStyle).Text("اسم المستخدم");
-                                    header.Cell().Element(HeaderStyle).Text("الدور");
-                                    header.Cell().Element(HeaderStyle).Text("البريد الإلكتروني");
-                                    header.Cell().Element(HeaderStyle).Text("الحالة");
-                                    header.Cell().Element(HeaderStyle).Text("آخر تسجيل دخول");
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColFullName", "الاسم الكامل"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColUsername", "اسم المستخدم"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColRolePdf", "الدور"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColEmail", "البريد الإلكتروني"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColStatus", "الحالة"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColLastLogin", "آخر تسجيل دخول"));
 
                                     static IContainer HeaderStyle(IContainer c) => c.Background(Colors.Blue.Medium).PaddingVertical(6).AlignCenter().DefaultTextStyle(x => x.SemiBold().FontColor(Colors.White));
                                 });
@@ -1024,10 +1036,10 @@ namespace Sources.Services
             await Task.Run(() =>
             {
                 using var workbook = new XLWorkbook();
-                var worksheet = workbook.Worksheets.Add("سجل التدقيق والنشاطات");
-                worksheet.RightToLeft = true;
+                var worksheet = workbook.Worksheets.Add(T("RptSheetAuditLogs", "سجل التدقيق والنشاطات"));
+                worksheet.RightToLeft = !IsEnglish();
 
-                string[] headers = { "#", "المستخدم", "نوع العملية", "الجدول المتأثر", "التفاصيل", "التاريخ والوقت" };
+                string[] headers = { "#", T("RptColUser", "المستخدم"), T("RptColOperationTypeExcel", "نوع العملية"), T("RptColAffectedTableExcel", "الجدول المتأثر"), T("RptColDetails", "التفاصيل"), T("RptColDateTime", "التاريخ والوقت") };
                 for (int i = 0; i < headers.Length; i++)
                 {
                     worksheet.Cell(1, i + 1).Value = headers[i];
@@ -1068,9 +1080,9 @@ namespace Sources.Services
                         page.Margin(2, Unit.Centimetre);
                         page.PageColor(Colors.White);
                         page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
-                        page.ContentFromRightToLeft();
+                        if (IsEnglish()) page.ContentFromLeftToRight(); else page.ContentFromRightToLeft();
 
-                        page.Header().Element(c => ComposeHeader(c, "منظومة مصادر — تقرير سجل التدقيق والنشاطات"));
+                        page.Header().Element(c => ComposeHeader(c, T("RptTitleAuditLogsPdf", "منظومة مصادر — تقرير سجل التدقيق والنشاطات")));
 
                         page.Content().PaddingVertical(1, Unit.Centimetre).Column(column =>
                         {
@@ -1089,11 +1101,11 @@ namespace Sources.Services
                                 table.Header(header =>
                                 {
                                     header.Cell().Element(HeaderStyle).Text("#");
-                                    header.Cell().Element(HeaderStyle).Text("المستخدم");
-                                    header.Cell().Element(HeaderStyle).Text("العملية");
-                                    header.Cell().Element(HeaderStyle).Text("الجدول");
-                                    header.Cell().Element(HeaderStyle).Text("التفاصيل");
-                                    header.Cell().Element(HeaderStyle).Text("التاريخ والوقت");
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColUser", "المستخدم"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColOperationTypePdf", "العملية"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColAffectedTablePdf", "الجدول"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColDetails", "التفاصيل"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColDateTime", "التاريخ والوقت"));
 
                                     static IContainer HeaderStyle(IContainer c) => c.Background(Colors.Blue.Medium).PaddingVertical(6).AlignCenter().DefaultTextStyle(x => x.SemiBold().FontColor(Colors.White));
                                 });
@@ -1133,19 +1145,19 @@ namespace Sources.Services
             await Task.Run(() =>
             {
                 using var workbook = new XLWorkbook();
-                var sheetName = SanitizeSheetName(reportTitle, "اختبارات التسرب");
+                var sheetName = SanitizeSheetName(reportTitle, T("RptSheetLeakTestsDefault", "اختبارات التسرب"));
                 var ws = workbook.Worksheets.Add(sheetName);
-                ws.RightToLeft = true;
+                ws.RightToLeft = !IsEnglish();
 
                 // Title
-                ws.Cell(1, 1).Value = "منظومة مصادر — " + (string.IsNullOrWhiteSpace(reportTitle) ? "تقرير اختبارات التسرب الدوري" : reportTitle);
+                ws.Cell(1, 1).Value = T("RptTitlePrefixSystem", "منظومة مصادر — ") + (string.IsNullOrWhiteSpace(reportTitle) ? T("RptTitleLeakTestsExcelDefault", "تقرير اختبارات التسرب الدوري") : reportTitle);
                 ws.Range(1, 1, 1, 10).Merge().Style.Font.SetBold().Font.SetFontSize(14).Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
 
-                ws.Cell(2, 1).Value = $"تاريخ استخراج التقرير: {DateTime.Now:yyyy/MM/dd HH:mm}";
+                ws.Cell(2, 1).Value = $"{T("RptLabelExtractionReportDate", "تاريخ استخراج التقرير:")} {DateTime.Now:yyyy/MM/dd HH:mm}";
                 ws.Range(2, 1, 2, 10).Merge().Style.Font.SetFontSize(10).Font.SetFontColor(XLColor.DarkGray).Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
 
                 // Table Headers
-                string[] headers = { "#", "كود المصدر", "النظير المشع", "تاريخ الفحص", "الاستحقاق القادم", "النتيجة", "النشاط المقاس (Bq)", "القائم بالفحص / المفتش", "رقم الشهادة", "ملاحظات" };
+                string[] headers = { "#", T("RptColSourceCodeAlt", "كود المصدر"), T("RptColIsotopeRadioactive", "النظير المشع"), T("RptColTestDate", "تاريخ الفحص"), T("RptColNextDue", "الاستحقاق القادم"), T("RptColResult", "النتيجة"), T("RptColMeasuredActivityExcel", "النشاط المقاس (Bq)"), T("RptColInspectorExcel", "القائم بالفحص / المفتش"), T("RptColCertificateNumber", "رقم الشهادة"), T("RptColNotes", "ملاحظات") };
                 for (int col = 0; col < headers.Length; col++)
                 {
                     var cell = ws.Cell(4, col + 1);
@@ -1193,7 +1205,7 @@ namespace Sources.Services
             {
                 var list = records?.ToList() ?? new List<LeakTestRecord>();
                 var noDataText = GetNoDataText();
-                var title = string.IsNullOrWhiteSpace(reportTitle) ? "تقرير اختبارات التسرب الدوري (Leak/Wipe Tests)" : reportTitle;
+                var title = string.IsNullOrWhiteSpace(reportTitle) ? T("RptTitleLeakTestsPdfDefault", "تقرير اختبارات التسرب الدوري (Leak/Wipe Tests)") : reportTitle;
 
                 Document.Create(container =>
                 {
@@ -1203,7 +1215,7 @@ namespace Sources.Services
                         page.Margin(1.5f, Unit.Centimetre);
                         page.PageColor(Colors.White);
                         page.DefaultTextStyle(x => x.FontFamily("Segoe UI").FontSize(9.5f));
-                        page.ContentFromRightToLeft();
+                        if (IsEnglish()) page.ContentFromLeftToRight(); else page.ContentFromRightToLeft();
 
                         page.Header().Element(c => ComposeHeader(c, title));
 
@@ -1228,15 +1240,15 @@ namespace Sources.Services
                                 table.Header(header =>
                                 {
                                     header.Cell().Element(HeaderStyle).Text("#");
-                                    header.Cell().Element(HeaderStyle).Text("كود المصدر");
-                                    header.Cell().Element(HeaderStyle).Text("النظير");
-                                    header.Cell().Element(HeaderStyle).Text("تاريخ الفحص");
-                                    header.Cell().Element(HeaderStyle).Text("الاستحقاق القادم");
-                                    header.Cell().Element(HeaderStyle).Text("النتيجة");
-                                    header.Cell().Element(HeaderStyle).Text("النشاط (Bq)");
-                                    header.Cell().Element(HeaderStyle).Text("المفتش / الفاحص");
-                                    header.Cell().Element(HeaderStyle).Text("رقم الشهادة");
-                                    header.Cell().Element(HeaderStyle).Text("ملاحظات");
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColSourceCodeAlt", "كود المصدر"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColIsotope", "النظير"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColTestDate", "تاريخ الفحص"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColNextDue", "الاستحقاق القادم"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColResult", "النتيجة"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColMeasuredActivityPdf", "النشاط (Bq)"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColInspectorPdf", "المفتش / الفاحص"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColCertificateNumber", "رقم الشهادة"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColNotes", "ملاحظات"));
 
                                     static IContainer HeaderStyle(IContainer c) => c.Background(Colors.Blue.Medium).PaddingVertical(6).AlignCenter().DefaultTextStyle(x => x.SemiBold().FontColor(Colors.White));
                                 });
@@ -1280,23 +1292,23 @@ namespace Sources.Services
             await Task.Run(() =>
             {
                 using var workbook = new XLWorkbook();
-                var title = string.IsNullOrWhiteSpace(reportTitle) ? "المصادر الفاشلة في فحص التسرب" : reportTitle;
-                var sheetName = SanitizeSheetName(title, "فحوصات فاشلة");
+                var title = string.IsNullOrWhiteSpace(reportTitle) ? T("RptTitleFailedLeakTestsSheetDefault", "المصادر الفاشلة في فحص التسرب") : reportTitle;
+                var sheetName = SanitizeSheetName(title, T("RptSheetFailedLeakTestsDefault", "فحوصات فاشلة"));
                 var ws = workbook.Worksheets.Add(sheetName);
-                ws.RightToLeft = true;
+                ws.RightToLeft = !IsEnglish();
 
                 // العنوان الرئيسي للتقرير
-                ws.Cell(1, 1).Value = "منظومة مصادر — " + (string.IsNullOrWhiteSpace(reportTitle) ? "تقرير المصادر الفاشلة في فحص التسرب" : reportTitle);
+                ws.Cell(1, 1).Value = T("RptTitlePrefixSystem", "منظومة مصادر — ") + (string.IsNullOrWhiteSpace(reportTitle) ? T("RptTitleFailedLeakTestsDefault", "تقرير المصادر الفاشلة في فحص التسرب") : reportTitle);
                 ws.Range(1, 1, 1, 7).Merge().Style
                     .Font.SetBold().Font.SetFontSize(14).Font.SetFontColor(XLColor.FromHtml("#DC2626"))
                     .Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
 
-                ws.Cell(2, 1).Value = $"تاريخ التصدير: {DateTime.Now:yyyy/MM/dd HH:mm}";
+                ws.Cell(2, 1).Value = $"{T("RptLabelExportDate", "تاريخ التصدير:")} {DateTime.Now:yyyy/MM/dd HH:mm}";
                 ws.Range(2, 1, 2, 7).Merge().Style
                     .Font.SetFontSize(10).Font.SetFontColor(XLColor.Gray)
                     .Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
 
-                string[] headers = { "#", "كود المصدر", "النظير", "الموقع", "تاريخ الفحص الفاشل", "حالة المصدر", "ملاحظات الفحص" };
+                string[] headers = { "#", T("RptColSourceCodeAlt", "كود المصدر"), T("RptColIsotope", "النظير"), T("RptColLocation", "الموقع"), T("RptColFailedTestDate", "تاريخ الفحص الفاشل"), T("RptColSourceStatus", "حالة المصدر"), T("RptColTestNotes", "ملاحظات الفحص") };
                 for (int i = 0; i < headers.Length; i++)
                 {
                     var cell = ws.Cell(4, i + 1);
@@ -1341,7 +1353,7 @@ namespace Sources.Services
             {
                 var list = records?.ToList() ?? new List<LeakTestRecord>();
                 var noDataText = GetNoDataText();
-                var title = string.IsNullOrWhiteSpace(reportTitle) ? "تقرير المصادر الفاشلة في فحص التسرب" : reportTitle;
+                var title = string.IsNullOrWhiteSpace(reportTitle) ? T("RptTitleFailedLeakTestsDefault", "تقرير المصادر الفاشلة في فحص التسرب") : reportTitle;
 
                 Document.Create(container =>
                 {
@@ -1351,7 +1363,7 @@ namespace Sources.Services
                         page.Margin(1.5f, Unit.Centimetre);
                         page.PageColor(Colors.White);
                         page.DefaultTextStyle(x => x.FontFamily("Segoe UI").FontSize(9.5f));
-                        page.ContentFromRightToLeft();
+                        if (IsEnglish()) page.ContentFromLeftToRight(); else page.ContentFromRightToLeft();
 
                         page.Header().Element(c => ComposeHeader(c, title));
 
@@ -1373,12 +1385,12 @@ namespace Sources.Services
                                 table.Header(header =>
                                 {
                                     header.Cell().Element(HeaderStyle).Text("#");
-                                    header.Cell().Element(HeaderStyle).Text("كود المصدر");
-                                    header.Cell().Element(HeaderStyle).Text("النظير");
-                                    header.Cell().Element(HeaderStyle).Text("الموقع");
-                                    header.Cell().Element(HeaderStyle).Text("تاريخ الفحص الفاشل");
-                                    header.Cell().Element(HeaderStyle).Text("حالة المصدر");
-                                    header.Cell().Element(HeaderStyle).Text("ملاحظات الفحص");
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColSourceCodeAlt", "كود المصدر"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColIsotope", "النظير"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColLocation", "الموقع"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColFailedTestDate", "تاريخ الفحص الفاشل"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColSourceStatus", "حالة المصدر"));
+                                    header.Cell().Element(HeaderStyle).Text(T("RptColTestNotes", "ملاحظات الفحص"));
 
                                     static IContainer HeaderStyle(IContainer c) => c.Background(Colors.Red.Medium).PaddingVertical(6).AlignCenter().DefaultTextStyle(x => x.SemiBold().FontColor(Colors.White));
                                 });
@@ -1420,13 +1432,13 @@ namespace Sources.Services
             await Task.Run(() =>
             {
                 using var workbook = new XLWorkbook();
-                var title = reportTitle ?? "جرد المصادر النيترونية";
-                var sheetName = SanitizeSheetName(title, "المصادر النيترونية");
+                var title = reportTitle ?? T("RptTitleNeutronExcelDefault", "جرد المصادر النيترونية");
+                var sheetName = SanitizeSheetName(title, T("RptSheetNeutronDefault", "المصادر النيترونية"));
                 var worksheet = workbook.Worksheets.Add(sheetName);
-                worksheet.RightToLeft = true;
+                worksheet.RightToLeft = !IsEnglish();
 
                 // Headers
-                string[] headers = { "#", "رقم المصدر", "النوع المرجعي", "معدل الانبعاث المُعاير (n/s)", "عدم اليقين %", "الموقع", "الحالة", GetEmissionCalibrationDateHeader() };
+                string[] headers = { "#", T("RptColSourceCode", "رقم المصدر"), T("RptColReferenceType", "النوع المرجعي"), T("RptColCalibratedEmissionRate", "معدل الانبعاث المُعاير (n/s)"), T("RptColUncertaintyPercentExcel", "عدم اليقين %"), T("RptColLocation", "الموقع"), T("RptColStatus", "الحالة"), GetEmissionCalibrationDateHeader() };
                 for (int i = 0; i < headers.Length; i++)
                 {
                     worksheet.Cell(1, i + 1).Value = headers[i];
@@ -1469,7 +1481,7 @@ namespace Sources.Services
         {
             await Task.Run(() =>
             {
-                var title = reportTitle ?? "تقرير جرد المصادر النيترونية";
+                var title = reportTitle ?? T("RptTitleNeutronPdfDefault", "تقرير جرد المصادر النيترونية");
                 var list = sources?.ToList() ?? new List<NeutronSource>();
 
                 Document.Create(container =>
@@ -1480,7 +1492,7 @@ namespace Sources.Services
                         page.Margin(1.5f, Unit.Centimetre);
                         page.PageColor(Colors.White);
                         page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
-                        page.ContentFromRightToLeft();
+                        if (IsEnglish()) page.ContentFromLeftToRight(); else page.ContentFromRightToLeft();
 
                         page.Header().Element(c => ComposeHeaderInventory(c, title));
 
@@ -1503,12 +1515,12 @@ namespace Sources.Services
                                 table.Header(h =>
                                 {
                                     h.Cell().Element(HeaderStyle).Text("#");
-                                    h.Cell().Element(HeaderStyle).Text("رقم المصدر");
-                                    h.Cell().Element(HeaderStyle).Text("النوع المرجعي");
-                                    h.Cell().Element(HeaderStyle).Text("معدل الانبعاث المُعاير (n/s)");
-                                    h.Cell().Element(HeaderStyle).Text("عدم اليقين");
-                                    h.Cell().Element(HeaderStyle).Text("الموقع");
-                                    h.Cell().Element(HeaderStyle).Text("الحالة");
+                                    h.Cell().Element(HeaderStyle).Text(T("RptColSourceCode", "رقم المصدر"));
+                                    h.Cell().Element(HeaderStyle).Text(T("RptColReferenceType", "النوع المرجعي"));
+                                    h.Cell().Element(HeaderStyle).Text(T("RptColCalibratedEmissionRate", "معدل الانبعاث المُعاير (n/s)"));
+                                    h.Cell().Element(HeaderStyle).Text(T("RptColUncertaintyPdf", "عدم اليقين"));
+                                    h.Cell().Element(HeaderStyle).Text(T("RptColLocation", "الموقع"));
+                                    h.Cell().Element(HeaderStyle).Text(T("RptColStatus", "الحالة"));
                                     h.Cell().Element(HeaderStyle).Text(GetEmissionCalibrationDateHeader());
 
                                     static IContainer HeaderStyle(IContainer c) => c.Background(Colors.Teal.Darken2).PaddingVertical(6).AlignCenter().DefaultTextStyle(x => x.SemiBold().FontColor(Colors.White));
@@ -1516,7 +1528,7 @@ namespace Sources.Services
 
                                 if (!list.Any())
                                 {
-                                    table.Cell().ColumnSpan(8).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text("لا توجد مصادر نيترونية مسجلة").FontSize(11).FontColor(Colors.Grey.Darken1);
+                                    table.Cell().ColumnSpan(8).Background(Colors.Grey.Lighten4).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(10).AlignCenter().Text(T("RptTextNoNeutronSources", "لا توجد مصادر نيترونية مسجلة")).FontSize(11).FontColor(Colors.Grey.Darken1);
                                 }
                                 else
                                 {

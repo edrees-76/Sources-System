@@ -1678,6 +1678,94 @@
     <system:String x:Key="MsgSuccessExportPdf">تم تصدير التقرير كملف PDF بنجاح.</system:String>
     <system:String x:Key="MsgSuccessExportExcel">تم تصدير البيانات إلى ملف Excel بنجاح.</system:String>
     <system:String x:Key="MsgErrExportFailedFormat">خطأ في التصدير: {0}</system:String>
+
+    <!-- الجولة 158: توطين عناوين ورؤوس أعمدة تصدير PDF/Excel (ReportingService.cs) -->
+    <system:String x:Key="RptColLocationName">اسم الموقع</system:String>
+    <system:String x:Key="RptColLocationType">النوع</system:String>
+    <system:String x:Key="RptColBuilding">المبنى</system:String>
+    <system:String x:Key="RptColRoom">الغرفة</system:String>
+    <system:String x:Key="RptColResponsiblePerson">المسؤول</system:String>
+    <system:String x:Key="RptColSourceCount">عدد المصادر</system:String>
+    <system:String x:Key="RptColAddedBy">أُضيف بواسطة</system:String>
+    <system:String x:Key="RptSheetLocations">المواقع والمخازن</system:String>
+    <system:String x:Key="RptTitleLocationsPdf">منظومة مصادر — تقرير المواقع والمخازن</system:String>
+    <system:String x:Key="RptLabelReportDate">تاريخ التقرير:</system:String>
+    <system:String x:Key="RptColSourceCode">رقم المصدر</system:String>
+    <system:String x:Key="RptColIsotope">النظير</system:String>
+    <system:String x:Key="RptColCurrentActivity">النشاط الحالي</system:String>
+    <system:String x:Key="RptColLocation">الموقع</system:String>
+    <system:String x:Key="RptColStatus">الحالة</system:String>
+    <system:String x:Key="RptSheetInventory">جرد المصادر</system:String>
+    <system:String x:Key="RptSheetBorrowHistory">سجل الاستعارات</system:String>
+    <system:String x:Key="RptTitleBorrowHistoryPdf">منظومة مصادر — تقرير استعارة المصادر</system:String>
+    <system:String x:Key="RptColBorrower">المستعير</system:String>
+    <system:String x:Key="RptColPurpose">الغرض</system:String>
+    <system:String x:Key="RptColReturnDate">تاريخ الإرجاع</system:String>
+    <system:String x:Key="RptColRequestDate">تاريخ الطلب</system:String>
+    <system:String x:Key="RptSheetLowActivityAlerts">تنبيهات انخفاض النشاط</system:String>
+    <system:String x:Key="RptTitleLowActivityAlertsPdf">منظومة مصادر — تقرير تنبيهات انخفاض النشاط</system:String>
+    <system:String x:Key="RptLabelExtractDate">تاريخ الاستخراج:</system:String>
+    <system:String x:Key="RptColSourceShort">المصدر</system:String>
+    <system:String x:Key="RptColSeverity">الخطورة</system:String>
+    <system:String x:Key="RptColLastCalibrationDateExcel">تاريخ آخر معايرة</system:String>
+    <system:String x:Key="RptColCalibrationDatePdf">تاريخ المعايرة</system:String>
+    <system:String x:Key="RptTitleGeneralReportPdf">منظومة مصادر — التقرير العام الشامل</system:String>
+    <system:String x:Key="RptSectionInventory">1. تقرير جرد المصادر والمواد المشعة</system:String>
+    <system:String x:Key="RptSectionBorrowing">2. تقرير سجل الاستعارات</system:String>
+    <system:String x:Key="RptSectionLowActivity">3. تقرير المصادر منخفضة النشاط الإشعاعي</system:String>
+    <system:String x:Key="RptSectionLowActivityAlerts">4. تنبيهات انخفاض النشاط</system:String>
+    <system:String x:Key="RptSheetLowActivity">المصادر منخفضة النشاط</system:String>
+    <system:String x:Key="RptColFullName">الاسم الكامل</system:String>
+    <system:String x:Key="RptColUsername">اسم المستخدم</system:String>
+    <system:String x:Key="RptColRoleExcel">الدور / الصلاحية</system:String>
+    <system:String x:Key="RptColRolePdf">الدور</system:String>
+    <system:String x:Key="RptColEmail">البريد الإلكتروني</system:String>
+    <system:String x:Key="RptColLockStatus">حالة القفل</system:String>
+    <system:String x:Key="RptColLastLogin">آخر تسجيل دخول</system:String>
+    <system:String x:Key="RptSheetUsers">المستخدمين والكوادر</system:String>
+    <system:String x:Key="RptTitleUsersPdf">منظومة مصادر — تقرير الكوادر والمستخدمين</system:String>
+    <system:String x:Key="RptColUser">المستخدم</system:String>
+    <system:String x:Key="RptColOperationTypeExcel">نوع العملية</system:String>
+    <system:String x:Key="RptColOperationTypePdf">العملية</system:String>
+    <system:String x:Key="RptColAffectedTableExcel">الجدول المتأثر</system:String>
+    <system:String x:Key="RptColAffectedTablePdf">الجدول</system:String>
+    <system:String x:Key="RptColDetails">التفاصيل</system:String>
+    <system:String x:Key="RptColDateTime">التاريخ والوقت</system:String>
+    <system:String x:Key="RptSheetAuditLogs">سجل التدقيق والنشاطات</system:String>
+    <system:String x:Key="RptTitleAuditLogsPdf">منظومة مصادر — تقرير سجل التدقيق والنشاطات</system:String>
+    <system:String x:Key="RptSheetLeakTestsDefault">اختبارات التسرب</system:String>
+    <system:String x:Key="RptTitlePrefixSystem" xml:space="preserve">منظومة مصادر — </system:String>
+    <system:String x:Key="RptTitleLeakTestsExcelDefault">تقرير اختبارات التسرب الدوري</system:String>
+    <system:String x:Key="RptLabelExtractionReportDate">تاريخ استخراج التقرير:</system:String>
+    <system:String x:Key="RptColSourceCodeAlt">كود المصدر</system:String>
+    <system:String x:Key="RptColIsotopeRadioactive">النظير المشع</system:String>
+    <system:String x:Key="RptColTestDate">تاريخ الفحص</system:String>
+    <system:String x:Key="RptColNextDue">الاستحقاق القادم</system:String>
+    <system:String x:Key="RptColResult">النتيجة</system:String>
+    <system:String x:Key="RptColMeasuredActivityExcel">النشاط المقاس (Bq)</system:String>
+    <system:String x:Key="RptColInspectorExcel">القائم بالفحص / المفتش</system:String>
+    <system:String x:Key="RptColCertificateNumber">رقم الشهادة</system:String>
+    <system:String x:Key="RptColNotes">ملاحظات</system:String>
+    <system:String x:Key="RptTitleLeakTestsPdfDefault">تقرير اختبارات التسرب الدوري (Leak/Wipe Tests)</system:String>
+    <system:String x:Key="RptColMeasuredActivityPdf">النشاط (Bq)</system:String>
+    <system:String x:Key="RptColInspectorPdf">المفتش / الفاحص</system:String>
+    <system:String x:Key="RptSheetFailedLeakTestsDefault">فحوصات فاشلة</system:String>
+    <system:String x:Key="RptTitleFailedLeakTestsSheetDefault">المصادر الفاشلة في فحص التسرب</system:String>
+    <system:String x:Key="RptTitleFailedLeakTestsDefault">تقرير المصادر الفاشلة في فحص التسرب</system:String>
+    <system:String x:Key="RptLabelExportDate">تاريخ التصدير:</system:String>
+    <system:String x:Key="RptColFailedTestDate">تاريخ الفحص الفاشل</system:String>
+    <system:String x:Key="RptColSourceStatus">حالة المصدر</system:String>
+    <system:String x:Key="RptColTestNotes">ملاحظات الفحص</system:String>
+    <system:String x:Key="RptTitleNeutronExcelDefault">جرد المصادر النيترونية</system:String>
+    <system:String x:Key="RptSheetNeutronDefault">المصادر النيترونية</system:String>
+    <system:String x:Key="RptColReferenceType">النوع المرجعي</system:String>
+    <system:String x:Key="RptColCalibratedEmissionRate">معدل الانبعاث المُعاير (n/s)</system:String>
+    <system:String x:Key="RptColUncertaintyPercentExcel">عدم اليقين %</system:String>
+    <system:String x:Key="RptColUncertaintyPdf">عدم اليقين</system:String>
+    <system:String x:Key="RptTitleNeutronPdfDefault">تقرير جرد المصادر النيترونية</system:String>
+    <system:String x:Key="RptTextNoNeutronSources">لا توجد مصادر نيترونية مسجلة</system:String>
+    <system:String x:Key="RptFooterPageLabel" xml:space="preserve">الصفحة </system:String>
+    <system:String x:Key="RptFooterOfLabel" xml:space="preserve"> من </system:String>
 </ResourceDictionary>
 
 
