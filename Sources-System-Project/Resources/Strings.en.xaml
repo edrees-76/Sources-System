@@ -1193,6 +1193,59 @@
     <system:String x:Key="HelpIsotopeLibrarySectionOrnlDesc">Contains certified radionuclides with specific gamma-ray dose constants (Γ) in SI units (µSv·m²/(MBq·h)) and legacy units ((mrem/h)/µCi), along with 95% lead attenuation thickness and linear attenuation coefficient (µ). This data is strictly used for 1-meter estimated dose rate calculations.</system:String>
     <system:String x:Key="HelpIsotopeLibrarySectionIcrp">2. Radionuclide Decay Database (ICRP Publication 107)</system:String>
     <system:String x:Key="HelpIsotopeLibrarySectionIcrpDesc">Covers 1,252 radionuclides as a secondary reference for general physical decay properties (half-life, decay modes, and emission energies). Notice: This reference does not contain gamma dose constants and is provided solely for scientific reference.</system:String>
+
+    <!-- 13. Leak Tests -->
+    <system:String x:Key="HelpTopicLeakTestsTitle">13. Periodic Leak/Wipe Tests</system:String>
+    <system:String x:Key="HelpTopicLeakTestsSubtitle">Record and track periodic leak and wipe tests for sealed sources</system:String>
+    <system:String x:Key="HelpBtnGoToLeakTests">Go to Leak Tests</system:String>
+    <system:String x:Key="HelpLeakTestsLeadText">The Leak Tests screen lets you record the results of periodic inspections of sealed sources to confirm containment integrity and absence of contamination, and automatically tracks the next due date.</system:String>
+    <system:String x:Key="HelpLeakTestsSectionWorkflow">Recording a New Leak Test</system:String>
+    <system:String x:Key="HelpLeakTestsStep1Title">Step 1: Select the sealed source</system:String>
+    <system:String x:Key="HelpLeakTestsStep1Desc">Only sealed sources currently in use or storage appear in the list. Select the source to be tested.</system:String>
+    <system:String x:Key="HelpLeakTestsStep2Title">Step 2: Enter the test date</system:String>
+    <system:String x:Key="HelpLeakTestsStep2Desc">Enter the date the test was performed; the system automatically suggests the next due date based on the interval configured in system settings (6 months by default, configurable).</system:String>
+    <system:String x:Key="HelpLeakTestsStep3Title">Step 3: Record the result and supporting data</system:String>
+    <system:String x:Key="HelpLeakTestsStep3Desc">Choose the test result, and optionally add the measured activity in Bq, the inspector's name, the certificate number, and any notes, then save.</system:String>
+    <system:String x:Key="HelpLeakTestsResultsTitle">The three possible results</system:String>
+    <system:String x:Key="HelpLeakTestsResultBullet1">✔ Pass: no leak detected.</system:String>
+    <system:String x:Key="HelpLeakTestsResultBullet2">✖ Fail: a leak was detected requiring immediate action.</system:String>
+    <system:String x:Key="HelpLeakTestsResultBullet3">➖ Inconclusive: the result is not conclusive and requires re-testing.</system:String>
+    <system:String x:Key="HelpLeakTestsTip1">💡 You can edit or delete any previous test record, and export the leak test list to PDF or Excel from the same screen.</system:String>
+    <system:String x:Key="HelpLeakTestsSectionAlerts">Connection to the Dashboard and Alerts</system:String>
+    <system:String x:Key="HelpLeakTestsWarning1">⚠ As the next due date approaches, a Due Soon warning alert appears on the Dashboard and Alerts screens; once it passes without a new recorded test, the alert escalates to a critical Overdue alert.</system:String>
+
+    <!-- 14. Deletions -->
+    <system:String x:Key="HelpTopicDeletionsTitle">14. Deletions Log &amp; Restore</system:String>
+    <system:String x:Key="HelpTopicDeletionsSubtitle">Browse soft-deleted items and restore them after administrator verification</system:String>
+    <system:String x:Key="HelpBtnGoToDeletions">Go to Deletions Log</system:String>
+    <system:String x:Key="HelpDeletionsLeadText">This screen lists items that were soft-deleted across five entity types, with the ability to restore any item instead of losing it permanently.</system:String>
+    <system:String x:Key="HelpDeletionsSectionWorkflow">Restoring a deleted item</system:String>
+    <system:String x:Key="HelpDeletionsWarning1">⚠ Opening this screen requires the system administrator password; an admin access confirmation prompt appears before the screen opens, so do not be surprised when it does.</system:String>
+    <system:String x:Key="HelpDeletionsStep1Title">Step 1: Open the Deletions screen</system:String>
+    <system:String x:Key="HelpDeletionsStep1Desc">From the main menu, choose 'Deletions' to open the unified deletions log.</system:String>
+    <system:String x:Key="HelpDeletionsStep2Title">Step 2: Enter the administrator password</system:String>
+    <system:String x:Key="HelpDeletionsStep2Desc">Enter the system administrator password when the verification prompt appears to access this sensitive log.</system:String>
+    <system:String x:Key="HelpDeletionsStep3Title">Step 3: Filter by type or search</system:String>
+    <system:String x:Key="HelpDeletionsStep3Desc">Choose one of the five types (Sources, Neutron Sources, Locations, Users, Radioisotopes) or use the search box to find the item; each row shows what was deleted, who deleted it, and when.</system:String>
+    <system:String x:Key="HelpDeletionsStep4Title">Step 4: Confirm the restore</system:String>
+    <system:String x:Key="HelpDeletionsStep4Desc">Click the 'Restore' button next to the item and confirm the action; the item is returned immediately to the active inventory lists.</system:String>
+
+    <!-- 15. Neutron Sources -->
+    <system:String x:Key="HelpTopicNeutronSourcesTitle">15. Neutron Sources</system:String>
+    <system:String x:Key="HelpTopicNeutronSourcesSubtitle">Calibration and decay data specific to neutron sources within the Sources screen</system:String>
+    <system:String x:Key="HelpNeutronSourcesLeadText">There is no separate screen for neutron sources; they appear as a tab inside the Sources screen itself, and each neutron source carries its own calibration data from its certificate.</system:String>
+    <system:String x:Key="HelpNeutronSourcesSectionAccess">How to reach the neutron sources tab</system:String>
+    <system:String x:Key="HelpNeutronSourcesStep1Title">Step 1: Go to the Sources screen</system:String>
+    <system:String x:Key="HelpNeutronSourcesStep1Desc">Click the button below to navigate to the Sources screen.</system:String>
+    <system:String x:Key="HelpNeutronSourcesStep2Title">Step 2: Select the 'Neutron Sources' tab</system:String>
+    <system:String x:Key="HelpNeutronSourcesStep2Desc">From within the Sources screen, manually select the 'Neutron Sources' tab to view and manage these sources; it does not open automatically.</system:String>
+    <system:String x:Key="HelpNeutronSourcesSectionCertificate">Calibration certificate data per source</system:String>
+    <system:String x:Key="HelpNeutronSourcesCertBullet1">Initial emission rate (n/s) as stated in the calibration certificate.</system:String>
+    <system:String x:Key="HelpNeutronSourcesCertBullet2">The date the emission rate was calibrated, as recorded in the certificate.</system:String>
+    <system:String x:Key="HelpNeutronSourcesCertBullet3">The relative expanded measurement uncertainty (%).</system:String>
+    <system:String x:Key="HelpNeutronSourcesCertBullet4">The calibration certificate reference (issuer and report number).</system:String>
+    <system:String x:Key="HelpNeutronSourcesWarning1">⚠ The half-life comes from the source's reference type, while the angular anisotropy factor is a property of this individual neutron source from its own certificate; if this factor is missing from the certificate, the calculation cannot proceed, and no value must ever be assumed for it (it must never be assumed to equal 1 or any other number).</system:String>
+
     <!-- Deletions & Admin Password Prompt (Round 81) -->
     <system:String x:Key="MenuDeletions">Deletions</system:String>
     <system:String x:Key="NavDeletions">Administrative Deletions Log</system:String>
