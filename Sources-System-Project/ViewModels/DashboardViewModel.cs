@@ -828,7 +828,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
                 if (idx >= 0 && idx < HistogramBins.Length)
                 {
                     string range = HistogramBins[idx].Label;
-                    return ArabicReshaper.ReshapeAndReverse($"{range}: {point.Model} مصدر");
+                    return ArabicReshaper.ReshapeAndReverse($"{range}: {point.Model} {TranslationHelper.GetString("TextSourceUnit") ?? "مصدر"}");
                 }
                 return point.Model.ToString();
             }
@@ -1006,7 +1006,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
                     string name = idx >= 0 && idx < rawLabels.Length ? rawLabels[idx] : "";
                     int count = point.Model;
                     double percent = totalIsotopesCount > 0 ? (count * 100.0 / totalIsotopesCount) : 0;
-                    return ArabicReshaper.ReshapeAndReverse($"{name}: {count} مصدر ({percent:F1}%)");
+                    return ArabicReshaper.ReshapeAndReverse($"{name}: {count} {TranslationHelper.GetString("TextSourceUnit") ?? "مصدر"} ({percent:F1}%)");
                 }
             };
 
@@ -1137,7 +1137,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
                     double percent = totalValidSources > 0 ? (count * 100.0 / totalValidSources) : 0;
                     int idx = point.Index;
                     string rawName = idx >= 0 && idx < rawLabels.Length ? rawLabels[idx] : "";
-                    return ArabicReshaper.ReshapeAndReverse($"{rawName}: {count} مصدر ({percent:F1}%)");
+                    return ArabicReshaper.ReshapeAndReverse($"{rawName}: {count} {TranslationHelper.GetString("TextSourceUnit") ?? "مصدر"} ({percent:F1}%)");
                 }
             };
 
@@ -1795,8 +1795,8 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
                 SeverityColor    = isCritical ? "#C25B4A" : "#E0A93E",
                 SeverityBadgeBackground = isCritical ? "#1AC25B4A" : "#1AE0A93E",
                 SeverityLabel    = isCritical
-                    ? (IsArabic ? "حرج" : "Critical")
-                    : (IsArabic ? "تحذير" : "Warning")
+                    ? TranslationHelper.GetString("LabelSeverityCritical") ?? (IsArabic ? "حرج" : "Critical")
+                    : TranslationHelper.GetString("LabelSeverityWarning") ?? (IsArabic ? "تحذير" : "Warning")
             });
         }
 

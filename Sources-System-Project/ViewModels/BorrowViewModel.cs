@@ -364,7 +364,7 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
         {
             foreach (var si in value.SourceIsotopes)
             {
-                string isotopeName = si.Radioisotope?.Symbol ?? "غير محدد";
+                string isotopeName = si.Radioisotope?.Symbol ?? TranslationHelper.GetString("TextUnspecified") ?? "غير محدد";
                 string activity = si.InitialActivityValue?.ToString("N4") ?? "0";
                 string unit = si.ActivityUnit?.UnitSymbol ?? "";
                 lines.Add($"• {lre}{isotopeName}: {activity} {unit}{pdf}");
@@ -372,14 +372,14 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
         }
         else
         {
-            string isotopeName = value.Radioisotope?.Symbol ?? "غير محدد";
+            string isotopeName = value.Radioisotope?.Symbol ?? TranslationHelper.GetString("TextUnspecified") ?? "غير محدد";
             string activity = value.InitialActivityValue.ToString("N4") ?? "0";
             string unit = value.InitialActivityUnit?.UnitSymbol ?? "";
             lines.Add($"• {lre}{isotopeName}: {activity} {unit}{pdf}");
         }
 
-        string location = value.Location?.LocationName ?? "غير محدد";
-        lines.Add($"📍 الموقع: {lre}{location}{pdf}");
+        string location = value.Location?.LocationName ?? TranslationHelper.GetString("TextUnspecified") ?? "غير محدد";
+        lines.Add($"📍 {TranslationHelper.GetString("LabelLocation") ?? "الموقع:"} {lre}{location}{pdf}");
 
         SelectedSourceInfo = string.Join("\n", lines);
     }
@@ -406,7 +406,7 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
             return;
         }
 
-        string confirmMsg = $"سيتم تسليم المصدر (\u2066{SelectedSourceForNew.SourceCode}\u2069) إلى (\u2066{NewBorrowerName}\u2069).\nهل أنت متأكد من المتابعة؟";
+        string confirmMsg = TranslationHelper.GetFormat("MsgConfirmDeliverSourceFormat", $"⁦{SelectedSourceForNew.SourceCode}⁩", $"⁦{NewBorrowerName}⁩");
         if (!DialogHelper.ShowConfirmation(confirmMsg, TranslationHelper.GetString("AddNewBorrowRequestTitle") ?? "طلب استعارة مصدر جديد"))
             return;
 
@@ -494,11 +494,11 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
                 var viewableRequests = Requests.Select(r => r.Request).ToList();
                 await _reportingService.GenerateBorrowHistoryPdfAsync(viewableRequests, saveFileDialog.FileName);
                 FileHelper.OpenFile(saveFileDialog.FileName);
-                DialogHelper.ShowInfo("تم تصدير التقرير كملف PDF بنجاح.");
+                DialogHelper.ShowInfo(TranslationHelper.GetString("MsgSuccessExportPdf") ?? "تم تصدير التقرير كملف PDF بنجاح.");
             }
             catch (Exception ex)
             {
-                DialogHelper.ShowError($"خطأ في التصدير: {ex.Message}");
+                DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrExportFailedFormat", ex.Message));
             }
         }
     }
@@ -520,11 +520,11 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
                 var viewableRequests = Requests.Select(r => r.Request).ToList();
                 await _reportingService.GenerateBorrowHistoryExcelAsync(viewableRequests, saveFileDialog.FileName);
                 FileHelper.OpenFile(saveFileDialog.FileName);
-                DialogHelper.ShowInfo("تم تصدير البيانات إلى ملف Excel بنجاح.");
+                DialogHelper.ShowInfo(TranslationHelper.GetString("MsgSuccessExportExcel") ?? "تم تصدير البيانات إلى ملف Excel بنجاح.");
             }
             catch (Exception ex)
             {
-                DialogHelper.ShowError($"خطأ في التصدير: {ex.Message}");
+                DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrExportFailedFormat", ex.Message));
             }
         }
     }

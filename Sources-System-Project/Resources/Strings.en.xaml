@@ -1609,6 +1609,65 @@
     <system:String x:Key="MsgErrCannotFreezeOwnAccount">You cannot freeze your own account</system:String>
     <system:String x:Key="MsgConfirmDeleteUser">Are you sure you want to delete this user?</system:String>
     <system:String x:Key="TitleConfirmDelete">Confirm Deletion</system:String>
+
+    <!-- Round 156: Dashboard/LeakTests/Settings/SourceDetails/Borrow translation (ب5 batch 2, expanded) -->
+    <system:String x:Key="TextSourceUnit">source</system:String>
+    <system:String x:Key="LabelSeverityCritical">Critical</system:String>
+    <system:String x:Key="LabelSeverityWarning">Warning</system:String>
+
+    <system:String x:Key="MsgPageStatus">Showing {0} of {1} records (page {2} of {3})</system:String>
+    <system:String x:Key="MsgAddLeakTest">Register New Leak Test</system:String>
+    <system:String x:Key="MsgEditLeakTestFormat">Edit Leak Test — {0}</system:String>
+    <system:String x:Key="MsgErrSelectSource">Please select the radioactive source under test</system:String>
+    <system:String x:Key="TitleIncompleteData">Incomplete Data</system:String>
+    <system:String x:Key="MsgErrFutureTestDate">The test date cannot be in the future</system:String>
+    <system:String x:Key="TitleInvalidDate">Invalid Date</system:String>
+    <system:String x:Key="MsgErrDueDateBeforeTestDate">The next due date must be after the current test date</system:String>
+    <system:String x:Key="MsgErrInvalidActivityValue">The measured radioactive activity must be a positive number</system:String>
+    <system:String x:Key="TitleInvalidValue">Invalid Value</system:String>
+    <system:String x:Key="MsgConfirmDeleteLeakTestFormat">Are you sure you want to delete the leak test record for source {0} dated {1}?</system:String>
+    <system:String x:Key="TitleLeakTestDeleteSuccess">Deletion Successful</system:String>
+    <system:String x:Key="LabelLeakTestRadioisotope">Radioisotope:</system:String>
+    <system:String x:Key="LabelLeakTestDate">Test Date:</system:String>
+    <system:String x:Key="LabelLeakTestNextDueDate">Next Due Date:</system:String>
+    <system:String x:Key="LabelLeakTestResult">Test Result:</system:String>
+    <system:String x:Key="LabelLeakTestMeasuredActivity">Measured Activity:</system:String>
+    <system:String x:Key="LabelLeakTestInspector">Performed By / Inspector:</system:String>
+    <system:String x:Key="LabelLeakTestCertificateNumber">Test Certificate Number:</system:String>
+    <system:String x:Key="LabelLeakTestCreatedAt">Entry Date in System:</system:String>
+    <system:String x:Key="TextNoNotes">None</system:String>
+    <system:String x:Key="TitleLeakTestDetails">Leak Test Record Details</system:String>
+    <system:String x:Key="ReportTitleLeakTestsPdf">Periodic Leak Test and Radiation Survey Report</system:String>
+    <system:String x:Key="ReportTitleLeakTestsExcel">Leak Tests</system:String>
+    <system:String x:Key="MsgErrExportPdfFailedFormat">Failed to export PDF file: {0}</system:String>
+    <system:String x:Key="MsgErrExportExcelFailedFormat">Failed to export Excel file: {0}</system:String>
+
+    <system:String x:Key="FilterBackupFiles">Backup Files (*.zip;*.db)|*.zip;*.db|Zip Archives (*.zip)|*.zip|Database files (*.db)|*.db</system:String>
+
+    <system:String x:Key="LabelSealedSourceType">Sealed Source</system:String>
+    <system:String x:Key="LabelUnsealedSourceType">Unsealed</system:String>
+    <system:String x:Key="MsgDoseRateNonGammaOnly">No effect at this distance (alpha/beta radiation only, absorbed by the source casing and air)</system:String>
+    <system:String x:Key="MsgDoseRateMissingGammaConstant">Gamma constant data not recorded for this isotope</system:String>
+    <system:String x:Key="MsgDoseRateNoContributionAt1m">No gamma radiation contribution at 1 meter</system:String>
+    <system:String x:Key="LabelDoseRateContributing">Contributing</system:String>
+    <system:String x:Key="LabelDoseRateNonContributingFormat">Non-contributing ({0})</system:String>
+    <system:String x:Key="LabelDoseRateMissingGammaConstant">Γ data not recorded</system:String>
+    <system:String x:Key="FilterAttachCertificateFiles">All Files (*.*)|*.*|PDF Files (*.pdf)|*.pdf|Word Documents (*.docx;*.doc)|*.docx;*.doc|Images (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg</system:String>
+    <system:String x:Key="MsgErrCertificateServiceUnavailable">Certificate service unavailable</system:String>
+    <system:String x:Key="TextUnknown">Unknown</system:String>
+    <system:String x:Key="MsgErrAttachCertificateFailedFormat">Failed to attach certificate: {0}</system:String>
+    <system:String x:Key="MsgErrCertificateFileNotFound">Certificate file not found on disk.</system:String>
+    <system:String x:Key="MsgErrOpenCertificateFailedFormat">Failed to open certificate: {0}</system:String>
+    <system:String x:Key="FilterByExtensionFormat">File (*{0})|*{0}|All Files (*.*)|*.*</system:String>
+    <system:String x:Key="FilterAllFiles">All Files (*.*)|*.*</system:String>
+    <system:String x:Key="MsgErrDownloadCertificateFailed">Failed to download certificate. Make sure the original file exists.</system:String>
+    <system:String x:Key="MsgErrDownloadCertificateFailedFormat">Failed to download certificate: {0}</system:String>
+    <system:String x:Key="MsgErrDeleteCertificateFailedFormat">Failed to delete certificate: {0}</system:String>
+
+    <system:String x:Key="MsgConfirmDeliverSourceFormat" xml:space="preserve">The source ({0}) will be delivered to ({1}).&#xA;Are you sure you want to continue?</system:String>
+    <system:String x:Key="MsgSuccessExportPdf">The report was successfully exported as a PDF file.</system:String>
+    <system:String x:Key="MsgSuccessExportExcel">The data was successfully exported to an Excel file.</system:String>
+    <system:String x:Key="MsgErrExportFailedFormat">Export error: {0}</system:String>
 </ResourceDictionary>
 
 

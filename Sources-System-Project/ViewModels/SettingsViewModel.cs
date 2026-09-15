@@ -341,7 +341,7 @@ public partial class SettingsViewModel : ObservableObject
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
             Title = TranslationHelper.GetString("RestoreBackupTitle") ?? "استعادة نسخة احتياطية",
-            Filter = "ملفات النسخ الاحتياطي (*.zip;*.db)|*.zip;*.db|Zip Archives (*.zip)|*.zip|Database files (*.db)|*.db",
+            Filter = TranslationHelper.GetString("FilterBackupFiles") ?? "ملفات النسخ الاحتياطي (*.zip;*.db)|*.zip;*.db|Zip Archives (*.zip)|*.zip|Database files (*.db)|*.db",
             InitialDirectory = Directory.Exists(BackupPath) ? BackupPath : string.Empty
         };
 
