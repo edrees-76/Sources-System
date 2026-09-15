@@ -66,21 +66,24 @@ namespace Sources.Views
                 catch { /* تجاهل أخطاء تحميل الصورة */ }
             }
 
-            // ضبط الأيقونة والألوان حسب النوع
+            // ضبط الأيقونة ولون شارة الأيقونة الدائرية حسب النوع
             switch (type)
             {
                 case "Error":
                     AlertIcon.Kind = PackIconKind.Error;
-                    AlertIcon.Foreground = (Brush)FindResource("DangerBrush");
+                    IconBadge.Background = (Brush)FindResource("DangerBrush");
                     break;
                 case "Warning":
                     AlertIcon.Kind = PackIconKind.Alert;
+                    IconBadge.Background = (Brush)FindResource("WarningBrush");
                     break;
                 case "Question":
                     AlertIcon.Kind = PackIconKind.QuestionMark;
+                    IconBadge.Background = (Brush)FindResource("PrimaryBrush");
                     break;
                 default:
                     AlertIcon.Kind = PackIconKind.Information;
+                    IconBadge.Background = (Brush)FindResource("PrimaryBrush");
                     break;
             }
 
