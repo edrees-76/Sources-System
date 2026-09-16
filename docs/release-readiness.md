@@ -1,7 +1,14 @@
 # منظومة مصادر — لوحة جاهزية النشر
 
 **آخر تحديث:** 16 سبتمبر 2026
-**حالة المستودع:** الجولة 165 قيد المراجعة (Draft PR غير مدموج، فرع `round-165-backup-restore-wal-safety`):
+**حالة المستودع:** الجولة 166 قيد المراجعة (Draft PR غير مدموج، فرع
+`round-166-live-activity-recalc-in-list`): `GetAllSources` تُعيد الآن حساب `CurrentActivityValue`
+حياً من الانحلال لكل مصدر `InUse`/`Storage` بنفس نمط `GetSourceById` القائم (قراءة صرفة، بلا
+`SaveChanges`)، فتستفيد `GetLowActivitySources` وقائمة المصادر ولوحة القيادة والتقارير تلقائياً بلا
+أي لمس مباشر لها — 3 اختبارات جديدة، انحراف واحد موثَّق (تعديل تاريخ معايرة اختبارين قائمين خارج
+وداخل قائمة الملفات المسموحة كي يعكسا انحلالاً حقيقياً بدل قيمة راكدة مضبوطة يدوياً)، 1279/1279
+اختباراً محلياً (Debug)، صفر فشل. تفاصيل كاملة في §الجولة 166 أدناه. الجولة 165 قيد المراجعة أيضاً
+(Draft PR غير مدموج، فرع `round-165-backup-restore-wal-safety`):
 سلامة WAL في `BackupService.RestoreBackup` — نسخة الأمان الوقائية قبل الاستعادة تستخدم الآن
 `PRAGMA/VACUUM INTO` بدل `File.Copy` الخام (تضمين بيانات WAL المُلتزمة غير المُدمَجة)، وحذف ملفَي
 `-wal`/`-shm` القديمين فوراً بعد استبدال ملف قاعدة البيانات (في مساري ZIP والاستعادة المباشرة، وفي مسار
@@ -2003,3 +2010,74 @@ cannot access the file because it is being used by another process")، لكنه�
    الوصف الحرفي للعقد ("keep a connection open during insert, as in test 1")، مبرَّر أعلاه بالتفصيل — بلا
    هذا العزل، يُعيد فحص توافق المخطط (غير المُعدَّل) إنشاء ملفَي `-wal`/`-shm` شرعياً من الجيل الجديد فور
    إعادة فتح القاعدة، فيُفسِد الاختبار بلا علاقة بالثغرة قيد الاختبار.
+
+---
+
+## الجولة 166 — إعادة حساب النشاط الحالي بشكل حيّ داخل `SourceService.GetAllSources`
+
+**الثغرة:** `SourceService.GetSourceById` (الأسطر 47-69) تفحص إن كانت حالة المصدر `InUse`/`Storage`،
+وفي هذه الحالة تبني `isotopesDict`/`unitsDict` من `db.Radioisotopes`/`db.ActivityUnits` وتستدعي الدالة
+الخاصة `CalculateSourceCurrentActivityInMemory` لإعادة حساب `CurrentActivityValue` حياً من الانحلال في
+الذاكرة (بلا `SaveChanges`، قراءة `AsNoTracking`) في كل استدعاء. أما `GetAllSources` (الأسطر 28-45) —
+تجلب القائمة الكاملة بنفس `Include`/`AsNoTracking`/`AsSplitQuery`، لكنها **لا تستدعي أي إعادة حساب
+إطلاقاً** وتُعيد `CurrentActivityValue` كما هو مخزَّن. `GetLowActivitySources` (الأسطر 576-590) تستدعي
+`GetAllSources` داخلياً فترث نفس العيب. مستهلكو `GetAllSources`: `SourcesViewModel` (القائمة الرئيسية)،
+`DashboardViewModel`، `ReportsViewModel` (بما فيها تقرير المصادر منخفضة النشاط) — فقد تعرض شاشة قائمة
+المصادر والتقارير قيمة راكدة تختلف عمّا تعرضه شاشة تفاصيل المصدر نفسه في نفس اللحظة. `UpdateAllCurrentActivities()`
+(الأسطر 462-482) تنفيذ صحيح تماماً لدفعة إعادة حساب وحفظ كاملة، لكن `grep` شامل عبر المستودع كله أكَّد
+أن مستدعييها الوحيدين اختباران في `SourceServiceTests.cs` — لا `App.xaml.cs`، لا مؤقِّت، لا ViewModel.
+
+**القرار المعماري:** تطبيق نفس نمط `GetSourceById` (إعادة حساب في الذاكرة بلا حفظ) داخل `GetAllSources`
+مباشرة بعد تجسيد الاستعلام، بدل استدعاء `UpdateAllCurrentActivities()` من مسار إقلاع/مؤقِّت — يحافظ هذا
+على مسار القراءة صرفاً (`AsNoTracking`، بلا أي أثر جانبي مُحفَّظ) ويضمن الصحة عند كل قراءة بصرف النظر عن
+تشغيل أي مهمة دفعية سابقاً. `UpdateAllCurrentActivities()` تصبح زائدة فعلياً بعد هذا الإصلاح لكنها لم
+تُحذف بقرار صريح — حذفها مؤجَّل لجولة تنظيف مستقبلية بموافقة إدريس.
+
+**التنفيذ:** داخل `GetAllSources` حصراً، بعد `.ToList().DistinctBy(s => s.Id).ToList()` الحالية حرفياً
+بلا أي تعديل عليها، بناء `isotopesDict`/`unitsDict` مرة واحدة (لا لكل مصدر) من
+`db.Radioisotopes.AsNoTracking().ToDictionary(r => r.Id)`/`db.ActivityUnits.AsNoTracking().ToDictionary(u => u.Id)`
+(نفس نمط `GetSourceById`)، ثم لكل مصدر في القائمة الناتجة بحالة `InUse`/`Storage` استدعاء
+`CalculateSourceCurrentActivityInMemory` الخاصة القائمة دون أي تعديل على توقيعها أو منطقها. لم تُلمس
+`GetSourceById`/`CreateSource`/`UpdateSource`/`RestoreSource`/`UpdateAllCurrentActivities`/
+`CalculateSourceCurrentActivityInMemory` بأي تعديل.
+
+**اختبارات جديدة (`SourceServiceTests.cs`، 3 اختبارات إضافة صرفة):**
+- `GetAllSources_InUseSourceWithStaleStoredActivity_RecalculatesLiveDecayedValue`: مصدر Co-60 (نصف
+  العمر 5.27 سنة) بمعايرة قبل 5 سنوات وقيمة `CurrentActivityValue` راكدة مضبوطة يدوياً (9999.0)؛ يثبت
+  أن `GetAllSources` تُعيد قيمة أقل من 6000 فعلياً (الانحلال الحقيقي) لا القيمة الراكدة.
+- `GetAllSources_WasteAndTransferSources_AreReturnedUnchangedWithoutRecalculation`: يثبت أن مصادر
+  `Waste`/`Transfer` تُعاد بلا أي تعديل على قيمتها المخزَّنة، مطابقاً استثناء `GetSourceById`/
+  `UpdateAllCurrentActivities` القائم.
+- `GetLowActivitySources_StaleStoredValueAboveThreshold_TrueDecayedValueBelowThreshold_IsIncluded`:
+  يثبت الفائدة المباشرة على `GetLowActivitySources` دون أي لمس مباشر لدالتها — مصدر بقيمة مخزَّنة فوق
+  العتبة (60%) لكن قيمته الحقيقية بعد الانحلال (Co-60 بعد 20 سنة، ~7.2%) تحت العتبة (10%)، يُدرَج الآن
+  ضمن النتائج بينما لم يكن يُدرَج قبل التصحيح.
+
+### النتائج
+
+3 اختبارات جديدة بالإضافة الصرفة في `SourceServiceTests.cs`. 1279/1279 اختباراً في كامل حزمة الاختبار
+(Debug محلياً، +3 عن الجولة 165)، صفر فشل، صفر تجاوز. بناء بصفر أخطاء وثلاثة تحذيرات `CS8604` سابقة
+الوجود بالضبط في `LoginWindow.xaml.cs` (سطرا 104 و199) و`ViewInstantiationTests.cs` (سطر 218)، بلا أي
+علاقة بهذه الجولة (ملفات غير مُلمَسة في هذا الـdiff). لا migration جديدة ولا أي تغيير في مخطط قاعدة
+البيانات — الإصلاح بالكامل داخل طبقة الخدمة فقط. لم تُلمس `LoginWindow`/`LoginView`/`SplashWindow`.
+
+### الانحرافات عن العقد الأصلي (موثَّقة صراحة، بلا تجميل)
+
+1. **`GetLowActivitySources_ReturnsOnlySourcesAtOrBelowThreshold` في `SourceServiceTests.cs`
+   (داخل قائمة الملفات المسموحة):** كان يضبط `CurrentActivityValue` يدوياً مباشرة (80.0 و500.0) مع
+   `calibrationDate: DateTime.Now` (بلا انحلال فعلي تقريباً). بعد التصحيح، `GetAllSources` تُعيد حساب
+   القيمة الحقيقية من الانحلال فتتجاهل الضبط اليدوي تماماً، فتصبح النسبتان ~100% لكلا المصدرين وتفشل
+   التأكيدات القديمة. عولج بتغيير تاريخ المعايرة فقط (بلا أي قيمة مخزَّنة يدوياً بعد الآن) إلى فترات
+   تُنتِج نسبة انحلال حقيقية مطابقة لنيّة الاختبار الأصلية تماماً (Cs-137، نصف العمر 30.08 سنة،
+   النسبة = 0.5^(t/T)): -120 سنة للمصدر المنخفض (~6.3%)، -10 سنوات للمصدر المرتفع (~79%). لم يتغيّر
+   عدد أو نيّة أي تأكيد.
+2. **`GetLowActivitySources_FiltersAccuratelyAroundThreshold` في `Sources.Tests/SourceRepositoryTests.cs`
+   (خارج قائمة الملفات المسموحة في نص العقد — لم يُذكر هذا الملف صراحة):** نفس فئة العطل تماماً — خمسة
+   مصادر بقيم `CurrentActivityValue` مضبوطة يدوياً مباشرة بمعايرة افتراضية (قبل 30 يوماً فقط، انحلال
+   ضئيل جداً لـCs-137)، فتفشل جميع التأكيدات الخمسة بعد التصحيح لأن كل القيم الحقيقية تعود قريبة جداً
+   من 100%. اعتُبر تعديل هذا الملف ضرورياً (لا اختياريـاً) لتحقيق بند العقد الرقم 4 الذي يُلزم بنجاح
+   **كل** اختبارات `GetAllSources`/`GetSourceById`/`GetLowActivitySources` القائمة في المستودع، لا فقط
+   تلك الموجودة في `SourceServiceTests.cs` حصراً. عولج بتغيير تاريخ المعايرة فقط لكل من المصادر الأربعة
+   غير الملغاة بحالتها (`Waste` غير متأثر بالتصحيح فتُرك بلا تعديل) إلى فترات تُنتِج نسبة الانحلال
+   الحقيقية المقصودة بدقة لكل حالة (~5.0%، ~9.98%، ~11.2%، ~50.2% لكلٍّ من `SRC-LOW-5`/`SRC-LOW-10`/
+   `SRC-LOW-10-PLUS`/`SRC-LOW-50` على التوالي)، بلا حذف أو تخفيف أي تأكيد وبلا تغيير نيّة الاختبار.
