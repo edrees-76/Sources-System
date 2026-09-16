@@ -18,7 +18,14 @@ namespace Sources.Tests;
 /// </summary>
 public class MainViewModelActivationTests : IDisposable
 {
-    private const string ValidSerial = "SOURCES-2026-TRIAL-ACTIVATE";
+    // رقم تسلسلي وهمي لأغراض الاختبار فقط، لا علاقة له بالرقم الإنتاجي الحقيقي.
+    private const string ValidSerial = "TEST-ONLY-DUMMY-SERIAL-2026";
+
+    // تجزئة SHA-256 لـValidSerial أعلاه (بعد Trim + ToUpperInvariant، بنفس منطق Activate()).
+    private static readonly string[] TestValidHashes = new[]
+    {
+        "3c474cb53e5f1276720af31f9ae9950b861b849484f2d94bac7dc2af93c59f72"
+    };
 
     private readonly Mock<IUserService> _mockUserService;
     private readonly Mock<IAlertService> _mockAlertService;
@@ -64,7 +71,7 @@ public class MainViewModelActivationTests : IDisposable
         var tempFile = Path.Combine(Path.GetTempPath(), $"mvm_license_test_{Guid.NewGuid():N}.dat");
         try
         {
-            var license = new LicenseService(tempFile);
+            var license = new LicenseService(tempFile, TestValidHashes);
             var vm = new MainViewModel(_mockUserService.Object, _mockAlertService.Object, _mockSettingsService.Object, license);
             Assert.True(vm.IsTrialMode);
 

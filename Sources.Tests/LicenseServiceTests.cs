@@ -12,7 +12,14 @@ namespace Sources.Tests;
 /// </summary>
 public class LicenseServiceTests : IDisposable
 {
-    private const string ValidSerial = "SOURCES-2026-TRIAL-ACTIVATE";
+    // رقم تسلسلي وهمي لأغراض الاختبار فقط، لا علاقة له بالرقم الإنتاجي الحقيقي.
+    private const string ValidSerial = "TEST-ONLY-DUMMY-SERIAL-2026";
+
+    // تجزئة SHA-256 لـValidSerial أعلاه (بعد Trim + ToUpperInvariant، بنفس منطق Activate()).
+    private static readonly string[] TestValidHashes = new[]
+    {
+        "3c474cb53e5f1276720af31f9ae9950b861b849484f2d94bac7dc2af93c59f72"
+    };
 
     private readonly string _tempLicenseFile;
 
@@ -20,6 +27,8 @@ public class LicenseServiceTests : IDisposable
     {
         _tempLicenseFile = Path.Combine(Path.GetTempPath(), $"license_test_{Guid.NewGuid():N}.dat");
     }
+
+    private LicenseService CreateSut() => new LicenseService(_tempLicenseFile, TestValidHashes);
 
     public void Dispose()
     {
@@ -34,14 +43,14 @@ public class LicenseServiceTests : IDisposable
     [Fact]
     public void IsActivated_WhenNoStateFileExists_DefaultsToFalse()
     {
-        var sut = new LicenseService(_tempLicenseFile);
+        var sut = CreateSut();
         Assert.False(sut.IsActivated);
     }
 
     [Fact]
     public void Activate_WithValidSerial_ActivatesAndReturnsSuccess()
     {
-        var sut = new LicenseService(_tempLicenseFile);
+        var sut = CreateSut();
 
         var (success, message) = sut.Activate(ValidSerial);
 
@@ -53,9 +62,9 @@ public class LicenseServiceTests : IDisposable
     [Fact]
     public void Activate_WithValidSerial_IsCaseInsensitiveAndTrimsWhitespace()
     {
-        var sut = new LicenseService(_tempLicenseFile);
+        var sut = CreateSut();
 
-        var (success, _) = sut.Activate("   sources-2026-trial-activate   ");
+        var (success, _) = sut.Activate("   test-only-dummy-serial-2026   ");
 
         Assert.True(success);
         Assert.True(sut.IsActivated);
@@ -64,7 +73,7 @@ public class LicenseServiceTests : IDisposable
     [Fact]
     public void Activate_WithInvalidSerial_DoesNotActivateAndReturnsClearFailureMessage()
     {
-        var sut = new LicenseService(_tempLicenseFile);
+        var sut = CreateSut();
 
         var (success, message) = sut.Activate("NOT-A-VALID-SERIAL");
 
@@ -76,7 +85,7 @@ public class LicenseServiceTests : IDisposable
     [Fact]
     public void Activate_WithEmptySerial_ReturnsFailureWithoutThrowing()
     {
-        var sut = new LicenseService(_tempLicenseFile);
+        var sut = CreateSut();
 
         var (success, message) = sut.Activate("");
 
@@ -91,12 +100,12 @@ public class LicenseServiceTests : IDisposable
         // ملاحظة: يعتمد هذا الاختبار على توفر DPAPI (ProtectedData) بنطاق LocalMachine في بيئة
         // التشغيل. إن تعذّر ذلك في بيئة CI معزولة عن سياق مستخدم/جهاز حقيقي، سيفشل هذا الاختبار
         // تحديداً بخطأ تشفير بدل نجاح كاذب، وهو سلوك متوقَّع موثَّق هنا صراحة.
-        var first = new LicenseService(_tempLicenseFile);
+        var first = CreateSut();
         var (success, _) = first.Activate(ValidSerial);
         Assert.True(success);
         Assert.True(File.Exists(_tempLicenseFile));
 
-        var second = new LicenseService(_tempLicenseFile);
+        var second = CreateSut();
         Assert.True(second.IsActivated);
     }
 }
