@@ -32,6 +32,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private System.Collections.ObjectModel.ObservableCollection<Sources.Models.AlertNotification> _notifications = new();
     [ObservableProperty] private int _unreadNotificationsCount;
     private System.Windows.Threading.DispatcherTimer? _alertTimer;
+    private bool _loginSessionInitialized;
 
     /// <summary>خاصية اختبارية: عند تعيينها في وضع الاختبار (DialogHelper.IsTestMode)، يُستعمل
     /// هذا الرقم مباشرة كمُدخل للتفعيل بدل فتح ActivationDialog الفعلية.</summary>
@@ -77,6 +78,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     private void OnLoginSuccess()
     {
+        if (_loginSessionInitialized)
+        {
+            return;
+        }
+        _loginSessionInitialized = true;
+
         IsLoggedIn = true;
         CurrentUserName = _userService.CurrentUser?.FullName ?? "";
         CurrentUserRole = _userService.CurrentUser?.Role?.RoleName ?? "";
@@ -406,6 +413,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         CurrentUserName = string.Empty;
         CurrentUserRole = string.Empty;
         IsLoggedIn = false;
+        _loginSessionInitialized = false;
 
         RunOnUI(() =>
         {
