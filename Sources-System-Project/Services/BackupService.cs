@@ -148,10 +148,28 @@ public class BackupService : IBackupService
             var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
 
             // 1. نسخة أمان وقائية مزدوجة قبل أي استبدال
+            // تُستخدم PRAGMA/VACUUM INTO بدلاً من File.Copy الخام لضمان تضمين أي بيانات
+            // مُلتزمة (committed) موجودة حالياً في ملفات WAL/SHM ولم تُدمج بعد في الملف الرئيسي
             var safetyBackupDb = Path.Combine(_backupDir, $"SOURCES_pre_restore_{timestamp}.db");
             if (File.Exists(_dbPath))
             {
-                File.Copy(_dbPath, safetyBackupDb, overwrite: true);
+                Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+                var safetyConnStr = new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder
+                {
+                    DataSource = _dbPath,
+                    Mode = Microsoft.Data.Sqlite.SqliteOpenMode.ReadOnly,
+                    DefaultTimeout = 5
+                }.ToString();
+
+                using (var safetyConn = new Microsoft.Data.Sqlite.SqliteConnection(safetyConnStr))
+                {
+                    safetyConn.Open();
+                    using var safetyCmd = safetyConn.CreateCommand();
+                    var escapedSafetyPath = safetyBackupDb.Replace("'", "''");
+                    safetyCmd.CommandText = $"VACUUM INTO '{escapedSafetyPath}';";
+                    safetyCmd.ExecuteNonQuery();
+                }
+                Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
             }
 
             var certParent = Path.GetDirectoryName(_certificatesFolder) ?? AppDomain.CurrentDomain.BaseDirectory;
@@ -184,6 +202,10 @@ public class BackupService : IBackupService
                     // استبدال ملف قاعدة البيانات الحالي
                     File.Copy(tempExtractedDb, _dbPath, overwrite: true);
                     try { File.Delete(tempExtractedDb); } catch { }
+
+                    // حذف ملفات WAL/SHM القديمة العائدة لقاعدة البيانات السابقة كي لا يتم تطبيق
+                    // إطارات WAL من جيل قاعدة بيانات مختلف فوق الملف الرئيسي الجديد
+                    DeleteStaleWalShmFiles();
 
                     // ب. استبدال مجلد Certificates بالكامل
                     if (!Directory.Exists(_certificatesFolder))
@@ -222,6 +244,9 @@ public class BackupService : IBackupService
             {
                 // استعادة ملف .db مباشر (نسخ سابقة - Backward Compatibility)
                 File.Copy(backupFilePath, _dbPath, overwrite: true);
+
+                // حذف ملفات WAL/SHM القديمة العائدة لقاعدة البيانات السابقة
+                DeleteStaleWalShmFiles();
             }
 
             Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
@@ -307,6 +332,10 @@ public class BackupService : IBackupService
                 if (File.Exists(safetyBackupDb))
                 {
                     File.Copy(safetyBackupDb, _dbPath, overwrite: true);
+
+                    // حذف ملفات WAL/SHM القديمة العائدة للاستعادة الفاشلة كي لا يتم تطبيق
+                    // إطارات WAL من جيل قاعدة بيانات مختلف فوق ملف التراجع
+                    DeleteStaleWalShmFiles();
                 }
 
                 // استرجاع النسخة الوقائية السابقة لمجلد الشهادات
@@ -411,6 +440,39 @@ public class BackupService : IBackupService
         catch (Exception ex)
         {
             LoggerService.LogError("تعذّر تنظيف النسخ الاحتياطية القديمة كلياً", ex);
+        }
+    }
+
+    /// <summary>
+    /// حذف ملفات WAL/SHM المتبقية من جيل قاعدة بيانات سابق بعد استبدال أو استرجاع ملف قاعدة البيانات الرئيسي.
+    /// فشل حذف أحد الملفين لا يوقف عملية الاستعادة، ويُسجَّل تحذير فقط.
+    /// </summary>
+    private void DeleteStaleWalShmFiles()
+    {
+        var walFile = _dbPath + "-wal";
+        if (File.Exists(walFile))
+        {
+            try
+            {
+                File.Delete(walFile);
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogWarning($"تعذّر حذف ملف WAL القديم بعد الاستعادة: {walFile}. السبب: {ex.Message}");
+            }
+        }
+
+        var shmFile = _dbPath + "-shm";
+        if (File.Exists(shmFile))
+        {
+            try
+            {
+                File.Delete(shmFile);
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogWarning($"تعذّر حذف ملف SHM القديم بعد الاستعادة: {shmFile}. السبب: {ex.Message}");
+            }
         }
     }
 
