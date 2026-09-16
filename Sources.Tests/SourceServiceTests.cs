@@ -898,11 +898,17 @@ public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
     public void GetLowActivitySources_ReturnsOnlySourcesAtOrBelowThreshold()
     {
         // Arrange
-        var lowSrc = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-LOW-YES", 1000.0, DateTime.Now, "InUse");
-        lowSrc.CurrentActivityValue = 80.0; // 8%
+        // الجولة 166: بعد التصحيح، GetAllSources تُعيد حساب النشاط الحالي فعلياً من الانحلال
+        // اعتماداً على تاريخ المعايرة، بحيث لا تُبقي على أي قيمة مُخزَّنة يدوياً كما كان سابقاً.
+        // لذلك يجب أن يعكس تاريخ المعايرة هنا نسبة الانحلال الحقيقية المطلوبة للاختبار
+        // (8% منخفضة تحت العتبة، 50% أعلى من العتبة)، بدلاً من ضبط CurrentActivityValue يدوياً
+        // (كان الضبط اليدوي سابقاً كافياً لأن GetAllSources لم تكن تُعيد الحساب على الإطلاق).
+        // Cs-137: نصف العمر 30.08 سنة. نسبة 0.5^(t/T):
+        //  - t=120 سنة => نسبة ~6.3% (منخفضة، تحت عتبة 10%)
+        //  - t=10 سنة  => نسبة ~79% (مرتفعة، فوق عتبة 10%)
+        var lowSrc = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-LOW-YES", 1000.0, DateTime.Now.AddYears(-120), "InUse");
 
-        var highSrc = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-LOW-NO", 1000.0, DateTime.Now, "InUse");
-        highSrc.CurrentActivityValue = 500.0; // 50%
+        var highSrc = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-LOW-NO", 1000.0, DateTime.Now.AddYears(-10), "InUse");
 
         using (var context = _fixture.CreateContext())
         {
@@ -916,6 +922,88 @@ public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         // Assert
         Assert.Contains(lowSources, s => s.SourceCode == "SRC-LOW-YES");
         Assert.DoesNotContain(lowSources, s => s.SourceCode == "SRC-LOW-NO");
+    }
+
+    [Fact]
+    public void GetAllSources_InUseSourceWithStaleStoredActivity_RecalculatesLiveDecayedValue()
+    {
+        // الجولة 166: يثبت هذا الاختبار أن GetAllSources تُعيد حساب النشاط الحالي فعلياً
+        // من الانحلال بدلاً من إعادة القيمة المخزَّنة القديمة (الراكدة) كما كانت تفعل سابقاً.
+        // Co-60: نصف العمر 5.27 سنة. بعد 5 سنوات من تاريخ المعايرة يجب أن يكون النشاط الحقيقي
+        // أقل من نصف القيمة الابتدائية (~5180 من أصل 10000)، بينما القيمة المخزَّنة يدوياً (9999.0)
+        // تحاكي قيمة راكدة لم تُحدَّث منذ إنشاء المصدر.
+        var calDate = DateTime.Now.AddYears(-5);
+        var source = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-STALE-INUSE", 10000.0, calDate, "InUse");
+
+        // ضبط قيمة راكدة يدوياً مباشرة عبر السياق (تجاوز CreateSource) لمحاكاة قيمة قديمة لم يُعاد حسابها
+        source.CurrentActivityValue = 9999.0;
+
+        using (var context = _fixture.CreateContext())
+        {
+            context.Sources.Add(source);
+            context.SaveChanges();
+        }
+
+        // Act
+        var sources = _sourceService.GetAllSources();
+
+        // Assert
+        var retrieved = sources.First(s => s.SourceCode == "SRC-STALE-INUSE");
+        Assert.True(retrieved.CurrentActivityValue < 6000.0);
+        Assert.NotEqual(9999.0, retrieved.CurrentActivityValue);
+    }
+
+    [Fact]
+    public void GetAllSources_WasteAndTransferSources_AreReturnedUnchangedWithoutRecalculation()
+    {
+        // الجولة 166: يثبت هذا الاختبار أن مصادر Waste/Transfer لا تخضع لإعادة الحساب
+        // في GetAllSources، تماماً كسلوك GetSourceById و UpdateAllCurrentActivities الحاليين.
+        var calDate = DateTime.Now.AddYears(-5);
+        var srcWaste = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-ALL-WASTE", 10000.0, calDate, "Waste");
+        var srcTransfer = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-ALL-TRANSFER", 10000.0, calDate, "Transfer");
+
+        srcWaste.CurrentActivityValue = 10000.0;
+        srcTransfer.CurrentActivityValue = 10000.0;
+
+        using (var context = _fixture.CreateContext())
+        {
+            context.Sources.AddRange(srcWaste, srcTransfer);
+            context.SaveChanges();
+        }
+
+        // Act
+        var sources = _sourceService.GetAllSources();
+
+        // Assert
+        var retrievedWaste = sources.First(s => s.SourceCode == "SRC-ALL-WASTE");
+        var retrievedTransfer = sources.First(s => s.SourceCode == "SRC-ALL-TRANSFER");
+        Assert.Equal(10000.0, retrievedWaste.CurrentActivityValue);
+        Assert.Equal(10000.0, retrievedTransfer.CurrentActivityValue);
+    }
+
+    [Fact]
+    public void GetLowActivitySources_StaleStoredValueAboveThreshold_TrueDecayedValueBelowThreshold_IsIncluded()
+    {
+        // الجولة 166: يثبت هذا الاختبار الفائدة المباشرة للتصحيح على GetLowActivitySources
+        // دون أي تعديل مباشر عليها: قيمة مخزَّنة يدوياً فوق العتبة (60%) يجب ألا تُستخدم بعد الآن؛
+        // القيمة الحقيقية بعد الانحلال (لعنصر Co-60 بعد 20 سنة تقريباً ~7%) هي التي يجب اعتبارها.
+        var calDate = DateTime.Now.AddYears(-20); // Co-60: 0.5^(20/5.27) ~= 7.2%
+        var source = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-LOW-LIVE", 10000.0, calDate, "InUse");
+
+        // قيمة مخزَّنة راكدة فوق العتبة (60%) لمحاكاة عدم تشغيل أي دفعة تحديث سابقاً
+        source.CurrentActivityValue = 6000.0;
+
+        using (var context = _fixture.CreateContext())
+        {
+            context.Sources.Add(source);
+            context.SaveChanges();
+        }
+
+        // Act
+        var lowSources = _sourceService.GetLowActivitySources(thresholdPercent: 10.0);
+
+        // Assert
+        Assert.Contains(lowSources, s => s.SourceCode == "SRC-LOW-LIVE");
     }
 
     #endregion

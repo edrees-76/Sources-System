@@ -408,30 +408,23 @@ public class SourceRepositoryTests : IClassFixture<SqliteInMemoryFixture>, IDisp
     public void GetLowActivitySources_FiltersAccuratelyAroundThreshold()
     {
         // Arrange
+        // الجولة 166: بعد التصحيح، GetAllSources (التي تستدعيها GetLowActivitySources داخلياً)
+        // تُعيد حساب النشاط الحالي فعلياً من الانحلال اعتماداً على تاريخ المعايرة، ولا تُبقي
+        // على أي قيمة CurrentActivityValue مُخزَّنة يدوياً كما كانت تفعل سابقاً. لذلك أصبح
+        // تحديد تاريخ معايرة يعكس نسبة الانحلال الحقيقية المطلوبة ضرورياً بدلاً من ضبط
+        // CurrentActivityValue مباشرة. Cs-137: نصف العمر 30.08 سنة، النسبة = 0.5^(t/T):
         // عتبة 10%:
-        // srcLow (5%) -> مشمول
-        var srcLow = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-LOW-5");
-        srcLow.InitialActivityValue = 1000.0;
-        srcLow.CurrentActivityValue = 50.0; // 5%
-        srcLow.Status = "InUse";
+        // srcLow (t=130 سنة => ~5.0%) -> مشمول
+        var srcLow = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-LOW-5", 1000.0, DateTime.Now.AddYears(-130), "InUse");
 
-        // srcExact (10%) -> مشمول (الشرط <= threshold)
-        var srcExact = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-LOW-10");
-        srcExact.InitialActivityValue = 1000.0;
-        srcExact.CurrentActivityValue = 100.0; // 10.0%
-        srcExact.Status = "Storage";
+        // srcExact (t=100 سنة => ~9.98%) -> مشمول (الشرط <= threshold)
+        var srcExact = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-LOW-10", 1000.0, DateTime.Now.AddYears(-100), "Storage");
 
-        // srcAbove (10.01%) -> غير مشمول
-        var srcAbove = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-LOW-10-PLUS");
-        srcAbove.InitialActivityValue = 1000.0;
-        srcAbove.CurrentActivityValue = 100.1; // 10.01%
-        srcAbove.Status = "InUse";
+        // srcAbove (t=95 سنة => ~11.2%) -> غير مشمول
+        var srcAbove = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-LOW-10-PLUS", 1000.0, DateTime.Now.AddYears(-95), "InUse");
 
-        // srcHigh (50%) -> غير مشمول
-        var srcHigh = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-LOW-50");
-        srcHigh.InitialActivityValue = 1000.0;
-        srcHigh.CurrentActivityValue = 500.0; // 50%
-        srcHigh.Status = "InUse";
+        // srcHigh (t=30 سنة => ~50.2%) -> غير مشمول
+        var srcHigh = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-LOW-50", 1000.0, DateTime.Now.AddYears(-30), "InUse");
 
         // srcWaste (1%) ولكن حالته Waste -> غير مشمول لأن الدالة تستعلم فقط InUse أو Storage
         var srcWaste = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-LOW-WASTE");

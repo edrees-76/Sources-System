@@ -28,7 +28,7 @@ public class SourceService : ISourceService
     public List<Source> GetAllSources()
     {
         using var db = _dbFactory.CreateDbContext();
-        return db.Sources
+        var sources = db.Sources
             .AsNoTracking()
             .AsSplitQuery()
             .Include(s => s.Radioisotope)
@@ -42,6 +42,19 @@ public class SourceService : ISourceService
             .ToList()
             .DistinctBy(s => s.Id)
             .ToList();
+
+        var isotopesDict = db.Radioisotopes.AsNoTracking().ToDictionary(r => r.Id);
+        var unitsDict = db.ActivityUnits.AsNoTracking().ToDictionary(u => u.Id);
+
+        foreach (var source in sources)
+        {
+            if (source.Status == "InUse" || source.Status == "Storage")
+            {
+                CalculateSourceCurrentActivityInMemory(source, isotopesDict, unitsDict);
+            }
+        }
+
+        return sources;
     }
 
     public Source? GetSourceById(Guid id)
