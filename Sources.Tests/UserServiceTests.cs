@@ -493,6 +493,29 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     }
 
     [Fact]
+    public void ResetPassword_ClearsMustChangePasswordFlag()
+    {
+        LoginAsAdmin();
+        // Arrange: مستخدم عليه علامة "يجب تغيير كلمة المرور" مضبوطة مسبقاً
+        var user = CreateTestUser(username: "must_change_pw_user", password: "OldPassword123");
+        using (var context = _fixture.CreateContext())
+        {
+            var dbUser = context.Users.Find(user.Id)!;
+            dbUser.MustChangePassword = true;
+            context.SaveChanges();
+        }
+
+        // Act
+        var (success, _) = _userService.ResetPassword(user.Id, "NewPassword456");
+
+        // Assert
+        Assert.True(success);
+        using var verifyContext = _fixture.CreateContext();
+        var verifiedUser = verifyContext.Users.Find(user.Id)!;
+        Assert.False(verifiedUser.MustChangePassword);
+    }
+
+    [Fact]
     public void ResetPassword_WithNonExistentUser_ReturnsNotFound()
     {
         LoginAsAdmin();

@@ -69,6 +69,7 @@ public partial class App : Application
         {
             Sources.Data.DatabasePaths.EnsureAppDataDirectory();
             Sources.Data.LegacyDatabaseImporter.ImportIfNeeded();
+            Sources.Data.LegacyCertificatesImporter.ImportIfNeeded();
 
             using (var db = CreateDbContext())
             {
@@ -76,7 +77,7 @@ public partial class App : Application
             }
 
             // إنشاء مجلد الشهادات تلقائياً
-            Directory.CreateDirectory(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Certificates"));
+            Directory.CreateDirectory(Path.Combine(Sources.Data.DatabasePaths.AppDataDirectory, "Certificates"));
 
             // تطبيق الإعدادات المحفوظة
             ApplyTheme(SettingsHelper.IsDarkMode);
