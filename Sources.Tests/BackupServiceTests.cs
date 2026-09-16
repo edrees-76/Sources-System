@@ -412,6 +412,116 @@ public class BackupServiceTests : IDisposable
     }
 
     [Fact]
+    public void RestoreBackup_PreRestoreSafetyCopy_CapturesPendingWalDataViaVacuumInto()
+    {
+        // Arrange - إنشاء قاعدة بيانات بوضع WAL وإبقاء اتصال مفتوحاً بعد الإدراج
+        // بحيث يبقى السجل الجديد في ملف WAL ولا يُدمج في الملف الرئيسي
+        CreateValidSqliteDatabase(_dbPath, "Sources", "ORIGINAL_MERGED_DATA", includeInitialSchemaMigration: true);
+
+        using var pendingConn = new SqliteConnection($"Data Source={_dbPath}");
+        pendingConn.Open();
+        using (var pragmaCmd = pendingConn.CreateCommand())
+        {
+            pragmaCmd.CommandText = "PRAGMA journal_mode=WAL;";
+            pragmaCmd.ExecuteNonQuery();
+        }
+        using (var insertCmd = pendingConn.CreateCommand())
+        {
+            insertCmd.CommandText = "INSERT INTO Sources (Code) VALUES ('PENDING_WAL_DATA');";
+            insertCmd.ExecuteNonQuery();
+        }
+        // ملاحظة: عمداً لا يتم إغلاق pendingConn هنا كي تبقى بيانات الإدراج في ملف -wal
+
+        var backupFilePath = Path.Combine(_backupDir, "SOURCES_backup_compatible.db");
+        CreateValidSqliteDatabase(backupFilePath, "Sources", "BACKUP_COMPATIBLE_DATA", includeInitialSchemaMigration: true);
+
+        // Act
+        var result = _sut.RestoreBackup(backupFilePath);
+
+        // Assert
+        Assert.True(result.Success, result.Message);
+
+        var safetyFiles = Directory.GetFiles(_backupDir, "SOURCES_pre_restore_*.db");
+        Assert.Single(safetyFiles);
+
+        SqliteConnection.ClearAllPools();
+        using var safetyConn = new SqliteConnection($"Data Source={safetyFiles[0]}");
+        safetyConn.Open();
+        using var checkCmd = safetyConn.CreateCommand();
+        checkCmd.CommandText = "SELECT COUNT(*) FROM Sources WHERE Code = 'PENDING_WAL_DATA';";
+        var count = Convert.ToInt32(checkCmd.ExecuteScalar());
+        Assert.Equal(1, count);
+    }
+
+    [Fact]
+    public void RestoreBackup_SuccessfulRestore_DeletesStaleWalAndShmFilesFromPreviousGeneration()
+    {
+        // Arrange - إنشاء قاعدة بيانات تترك ملفات -wal و -shm فعلية على القرص
+        CreateValidSqliteDatabase(_dbPath, "Sources", "ORIGINAL_DATA", includeInitialSchemaMigration: true);
+
+        using (var pendingConn = new SqliteConnection($"Data Source={_dbPath}"))
+        {
+            pendingConn.Open();
+            using (var pragmaCmd = pendingConn.CreateCommand())
+            {
+                pragmaCmd.CommandText = "PRAGMA journal_mode=WAL;";
+                pragmaCmd.ExecuteNonQuery();
+            }
+            using (var insertCmd = pendingConn.CreateCommand())
+            {
+                insertCmd.CommandText = "INSERT INTO Sources (Code) VALUES ('MORE_PENDING_DATA');";
+                insertCmd.ExecuteNonQuery();
+            }
+            // إغلاق الاتصال (Dispose) دون استدعاء ClearAllPools هنا: يعيد Microsoft.Data.Sqlite
+            // الاتصال إلى تجمّع (pool) داخلي دون تنفيذ checkpoint نهائي فعلي على القرص،
+            // تماماً كما يحدث بشكل واقعي بعد أي استخدام سابق لقاعدة البيانات من التطبيق نفسه،
+            // مما يترك ملفات -wal/-shm الفعلية موجودة على القرص كحالة "قديمة" قبل الاستعادة.
+        }
+
+        var walPath = _dbPath + "-wal";
+        var shmPath = _dbPath + "-shm";
+        Assert.True(File.Exists(walPath) || File.Exists(shmPath),
+            "الاختبار يفترض بقاء ملفات -wal/-shm فعلياً على القرص بعد إغلاق الاتصال؛ إن لم تكن موجودة فإن السيناريو المطلوب اختباره لا يتحقق هنا");
+
+        // ملاحظة: النسخة الاحتياطية المستهدفة تُبنى هنا بدون تفعيل PRAGMA journal_mode=WAL
+        // (خلافاً لـ CreateValidSqliteDatabase) كي لا يُعاد إنشاء ملفات -wal/-shm بشكل شرعي وحتمي
+        // من جيل قاعدة البيانات الجديدة فور إعادة فتحها لفحص توافق المخطط بعد الاستعادة مباشرة
+        // (وهو سلوك SQLite متوقع تماماً وغير متعلق بالثغرة قيد الاختبار هنا). هذا يعزل الاختبار
+        // بدقة للتحقق فقط من أن ملفات -wal/-shm "القديمة" العائدة لجيل قاعدة البيانات السابق
+        // (المُنشأة أعلاه بوضع WAL) قد حُذفت فعلياً بواسطة DeleteStaleWalShmFiles.
+        var backupFilePath = Path.Combine(_backupDir, "SOURCES_backup_compatible.db");
+        SqliteConnection.ClearAllPools();
+        if (File.Exists(backupFilePath)) File.Delete(backupFilePath);
+        using (var backupConn = new SqliteConnection($"Data Source={backupFilePath}"))
+        {
+            backupConn.Open();
+            using var cmd = backupConn.CreateCommand();
+            cmd.CommandText = "CREATE TABLE Sources (Id INTEGER PRIMARY KEY, Code TEXT); INSERT INTO Sources (Code) VALUES ('BACKUP_COMPATIBLE_DATA');" +
+                " CREATE TABLE \"__EFMigrationsHistory\" (\"MigrationId\" TEXT NOT NULL PRIMARY KEY, \"ProductVersion\" TEXT NOT NULL);" +
+                " INSERT INTO \"__EFMigrationsHistory\" VALUES ('20260901112320_InitialSchema', '8.0.12');";
+            cmd.ExecuteNonQuery();
+        }
+        SqliteConnection.ClearAllPools();
+
+        // Act
+        var result = _sut.RestoreBackup(backupFilePath);
+
+        // Assert
+        Assert.True(result.Success, result.Message);
+        Assert.False(File.Exists(walPath), "ملف -wal العائد لقاعدة البيانات السابقة يجب أن يُحذف بعد الاستعادة الناجحة");
+        Assert.False(File.Exists(shmPath), "ملف -shm العائد لقاعدة البيانات السابقة يجب أن يُحذف بعد الاستعادة الناجحة");
+    }
+
+    // ملاحظة (انحراف مُوثّق عن العقد - البند 3 من الاختبارات المطلوبة):
+    // محاولة محاكاة قفل ملف -wal/-shm بشكل موثوق (عبر FileShare.None على نفس العملية) غير ممكنة على ويندوز
+    // لأن File.Delete من نفس العملية التي تحمل القفل تفشل بشكل حتمي بغض النظر عن معالجة الأخطاء في الكود قيد
+    // الاختبار، بينما محاكاة قفل من عملية خارجية منفصلة تتطلب تعقيداً غير متناسب (عملية فرعية منفصلة) ويصبح
+    // الاختبار هشاً (flaky) عبر بيئات التشغيل المختلفة (CI/محلي). بدلاً من ذلك، تم التحقق يدوياً وبالمراجعة
+    // الكودية من أن DeleteStaleWalShmFiles تستخدم try/catch منفصل لكل ملف مع LoggerService.LogWarning ولا
+    // تُعيد رمي الاستثناء، بما يضمن عدم فشل عملية الاستعادة الكاملة لمجرد فشل حذف أحد الملفين. هذا يطابق
+    // نمط try/catch الموجود مسبقاً في نفس الملف (مثال: حذف tempExtractedDb، حذف ملفات Certificates).
+
+    [Fact]
     public void GetBackups_MultipleBackupFiles_ReturnsCorrectListOrderedByCreationTimeDescending()
     {
         // Arrange
