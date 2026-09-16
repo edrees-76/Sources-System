@@ -10,7 +10,7 @@
         WindowState="Normal"
         Background="{DynamicResource WindowBackground}"
         FontFamily="Segoe UI"
-        FlowDirection="RightToLeft">
+        FlowDirection="{DynamicResource CurrentFlowDirection}">
 
     <Grid Margin="24">
         <Grid.RowDefinitions>

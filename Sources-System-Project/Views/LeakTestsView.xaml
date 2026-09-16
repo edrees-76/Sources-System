@@ -7,7 +7,7 @@
              xmlns:helpers="clr-namespace:Sources.Helpers"
              mc:Ignorable="d" 
              d:DesignHeight="700" d:DesignWidth="1100"
-             FlowDirection="RightToLeft">
+             FlowDirection="{DynamicResource CurrentFlowDirection}">
 
     <Grid Margin="24">
 

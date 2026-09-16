@@ -207,9 +207,11 @@ public partial class App : Application
         if (!found) dicts.Add(newDict);
 
         // تحديث اتجاه الواجهة في النافذة الرئيسية
+        var newFlowDirection = cultureCode == "ar" ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+        app.Resources["CurrentFlowDirection"] = newFlowDirection;
+
         if (app.MainWindow != null)
         {
-            var newFlowDirection = cultureCode == "ar" ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
             app.MainWindow.FlowDirection = newFlowDirection;
             app.MainWindow.Language = System.Windows.Markup.XmlLanguage.GetLanguage(culture.IetfLanguageTag);
 

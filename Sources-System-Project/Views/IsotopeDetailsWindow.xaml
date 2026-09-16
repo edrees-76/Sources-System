@@ -10,7 +10,7 @@
         WindowState="Normal"
         Background="{DynamicResource WindowBackground}"
         FontFamily="Segoe UI"
-        FlowDirection="RightToLeft">
+        FlowDirection="{DynamicResource CurrentFlowDirection}">
 
     <Window.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVis"/>

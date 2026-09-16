@@ -10,7 +10,7 @@
         WindowState="Maximized"
         Topmost="True"
         ResizeMode="NoResize"
-        FlowDirection="RightToLeft"
+        FlowDirection="{DynamicResource CurrentFlowDirection}"
         Background="#08101E">
 
     <Grid x:Name="RootGrid" Focusable="True">
