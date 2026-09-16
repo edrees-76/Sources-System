@@ -1,7 +1,10 @@
 # منظومة مصادر — لوحة جاهزية النشر
 
 **آخر تحديث:** 16 سبتمبر 2026
-**حالة المستودع:** الجولة 162 قيد المراجعة (Draft PR غير مدموج): إصلاح نشر مكتبة النظائر — مسار جهاز المطوّر
+**حالة المستودع:** الجولة 163 قيد المراجعة (Draft PR غير مدموج): إصلاح عدم استجابة 12 نافذة/عرض لتبديل
+اللغة (كانت تضبط `FlowDirection="RightToLeft"` حرفياً على العنصر الجذر) + إصلاح مورد
+`CurrentFlowDirection` الذي كان يستخدمه `ActivationDialog`/`PasswordPromptDialog` بلا أن يكون معرَّفاً في
+أي مكان. الجولة 162 قيد المراجعة أيضاً (Draft PR منفصل غير مدموج): إصلاح نشر مكتبة النظائر — مسار جهاز المطوّر
 المُحارَق ثابتاً كمرشَّح رابع في أربع دوال بناء مسار في `IsotopeLibraryService.cs`، وغياب نسخ
 `Resources\References\` إلى مخرجات البناء في `Sources.csproj` كانا يُسقطان قائمة النظائر وأزرار PDF صامتاً
 على أي جهاز غير جهاز التطوير، مكتشَف بتدقيق خارجي ومؤكَّد بفحص الكود مباشرة من القائد. الجولة 161 قيد
@@ -9,7 +12,7 @@
 (`AuthorizationGuard.RequireEditor` لم يكن يُستدعى إلا في الحذف/الاسترجاع)، مكتشَفة بتدقيق خارجي مستقل
 ومؤكَّدة بفحص الكود مباشرة. **بند مفتوح يتطلب قرار القائد (الجولة 161):** 42 حالة اختبار قديمة اعتمدت ضمنياً
 على غياب الحارس؛ صُحِّحت تجهيزاتها بعد مراجعة القائد وموافقة إدريس (تفاصيل في §الجولة 161 أدناه) ·
-1253/1253 نجاح محلياً (Debug) بعد الجولة 162 (+1 عن الجولة 161)، صفر فشل، صفر تجاوز · تحذيرات بناء مسبقة بلا
+1255/1255 نجاح محلياً (Debug) بعد الجولة 163 (+2 عن الجولة 162)، صفر فشل، صفر تجاوز · تحذيرات بناء مسبقة بلا
 علاقة بهذه الجولة (CS8604 في `LoginWindow.xaml.cs`/`ViewInstantiationTests.cs`) و0 أخطاء
 
 > لوحة حالة حيّة تُحدَّث وتُصحَّح مع كل جولة. السجل التاريخي للجولات في `session-summary.md` ولا يُعدَّل.
@@ -1708,3 +1711,44 @@ worktree الفرع القائم — الوكيل الفرعي عزل نفسه �
 مكرَّرة مرتين في مخرجات هذا الأمر تحديداً بسبب مشروع تجميع WPF المؤقت `wpftmp`، بلا علاقة بهذه الجولة). لا ترحيل
 EF ولا تغيير مخطط قاعدة بيانات. لم تُلمس الملفات الخمسة المحظورة (`LoginWindow`/`LoginView`/`SplashWindow` غير
 معنيّة أصلاً بنطاق هذه الجولة). Draft PR غير مدموج بعد.
+
+## الجولة 163 — إصلاح عدم استجابة 12 نافذة/عرض لتبديل اللغة زمن التشغيل + إصلاح مورد CurrentFlowDirection المكسور
+
+**العيب الأول (12 نافذة "صمّاء"):** 12 ملف XAML (`SourceFormWindow`، `RadioisotopeFormWindow`،
+`LocationFormWindow`، `UserFormWindow`، `BorrowFormWindow`، `NeutronSourceTypesWindow`،
+`SourceDetailsWindow`، `NeutronSourceDetailsWindow`، `IsotopeDetailsWindow`، `ScreensaverWindow`،
+`BorrowView`، `LeakTestsView`) كانت تضبط `FlowDirection="RightToLeft"` كقيمة حرفية ثابتة على العنصر
+الجذر (`Window`/`UserControl`)، فتبقى دائماً من اليمين لليسار حتى بعد تبديل اللغة إلى الإنجليزية عبر
+`SettingsViewModel` → `App.ApplyLanguage("en")`، رغم أن باقي عناصر الواجهة (النصوص) تتحدث فعلياً.
+
+**العيب الثاني (مورد `CurrentFlowDirection` مكسور):** `ActivationDialog.xaml` و`PasswordPromptDialog.xaml`
+كانا يستخدمان بالفعل `FlowDirection="{DynamicResource CurrentFlowDirection}"` — لكن هذا المفتاح لم يكن
+مُعرَّفاً في أي مكان في المشروع (تأكَّد بفحص شامل للمستودع)، فكان WPF يستخدم القيمة الافتراضية
+(`LeftToRight`) بصمت بلا أي استثناء أو تحذير.
+
+**الإصلاح:** في `App.xaml.cs`، داخل `ApplyLanguage(string cultureCode)`، مباشرة بعد السطر الذي يحسب
+`newFlowDirection` (والذي يقع داخل `if (app.MainWindow != null)`)، أُضيف سطر واحد:
+`app.Resources["CurrentFlowDirection"] = newFlowDirection;`. لا تغيير آخر في هذا الملف. وفي الملفات
+الاثني عشر، استُبدلت القيمة الحرفية `FlowDirection="RightToLeft"` على العنصر الجذر فقط بـ
+`FlowDirection="{DynamicResource CurrentFlowDirection}"`، دون لمس أي `FlowDirection="LeftToRight"`
+حرفي آخر على عناصر متداخلة (أرقام/تواريخ/نصوص إنجليزية تبقى من اليسار لليمين عمداً في هذه الملفات).
+
+**استُبعد عمداً من النطاق:** `Resources/Styles.xaml` (سطرا ~400 و~523 — إعدادات `FlowDirection` على
+أنماط `DataGrid`/`SearchBox`، سلوك تخطيطي مقصود لا علاقة له باتجاه نص الواجهة العام) و
+`Views/AlertDialog.xaml` (سطر ~100 — `FlowDirection="RightToLeft"` على `TextBlock` متداخل، ليس على جذر
+النافذة). كلاهما خارج نطاق هذه الجولة تحديداً ولم يُفحَصا كعيوب، بل استُبعِدا بقرار صريح لتفادي توسعة
+النطاق بلا عقد مصادَق عليه.
+
+**اختبار جديد:** `FlowDirectionResourceTests.cs` (اختباران) يتحقق أن مورد `CurrentFlowDirection` يُضبَط
+على `FlowDirection.RightToLeft` لـ"ar" و`FlowDirection.LeftToRight` لـ"en". لا يستدعي الاختبار
+`App.ApplyLanguage` مباشرة (مثل بقية حزمة الاختبارات)، بل يحاكي فقط عبارة الضبط نفسها — لأن
+`App.ApplyLanguage` تستخدم Uri نسبياً لتحميل قاموس النصوص لا يُحل إلا ضمن `Sources.exe` المُصرَّف
+فعلياً، وكائن `Application` الذي ينشئه `WpfStaFixture` (وليس `Sources.App`) لا يستطيع حل هذا الـ Uri،
+وهو قيد بنيوي موجود مسبقاً في حزمة الاختبارات (تأكَّد بتجربة الاستدعاء المباشر فعلياً: `IOException:
+Cannot locate resource 'resources/strings.ar.xaml'`)، وليس عيباً استحدثته هذه الجولة.
+
+**النتائج:** Debug 1255/1255 نجاح (0 فشل/0 تجاوز؛ +2 اختبار جديد عن الجولة 162). بناء `Release` بصفر
+أخطاء و4 تحذيرات `CS8604` مسبقة الوجود بالضبط في `LoginWindow.xaml.cs` (بلا علاقة بهذه الجولة). لا ترحيل
+EF ولا تغيير مخطط قاعدة بيانات. لم تُلمس الملفات الخمسة المحظورة، ولا `ActivationDialog.xaml`/
+`PasswordPromptDialog.xaml` (كانتا صحيحتين مسبقاً وستعملان تلقائياً بعد تعريف المورد). Draft PR غير
+مدموج بعد.

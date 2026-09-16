@@ -210,6 +210,7 @@ public partial class App : Application
         if (app.MainWindow != null)
         {
             var newFlowDirection = cultureCode == "ar" ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+            app.Resources["CurrentFlowDirection"] = newFlowDirection;
             app.MainWindow.FlowDirection = newFlowDirection;
             app.MainWindow.Language = System.Windows.Markup.XmlLanguage.GetLanguage(culture.IetfLanguageTag);
 
