@@ -63,6 +63,9 @@ public class LocationService : ILocationService
         var activation = AuthorizationGuard.RequireActivated(_licenseService);
         if (!activation.Allowed) return (false, activation.Message);
 
+        var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Locations");
+        if (!guard.Allowed) return (false, guard.Message);
+
         if (item == null) return (false, TranslationHelper.GetString("MsgErrInvalidLocationData") ?? "بيانات الموقع غير صالحة");
         if (string.IsNullOrWhiteSpace(item.LocationName)) return (false, TranslationHelper.GetString("MsgErrLocationNameRequired") ?? "اسم الموقع مطلوب");
 
@@ -96,6 +99,9 @@ public class LocationService : ILocationService
     {
         var activation = AuthorizationGuard.RequireActivated(_licenseService);
         if (!activation.Allowed) return (false, activation.Message);
+
+        var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Locations");
+        if (!guard.Allowed) return (false, guard.Message);
 
         if (item == null) return (false, TranslationHelper.GetString("MsgErrInvalidLocationData") ?? "بيانات الموقع غير صالحة");
         if (string.IsNullOrWhiteSpace(item.LocationName)) return (false, TranslationHelper.GetString("MsgErrLocationNameRequired") ?? "اسم الموقع مطلوب");

@@ -111,6 +111,9 @@ public class NeutronSourceService : INeutronSourceService
         var activation = AuthorizationGuard.RequireActivated(_licenseService);
         if (!activation.Allowed) return (false, activation.Message);
 
+        var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Sources");
+        if (!guard.Allowed) return (false, guard.Message);
+
         if (item == null) return (false, TranslationHelper.GetString("MsgErrInvalidNeutronSourceData") ?? "بيانات المصدر النيتروني غير صالحة");
         if (string.IsNullOrWhiteSpace(item.SourceCode)) return (false, TranslationHelper.GetString("MsgErrNeutronSourceCodeReq") ?? "كود المصدر مطلوب");
         if (!double.IsFinite(item.CalibratedEmissionRate))
@@ -200,6 +203,9 @@ public class NeutronSourceService : INeutronSourceService
     {
         var activation = AuthorizationGuard.RequireActivated(_licenseService);
         if (!activation.Allowed) return (false, activation.Message);
+
+        var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Sources");
+        if (!guard.Allowed) return (false, guard.Message);
 
         if (item == null) return (false, TranslationHelper.GetString("MsgErrInvalidNeutronSourceData") ?? "بيانات المصدر النيتروني غير صالحة");
         if (string.IsNullOrWhiteSpace(item.SourceCode)) return (false, TranslationHelper.GetString("MsgErrNeutronSourceCodeReq") ?? "كود المصدر مطلوب");
