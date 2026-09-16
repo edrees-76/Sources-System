@@ -1,21 +1,31 @@
 # منظومة مصادر — لوحة جاهزية النشر
 
-**آخر تحديث:** 16 سبتمبر 2026
-**حالة المستودع:** الجولة 167 قيد المراجعة (Draft PR غير مدموج، فرع
-`round-167-windows-installer`): أول جزء تنفيذي من ب8 (نظام النشر) — سكربتات
-مصدرية لبناء مثبِّت Windows حقيقي عبر Inno Setup 6 (`deploy\installer.iss`،
-`deploy\build-installer.ps1`، `deploy\assets\generate-wizard-images.ps1`،
-`docs\deployment-guide.md`) + خصائص تجميعة وصفية جديدة في `AssemblyInfo.cs`.
-`[Files]` ينسخ مجلد النشر فقط إلى `{app}` بلا أي مرجع لـ
-`%LocalAppData%\Sources`/`%ProgramData%\Sources`، ولا `[UninstallDelete]` عمداً
-لحماية بيانات المستخدم عند إلغاء التثبيت. بديل صفحة اعتمادات مبسَّط
-(`WizardImageFile`/`WizardSmallImageFile`) استُخدم بدل صفحة مخصَّصة متعددة
-الشعارات لتعذّر تشغيل `ISCC.exe` فعلياً في بيئة التنفيذ (حاجز عزل صدفة، لا
-غياب الأداة) — مُصرَّح به صراحة في العقد. `dotnet build` صفر أخطاء، 4 تحذيرات
-`CS8604` سابقة الوجود بلا علاقة بالجولة. لا `dotnet test` (لا منطق تشغيلي
-تغيَّر). البناء الفعلي لـ Setup.exe والتحقق البصري الخماسي يبقيان مهمة إدريس
-على جهاز Windows حقيقي. تفاصيل كاملة في §الجولة 167 أدناه. الجولة 166 قيد
-المراجعة أيضاً (Draft PR غير مدموج، فرع `round-166-live-activity-recalc-in-list`):
+**آخر تحديث:** 17 سبتمبر 2026
+**حالة المستودع:** الجولة 170 قيد المراجعة (Draft PR غير مدموج، فرع
+`round-170-installer-credits-page`): أتمّت صفحة اعتمادات المثبِّت المؤجَّلة من
+الجولة 167 — صفحة معالج مخصَّصة حقيقية (قسم `[Code]`/`InitializeWizard` جديد
+في `deploy\installer.iss`) تعرض ثلاثة شعارات (`credits_tnrc.bmp`/
+`credits_app.bmp`/`credits_designer.bmp` عبر `dontcopy`+`ExtractTemporaryFile`)
+ونص ملخص وسطري اعتماد فريق التطوير، تظهر بعد `wpWelcome` وقبل `wpSelectDir`،
+بدلاً من بديل الجولة 167 المبسَّط. بخلاف الجولة 167، `ISCC.exe` كان متاحاً
+وعاملاً فعلياً في هذه الجلسة: شُغِّل `deploy\build-installer.ps1` كاملاً
+بنجاح وأنتج `SourcesSystemSetup.exe` فعلياً، وتحقَّق إدريس بصرياً على الجهاز
+الفعلي من الصفحة الجديدة وأكَّد القبول الكامل (الموضع صحيح، الشعارات بلا
+تداخل، النص كامل غير مقصوص، سطرا الاعتماد ظاهران معاً بشكل صحيح). **انحراف
+موثَّق:** نُفِّذ التعديل مباشرة من القائد بدل `round-implementer`/
+`change-verifier` رغم تصنيف الجولة عالي المخاطر، لأن العقد كان محدَّداً
+بالكامل سطراً بسطر. تفاصيل كاملة في `docs\session-summary.md` §الجولة 170.
+الجولة 167 قيد
+المراجعة أيضاً (Draft PR غير مدموج، فرع `round-167-windows-installer`): أول
+جزء تنفيذي من ب8 (نظام النشر) — سكربتات مصدرية لبناء مثبِّت Windows حقيقي عبر
+Inno Setup 6 (`deploy\installer.iss`، `deploy\build-installer.ps1`،
+`deploy\assets\generate-wizard-images.ps1`، `docs\deployment-guide.md`) +
+خصائص تجميعة وصفية جديدة في `AssemblyInfo.cs`. `[Files]` ينسخ مجلد النشر فقط
+إلى `{app}` بلا أي مرجع لـ `%LocalAppData%\Sources`/`%ProgramData%\Sources`،
+ولا `[UninstallDelete]` عمداً لحماية بيانات المستخدم عند إلغاء التثبيت. `dotnet
+build` صفر أخطاء، 4 تحذيرات `CS8604` سابقة الوجود بلا علاقة بالجولة. لا
+`dotnet test` (لا منطق تشغيلي تغيَّر). تفاصيل كاملة في §الجولة 167 أدناه.
+الجولة 166 قيد المراجعة أيضاً (Draft PR غير مدموج، فرع `round-166-live-activity-recalc-in-list`):
 `GetAllSources` تُعيد الآن حساب `CurrentActivityValue`
 حياً من الانحلال لكل مصدر `InUse`/`Storage` بنفس نمط `GetSourceById` القائم (قراءة صرفة، بلا
 `SaveChanges`)، فتستفيد `GetLowActivitySources` وقائمة المصادر ولوحة القيادة والتقارير تلقائياً بلا

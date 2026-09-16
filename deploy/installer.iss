@@ -13,12 +13,13 @@
 ; المستخدم كاملة عند إلغاء التثبيت أو إعادة التثبيت، بما يتوافق مع الخطوة رقم 5
 ; من التحقق اليدوي الإلزامي الموثَّق في docs\deployment-guide.md.
 ;
-; بديل مبسَّط موثَّق للمعالج: استُخدمت فتحتا صورة المعالج القياسيتان في Inno
-; Setup (WizardImageFile / WizardSmallImageFile) بدل صفحة اعتمادات مخصَّصة
-; متعددة الشعارات عبر TBitmapImage، لأن تحميل صور من خارج [Files] في Pascal
-; Script يتطلب نمط dontcopy + ExtractTemporaryFile + ExpandConstant('{tmp}\...')
-; ولم يتوفر ISCC.exe في بيئة التنفيذ لاختبار هذا النمط فعلياً قبل الاعتماد
-; عليه في سكربت إنتاجي — هذا البديل مُصرَّح به صراحة في عقد الجولة 167.
+; الجولة 170 أتمّت صفحة الاعتمادات المؤجَّلة من الجولة 167: صفحة معالج
+; مخصَّصة (قسم [Code] أدناه) تعرض ثلاثة شعارات (TBitmapImage) عبر نمط
+; dontcopy + ExtractTemporaryFile + ExpandConstant('{tmp}\...')، ونص ملخص
+; وسطري اعتماد فريق التطوير (TNewStaticText)، تظهر بعد wpWelcome وقبل
+; wpSelectDir. بديل الجولة 167 المبسَّط (WizardImageFile/WizardSmallImageFile
+; فقط بلا صفحة اعتمادات) لم يعد مستخدَماً؛ فتحتا صورة المعالج القياسيتان
+; تبقيان لصفحتي الترحيب/الإنهاء كما كانتا.
 ; لا توقيع كود في هذا السكربت (لا SignTool ولا SignedUninstaller) — خارج نطاق
 ; هذه الجولة.
 
@@ -59,6 +60,9 @@ Name: "desktopicon"; Description: "إنشاء أيقونة على سطح الم�
 ; {app} فقط. لا مرجع هنا إطلاقاً إلى %LocalAppData%\Sources أو
 ; %ProgramData%\Sources — هذان المساران بيانات مستخدم حيّة تُدار بالكامل بواسطة
 ; DatabasePaths داخل التطبيق نفسه، لا بواسطة المثبِّت.
+Source: "assets\credits_tnrc.bmp"; DestDir: "{tmp}"; Flags: dontcopy
+Source: "assets\credits_app.bmp"; DestDir: "{tmp}"; Flags: dontcopy
+Source: "assets\credits_designer.bmp"; DestDir: "{tmp}"; Flags: dontcopy
 Source: "{#PublishDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
@@ -70,3 +74,82 @@ Name: "{autodesktop}\منظومة مصادر - Sources System"; Filename: "{app}
 Filename: "{app}\Sources.exe"; Description: "{cm:LaunchProgram,منظومة مصادر - Sources System}"; Flags: nowait postinstall skipifsilent
 
 ; لا [UninstallDelete] عمداً — انظر التعليق أعلى الملف.
+
+[Code]
+var
+  CreditsPage: TWizardPage;
+
+procedure InitializeWizard;
+var
+  TnrcLogo, AppLogo, DesignerLogo: TBitmapImage;
+  SummaryLabel, CreditsHeaderLabel, Dev1Label, Dev2Label: TNewStaticText;
+  LogosTop, LogoSize, LogoGap: Integer;
+begin
+  CreditsPage := CreateCustomPage(wpWelcome, 'حول المنظومة',
+    'نبذة عن منظومة مصادر وفريق التطوير');
+
+  ExtractTemporaryFile('credits_tnrc.bmp');
+  ExtractTemporaryFile('credits_app.bmp');
+  ExtractTemporaryFile('credits_designer.bmp');
+
+  LogoSize := 90;
+  LogoGap := 20;
+  LogosTop := 0;
+
+  TnrcLogo := TBitmapImage.Create(CreditsPage);
+  TnrcLogo.Parent := CreditsPage.Surface;
+  TnrcLogo.Bitmap.LoadFromFile(ExpandConstant('{tmp}\credits_tnrc.bmp'));
+  TnrcLogo.Left := 0;
+  TnrcLogo.Top := LogosTop;
+  TnrcLogo.Width := LogoSize;
+  TnrcLogo.Height := LogoSize;
+
+  AppLogo := TBitmapImage.Create(CreditsPage);
+  AppLogo.Parent := CreditsPage.Surface;
+  AppLogo.Bitmap.LoadFromFile(ExpandConstant('{tmp}\credits_app.bmp'));
+  AppLogo.Left := LogoSize + LogoGap;
+  AppLogo.Top := LogosTop;
+  AppLogo.Width := LogoSize;
+  AppLogo.Height := LogoSize;
+
+  DesignerLogo := TBitmapImage.Create(CreditsPage);
+  DesignerLogo.Parent := CreditsPage.Surface;
+  DesignerLogo.Bitmap.LoadFromFile(ExpandConstant('{tmp}\credits_designer.bmp'));
+  DesignerLogo.Left := (LogoSize + LogoGap) * 2;
+  DesignerLogo.Top := LogosTop;
+  DesignerLogo.Width := LogoSize;
+  DesignerLogo.Height := LogoSize;
+
+  SummaryLabel := TNewStaticText.Create(CreditsPage);
+  SummaryLabel.Parent := CreditsPage.Surface;
+  SummaryLabel.Left := 0;
+  SummaryLabel.Top := LogosTop + LogoSize + 15;
+  SummaryLabel.Width := CreditsPage.SurfaceWidth;
+  SummaryLabel.AutoSize := False;
+  SummaryLabel.WordWrap := True;
+  SummaryLabel.Height := 90;
+  SummaryLabel.Caption :=
+    'صُمِّمَت منظومة مصادر لتوفير رقابة إشعاعية صارمة وموثوقية عالية في ' +
+    'تتبع وحصر حركة المصادر والنظائر المشعة في البيئات البحثية ' +
+    'والمؤسسية، بما يضمن أعلى معايير السلامة والأمان وسرعة اتخاذ ' +
+    'القرار وتوثيق المعاملات الإشعاعية بدقة متناهية.';
+
+  CreditsHeaderLabel := TNewStaticText.Create(CreditsPage);
+  CreditsHeaderLabel.Parent := CreditsPage.Surface;
+  CreditsHeaderLabel.Left := 0;
+  CreditsHeaderLabel.Top := SummaryLabel.Top + SummaryLabel.Height + 10;
+  CreditsHeaderLabel.Caption := 'التصميم والتطوير والتنفيذ:';
+  CreditsHeaderLabel.Font.Style := [fsBold];
+
+  Dev1Label := TNewStaticText.Create(CreditsPage);
+  Dev1Label.Parent := CreditsPage.Surface;
+  Dev1Label.Left := 0;
+  Dev1Label.Top := CreditsHeaderLabel.Top + 25;
+  Dev1Label.Caption := 'م. إدريس فتح الله الهري — هندسة النظم والتطوير البرمجي';
+
+  Dev2Label := TNewStaticText.Create(CreditsPage);
+  Dev2Label.Parent := CreditsPage.Surface;
+  Dev2Label.Left := 0;
+  Dev2Label.Top := Dev1Label.Top + 25;
+  Dev2Label.Caption := 'م. رضا المريمي — التحليل الفني وإدارة المتطلبات';
+end;
