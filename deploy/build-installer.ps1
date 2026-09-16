@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     يبني مثبِّت Windows حقيقي (Setup.exe) لمنظومة مصادر - Sources System.
 

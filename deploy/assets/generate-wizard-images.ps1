@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     يحوّل شعارات PNG الموجودة في Assets إلى صور BMP بمقاسات معالج التثبيت (Inno Setup Wizard)
     وصور الاعتمادات (Credits)، باستخدام System.Drawing فقط (بلا أي اعتماد خارجي).
