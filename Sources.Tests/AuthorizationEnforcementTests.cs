@@ -669,4 +669,372 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
     }
 
     #endregion
+
+    #region 9. حراسة إنشاء وتعديل السجلات (Round 161 — Create/Update Authorization Gap)
+
+    [Fact]
+    public void SourceService_CreateSource_And_UpdateSource_EnforcesEditorGuard()
+    {
+        var fakeUser = new FakeUserService();
+        fakeUser.CurrentUser = null;
+        var sourceService = new SourceService(_fixture.ContextFactory, new DecayCalculationService(), _auditService, fakeUser, _fakeLicenseService);
+
+        var loc = new Location { Id = Guid.NewGuid(), LocationName = "موقع اختبار 161" };
+        var iso = new Radioisotope { Id = Guid.NewGuid(), Symbol = "Co-60", Name = "Cobalt-60", HalfLife = 5.27, RadiationType = "Gamma" };
+        var unit = new ActivityUnit { Id = Guid.NewGuid(), UnitName = "MBq", UnitSymbol = "MBq", ConversionToBq = 1e6 };
+
+        using (var db = _fixture.CreateContext())
+        {
+            db.Locations.Add(loc);
+            db.Radioisotopes.Add(iso);
+            db.ActivityUnits.Add(unit);
+            db.SaveChanges();
+        }
+
+        var newSource = new Source
+        {
+            Id = Guid.NewGuid(),
+            SourceCode = "SRC-161-01",
+            LocationId = loc.Id,
+            RadioisotopeId = iso.Id,
+            InitialActivityValue = 100,
+            InitialActivityUnitId = unit.Id,
+            CurrentActivityValue = 100,
+            CurrentActivityUnitId = unit.Id,
+            CalibrationDate = DateTime.Now
+        };
+
+        // 1. Null user
+        var (c1, mC1) = sourceService.CreateSource(newSource);
+        Assert.False(c1);
+        Assert.Contains("لا يوجد مستخدم مسجَّل الدخول", mC1);
+
+        // 2. Editor without Sources permission
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "no_src_create", IsEditor = true, Permissions = "Locations" };
+        var (c2, mC2) = sourceService.CreateSource(newSource);
+        Assert.False(c2);
+        Assert.Contains("لا تملك صلاحية الوصول", mC2);
+
+        // 3. Authorized editor -> actually creates
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "editor_src_create", IsEditor = true, Permissions = "Sources" };
+        var (c3, mC3) = sourceService.CreateSource(newSource);
+        Assert.True(c3);
+
+        // Now test UpdateSource with the same guard cases
+        newSource.Notes = "ملاحظة معدَّلة";
+
+        fakeUser.CurrentUser = null;
+        var (u1, mU1) = sourceService.UpdateSource(newSource);
+        Assert.False(u1);
+        Assert.Contains("لا يوجد مستخدم مسجَّل الدخول", mU1);
+
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "no_src_update", IsEditor = true, Permissions = "Locations" };
+        var (u2, mU2) = sourceService.UpdateSource(newSource);
+        Assert.False(u2);
+        Assert.Contains("لا تملك صلاحية الوصول", mU2);
+
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "editor_src_update", IsEditor = true, Permissions = "Sources" };
+        var (u3, mU3) = sourceService.UpdateSource(newSource);
+        Assert.True(u3);
+    }
+
+    [Fact]
+    public void NeutronSourceService_Create_And_Update_EnforcesEditorGuard()
+    {
+        var fakeUser = new FakeUserService();
+        fakeUser.CurrentUser = null;
+        var neutronService = new NeutronSourceService(_fixture.ContextFactory, _auditService, fakeUser, _fakeLicenseService);
+
+        var loc = new Location { Id = Guid.NewGuid(), LocationName = "موقع نيوتروني 161" };
+        var type = new NeutronSourceType { Id = Guid.NewGuid(), Code = "Pu-Be-161", NameEn = "Plutonium Beryllium" };
+        using (var db = _fixture.CreateContext())
+        {
+            db.Locations.Add(loc);
+            db.NeutronSourceTypes.Add(type);
+            db.SaveChanges();
+        }
+
+        var newItem = new NeutronSource
+        {
+            Id = Guid.NewGuid(),
+            SourceCode = "NS-161-01",
+            NeutronSourceTypeId = type.Id,
+            LocationId = loc.Id,
+            CalibratedEmissionRate = 1000,
+            CalibrationDate = DateTime.Now
+        };
+
+        // 1. Null user
+        var (c1, mC1) = neutronService.Create(newItem);
+        Assert.False(c1);
+        Assert.Contains("لا يوجد مستخدم مسجَّل الدخول", mC1);
+
+        // 2. Editor without permission for this section
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "no_ns_create", IsEditor = true, Permissions = "Locations" };
+        var (c2, mC2) = neutronService.Create(newItem);
+        Assert.False(c2);
+        Assert.Contains("لا تملك صلاحية الوصول", mC2);
+
+        // 3. Authorized editor -> actually creates
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "editor_ns_create", IsEditor = true, Permissions = "Sources" };
+        var (c3, mC3) = neutronService.Create(newItem);
+        Assert.True(c3);
+
+        newItem.Notes = "ملاحظة معدَّلة";
+
+        fakeUser.CurrentUser = null;
+        var (u1, mU1) = neutronService.Update(newItem);
+        Assert.False(u1);
+        Assert.Contains("لا يوجد مستخدم مسجَّل الدخول", mU1);
+
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "no_ns_update", IsEditor = true, Permissions = "Locations" };
+        var (u2, mU2) = neutronService.Update(newItem);
+        Assert.False(u2);
+        Assert.Contains("لا تملك صلاحية الوصول", mU2);
+
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "editor_ns_update", IsEditor = true, Permissions = "Sources" };
+        var (u3, mU3) = neutronService.Update(newItem);
+        Assert.True(u3);
+    }
+
+    [Fact]
+    public void RadioisotopeService_Create_And_Update_EnforcesEditorGuard()
+    {
+        var fakeUser = new FakeUserService();
+        fakeUser.CurrentUser = null;
+        var isoService = new RadioisotopeService(_fixture.ContextFactory, _auditService, fakeUser, _fakeLicenseService);
+
+        var newItem = new Radioisotope { Id = Guid.NewGuid(), Symbol = "Ir-192-161", Name = "Iridium-192", HalfLife = 73.8, RadiationType = "Gamma" };
+
+        // 1. Null user
+        var (c1, mC1) = isoService.Create(newItem);
+        Assert.False(c1);
+        Assert.Contains("لا يوجد مستخدم مسجَّل الدخول", mC1);
+
+        // 2. Editor without Radioisotopes permission
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "no_iso_create", IsEditor = true, Permissions = "Sources" };
+        var (c2, mC2) = isoService.Create(newItem);
+        Assert.False(c2);
+        Assert.Contains("لا تملك صلاحية الوصول", mC2);
+
+        // 3. Authorized editor -> actually creates
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "editor_iso_create", IsEditor = true, Permissions = "Radioisotopes" };
+        var (c3, mC3) = isoService.Create(newItem);
+        Assert.True(c3);
+
+        newItem.Notes = "ملاحظة معدَّلة";
+
+        fakeUser.CurrentUser = null;
+        var (u1, mU1) = isoService.Update(newItem);
+        Assert.False(u1);
+        Assert.Contains("لا يوجد مستخدم مسجَّل الدخول", mU1);
+
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "no_iso_update", IsEditor = true, Permissions = "Sources" };
+        var (u2, mU2) = isoService.Update(newItem);
+        Assert.False(u2);
+        Assert.Contains("لا تملك صلاحية الوصول", mU2);
+
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "editor_iso_update", IsEditor = true, Permissions = "Radioisotopes" };
+        var (u3, mU3) = isoService.Update(newItem);
+        Assert.True(u3);
+    }
+
+    [Fact]
+    public void LocationService_Create_And_Update_EnforcesEditorGuard()
+    {
+        var fakeUser = new FakeUserService();
+        fakeUser.CurrentUser = null;
+        var locService = new LocationService(_fixture.ContextFactory, _auditService, fakeUser, _fakeLicenseService);
+
+        var newItem = new Location { Id = Guid.NewGuid(), LocationName = "غرفة اختبار 161" };
+
+        // 1. Null user
+        var (c1, mC1) = locService.Create(newItem);
+        Assert.False(c1);
+        Assert.Contains("لا يوجد مستخدم مسجَّل الدخول", mC1);
+
+        // 2. Editor without Locations permission
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "no_loc_create", IsEditor = true, Permissions = "Sources" };
+        var (c2, mC2) = locService.Create(newItem);
+        Assert.False(c2);
+        Assert.Contains("لا تملك صلاحية الوصول", mC2);
+
+        // 3. Authorized editor -> actually creates
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "editor_loc_create", IsEditor = true, Permissions = "Locations" };
+        var (c3, mC3) = locService.Create(newItem);
+        Assert.True(c3);
+
+        newItem.Room = "101-معدَّل";
+
+        fakeUser.CurrentUser = null;
+        var (u1, mU1) = locService.Update(newItem);
+        Assert.False(u1);
+        Assert.Contains("لا يوجد مستخدم مسجَّل الدخول", mU1);
+
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "no_loc_update", IsEditor = true, Permissions = "Sources" };
+        var (u2, mU2) = locService.Update(newItem);
+        Assert.False(u2);
+        Assert.Contains("لا تملك صلاحية الوصول", mU2);
+
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "editor_loc_update", IsEditor = true, Permissions = "Locations" };
+        var (u3, mU3) = locService.Update(newItem);
+        Assert.True(u3);
+    }
+
+    [Fact]
+    public void BorrowService_CreateRequest_And_MarkReturned_EnforcesEditorGuard()
+    {
+        var fakeUser = new FakeUserService();
+        fakeUser.CurrentUser = null;
+        var borrowService = new BorrowService(_fixture.ContextFactory, _auditService, fakeUser, _fakeLicenseService);
+
+        var loc = new Location { Id = Guid.NewGuid(), LocationName = "موقع استعارة 161" };
+        var iso = new Radioisotope { Id = Guid.NewGuid(), Symbol = "Cs-137-161", Name = "Cesium-137", HalfLife = 30.17, RadiationType = "Gamma" };
+        var unit = new ActivityUnit { Id = Guid.NewGuid(), UnitName = "MBq", UnitSymbol = "MBq", ConversionToBq = 1e6 };
+        var src = new Source
+        {
+            Id = Guid.NewGuid(),
+            SourceCode = "SRC-BORROW-161",
+            LocationId = loc.Id,
+            RadioisotopeId = iso.Id,
+            InitialActivityValue = 100,
+            InitialActivityUnitId = unit.Id,
+            CurrentActivityValue = 100,
+            CurrentActivityUnitId = unit.Id,
+            CalibrationDate = DateTime.Now,
+            Status = "Storage"
+        };
+
+        using (var db = _fixture.CreateContext())
+        {
+            db.Locations.Add(loc);
+            db.Radioisotopes.Add(iso);
+            db.ActivityUnits.Add(unit);
+            db.Sources.Add(src);
+            db.SaveChanges();
+        }
+
+        var request = new BorrowRequest { Id = Guid.NewGuid(), SourceId = src.Id, BorrowerName = "مستعير اختبار" };
+
+        // 1. Null user
+        var (c1, mC1) = borrowService.CreateRequest(request);
+        Assert.False(c1);
+        Assert.Contains("لا يوجد مستخدم مسجَّل الدخول", mC1);
+
+        // 2. Editor without Borrowing permission
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "no_borrow_create", IsEditor = true, Permissions = "Sources" };
+        var (c2, mC2) = borrowService.CreateRequest(request);
+        Assert.False(c2);
+        Assert.Contains("لا تملك صلاحية الوصول", mC2);
+
+        // 3. Authorized editor -> actually creates
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "editor_borrow_create", IsEditor = true, Permissions = "Borrowing" };
+        var (c3, mC3) = borrowService.CreateRequest(request);
+        Assert.True(c3);
+
+        // MarkReturned guard cases
+        fakeUser.CurrentUser = null;
+        var (r1, mR1) = borrowService.MarkReturned(request.Id, Guid.NewGuid(), DateTime.Now);
+        Assert.False(r1);
+        Assert.Contains("لا يوجد مستخدم مسجَّل الدخول", mR1);
+
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "no_borrow_return", IsEditor = true, Permissions = "Sources" };
+        var (r2, mR2) = borrowService.MarkReturned(request.Id, Guid.NewGuid(), DateTime.Now);
+        Assert.False(r2);
+        Assert.Contains("لا تملك صلاحية الوصول", mR2);
+
+        var returnedByUser = CreateNormalUser("returned_by_161", permissions: "Borrowing", isEditor: true);
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "editor_borrow_return", IsEditor = true, Permissions = "Borrowing" };
+        var (r3, mR3) = borrowService.MarkReturned(request.Id, returnedByUser.Id, DateTime.Now);
+        Assert.True(r3);
+    }
+
+    [Fact]
+    public void LeakTestService_AddRecord_UpdateRecord_DeleteRecord_EnforcesEditorGuard()
+    {
+        var fakeUser = new FakeUserService();
+        fakeUser.CurrentUser = null;
+        var settingsService = new SystemSettingsService(_fixture.ContextFactory, _fakeLicenseService);
+        var leakTestService = new LeakTestService(_fixture.ContextFactory, _auditService, fakeUser, settingsService, _fakeLicenseService);
+
+        var loc = new Location { Id = Guid.NewGuid(), LocationName = "موقع فحص تسرب 161" };
+        var iso = new Radioisotope { Id = Guid.NewGuid(), Symbol = "Am-241-161", Name = "Americium-241", HalfLife = 432.6, RadiationType = "Alpha" };
+        var unit = new ActivityUnit { Id = Guid.NewGuid(), UnitName = "MBq", UnitSymbol = "MBq", ConversionToBq = 1e6 };
+        var src = new Source
+        {
+            Id = Guid.NewGuid(),
+            SourceCode = "SRC-LEAK-161",
+            LocationId = loc.Id,
+            RadioisotopeId = iso.Id,
+            InitialActivityValue = 100,
+            InitialActivityUnitId = unit.Id,
+            CurrentActivityValue = 100,
+            CurrentActivityUnitId = unit.Id,
+            CalibrationDate = DateTime.Now
+        };
+
+        using (var db = _fixture.CreateContext())
+        {
+            db.Locations.Add(loc);
+            db.Radioisotopes.Add(iso);
+            db.ActivityUnits.Add(unit);
+            db.Sources.Add(src);
+            db.SaveChanges();
+        }
+
+        var record = new LeakTestRecord { Id = Guid.NewGuid(), SourceId = src.Id, TestDate = DateTime.Now, Result = "Pass" };
+
+        // 1. Null user - AddRecord
+        var (a1, mA1, recA1) = leakTestService.AddRecord(record);
+        Assert.False(a1);
+        Assert.Contains("لا يوجد مستخدم مسجَّل الدخول", mA1);
+        Assert.Null(recA1);
+
+        // 2. Editor without LeakTests permission - AddRecord
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "no_leak_add", IsEditor = true, Permissions = "Sources" };
+        var (a2, mA2, recA2) = leakTestService.AddRecord(record);
+        Assert.False(a2);
+        Assert.Contains("لا تملك صلاحية الوصول", mA2);
+        Assert.Null(recA2);
+
+        // 3. Authorized editor -> actually creates
+        fakeUser.CurrentUser = CreateNormalUser("editor_leak_add_161", permissions: "LeakTests", isEditor: true);
+        var (a3, mA3, recA3) = leakTestService.AddRecord(record);
+        Assert.True(a3);
+        Assert.NotNull(recA3);
+
+        // UpdateRecord guard cases
+        record.Result = "Fail";
+
+        fakeUser.CurrentUser = null;
+        var (u1, mU1) = leakTestService.UpdateRecord(record);
+        Assert.False(u1);
+        Assert.Contains("لا يوجد مستخدم مسجَّل الدخول", mU1);
+
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "no_leak_update", IsEditor = true, Permissions = "Sources" };
+        var (u2, mU2) = leakTestService.UpdateRecord(record);
+        Assert.False(u2);
+        Assert.Contains("لا تملك صلاحية الوصول", mU2);
+
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "editor_leak_update", IsEditor = true, Permissions = "LeakTests" };
+        var (u3, mU3) = leakTestService.UpdateRecord(record);
+        Assert.True(u3);
+
+        // DeleteRecord guard cases
+        fakeUser.CurrentUser = null;
+        var (d1, mD1) = leakTestService.DeleteRecord(record.Id);
+        Assert.False(d1);
+        Assert.Contains("لا يوجد مستخدم مسجَّل الدخول", mD1);
+
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "no_leak_delete", IsEditor = true, Permissions = "Sources" };
+        var (d2, mD2) = leakTestService.DeleteRecord(record.Id);
+        Assert.False(d2);
+        Assert.Contains("لا تملك صلاحية الوصول", mD2);
+
+        fakeUser.CurrentUser = new User { Id = Guid.NewGuid(), Username = "editor_leak_delete", IsEditor = true, Permissions = "LeakTests" };
+        var (d3, mD3) = leakTestService.DeleteRecord(record.Id);
+        Assert.True(d3);
+    }
+
+    #endregion
 }

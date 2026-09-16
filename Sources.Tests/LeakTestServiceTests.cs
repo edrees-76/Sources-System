@@ -71,7 +71,8 @@ public class LeakTestServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
             FullName = "م. خالد الفاحص",
             PasswordHash = "hash",
             RoleId = testRole.Id,
-            IsActive = true
+            IsActive = true,
+            Permissions = "LeakTests"
         };
 
         _testSource = TestDataBuilder.CreateSource(

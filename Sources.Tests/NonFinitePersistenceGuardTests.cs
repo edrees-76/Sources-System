@@ -37,6 +37,7 @@ public class NonFinitePersistenceGuardTests : IDisposable
 
         _mockAudit = new Mock<IAuditService>();
         _mockUser = new Mock<IUserService>();
+        _mockUser.Setup(u => u.CurrentUser).Returns(new User { Id = Guid.NewGuid(), Username = "guard_test_editor", IsEditor = true, Permissions = "All" });
         _mockDecay = new Mock<IDecayCalculationService>();
         _mockSettings = new Mock<ISystemSettingsService>();
     }

@@ -73,6 +73,9 @@ public class SourceService : ISourceService
         var activation = AuthorizationGuard.RequireActivated(_licenseService);
         if (!activation.Allowed) return (false, activation.Message);
 
+        var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Sources");
+        if (!guard.Allowed) return (false, guard.Message);
+
         if (source == null) return (false, TranslationHelper.GetString("MsgErrInvalidSourceData") ?? "بيانات المصدر غير صالحة");
         if (!double.IsFinite(source.InitialActivityValue))
             return (false, TranslationHelper.GetString("MsgErrInvalidInitialActivityFinite") ?? "قيمة النشاط الابتدائي غير صالحة (يجب أن تكون رقماً منتهياً)");
@@ -163,6 +166,9 @@ public class SourceService : ISourceService
     {
         var activation = AuthorizationGuard.RequireActivated(_licenseService);
         if (!activation.Allowed) return (false, activation.Message);
+
+        var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Sources");
+        if (!guard.Allowed) return (false, guard.Message);
 
         if (source == null) return (false, TranslationHelper.GetString("MsgErrInvalidSourceData") ?? "بيانات المصدر غير صالحة");
         if (!double.IsFinite(source.InitialActivityValue))

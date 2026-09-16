@@ -379,6 +379,7 @@ public class NeutronCalibrationInputTests : IDisposable
     {
         var mockAudit = new Mock<IAuditService>();
         var mockUser = new Mock<IUserService>();
+        mockUser.Setup(u => u.CurrentUser).Returns(new User { Id = Guid.NewGuid(), Username = "integration_editor", IsEditor = true, Permissions = "Sources" });
         var realNeutronService = new NeutronSourceService(_fixture.ContextFactory, mockAudit.Object, mockUser.Object, new FakeLicenseService());
 
         var vm = CreateViewModel(realNeutronService);

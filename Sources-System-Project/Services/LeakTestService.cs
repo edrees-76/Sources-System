@@ -152,6 +152,9 @@ public class LeakTestService : ILeakTestService
         var activation = AuthorizationGuard.RequireActivated(_licenseService);
         if (!activation.Allowed) return (false, activation.Message, null);
 
+        var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "LeakTests");
+        if (!guard.Allowed) return (false, guard.Message, null);
+
         if (record == null) return (false, "سجل الفحص غير صالح", null);
         if (record.SourceId == Guid.Empty) return (false, "يجب تحديد المصدر المشع", null);
         if (record.MeasuredActivityBq.HasValue && !double.IsFinite(record.MeasuredActivityBq.Value))
@@ -187,6 +190,9 @@ public class LeakTestService : ILeakTestService
     {
         var activation = AuthorizationGuard.RequireActivated(_licenseService);
         if (!activation.Allowed) return (false, activation.Message);
+
+        var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "LeakTests");
+        if (!guard.Allowed) return (false, guard.Message);
 
         if (record == null) return (false, "سجل الفحص غير صالح");
         if (record.MeasuredActivityBq.HasValue && !double.IsFinite(record.MeasuredActivityBq.Value))
@@ -247,6 +253,9 @@ public class LeakTestService : ILeakTestService
     {
         var activation = AuthorizationGuard.RequireActivated(_licenseService);
         if (!activation.Allowed) return (false, activation.Message);
+
+        var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "LeakTests");
+        if (!guard.Allowed) return (false, guard.Message);
 
         using var db = _dbFactory.CreateDbContext();
         var record = db.LeakTestRecords.Include(r => r.Source).FirstOrDefault(r => r.Id == id);

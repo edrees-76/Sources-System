@@ -65,7 +65,8 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             Username = "ahmed",
             PasswordHash = "hash123",
             IsActive = true,
-            RoleId = role.Id
+            RoleId = role.Id,
+            Permissions = "Borrowing,Sources"
         };
 
         db.Roles.Add(role);

@@ -118,6 +118,9 @@ public class BorrowService : IBorrowService
         var activation = AuthorizationGuard.RequireActivated(_licenseService);
         if (!activation.Allowed) return (false, activation.Message);
 
+        var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Borrowing");
+        if (!guard.Allowed) return (false, guard.Message);
+
         try
         {
             using var db = _dbFactory.CreateDbContext();
@@ -180,6 +183,9 @@ public class BorrowService : IBorrowService
     {
         var activation = AuthorizationGuard.RequireActivated(_licenseService);
         if (!activation.Allowed) return (false, activation.Message);
+
+        var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Borrowing");
+        if (!guard.Allowed) return (false, guard.Message);
 
         try
         {

@@ -44,6 +44,9 @@ public class RadioisotopeService : IRadioisotopeService
         var activation = AuthorizationGuard.RequireActivated(_licenseService);
         if (!activation.Allowed) return (false, activation.Message);
 
+        var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Radioisotopes");
+        if (!guard.Allowed) return (false, guard.Message);
+
         if (item == null) return (false, TranslationHelper.GetString("MsgErrInvalidRadioisotopeData") ?? "بيانات النظير غير صالحة");
         if (!double.IsFinite(item.HalfLife))
             return (false, TranslationHelper.GetString("MsgErrInvalidHalfLifeFinite") ?? "قيمة نصف العمر غير صالحة (يجب أن تكون رقماً منتهياً)");
@@ -97,6 +100,9 @@ public class RadioisotopeService : IRadioisotopeService
     {
         var activation = AuthorizationGuard.RequireActivated(_licenseService);
         if (!activation.Allowed) return (false, activation.Message);
+
+        var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Radioisotopes");
+        if (!guard.Allowed) return (false, guard.Message);
 
         if (item == null) return (false, TranslationHelper.GetString("MsgErrInvalidRadioisotopeData") ?? "بيانات النظير غير صالحة");
         if (!double.IsFinite(item.HalfLife))
