@@ -148,6 +148,39 @@ public class IsotopeLibraryServiceTests
     }
 
     [Fact]
+    public void ReferencePaths_NeverContainDeveloperMachineHardcodedPath()
+    {
+        // IIsotopeLibraryService only exposes the PDF path getters; the JSON index path getters
+        // (GetIndexJsonPath/GetIcrpJsonPath) are concrete-only members, so the concrete type is used
+        // here to cover all four candidate-path builders.
+        var concreteService = (IsotopeLibraryService)_service;
+        var paths = new[]
+        {
+            concreteService.GetIndexJsonPath(),
+            concreteService.GetIcrpJsonPath(),
+            _service.GetReferencePdfPath(),
+            _service.GetIcrpPdfPath()
+        };
+
+        // The banned literals are checked by exact match, not by a "does not contain d:\Sources-System"
+        // substring: the project's own mandated working directory (docs/session-summary.md) IS
+        // "D:\Sources-System", so any path resolved under this checkout's own base directory
+        // legitimately contains that substring on this machine. A substring check would therefore
+        // fail even after the hardcoded fallback candidate is correctly removed. Exact-match against
+        // the specific literals that were deleted from the candidatePaths arrays is the precise,
+        // non-weakened regression check for this bug.
+        var bannedLiterals = new[]
+        {
+            @"d:\Sources-System\Sources-System-Project\Resources\References\gamma_constants_index.json",
+            @"d:\Sources-System\Sources-System-Project\Resources\References\icrp107_decay_index.json",
+            @"d:\Sources-System\Sources-System-Project\Resources\References\14724519.pdf",
+            @"d:\Sources-System\Sources-System-Project\Resources\References\ANIB_38_3.pdf"
+        };
+
+        Assert.All(paths, p => Assert.DoesNotContain(bannedLiterals, banned => banned.Equals(p, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [Fact]
     public async Task GetFormattedDetailsText_GeneratesAccurateFormattedStrings_ForBothOrnlAndIcrp()
     {
         // 1. Test ORNL Isotope (Cs-131)

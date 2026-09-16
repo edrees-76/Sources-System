@@ -56,8 +56,7 @@ public class IsotopeLibraryService : IIsotopeLibraryService
         {
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "References", "gamma_constants_index.json"),
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Resources", "References", "gamma_constants_index.json"),
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "Sources-System-Project", "Resources", "References", "gamma_constants_index.json"),
-            @"d:\Sources-System\Sources-System-Project\Resources\References\gamma_constants_index.json"
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "Sources-System-Project", "Resources", "References", "gamma_constants_index.json")
         };
 
         foreach (var p in candidatePaths)
@@ -80,8 +79,7 @@ public class IsotopeLibraryService : IIsotopeLibraryService
         {
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "References", "icrp107_decay_index.json"),
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Resources", "References", "icrp107_decay_index.json"),
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "Sources-System-Project", "Resources", "References", "icrp107_decay_index.json"),
-            @"d:\Sources-System\Sources-System-Project\Resources\References\icrp107_decay_index.json"
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "Sources-System-Project", "Resources", "References", "icrp107_decay_index.json")
         };
 
         foreach (var p in candidatePaths)
@@ -104,8 +102,7 @@ public class IsotopeLibraryService : IIsotopeLibraryService
         {
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "References", "14724519.pdf"),
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Resources", "References", "14724519.pdf"),
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "Sources-System-Project", "Resources", "References", "14724519.pdf"),
-            @"d:\Sources-System\Sources-System-Project\Resources\References\14724519.pdf"
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "Sources-System-Project", "Resources", "References", "14724519.pdf")
         };
 
         foreach (var p in candidatePaths)
@@ -128,8 +125,7 @@ public class IsotopeLibraryService : IIsotopeLibraryService
         {
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "References", "ANIB_38_3.pdf"),
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Resources", "References", "ANIB_38_3.pdf"),
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "Sources-System-Project", "Resources", "References", "ANIB_38_3.pdf"),
-            @"d:\Sources-System\Sources-System-Project\Resources\References\ANIB_38_3.pdf"
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "Sources-System-Project", "Resources", "References", "ANIB_38_3.pdf")
         };
 
         foreach (var p in candidatePaths)
