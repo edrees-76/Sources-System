@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Sources.Data;
+using Sources.Helpers;
 using Sources.Models;
 using Sources.Services;
 using Sources.Tests.Fakes;
@@ -174,7 +175,7 @@ public class AddedByUnificationTests : IClassFixture<SqliteInMemoryFixture>, IDi
     {
         // Arrange: User is authenticated in service with a random Guid that does not exist in DB Users table
         var ghostUserId = Guid.NewGuid();
-        _fakeUserService.CurrentUser = new User { Id = ghostUserId, FullName = "مستخدم شبحي غير موجود في القاعدة" };
+        _fakeUserService.CurrentUser = new User { Id = ghostUserId, FullName = "مستخدم شبحي غير موجود في القاعدة", Permissions = "All" };
 
         // 1. Source
         var src = new Source
@@ -260,18 +261,17 @@ public class AddedByUnificationTests : IClassFixture<SqliteInMemoryFixture>, IDi
     #region 3. عدم وجود مستخدم مسجّل (CurrentUser == null)
 
     [Fact]
-    public void Create_WhenCurrentUserIsNull_SetsAddedByToNull()
+    public void Create_WhenCurrentUserIsNull_FailsWithNotLoggedInMessage()
     {
         _fakeUserService.CurrentUser = null;
 
         var loc = new Location { LocationName = "موقع مجهول الهوية" };
-        var (lOk, _) = _locationService.Create(loc);
-        Assert.True(lOk);
+        var (lOk, lMsg) = _locationService.Create(loc);
+        Assert.False(lOk);
+        Assert.Equal(TranslationHelper.GetString("MsgErrNotLoggedIn") ?? "لا يمكن تنفيذ العملية: لا يوجد مستخدم مسجَّل الدخول.", lMsg);
 
         var loadedLoc = _locationService.GetById(loc.Id);
-        Assert.NotNull(loadedLoc);
-        Assert.Null(loadedLoc.AddedBy);
-        Assert.Equal("غير معروف", loadedLoc.AddedByName);
+        Assert.Null(loadedLoc);
     }
 
     #endregion

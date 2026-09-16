@@ -188,7 +188,8 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
             FullName = "علي أحمد",
             Username = "ali_ahmed",
             RoleId = role.Id,
-            IsActive = true
+            IsActive = true,
+            Permissions = "Radioisotopes"
         };
         using (var db = _fixture.CreateContext())
         {
@@ -248,7 +249,7 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
     }
 
     [Fact]
-    public void Create_WhenUserIsNull_SetsAddedByToDefaultUnknown()
+    public void Create_WhenUserIsNull_FailsWithNotLoggedInMessage()
     {
         // Arrange
         _fakeUserService.CurrentUser = null;
@@ -260,15 +261,14 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
         };
 
         // Act
-        var (success, _) = _sut.Create(item);
+        var (success, message) = _sut.Create(item);
 
         // Assert
-        Assert.True(success);
+        Assert.False(success);
+        Assert.Equal(TranslationHelper.GetString("MsgErrNotLoggedIn") ?? "لا يمكن تنفيذ العملية: لا يوجد مستخدم مسجَّل الدخول.", message);
         using var db = _fixture.CreateContext();
         var saved = db.Radioisotopes.FirstOrDefault(r => r.Symbol == "Co-60");
-        Assert.NotNull(saved);
-        Assert.Null(saved.AddedBy);
-        Assert.Equal("غير معروف", saved.AddedByName);
+        Assert.Null(saved);
     }
 
     [Fact]

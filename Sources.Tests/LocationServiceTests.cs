@@ -151,7 +151,8 @@ public class LocationServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
             FullName = "د. أحمد علي",
             Username = "ahmed",
             IsActive = true,
-            RoleId = role.Id
+            RoleId = role.Id,
+            Permissions = "Locations"
         };
         using (var db = _fixture.CreateContext())
         {
@@ -200,7 +201,7 @@ public class LocationServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
     }
 
     [Fact]
-    public void Create_ValidLocation_WithNullCurrentUser_SavesSuccessfullyWithNullAddedBy()
+    public void Create_ValidLocation_WithNullCurrentUser_FailsWithNotLoggedInMessage()
     {
         // Arrange
         _fakeUserService.CurrentUser = null;
@@ -214,11 +215,11 @@ public class LocationServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
         var result = _sut.Create(location);
 
         // Assert
-        Assert.True(result.Success);
+        Assert.False(result.Success);
+        Assert.Equal(TranslationHelper.GetString("MsgErrNotLoggedIn") ?? "لا يمكن تنفيذ العملية: لا يوجد مستخدم مسجَّل الدخول.", result.Message);
         using var db = _fixture.CreateContext();
         var saved = db.Locations.Find(location.Id);
-        Assert.NotNull(saved);
-        Assert.Null(saved!.AddedBy);
+        Assert.Null(saved);
     }
 
     [Fact]
