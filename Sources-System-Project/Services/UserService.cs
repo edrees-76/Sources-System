@@ -224,6 +224,7 @@ public class UserService : IUserService
         user.PasswordHash = PasswordHelper.HashPassword(newPassword);
         user.FailedLoginAttempts = 0;
         user.LockoutEnd = null;
+        user.MustChangePassword = false;
         db.SaveChanges();
 
         var auditService = _auditService ?? new AuditService(_dbFactory, this);

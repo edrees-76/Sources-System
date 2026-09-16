@@ -765,6 +765,9 @@ public class User
     /// <summary>هل يملك صلاحية تعديل البيانات (true) أم عرض فقط (false)</summary>
     public bool IsEditor { get; set; } = true;
 
+    /// <summary>يجب على المستخدم تغيير كلمة مروره عند تسجيل الدخول التالي (مثلاً admin بكلمة المرور الافتراضية)</summary>
+    public bool MustChangePassword { get; set; } = false;
+
     // ─── خصائص محسوبة ───
     [NotMapped]
     public string StatusDisplayName => IsActive ? "نشط" : "موقوف";

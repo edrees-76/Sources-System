@@ -284,7 +284,8 @@ public class AppDbContext : DbContext
                 PasswordHash = Helpers.PasswordHelper.HashPassword("admin"),
                 RoleId = adminRole.Id,
                 Email = "admin@sources.local",
-                IsActive = true
+                IsActive = true,
+                MustChangePassword = true
             });
             SaveChanges();
         }
@@ -293,20 +294,35 @@ public class AppDbContext : DbContext
             // محاولة التحقق من كلمة المرور القديمة أو تحديثها للنظام الجديد إذا كانت "admin"
             // ملاحظة: PasswordHelper.VerifyPassword سيفشل إذا كان الهاش قديماً (SHA256)
             // ولذلك سنقوم بتحديث الهاش إذا كانت كلمة السر ما زالت هي الافتراضية "admin"
-            try 
+            try
             {
-                if (!Helpers.PasswordHelper.VerifyPassword("admin", adminUser.PasswordHash))
+                var needsSave = false;
+                var passwordIsStillDefaultAdmin = Helpers.PasswordHelper.VerifyPassword("admin", adminUser.PasswordHash);
+
+                if (!passwordIsStillDefaultAdmin)
                 {
-                    // التحقق يدوياً إذا كان الهاش هو SHA256 لكلمة "admin"
+                    // التحقق يدوياً إذا كان الهاش هو SHA256 لكلمة "admin" (هاش قديم قبل الترقية)
                     using var sha = System.Security.Cryptography.SHA256.Create();
                     var oldHash = Convert.ToBase64String(sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes("admin")));
-                    
+
                     if (adminUser.PasswordHash == oldHash)
                     {
                         adminUser.PasswordHash = Helpers.PasswordHelper.HashPassword("admin");
-                        SaveChanges();
+                        // الهاش القديم رُقِّي، لكن كلمة المرور الفعلية لا تزال "admin" حكماً
+                        passwordIsStillDefaultAdmin = true;
+                        needsSave = true;
                     }
                 }
+
+                // إن كانت كلمة المرور لا تزال "admin" الافتراضية، افرض تغييرها عند أول تسجيل دخول.
+                // إن كان admin قد غيَّر كلمة مروره فعلياً، لا تلمس الحقل إطلاقاً.
+                if (passwordIsStillDefaultAdmin && !adminUser.MustChangePassword)
+                {
+                    adminUser.MustChangePassword = true;
+                    needsSave = true;
+                }
+
+                if (needsSave) SaveChanges();
             }
             catch { /* تجاوز أي خطأ في التحقق */ }
         }

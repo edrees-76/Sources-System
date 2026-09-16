@@ -27,7 +27,7 @@ public class BackupService : IBackupService
         _backupDir = !string.IsNullOrEmpty(customBackupDir) ? customBackupDir : DatabasePaths.BackupsDirectory;
         _certificatesFolder = !string.IsNullOrEmpty(customCertificatesFolder)
             ? customCertificatesFolder
-            : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Certificates");
+            : Path.Combine(DatabasePaths.AppDataDirectory, "Certificates");
 
         if (!Directory.Exists(_backupDir))
             Directory.CreateDirectory(_backupDir);

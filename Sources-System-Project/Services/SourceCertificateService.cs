@@ -26,7 +26,7 @@ public class SourceCertificateService : ISourceCertificateService
         _licenseService = licenseService;
         _certificatesFolder = !string.IsNullOrEmpty(customCertificatesFolder)
             ? customCertificatesFolder
-            : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Certificates");
+            : Path.Combine(DatabasePaths.AppDataDirectory, "Certificates");
 
         EnsureDirectoryExists();
     }

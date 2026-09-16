@@ -91,6 +91,17 @@ public partial class MainViewModel : ObservableObject, IDisposable
         RefreshNotifications();
         StartAlertCheckTimer();
         RefreshSidebarPermissions();
+
+        if (_userService.CurrentUser?.MustChangePassword == true && !DialogHelper.IsTestMode)
+        {
+            var forceChangeDialog = new Sources.Views.ForceChangePasswordDialog(_userService, _userService.CurrentUser.Id);
+            if (Application.Current?.MainWindow != null)
+            {
+                forceChangeDialog.Owner = Application.Current.MainWindow;
+            }
+            forceChangeDialog.ShowDialog();
+        }
+
         NavigateTo("Dashboard");
     }
 
