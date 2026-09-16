@@ -28,7 +28,7 @@
 
 [Setup]
 AppId={{DF8A9B0D-5D38-4E06-9EB7-D7593FAF3B77}
-AppMutex={Sources-RST-2026-UNIQUE-MUTEX}
+AppMutex={{Sources-RST-2026-UNIQUE-MUTEX}
 AppName=منظومة مصادر - Sources System
 AppVersion=1.0.0
 AppPublisher=مركز البحوث النووية - تاجوراء
