@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Sources.Data;
+using Sources.Helpers;
 
 namespace Sources.Services;
 
@@ -49,7 +50,7 @@ public class BackupService : IBackupService
         try
         {
             if (!File.Exists(_dbPath))
-                return (false, "قاعدة البيانات غير موجودة", null);
+                return (false, TranslationHelper.GetString("MsgErrDatabaseNotFound") ?? "قاعدة البيانات غير موجودة", null);
 
             var targetDir = (customPath.EndsWith(BackupFolderName, StringComparison.OrdinalIgnoreCase) ||
                              customPath.EndsWith(LegacyBackupFolderName, StringComparison.OrdinalIgnoreCase))
@@ -119,7 +120,7 @@ public class BackupService : IBackupService
             CleanOldBackups(30, targetDir);
 
             LoggerService.LogInfo($"تم إنشاء نسخة احتياطية كاملة (ZIP): {zipFile}");
-            return (true, $"تم إنشاء النسخة الاحتياطية بنجاح\n\u2066{zipFile}\u2069", zipFile);
+            return (true, $"{TranslationHelper.GetString("MsgSuccessBackupCreated") ?? "تم إنشاء النسخة الاحتياطية بنجاح"}\n⁦{zipFile}⁩", zipFile);
         }
         catch (Exception ex)
         {
@@ -129,7 +130,7 @@ public class BackupService : IBackupService
             }
 
             LoggerService.LogError("خطأ أثناء إنشاء النسخة الاحتياطية", ex);
-            return (false, $"خطأ: {ex.Message}", null);
+            return (false, TranslationHelper.GetFormat("MsgErrGeneral", ex.Message), null);
         }
     }
 
@@ -143,7 +144,7 @@ public class BackupService : IBackupService
         try
         {
             if (!File.Exists(backupFilePath))
-                return (false, "ملف النسخة الاحتياطية غير موجود");
+                return (false, TranslationHelper.GetString("MsgErrBackupFileNotFound") ?? "ملف النسخة الاحتياطية غير موجود");
 
             var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
 
@@ -194,7 +195,7 @@ public class BackupService : IBackupService
                         e.Name.EndsWith(".db", StringComparison.OrdinalIgnoreCase));
 
                     if (dbEntry == null)
-                        return (false, "ملف النسخة الاحتياطية المضغوط لا يحتوي على ملف قاعدة البيانات.");
+                        return (false, TranslationHelper.GetString("MsgErrBackupZipMissingDb") ?? "ملف النسخة الاحتياطية المضغوط لا يحتوي على ملف قاعدة البيانات.");
 
                     var tempExtractedDb = Path.Combine(Path.GetTempPath(), $"temp_restore_{Guid.NewGuid():N}.db");
                     dbEntry.ExtractToFile(tempExtractedDb, overwrite: true);
@@ -293,7 +294,7 @@ public class BackupService : IBackupService
 
                         if (restoredMigrations.Count == 0)
                         {
-                            incompatibleReason = "النسخة الاحتياطية لا تحتوي على أي سجل ترحيلات معتمد، ولا يمكن استعادتها.";
+                            incompatibleReason = TranslationHelper.GetString("MsgErrBackupNoMigrationHistory") ?? "النسخة الاحتياطية لا تحتوي على أي سجل ترحيلات معتمد، ولا يمكن استعادتها.";
                             isCompatible = false;
                         }
                         else
@@ -301,7 +302,7 @@ public class BackupService : IBackupService
                             var unknownMigrations = restoredMigrations.Where(m => !knownMigrations.Contains(m)).ToList();
                             if (unknownMigrations.Any())
                             {
-                                incompatibleReason = $"النسخة الاحتياطية أُنشئت بإصدار أحدث من المنظومة وتحتوي على ترحيلات غير معروفة ({string.Join(", ", unknownMigrations)})، ولا يمكن استعادتها بهذا الإصدار.";
+                                incompatibleReason = TranslationHelper.GetFormat("MsgErrBackupNewerVersionUnknownMigrations", string.Join(", ", unknownMigrations));
                                 isCompatible = false;
                             }
                             else
@@ -312,7 +313,7 @@ public class BackupService : IBackupService
                     }
                     else
                     {
-                        incompatibleReason = "النسخة الاحتياطية غير صالحة ولا تحتوي على جدول ترحيلات المنظومة.";
+                        incompatibleReason = TranslationHelper.GetString("MsgErrBackupInvalidNoMigrationTable") ?? "النسخة الاحتياطية غير صالحة ولا تحتوي على جدول ترحيلات المنظومة.";
                         isCompatible = false;
                     }
                 }
@@ -320,7 +321,7 @@ public class BackupService : IBackupService
             catch (Exception ex)
             {
                 LoggerService.LogWarning($"فشل فحص توافق المخطط في النسخة المستعادة: {ex.Message}");
-                incompatibleReason = $"فشل التحقق من توافق النسخة الاحتياطية: {ex.Message}";
+                incompatibleReason = TranslationHelper.GetFormat("MsgErrBackupCompatibilityCheckFailed", ex.Message);
                 isCompatible = false;
             }
 
@@ -357,7 +358,7 @@ public class BackupService : IBackupService
 
                 Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
 
-                string incompatibleMsg = incompatibleReason ?? "النسخة الاحتياطية غير متوافقة مع بنية قاعدة البيانات الحالية، ولا يمكن استعادتها.";
+                string incompatibleMsg = incompatibleReason ?? TranslationHelper.GetString("MsgErrBackupIncompatibleSchema") ?? "النسخة الاحتياطية غير متوافقة مع بنية قاعدة البيانات الحالية، ولا يمكن استعادتها.";
                 LoggerService.LogWarning(incompatibleMsg);
                 return (false, incompatibleMsg);
             }
@@ -376,13 +377,13 @@ public class BackupService : IBackupService
             }
 
             LoggerService.LogInfo($"تمت الاستعادة بنجاح من: {backupFilePath}");
-            return (true, "تمت الاستعادة بنجاح. يُرجى إعادة تشغيل التطبيق.");
+            return (true, TranslationHelper.GetString("MsgSuccessRestoreCompleted") ?? "تمت الاستعادة بنجاح. يُرجى إعادة تشغيل التطبيق.");
         }
         catch (Exception ex)
         {
             // في حالة حدوث أي خطأ: يتم الإبقاء على مجلد safetyCertDir كما هو
             LoggerService.LogError("خطأ أثناء الاستعادة", ex);
-            return (false, $"خطأ أثناء الاستعادة: {ex.Message}");
+            return (false, TranslationHelper.GetFormat("MsgErrRestoreFailed", ex.Message));
         }
     }
 
