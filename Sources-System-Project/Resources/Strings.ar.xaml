@@ -1832,6 +1832,15 @@
 
     <!-- Round 175 Single Instance Mutex Warning -->
     <system:String x:Key="AppAlreadyRunningMessage">المنظومة تعمل بالفعل على هذا الجهاز.</system:String>
+
+    <!-- Round 177 (ب5، جزء أول): LeakTestService.cs message localization -->
+    <system:String x:Key="MsgErrInvalidLeakTestRecord">سجل الفحص غير صالح</system:String>
+    <system:String x:Key="MsgErrLeakTestSourceRequired">يجب تحديد المصدر المشع</system:String>
+    <system:String x:Key="MsgErrLeakTestSourceNotFound">المصدر المحدد غير موجود</system:String>
+    <system:String x:Key="MsgSuccessLeakTestCreated">تم تسجيل اختبار التسرب بنجاح</system:String>
+    <system:String x:Key="MsgErrLeakTestRecordNotFound">سجل الفحص غير موجود</system:String>
+    <system:String x:Key="MsgSuccessLeakTestUpdated">تم تحديث سجل اختبار التسرب بنجاح</system:String>
+    <system:String x:Key="MsgSuccessLeakTestDeleted">تم حذف سجل اختبار التسرب بنجاح</system:String>
 </ResourceDictionary>
 
 

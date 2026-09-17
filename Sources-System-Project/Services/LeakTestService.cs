@@ -155,14 +155,14 @@ public class LeakTestService : ILeakTestService
         var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "LeakTests");
         if (!guard.Allowed) return (false, guard.Message, null);
 
-        if (record == null) return (false, "سجل الفحص غير صالح", null);
-        if (record.SourceId == Guid.Empty) return (false, "يجب تحديد المصدر المشع", null);
+        if (record == null) return (false, TranslationHelper.GetString("MsgErrInvalidLeakTestRecord") ?? "سجل الفحص غير صالح", null);
+        if (record.SourceId == Guid.Empty) return (false, TranslationHelper.GetString("MsgErrLeakTestSourceRequired") ?? "يجب تحديد المصدر المشع", null);
         if (record.MeasuredActivityBq.HasValue && !double.IsFinite(record.MeasuredActivityBq.Value))
             return (false, TranslationHelper.GetString("MsgErrInvalidMeasuredActivityFinite") ?? "قيمة النشاط المقاس غير صالحة (يجب أن تكون رقماً منتهياً)", null);
 
         using var db = _dbFactory.CreateDbContext();
         var source = db.Sources.Find(record.SourceId);
-        if (source == null) return (false, "المصدر المحدد غير موجود", null);
+        if (source == null) return (false, TranslationHelper.GetString("MsgErrLeakTestSourceNotFound") ?? "المصدر المحدد غير موجود", null);
 
         if (record.NextDueDate == default)
         {
@@ -182,7 +182,7 @@ public class LeakTestService : ILeakTestService
         _auditService.Log("Create", "LeakTestRecords", record.Id, 
             $"تسجيل فحص تسرب للمصدر: {source.SourceCode} (النتيجة: {record.ArabicResult}، الاستحقاق القادم: {record.NextDueDate:yyyy/MM/dd})");
 
-        return (true, "تم تسجيل اختبار التسرب بنجاح", record);
+        return (true, TranslationHelper.GetString("MsgSuccessLeakTestCreated") ?? "تم تسجيل اختبار التسرب بنجاح", record);
     }
 
 
@@ -194,13 +194,13 @@ public class LeakTestService : ILeakTestService
         var guard = AuthorizationGuard.RequireEditor(_userService.CurrentUser, "LeakTests");
         if (!guard.Allowed) return (false, guard.Message);
 
-        if (record == null) return (false, "سجل الفحص غير صالح");
+        if (record == null) return (false, TranslationHelper.GetString("MsgErrInvalidLeakTestRecord") ?? "سجل الفحص غير صالح");
         if (record.MeasuredActivityBq.HasValue && !double.IsFinite(record.MeasuredActivityBq.Value))
             return (false, TranslationHelper.GetString("MsgErrInvalidMeasuredActivityFinite") ?? "قيمة النشاط المقاس غير صالحة (يجب أن تكون رقماً منتهياً)");
 
         using var db = _dbFactory.CreateDbContext();
         var existing = db.LeakTestRecords.Include(r => r.Source).FirstOrDefault(r => r.Id == record.Id);
-        if (existing == null) return (false, "سجل الفحص غير موجود");
+        if (existing == null) return (false, TranslationHelper.GetString("MsgErrLeakTestRecordNotFound") ?? "سجل الفحص غير موجود");
 
         var oldValuesObj = new
         {
@@ -245,7 +245,7 @@ public class LeakTestService : ILeakTestService
             $"تعديل سجل فحص تسرب للمصدر: {existing.Source?.SourceCode ?? "—"}",
             oldValuesJson, newValuesJson);
 
-        return (true, "تم تحديث سجل اختبار التسرب بنجاح");
+        return (true, TranslationHelper.GetString("MsgSuccessLeakTestUpdated") ?? "تم تحديث سجل اختبار التسرب بنجاح");
     }
 
 
@@ -259,7 +259,7 @@ public class LeakTestService : ILeakTestService
 
         using var db = _dbFactory.CreateDbContext();
         var record = db.LeakTestRecords.Include(r => r.Source).FirstOrDefault(r => r.Id == id);
-        if (record == null) return (false, "سجل الفحص غير موجود");
+        if (record == null) return (false, TranslationHelper.GetString("MsgErrLeakTestRecordNotFound") ?? "سجل الفحص غير موجود");
 
         var oldValuesObj = new
         {
@@ -282,7 +282,7 @@ public class LeakTestService : ILeakTestService
             $"حذف سجل فحص تسرب للمصدر: {record.Source?.SourceCode ?? "—"}",
             oldValuesJson, null);
 
-        return (true, "تم حذف سجل اختبار التسرب بنجاح");
+        return (true, TranslationHelper.GetString("MsgSuccessLeakTestDeleted") ?? "تم حذف سجل اختبار التسرب بنجاح");
     }
 }
 
