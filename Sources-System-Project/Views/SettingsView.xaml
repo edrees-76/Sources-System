@@ -239,7 +239,7 @@
                         Visibility="{Binding CanShowTestData, Converter={StaticResource BoolToVis}}">
                     <StackPanel Orientation="Horizontal">
                         <materialDesign:PackIcon Kind="DatabasePlus" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="بيانات تجريبية (Debug)" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource DebugDemoDataTabTitle}" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
             </StackPanel>
@@ -1212,21 +1212,21 @@
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                                 <materialDesign:PackIcon Kind="DatabasePlus" Width="24" Height="24" Foreground="#D97706" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <TextBlock Text="توليد بيانات تجريبية واقعية (Debug Mode)" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource DebugGenerateRealisticDataTitle}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                             </StackPanel>
 
                             <Border Background="#12F59E0B" BorderBrush="#33F59E0B" BorderThickness="1" CornerRadius="8" Padding="16,14" Margin="0,0,0,20">
                                 <StackPanel>
-                                    <TextBlock Text="تتيح هذه الأداة إنشاء حزمة متكاملة من البيانات التجريبية لاختبار شاشات وتقارير وتنبيهات المنظومة:" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
-                                    <TextBlock Text="• 20 موقعاً فعالاً تشمل مختبرات ومخازن ومستشفيات وعيادات بمسؤولين مختلفين." FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="8,0,0,4"/>
-                                    <TextBlock Text="• 300 مصدراً مشعاً بتوزيعات واقعية للنشاط الإشعاعي (أحادية ومتعددة النظائر)." FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="8,0,0,4"/>
-                                    <TextBlock Text="• 50 مصدراً مخصصاً لاختبار التنبيهات الذكية (25 تحذير + 25 حرج) بحسابات انحلال دقيقة." FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="8,0,0,4"/>
-                                    <TextBlock Text="• 100 طلب استعارة (70 مرتجع + 15 جاري التسليم + 10 متأخر Overdue + 5 قيد الاعتماد)." FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="8,0,0,8"/>
-                                    <TextBlock Text="⚠️ ملاحظة: هذه الميزة مخصصة لأغراض التطوير والاختبار (DEBUG) وتعمل داخل Transaction لضمان سلامة قاعدة البيانات." FontSize="12" Foreground="#D97706" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{DynamicResource DebugDemoDataIntro}" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
+                                    <TextBlock Text="{DynamicResource DebugDemoDataLocationsBullet}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="8,0,0,4"/>
+                                    <TextBlock Text="{DynamicResource DebugDemoDataSourcesBullet}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="8,0,0,4"/>
+                                    <TextBlock Text="{DynamicResource DebugDemoDataAlertsBullet}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="8,0,0,4"/>
+                                    <TextBlock Text="{DynamicResource DebugDemoDataBorrowsBullet}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="8,0,0,8"/>
+                                    <TextBlock Text="{DynamicResource DebugDemoDataNote}" FontSize="12" Foreground="#D97706" FontWeight="SemiBold"/>
                                 </StackPanel>
                             </Border>
 
-                            <Button Content="توليد البيانات التجريبية الآن"
+                            <Button Content="{DynamicResource BtnGenerateDemoDataNow}"
                                     Style="{StaticResource PrimaryButton}"
                                     Command="{Binding GenerateTestDataCommand}"
                                     Background="#D97706" BorderBrush="#D97706"
@@ -1235,7 +1235,7 @@
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal">
                                             <materialDesign:PackIcon Kind="DatabaseArrowUp" VerticalAlignment="Center" Margin="0,0,8,0" Width="20" Height="20"/>
-                                            <TextBlock Text="توليد البيانات التجريبية الآن" VerticalAlignment="Center" FontWeight="Bold" FontSize="14"/>
+                                            <TextBlock Text="{DynamicResource BtnGenerateDemoDataNow}" VerticalAlignment="Center" FontWeight="Bold" FontSize="14"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </Button.ContentTemplate>
