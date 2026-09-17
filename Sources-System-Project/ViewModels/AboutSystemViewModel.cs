@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Sources.ViewModels
@@ -7,7 +9,7 @@ namespace Sources.ViewModels
     {
         public string SystemName => "SOURCES - منظومة تتبع المصادر المشعة";
         public string SystemNameEn => "Sources — Radioactive Source Tracking System";
-        public string Version => "1.0.0 (Release 2026)";
+        public string Version => $"{GetAssemblyVersion()} (Release {ReleaseYear})";
         public string ReleaseYear => "2026";
         public string FrameworkTech => ".NET 8 / WPF";
         public string ComplianceStandard => "IAEA RS-G-1.9";
@@ -21,6 +23,27 @@ namespace Sources.ViewModels
 
         public AboutSystemViewModel()
         {
+        }
+
+        private static string GetAssemblyVersion()
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var informationalVersion = assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+                .InformationalVersion;
+
+            if (!string.IsNullOrWhiteSpace(informationalVersion))
+            {
+                return informationalVersion;
+            }
+
+            var fileVersion = FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion;
+            if (!string.IsNullOrWhiteSpace(fileVersion))
+            {
+                return fileVersion;
+            }
+
+            return assembly.GetName().Version?.ToString() ?? string.Empty;
         }
     }
 }

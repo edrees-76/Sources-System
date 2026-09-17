@@ -27,11 +27,15 @@
   #define PublishDir "..\Sources-System-Project\bin\Release\net8.0-windows\win-x64\publish"
 #endif
 
+#ifndef AppVersion
+  #define AppVersion "1.0.0"
+#endif
+
 [Setup]
 AppId={{DF8A9B0D-5D38-4E06-9EB7-D7593FAF3B77}
 AppMutex={{Sources-RST-2026-UNIQUE-MUTEX}
 AppName=منظومة مصادر - Sources System
-AppVersion=1.0.0
+AppVersion={#AppVersion}
 AppPublisher=مركز البحوث النووية - تاجوراء
 DefaultDirName={autopf}\Sources System
 DefaultGroupName=منظومة مصادر - Sources System

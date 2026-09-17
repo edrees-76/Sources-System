@@ -68,7 +68,19 @@ if (-not (Test-Path $InnoSetupCompiler)) {
     throw "لم يُعثر على مُصرِّف Inno Setup 6 (ISCC.exe) في المسار: $InnoSetupCompiler`nيجب تثبيت Inno Setup 6 على جهاز البناء، أو تمرير المسار الصحيح عبر -InnoSetupCompiler."
 }
 
-& $InnoSetupCompiler "/DPublishDir=$publishDir" $issPath
+if (-not (Test-Path $projectPath)) {
+    throw "ملف المشروع غير موجود: $projectPath — لا يمكن استخلاص رقم الإصدار."
+}
+
+$csprojContent = Get-Content -Path $projectPath -Raw
+$versionMatch = [regex]::Match($csprojContent, "<Version>(.*?)</Version>")
+if (-not $versionMatch.Success -or [string]::IsNullOrWhiteSpace($versionMatch.Groups[1].Value)) {
+    throw "تعذّر استخلاص رقم الإصدار من <Version> داخل: $projectPath — لا يمكن المتابعة بلا قيمة افتراضية صامتة."
+}
+$appVersion = $versionMatch.Groups[1].Value.Trim()
+Write-Host "رقم الإصدار المستخلص من Sources.csproj: $appVersion"
+
+& $InnoSetupCompiler "/DPublishDir=$publishDir" "/DAppVersion=$appVersion" $issPath
 
 if ($LASTEXITCODE -ne 0) {
     throw "فشل تصريف مثبِّت Inno Setup (رمز الخروج $LASTEXITCODE). راجع مخرجات ISCC أعلاه."
