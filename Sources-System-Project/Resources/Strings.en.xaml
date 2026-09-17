@@ -1854,6 +1854,12 @@
     <system:String x:Key="MsgErrBackupIncompatibleSchema">The backup is incompatible with the current database schema and cannot be restored.</system:String>
     <system:String x:Key="MsgSuccessRestoreCompleted">Restore completed successfully. Please restart the application.</system:String>
     <system:String x:Key="MsgErrRestoreFailed">Error during restore: {0}</system:String>
+
+    <!-- Round 179 (ب5، جزء ثالث): SourceCertificateService.cs + GlobalSearchService.cs message localization -->
+    <system:String x:Key="MsgErrAttachCertificateFileNotFound">The file you are trying to attach was not found</system:String>
+    <system:String x:Key="MsgFormatRoomNumber">Room {0}</system:String>
+    <system:String x:Key="MsgFormatResponsiblePerson">Responsible: {0}</system:String>
+    <system:String x:Key="TextLocationGeneric">Location</system:String>
 </ResourceDictionary>
 
 

@@ -151,15 +151,15 @@ public class GlobalSearchService : IGlobalSearchService
         {
             var parts = new List<string>();
             if (!string.IsNullOrEmpty(l.Building)) parts.Add(l.Building);
-            if (!string.IsNullOrEmpty(l.Room)) parts.Add($"غرفة {l.Room}");
-            if (!string.IsNullOrEmpty(l.ResponsiblePerson)) parts.Add($"المسؤول: {l.ResponsiblePerson}");
+            if (!string.IsNullOrEmpty(l.Room)) parts.Add(TranslationHelper.GetFormat("MsgFormatRoomNumber", l.Room));
+            if (!string.IsNullOrEmpty(l.ResponsiblePerson)) parts.Add(TranslationHelper.GetFormat("MsgFormatResponsiblePerson", l.ResponsiblePerson));
 
             return new GlobalSearchResultItem
             {
                 Id = l.Id,
                 Category = SearchCategory.Locations,
                 Title = l.LocationName,
-                Subtitle = parts.Count > 0 ? string.Join(" • ", parts) : (l.LocationType ?? "موقع"),
+                Subtitle = parts.Count > 0 ? string.Join(" • ", parts) : (l.LocationType ?? (TranslationHelper.GetString("TextLocationGeneric") ?? "موقع")),
                 ExtraInfo = l.LocationType,
                 IconKind = "MapMarker",
                 TargetView = "Locations"
@@ -268,7 +268,7 @@ public class GlobalSearchService : IGlobalSearchService
                 Category = SearchCategory.Radioisotopes,
                 Title = r.Symbol,
                 Subtitle = $"{nameDisplay} • {r.RadiationType}",
-                ExtraInfo = $"نصف العمر: {halfLifeDisplay}",
+                ExtraInfo = $"{TranslationHelper.GetString("LabelHalfLifePrefix") ?? "نصف العمر:"} {halfLifeDisplay}",
                 IconKind = "Atom",
                 TargetView = "Radioisotopes"
             };

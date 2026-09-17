@@ -1854,6 +1854,12 @@
     <system:String x:Key="MsgErrBackupIncompatibleSchema">النسخة الاحتياطية غير متوافقة مع بنية قاعدة البيانات الحالية، ولا يمكن استعادتها.</system:String>
     <system:String x:Key="MsgSuccessRestoreCompleted">تمت الاستعادة بنجاح. يُرجى إعادة تشغيل التطبيق.</system:String>
     <system:String x:Key="MsgErrRestoreFailed">خطأ أثناء الاستعادة: {0}</system:String>
+
+    <!-- Round 179 (ب5، جزء ثالث): SourceCertificateService.cs + GlobalSearchService.cs message localization -->
+    <system:String x:Key="MsgErrAttachCertificateFileNotFound">الملف المطلوب إرفاقه غير موجود</system:String>
+    <system:String x:Key="MsgFormatRoomNumber">غرفة {0}</system:String>
+    <system:String x:Key="MsgFormatResponsiblePerson">المسؤول: {0}</system:String>
+    <system:String x:Key="TextLocationGeneric">موقع</system:String>
 </ResourceDictionary>
 
 
