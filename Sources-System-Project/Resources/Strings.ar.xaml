@@ -1829,6 +1829,9 @@
     <system:String x:Key="FirstRunWizardSkipButton">تخطي</system:String>
     <system:String x:Key="FirstRunWizardTrialNoticeTitle">الوضع التجريبي</system:String>
     <system:String x:Key="FirstRunWizardTrialNoticeMessage">أنت تستخدم النسخة التجريبية حالياً. سيلزم ضبط إعدادات النسخ الاحتياطي من شاشة الإعدادات بعد تفعيل المنظومة.</system:String>
+
+    <!-- Round 175 Single Instance Mutex Warning -->
+    <system:String x:Key="AppAlreadyRunningMessage">المنظومة تعمل بالفعل على هذا الجهاز.</system:String>
 </ResourceDictionary>
 
 
