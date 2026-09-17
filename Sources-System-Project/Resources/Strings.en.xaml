@@ -1832,6 +1832,15 @@
 
     <!-- Round 175 Single Instance Mutex Warning -->
     <system:String x:Key="AppAlreadyRunningMessage">The application is already running on this device.</system:String>
+
+    <!-- Round 177 (Part B5, first part): LeakTestService.cs message localization -->
+    <system:String x:Key="MsgErrInvalidLeakTestRecord">Invalid leak test record</system:String>
+    <system:String x:Key="MsgErrLeakTestSourceRequired">The radioactive source must be specified</system:String>
+    <system:String x:Key="MsgErrLeakTestSourceNotFound">The specified source was not found</system:String>
+    <system:String x:Key="MsgSuccessLeakTestCreated">Leak test recorded successfully</system:String>
+    <system:String x:Key="MsgErrLeakTestRecordNotFound">Leak test record not found</system:String>
+    <system:String x:Key="MsgSuccessLeakTestUpdated">Leak test record updated successfully</system:String>
+    <system:String x:Key="MsgSuccessLeakTestDeleted">Leak test record deleted successfully</system:String>
 </ResourceDictionary>
 
 
