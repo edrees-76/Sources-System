@@ -1829,6 +1829,9 @@
     <system:String x:Key="FirstRunWizardSkipButton">Skip</system:String>
     <system:String x:Key="FirstRunWizardTrialNoticeTitle">Trial Mode</system:String>
     <system:String x:Key="FirstRunWizardTrialNoticeMessage">You are currently using the trial version. Backup settings will need to be configured from the Settings screen after activating the system.</system:String>
+
+    <!-- Round 175 Single Instance Mutex Warning -->
+    <system:String x:Key="AppAlreadyRunningMessage">The application is already running on this device.</system:String>
 </ResourceDictionary>
 
 

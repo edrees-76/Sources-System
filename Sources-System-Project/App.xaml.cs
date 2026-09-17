@@ -34,23 +34,24 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
+        // منع تشغيل نسخة ثانية — يجب أن يكون هذا أول إجراء في بدء التشغيل
+        _mutex = new System.Threading.Mutex(true, "{Sources-RST-2026-UNIQUE-MUTEX}", out bool createdNew);
+        if (!createdNew)
+        {
+            ApplyLanguage(SettingsHelper.Language);
+            DialogHelper.ShowWarning(GetAlreadyRunningMessage());
+            Shutdown();
+            return;
+        }
+
         // ضبط الثقافة لتكون لغة التطبيق عربية، ولكن لغة ربط البيانات (WPF Bindings) إنجليزية (en-GB)
         // en-GB تضمن قراءة الأرقام بنقطة (1.25) وبنفس الوقت تحتفظ بتنسيق التاريخ (يوم/شهر/سنة)
         var culture = new System.Globalization.CultureInfo("ar-LY");
         System.Threading.Thread.CurrentThread.CurrentCulture = culture;
         System.Threading.Thread.CurrentThread.CurrentUICulture = culture;
-        
+
         FrameworkElement.LanguageProperty.OverrideMetadata(typeof(FrameworkElement),
             new FrameworkPropertyMetadata(System.Windows.Markup.XmlLanguage.GetLanguage("en-GB")));
-
-        // منع تشغيل نسخة ثانية
-        _mutex = new System.Threading.Mutex(true, "{Sources-RST-2026-UNIQUE-MUTEX}", out bool createdNew);
-        if (!createdNew)
-        {
-            DialogHelper.ShowWarning("البرنامج قيد التشغيل بالفعل.", "تنبيه");
-            Shutdown();
-            return;
-        }
 
         // معالجة الأخطاء العامة
         AppDomain.CurrentDomain.UnhandledException += (s, args) => HandleGlobalException(args.ExceptionObject as Exception);
@@ -177,6 +178,12 @@ public partial class App : Application
         services.AddTransient<DeletionsViewModel>();
     }
 
+
+    /// <summary>نص التحذير عند اكتشاف نسخة ثانية قيد التشغيل، باللغة النشطة، مع ارتداد عربي عند تعذّر إيجاد المورد.</summary>
+    public static string GetAlreadyRunningMessage()
+    {
+        return TranslationHelper.GetString("AppAlreadyRunningMessage") ?? "المنظومة تعمل بالفعل على هذا الجهاز.";
+    }
 
     public static void ApplyLanguage(string cultureCode)
     {
