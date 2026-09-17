@@ -751,6 +751,10 @@
     <system:String x:Key="MsgAlertLeakTestOverdue">اختبار التسرب متأخر بمقدار {0} يوم (استحق في {1:yyyy/MM/dd})</system:String>
     <system:String x:Key="MsgAlertLeakTestDueSoon">يستحق اختبار التسرب خلال {0} يوم (تاريخ الاستحقاق: {1:yyyy/MM/dd})</system:String>
     <system:String x:Key="MsgAlertLeakTestFailed">نتيجة آخر اختبار تسرب هي رسوب (تسرب إشعاعي مكتشف)</system:String>
+    <!-- Round 181 (ب5، جزء خامس): SystemResetService.cs message localization -->
+    <system:String x:Key="MsgErrForcedBackupFailedPrefix">فشل إنشاء النسخة الاحتياطية الإجبارية</system:String>
+    <system:String x:Key="MsgErrSystemResetExecution">حدث خطأ أثناء تنفيذ عملية التصفير</system:String>
+    <system:String x:Key="MsgErrDatabaseConnectionDuringReset">حدث خطأ أثناء الاتصال بقاعدة البيانات</system:String>
     <system:String x:Key="LabelTotalAlerts">إجمالي التنبيهات النشطة</system:String>
     <system:String x:Key="LabelLeakTestAlerts">تنبيهات اختبارات التسرب</system:String>
     <system:String x:Key="LabelLowActivityAlerts">تنبيهات انخفاض النشاط</system:String>

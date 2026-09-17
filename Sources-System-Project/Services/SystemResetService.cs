@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Sources.Data;
+using Sources.Helpers;
 using Sources.Models;
 
 namespace Sources.Services;
@@ -33,7 +34,7 @@ public class SystemResetService : ISystemResetService
         var backupResult = _backupService.CreateBackup();
         if (!backupResult.Success || string.IsNullOrEmpty(backupResult.BackupPath))
         {
-            return (false, $"فشل إنشاء النسخة الاحتياطية الإجبارية: {backupResult.Message}", null);
+            return (false, $"{TranslationHelper.GetString("MsgErrForcedBackupFailedPrefix") ?? "فشل إنشاء النسخة الاحتياطية الإجبارية"}: {backupResult.Message}", null);
         }
 
         try
@@ -111,12 +112,12 @@ public class SystemResetService : ISystemResetService
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return (false, $"حدث خطأ أثناء تنفيذ عملية التصفير: {ex.Message}", backupResult.BackupPath);
+                return (false, $"{TranslationHelper.GetString("MsgErrSystemResetExecution") ?? "حدث خطأ أثناء تنفيذ عملية التصفير"}: {ex.Message}", backupResult.BackupPath);
             }
         }
         catch (Exception ex)
         {
-            return (false, $"حدث خطأ أثناء الاتصال بقاعدة البيانات: {ex.Message}", backupResult.BackupPath);
+            return (false, $"{TranslationHelper.GetString("MsgErrDatabaseConnectionDuringReset") ?? "حدث خطأ أثناء الاتصال بقاعدة البيانات"}: {ex.Message}", backupResult.BackupPath);
         }
     }
 }
