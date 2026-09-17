@@ -6,6 +6,8 @@
 **/.vs/
 **/.agents/
 **/.idea/
+deploy/output/
+deploy/Release/
 
 # User & Log files
 *.user

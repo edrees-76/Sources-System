@@ -86,4 +86,18 @@ if ($LASTEXITCODE -ne 0) {
     throw "فشل تصريف مثبِّت Inno Setup (رمز الخروج $LASTEXITCODE). راجع مخرجات ISCC أعلاه."
 }
 
-Write-Host "=== اكتمل بناء المثبِّت بنجاح. الناتج في: $(Join-Path $deployDir 'output') ==="
+Write-Host "=== الخطوة 4/4: أرشفة المثبِّت حسب رقم الإصدار ==="
+$outputInstallerPath = Join-Path $deployDir "output\SourcesSystemSetup.exe"
+if (-not (Test-Path $outputInstallerPath)) {
+    throw "اكتمل تصريف Inno Setup بلا خطأ ظاهر لكن الملف الناتج غير موجود في: $outputInstallerPath — لا يمكن أرشفته."
+}
+
+$releaseDir = Join-Path $deployDir "Release\v$appVersion"
+New-Item -ItemType Directory -Force -Path $releaseDir | Out-Null
+
+$archivedInstallerPath = Join-Path $releaseDir "SourcesSystemSetup_v$appVersion.exe"
+Copy-Item -Path $outputInstallerPath -Destination $archivedInstallerPath -Force
+
+Write-Host "=== تمت أرشفة المثبِّت في: $archivedInstallerPath ==="
+
+Write-Host "=== اكتمل بناء المثبِّت بنجاح. الناتج في: $(Join-Path $deployDir 'output') والأرشيف في: $archivedInstallerPath ==="

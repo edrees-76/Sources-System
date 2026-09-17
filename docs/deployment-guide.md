@@ -39,6 +39,10 @@
    في نظام التحكم بالإصدار.
 3. **`ISCC.exe`** على `deploy\installer.iss` مع تمرير مجلد النشر عبر
    `/DPublishDir=...`، فينتج `deploy\output\SourcesSystemSetup.exe`.
+4. **أرشفة الإصدار** — نسخ الملف الناتج إلى
+   `deploy\Release\v{رقم الإصدار}\SourcesSystemSetup_v{رقم الإصدار}.exe`
+   (الجولة 176)، فيبقى `deploy\output\` هو آخر بناء فقط بينما
+   `deploy\Release\` يحتفظ بنسخة مؤرشفة لكل رقم إصدار.
 
 لتغيير المسار الافتراضي لـ ISCC أو إعداد البناء:
 
