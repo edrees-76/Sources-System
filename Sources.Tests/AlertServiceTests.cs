@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Sources.Data;
+using Sources.Helpers;
 using Sources.Models;
 using Sources.Services;
 using Sources.Tests.Fakes;
@@ -539,9 +540,13 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
         var leakAlert = alerts.FirstOrDefault(a => a.SourceId == source.Id && a.AlertType == "LeakTestOverdue");
         Assert.NotNull(leakAlert);
         Assert.Equal("Critical", leakAlert.Severity);
-        // في بيئة اختبار xunit لا توجد Application، فتُرجع TranslationHelper.GetFormat اسم المفتاح الخام
-        // (وليس النص العربي) عند فشل GetString الداخلي — نتحقق من استخدام المفتاح الصحيح بدلاً من النص المترجَم.
-        Assert.Contains("MsgAlertLeakTestOverdue", leakAlert.Message);
+        // نحسب النص المتوقَّع ديناميكياً عبر نفس استدعاء TranslationHelper.GetFormat الذي يستخدمه
+        // AlertService.cs، بدل مطابقة سلسلة ثابتة — يتطابق الطرفان دوماً بغض النظر عن حالة
+        // Application.Current المشتركة على مستوى العملية (نص عربي حقيقي أو اسم المفتاح الخام).
+        var dueDate = oldTest.NextDueDate.Date;
+        int overdueDays = (DateTime.Today - dueDate).Days;
+        var expectedMessage = TranslationHelper.GetFormat("MsgAlertLeakTestOverdue", overdueDays, dueDate);
+        Assert.Contains(expectedMessage, leakAlert.Message);
     }
 
     [Fact]
@@ -580,8 +585,11 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
         var leakAlert = alerts.FirstOrDefault(a => a.SourceId == source.Id && a.AlertType == "LeakTestDue");
         Assert.NotNull(leakAlert);
         Assert.Equal("Warning", leakAlert.Severity);
-        // نفس السبب أعلاه: GetFormat في بيئة الاختبار تُرجع اسم المفتاح الخام.
-        Assert.Contains("MsgAlertLeakTestDueSoon", leakAlert.Message);
+        // نفس السبب أعلاه: نحسب النص المتوقَّع ديناميكياً بدل مطابقة سلسلة ثابتة.
+        var dueDate = testRecord.NextDueDate.Date;
+        int remainingDays = (dueDate - DateTime.Today).Days;
+        var expectedMessage = TranslationHelper.GetFormat("MsgAlertLeakTestDueSoon", remainingDays, dueDate);
+        Assert.Contains(expectedMessage, leakAlert.Message);
     }
 
     [Fact]
