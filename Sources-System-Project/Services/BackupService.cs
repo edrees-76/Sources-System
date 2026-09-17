@@ -120,7 +120,7 @@ public class BackupService : IBackupService
             CleanOldBackups(30, targetDir);
 
             LoggerService.LogInfo($"تم إنشاء نسخة احتياطية كاملة (ZIP): {zipFile}");
-            return (true, $"{TranslationHelper.GetString("MsgSuccessBackupCreated") ?? "تم إنشاء النسخة الاحتياطية بنجاح"}\n⁦{zipFile}⁩", zipFile);
+            return (true, $"{TranslationHelper.GetString("MsgSuccessBackupCreated") ?? "تم إنشاء النسخة الاحتياطية بنجاح"}\n\u2066{zipFile}\u2069", zipFile);
         }
         catch (Exception ex)
         {
