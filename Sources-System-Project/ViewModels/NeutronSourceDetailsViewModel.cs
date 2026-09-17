@@ -112,11 +112,11 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
 
             return result.Status switch
             {
-                NeutronDecayCalculationStatus.NotRecorded => "لم يُسجَّل",
+                NeutronDecayCalculationStatus.NotRecorded => TranslationHelper.GetString("DecayStatusNotRecorded") ?? "لم يُسجَّل",
                 NeutronDecayCalculationStatus.MissingCalibrationDate =>
                     TranslationHelper.GetString("DecayStatusMissingCalibrationDate") ?? "غير محسوب — تاريخ المعايرة غير مسجّل",
-                NeutronDecayCalculationStatus.MissingActivityUnit => "غير محسوب — وحدة النشاط غير محمّلة",
-                NeutronDecayCalculationStatus.InvalidActivityValue => "غير محسوب — قيمة النشاط غير صالحة",
+                NeutronDecayCalculationStatus.MissingActivityUnit => TranslationHelper.GetString("DecayStatusMissingActivityUnit") ?? "غير محسوب — وحدة النشاط غير محمّلة",
+                NeutronDecayCalculationStatus.InvalidActivityValue => TranslationHelper.GetString("DecayStatusInvalidActivityValue") ?? "غير محسوب — قيمة النشاط غير صالحة",
                 NeutronDecayCalculationStatus.MissingSourceType =>
                     TranslationHelper.GetString("DecayStatusMissingSourceType") ?? "غير محسوب — بيانات نوع المصدر غير متوفرة",
                 NeutronDecayCalculationStatus.MissingSource =>
@@ -200,7 +200,7 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
             var dialog = new OpenFileDialog
             {
                 Title = TranslationHelper.GetString("BtnAttachCertificate") ?? "إرفاق شهادة أو مستند",
-                Filter = "كل الملفات (*.*)|*.*|ملفات PDF (*.pdf)|*.pdf|مستندات Word (*.docx;*.doc)|*.docx;*.doc|صور (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg",
+                Filter = TranslationHelper.GetString("FilterAttachCertificateFiles") ?? "كل الملفات (*.*)|*.*|ملفات PDF (*.pdf)|*.pdf|مستندات Word (*.docx;*.doc)|*.docx;*.doc|صور (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg",
                 Multiselect = false
             };
 
@@ -208,14 +208,14 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
 
             if (_certificateService == null)
             {
-                DialogHelper.ShowError("خدمة الشهادات غير متوفرة", "خطأ");
+                DialogHelper.ShowError(TranslationHelper.GetString("MsgErrCertificateServiceUnavailable") ?? "خدمة الشهادات غير متوفرة", TranslationHelper.GetString("AlertError") ?? "خطأ");
                 return;
             }
 
             var attachedBy = _userService?.CurrentUser?.FullName;
             if (string.IsNullOrWhiteSpace(attachedBy))
             {
-                attachedBy = "غير معروف";
+                attachedBy = TranslationHelper.GetString("TextUnknown") ?? "غير معروف";
                 LoggerService.LogWarning($"NeutronSourceDetailsViewModel.AttachCertificate: Current user is null or empty when attaching certificate for NeutronSource {NeutronSource.Id}. Falling back to '{attachedBy}'.");
             }
             _certificateService.AttachCertificate(NeutronSource.Id, "Neutron", dialog.FileName, attachedBy);
@@ -228,7 +228,7 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
         catch (Exception ex)
         {
             LoggerService.LogError("NeutronSourceDetailsViewModel: Failed to attach certificate", ex);
-            DialogHelper.ShowError($"تعذر إرفاق الشهادة: {ex.Message}", "خطأ");
+            DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrAttachCertificateFailedFormat", ex.Message), TranslationHelper.GetString("AlertError") ?? "خطأ");
         }
     }
 
@@ -242,7 +242,7 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
             var fullPath = Path.Combine(_certificateService.GetCertificatesFolder(), cert.StoredFileName);
             if (!File.Exists(fullPath))
             {
-                DialogHelper.ShowWarning("ملف الشهادة غير موجود على القرص.", "تنبيه");
+                DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrCertificateFileNotFound") ?? "ملف الشهادة غير موجود على القرص.", TranslationHelper.GetString("TitleWarning") ?? "تنبيه");
                 return;
             }
 
@@ -255,7 +255,7 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
         catch (Exception ex)
         {
             LoggerService.LogError("NeutronSourceDetailsViewModel: Failed to open certificate", ex);
-            DialogHelper.ShowError($"تعذر فتح الشهادة: {ex.Message}", "خطأ");
+            DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrOpenCertificateFailedFormat", ex.Message), TranslationHelper.GetString("AlertError") ?? "خطأ");
         }
     }
 
@@ -271,7 +271,7 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
             {
                 Title = TranslationHelper.GetString("BtnDownloadCertificate") ?? "تنزيل نسخة من الشهادة",
                 FileName = cert.OriginalFileName,
-                Filter = !string.IsNullOrEmpty(ext) ? $"ملف (*{ext})|*{ext}|كل الملفات (*.*)|*.*" : "كل الملفات (*.*)|*.*"
+                Filter = !string.IsNullOrEmpty(ext) ? TranslationHelper.GetFormat("FilterByExtensionFormat", ext) : (TranslationHelper.GetString("FilterAllFiles") ?? "كل الملفات (*.*)|*.*")
             };
 
             if (dialog.ShowDialog() != true) return;
@@ -285,13 +285,13 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
             }
             else
             {
-                DialogHelper.ShowError("تعذر تنزيل الشهادة. تأكد من وجود الملف الأصلي.", "خطأ");
+                DialogHelper.ShowError(TranslationHelper.GetString("MsgErrDownloadCertificateFailed") ?? "تعذر تنزيل الشهادة. تأكد من وجود الملف الأصلي.", TranslationHelper.GetString("AlertError") ?? "خطأ");
             }
         }
         catch (Exception ex)
         {
             LoggerService.LogError("NeutronSourceDetailsViewModel: Failed to download certificate", ex);
-            DialogHelper.ShowError($"تعذر تنزيل الشهادة: {ex.Message}", "خطأ");
+            DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrDownloadCertificateFailedFormat", ex.Message), TranslationHelper.GetString("AlertError") ?? "خطأ");
         }
     }
 
@@ -311,7 +311,7 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
             var deletedBy = _userService?.CurrentUser?.FullName;
             if (string.IsNullOrWhiteSpace(deletedBy))
             {
-                deletedBy = "غير معروف";
+                deletedBy = TranslationHelper.GetString("TextUnknown") ?? "غير معروف";
                 LoggerService.LogWarning($"NeutronSourceDetailsViewModel.DeleteCertificate: Current user is null or empty when deleting certificate {cert.Id} for NeutronSource {NeutronSource.Id}. Falling back to '{deletedBy}'.");
             }
             _certificateService.DeleteCertificate(cert.Id, deletedBy);
@@ -324,7 +324,7 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
         catch (Exception ex)
         {
             LoggerService.LogError("NeutronSourceDetailsViewModel: Failed to delete certificate", ex);
-            DialogHelper.ShowError($"تعذر حذف الشهادة: {ex.Message}", "خطأ");
+            DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrDeleteCertificateFailedFormat", ex.Message), TranslationHelper.GetString("AlertError") ?? "خطأ");
         }
     }
 }
