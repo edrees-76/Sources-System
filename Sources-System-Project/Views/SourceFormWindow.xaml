@@ -665,7 +665,7 @@
                                             </StackPanel>
                                             <TextBox Text="{Binding EditCapsuleLengthText, UpdateSourceTrigger=PropertyChanged}"
                                                      Style="{StaticResource FormTextBox}"
-                                                     materialDesign:HintAssist.Hint="مثال: 25.4"/>
+                                                     materialDesign:HintAssist.Hint="{DynamicResource HintCapsuleLengthExample}"/>
                                         </StackPanel>
 
                                         <!-- قطر الكبسولة -->
@@ -676,7 +676,7 @@
                                             </StackPanel>
                                             <TextBox Text="{Binding EditCapsuleDiameterText, UpdateSourceTrigger=PropertyChanged}"
                                                      Style="{StaticResource FormTextBox}"
-                                                     materialDesign:HintAssist.Hint="مثال: 6.35"/>
+                                                     materialDesign:HintAssist.Hint="{DynamicResource HintCapsuleDiameterExample}"/>
                                         </StackPanel>
                                     </UniformGrid>
 
@@ -689,7 +689,7 @@
                                             </StackPanel>
                                             <TextBox Text="{Binding EditActivityText, UpdateSourceTrigger=PropertyChanged}"
                                                      Style="{StaticResource FormTextBox}"
-                                                     materialDesign:HintAssist.Hint="مثال: 3.7"/>
+                                                     materialDesign:HintAssist.Hint="{DynamicResource HintSourceActivityExample}"/>
                                         </StackPanel>
 
                                         <!-- وحدة النشاط -->

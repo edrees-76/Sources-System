@@ -1957,6 +1957,19 @@
     <system:String x:Key="LabelMremPerMicroCiAt1Meter">(mrem/h)/µCi at 1 meter (× 3.7)</system:String>
 
     <system:String x:Key="PlaceholderAlertMessage">System message appears here...</system:String>
+
+    <!-- Gap fix identified by change-verifier in round 184 (HintAssist.Hint remained hardcoded) -->
+    <system:String x:Key="HintCapsuleLengthExample">e.g. 25.4</system:String>
+    <system:String x:Key="HintCapsuleDiameterExample">e.g. 6.35</system:String>
+    <system:String x:Key="HintSourceActivityExample">e.g. 3.7</system:String>
+    <system:String x:Key="HintGlobalSearchPlaceholder">Quick search across the system (sources, locations, users, isotopes)...</system:String>
+    <system:String x:Key="HintIsotopeSymbolExample">e.g. Cs-137</system:String>
+    <system:String x:Key="HintIsotopeNameEngExample">e.g. Cesium-137</system:String>
+    <system:String x:Key="HintIsotopeNameArExample">e.g. Cesium-137 (Arabic)</system:String>
+    <system:String x:Key="HintEnergyExample">e.g. 661.7</system:String>
+    <system:String x:Key="HintYieldExample">e.g. 0.85</system:String>
+    <system:String x:Key="HintGammaConstantExample">e.g. 0.0772 (µSv·m²/(MBq·h))</system:String>
+    <system:String x:Key="HintArabicNotesPlaceholder">Notes (Arabic)...</system:String>
 </ResourceDictionary>
 
 

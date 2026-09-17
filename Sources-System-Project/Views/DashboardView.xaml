@@ -84,7 +84,7 @@
                                          BorderThickness="0"
                                          VerticalAlignment="Center"
                                          VerticalContentAlignment="Center"
-                                         materialDesign:HintAssist.Hint="بحث سريع في المنظومة (مصادر، مواقع، مستخدمين، نظائر)..."
+                                         materialDesign:HintAssist.Hint="{DynamicResource HintGlobalSearchPlaceholder}"
                                          materialDesign:HintAssist.IsFloating="False"
                                          materialDesign:TextFieldAssist.DecorationVisibility="Hidden">
                                     <TextBox.InputBindings>
