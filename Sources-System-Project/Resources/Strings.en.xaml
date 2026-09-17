@@ -754,6 +754,10 @@
     <system:String x:Key="MsgAlertLeakTestOverdue">Leak test overdue by {0} day(s) (was due on {1:yyyy/MM/dd})</system:String>
     <system:String x:Key="MsgAlertLeakTestDueSoon">Leak test due in {0} day(s) (due date: {1:yyyy/MM/dd})</system:String>
     <system:String x:Key="MsgAlertLeakTestFailed">Latest leak test result is Fail (radioactive leak detected)</system:String>
+    <!-- Round 181 (ب5، جزء خامس): SystemResetService.cs message localization -->
+    <system:String x:Key="MsgErrForcedBackupFailedPrefix">Failed to create the mandatory backup</system:String>
+    <system:String x:Key="MsgErrSystemResetExecution">An error occurred while executing the reset operation</system:String>
+    <system:String x:Key="MsgErrDatabaseConnectionDuringReset">A database connection error occurred</system:String>
     <system:String x:Key="LabelTotalAlerts">Total Active Alerts</system:String>
     <system:String x:Key="LabelLeakTestAlerts">Leak Test Alerts</system:String>
     <system:String x:Key="LabelLowActivityAlerts">Low Activity Alerts</system:String>
