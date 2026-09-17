@@ -150,6 +150,27 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     [ObservableProperty] private bool _editIsSealed = true;
     [ObservableProperty] private bool _isActivelyBorrowed;
 
+    /// <summary>
+    /// نص توليتيب قفل حقل "الحالة" عند الاستعارة النشطة (الجولة 184). يُبنى بالكامل في C#
+    /// بدل ConverterParameter لأن DynamicResource غير مدعوم على ConverterParameter الخاص بـ
+    /// Binding (ليست DependencyProperty) — يرمي XamlParseException وقت التشغيل عند المحاولة.
+    /// null بدل string.Empty لمنع ظهور توليتيب فارغ عند عدم الاستعارة.
+    /// </summary>
+    public string? StatusLockedTooltip => IsActivelyBorrowed
+        ? (TranslationHelper.GetString("ToolTipStatusLockedByBorrow") ?? "لا يمكن تعديل الحالة لمصدر قيد الاستعارة النشطة حالياً")
+        : null;
+
+    /// <summary>نص توليتيب قفل حقل "الموقع" عند الاستعارة النشطة (الجولة 184). راجع تعليق StatusLockedTooltip.</summary>
+    public string? LocationLockedTooltip => IsActivelyBorrowed
+        ? (TranslationHelper.GetString("ToolTipLocationLockedByBorrow") ?? "لا يمكن تعديل الموقع لمصدر قيد الاستعارة النشطة حالياً")
+        : null;
+
+    partial void OnIsActivelyBorrowedChanged(bool value)
+    {
+        OnPropertyChanged(nameof(StatusLockedTooltip));
+        OnPropertyChanged(nameof(LocationLockedTooltip));
+    }
+
     // حقول المصدر النيتروني الخاصة
     [ObservableProperty] private Guid? _editNeutronTypeId;
     [ObservableProperty] private double _editEmissionRate;

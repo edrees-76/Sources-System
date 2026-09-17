@@ -1906,6 +1906,70 @@
     <system:String x:Key="LabelIsotopeContributionBreakdown">تفصيل مساهمة النظائر:</system:String>
     <system:String x:Key="ColIsotopeBilingual">النظير (Isotope)</system:String>
     <system:String x:Key="ColEstimatedContribution">المساهمة التقديرية</system:String>
+
+    <!-- الجولة 184: إكمال مسح XAML الشامل (ب5، جزء ثامن) -->
+    <system:String x:Key="HintStatusLockedByBorrow">الحالة مقفلة (المصدر قيد الاستعارة النشطة)</system:String>
+    <system:String x:Key="HintLocationLockedByBorrow">الموقع مقفل (المصدر قيد الاستعارة النشطة)</system:String>
+    <system:String x:Key="FieldCapsuleLength">طول الكبسولة (مم)</system:String>
+    <system:String x:Key="FieldCapsuleDiameter">قطر الكبسولة (مم)</system:String>
+    <system:String x:Key="FieldSourceActivityValue">النشاط الإشعاعي</system:String>
+    <system:String x:Key="FieldSourceActivityUnit">وحدة النشاط</system:String>
+    <system:String x:Key="ToolTipStatusLockedByBorrow">لا يمكن تعديل الحالة لمصدر قيد الاستعارة النشطة حالياً</system:String>
+    <system:String x:Key="ToolTipLocationLockedByBorrow">لا يمكن تعديل الموقع لمصدر قيد الاستعارة النشطة حالياً</system:String>
+
+    <system:String x:Key="ToolTipClearGlobalSearchText">مسح نص البحث</system:String>
+    <system:String x:Key="ToolTipCtrlKQuickSearch">اضغط Ctrl+K للانتقال السريع للبحث</system:String>
+    <system:String x:Key="LabelUnifiedSearchResults">نتائج البحث الموحّد</system:String>
+    <system:String x:Key="HintArrowsNavigateEscClose">💡 استخدم الأسهم للتنقل • اضغط Esc للإغلاق</system:String>
+    <system:String x:Key="MsgTotalMatchesCount">إجمالي المطابقات: {0}</system:String>
+
+    <system:String x:Key="EmptyDeletionsTitle">لا توجد عناصر محذوفة حالياً</system:String>
+    <system:String x:Key="EmptyDeletionsSubtitle">سجل المحذوفات فارغ أو لا توجد نتائج مطابقة لشروط البحث</system:String>
+
+    <system:String x:Key="LabelStorageOnlyBadge">المخزن فقط</system:String>
+    <system:String x:Key="LabelSelectedSourceInfoTitle">معلومات المصدر:</system:String>
+    <system:String x:Key="RunLabelSourcePrefix">• المصدر: </system:String>
+    <system:String x:Key="RunLabelBorrowerPrefix">• المستعير: </system:String>
+    <system:String x:Key="RunLabelPurposePrefix">• الغرض: </system:String>
+    <system:String x:Key="RunLabelExpectedReturnPrefix">• موعد الإرجاع المتوقع: </system:String>
+    <system:String x:Key="RunLabelSourceCodePrefix">• كود المصدر: </system:String>
+    <system:String x:Key="RunLabelBorrowerNamePrefix">• اسم المستعير: </system:String>
+    <system:String x:Key="RunLabelBorrowDatePrefix">• تاريخ الاستعارة: </system:String>
+    <system:String x:Key="RunLabelNotesPrefix">• الملاحظات: </system:String>
+    <system:String x:Key="RunLabelCurrentStatusPrefix">• الحالة الحالية: </system:String>
+    <system:String x:Key="MsgSourceReturnedToStorageSuccess">تم إرجاع هذا المصدر إلى المخزن بنجاح</system:String>
+    <system:String x:Key="RunLabelActualReturnDateRecorded">تاريخ الإرجاع الفعلي المسجّل: </system:String>
+    <system:String x:Key="LabelSourcePrefix">المصدر:</system:String>
+
+    <system:String x:Key="LabelTotalLocationActivity">إجمالي النشاط الإشعاعي بالموقع:</system:String>
+    <system:String x:Key="LabelDisplayedCount">المعروض: </system:String>
+    <system:String x:Key="LabelOfSeparator"> من </system:String>
+
+    <system:String x:Key="ToolTipGammaConstantUnitOptionalGamma">الوحدة الدولية المعتمدة: µSv·m²/(MBq·h) — اختياري للنظائر الباعثة لأشعة غاما</system:String>
+    <system:String x:Key="ToolTipGammaConstantUnitOptional">الوحدة الدولية المعتمدة: µSv·m²/(MBq·h) — اختياري</system:String>
+
+    <system:String x:Key="LabelAt1MeterSuffix"> عند 1 متر</system:String>
+    <system:String x:Key="LabelAt1MeterSuffixSpaced"> عند 1 متر </system:String>
+    <system:String x:Key="IsotopePhysicalGuidanceOnlyIcrp107">بيانات استرشادية فيزيائية فقط (ICRP 107)</system:String>
+
+    <system:String x:Key="IsotopeLibrarySubtitlePrefix">دليل ثوابت جرعة أشعة غاما وخصائص التدريع المعتمدة </system:String>
+    <system:String x:Key="LabelMSvPerMBqAt1Meter">(mSv/h)/MBq عند 1 متر</system:String>
+    <system:String x:Key="LabelMremPerMicroCiAt1Meter">(mrem/h)/µCi عند 1 متر (× 3.7)&#x200F;</system:String>
+
+    <system:String x:Key="PlaceholderAlertMessage">رسالة النظام تظهر هنا...</system:String>
+
+    <!-- تصحيح فجوة اكتُشفت عبر change-verifier في الجولة 184 (HintAssist.Hint متبقية حرفياً) -->
+    <system:String x:Key="HintCapsuleLengthExample">مثال: 25.4</system:String>
+    <system:String x:Key="HintCapsuleDiameterExample">مثال: 6.35</system:String>
+    <system:String x:Key="HintSourceActivityExample">مثال: 3.7</system:String>
+    <system:String x:Key="HintGlobalSearchPlaceholder">بحث سريع في المنظومة (مصادر، مواقع، مستخدمين، نظائر)...</system:String>
+    <system:String x:Key="HintIsotopeSymbolExample">مثال: Cs-137</system:String>
+    <system:String x:Key="HintIsotopeNameEngExample">مثال: Cesium-137</system:String>
+    <system:String x:Key="HintIsotopeNameArExample">مثال: سيزيوم-137</system:String>
+    <system:String x:Key="HintEnergyExample">مثال: 661.7</system:String>
+    <system:String x:Key="HintYieldExample">مثال: 0.85</system:String>
+    <system:String x:Key="HintGammaConstantExample">مثال: 0.0772 (µSv·m²/(MBq·h))</system:String>
+    <system:String x:Key="HintArabicNotesPlaceholder">ملاحظات (عربي)...</system:String>
 </ResourceDictionary>
 
 

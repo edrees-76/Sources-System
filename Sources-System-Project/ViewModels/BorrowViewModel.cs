@@ -81,6 +81,19 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
     [ObservableProperty]
     private BorrowRequest? _selectedRequest;
 
+    /// <summary>
+    /// نص عنوان "المصدر: كود" أعلى نافذة تفاصيل الاستعارة (الجولة 184). يُبنى يدوياً في C#
+    /// خارج TranslationHelper.GetFormat عمداً — DisplaySourceCode بيانات تعريفية لمصدر مشع،
+    /// وGetFormat تُعيد اسم المفتاح نفسه وتُسقط القيمة تماماً عند غياب المورد (نفس درس الجولة 180).
+    /// </summary>
+    public string SelectedRequestSourceLabel =>
+        $"{TranslationHelper.GetString("LabelSourcePrefix") ?? "المصدر:"} {SelectedRequest?.DisplaySourceCode}";
+
+    partial void OnSelectedRequestChanged(BorrowRequest? value)
+    {
+        OnPropertyChanged(nameof(SelectedRequestSourceLabel));
+    }
+
     // ─── حقول وضع الإضافة (IsNew = true) ───
     [ObservableProperty]
     private Source? _selectedSourceForNew;

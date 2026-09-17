@@ -40,7 +40,7 @@
                     <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
                         <TextBlock Text="{DynamicResource IsotopeLibraryTitle}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                         <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-                            <TextBlock Text="دليل ثوابت جرعة أشعة غاما وخصائص التدريع المعتمدة " FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock Text="{DynamicResource IsotopeLibrarySubtitlePrefix}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
                             <TextBlock Text="(ORNL/RSIC-45/R1)" FlowDirection="LeftToRight" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
                         </StackPanel>
                     </StackPanel>
@@ -359,7 +359,7 @@
                                                     </Grid>
                                                     <TextBlock Text="{Binding SpecificGammaConstantFormatted}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="{DynamicResource PrimaryBrush}" Margin="0,2,0,4"/>
                                                     <TextBlock FontSize="12" Foreground="{DynamicResource TextSecondary}">
-                                                        <Run Text="(mSv/h)/MBq عند 1 متر" FlowDirection="RightToLeft"/>
+                                                        <Run Text="{DynamicResource LabelMSvPerMBqAt1Meter}" FlowDirection="RightToLeft"/>
                                                     </TextBlock>
                                                 </StackPanel>
                                             </Border>
@@ -390,7 +390,7 @@
                                                     </Grid>
                                                     <TextBlock Text="{Binding GammaMremPerUciFormatted}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="#2E7D32" Margin="0,2,0,4"/>
                                                     <TextBlock FontSize="12" Foreground="{DynamicResource TextSecondary}">
-                                                        <Run Text="(mrem/h)/µCi عند 1 متر (× 3.7)&#x200F;" FlowDirection="RightToLeft"/>
+                                                        <Run Text="{DynamicResource LabelMremPerMicroCiAt1Meter}" FlowDirection="RightToLeft"/>
                                                     </TextBlock>
                                                 </StackPanel>
                                             </Border>
@@ -640,7 +640,7 @@
 
                                                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                                                     <materialDesign:PackIcon Kind="ShieldAlertOutline" Width="18" Height="18" Foreground="{DynamicResource WarningBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                                    <TextBlock Text="بيانات استرشادية فيزيائية فقط (ICRP 107)" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{DynamicResource IsotopePhysicalGuidanceOnlyIcrp107}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
                                                 </StackPanel>
 
                                                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
@@ -684,7 +684,7 @@
                                     Padding="18,10" Height="42" Margin="0,0,10,0" HorizontalAlignment="Center">
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="FilePdfBox" Width="20" Height="20" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="فتح مرجع (ORNL PDF)" FontWeight="Bold" FontSize="12" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource IsotopeLibraryBtnOpenPdf}" FontWeight="Bold" FontSize="12" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
 
@@ -694,7 +694,7 @@
                                     Padding="18,10" Height="42" HorizontalAlignment="Center">
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="FilePdfBox" Width="20" Height="20" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="فتح مرجع (ICRP 107 PDF)" FontWeight="Bold" FontSize="12" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource IsotopeLibraryBtnOpenIcrpPdf}" FontWeight="Bold" FontSize="12" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
                         </StackPanel>

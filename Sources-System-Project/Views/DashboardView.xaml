@@ -84,7 +84,7 @@
                                          BorderThickness="0"
                                          VerticalAlignment="Center"
                                          VerticalContentAlignment="Center"
-                                         materialDesign:HintAssist.Hint="بحث سريع في المنظومة (مصادر، مواقع، مستخدمين، نظائر)..."
+                                         materialDesign:HintAssist.Hint="{DynamicResource HintGlobalSearchPlaceholder}"
                                          materialDesign:HintAssist.IsFloating="False"
                                          materialDesign:TextFieldAssist.DecorationVisibility="Hidden">
                                     <TextBox.InputBindings>
@@ -100,7 +100,7 @@
                                         Padding="0" Width="24" Height="24"
                                         Command="{Binding ClearGlobalSearchCommand}"
                                         Foreground="{DynamicResource TextSecondary}"
-                                        ToolTip="مسح نص البحث"
+                                        ToolTip="{DynamicResource ToolTipClearGlobalSearchText}"
                                         Margin="4,0"
                                         Visibility="{Binding GlobalSearchQuery, Converter={StaticResource NullToVis}}">
                                     <materialDesign:PackIcon Kind="CloseCircle" Width="16" Height="16"/>
@@ -114,7 +114,7 @@
                                         CornerRadius="4"
                                         Padding="6,2"
                                         VerticalAlignment="Center"
-                                        ToolTip="اضغط Ctrl+K للانتقال السريع للبحث">
+                                        ToolTip="{DynamicResource ToolTipCtrlKQuickSearch}">
                                     <TextBlock Text="Ctrl+K" FontSize="10.5" FontWeight="SemiBold"
                                                Foreground="{DynamicResource TextSecondary}"/>
                                 </Border>
@@ -149,12 +149,12 @@
                                             <StackPanel Orientation="Horizontal">
                                                 <materialDesign:PackIcon Kind="LayersSearch" Width="18" Height="18"
                                                                          Foreground="White" VerticalAlignment="Center"/>
-                                                <TextBlock Text="نتائج البحث الموحّد" Foreground="White"
+                                                <TextBlock Text="{DynamicResource LabelUnifiedSearchResults}" Foreground="White"
                                                            FontWeight="Bold" FontSize="13" Margin="8,0,0,0"
                                                            VerticalAlignment="Center"/>
                                             </StackPanel>
                                             <TextBlock HorizontalAlignment="Right"
-                                                       Text="{Binding TotalGlobalSearchResultsCount, StringFormat='{}إجمالي المطابقات: {0}'}"
+                                                       Text="{Binding TotalGlobalSearchResultsText}"
                                                        Foreground="{DynamicResource SidebarForeground}"
                                                        FontSize="11" VerticalAlignment="Center"/>
                                         </Grid>
@@ -164,7 +164,7 @@
                                     <Border DockPanel.Dock="Bottom" Background="{DynamicResource WindowBackground}"
                                             CornerRadius="0,0,12,12" Padding="12,7" BorderThickness="0,1,0,0"
                                             BorderBrush="{DynamicResource BorderColor}">
-                                        <TextBlock Text="💡 استخدم الأسهم للتنقل • اضغط Esc للإغلاق"
+                                        <TextBlock Text="{DynamicResource HintArrowsNavigateEscClose}"
                                                    FontSize="11" Foreground="{DynamicResource TextSecondary}"
                                                    HorizontalAlignment="Center"/>
                                     </Border>

@@ -1906,6 +1906,70 @@
     <system:String x:Key="LabelIsotopeContributionBreakdown">Isotope Contribution Breakdown:</system:String>
     <system:String x:Key="ColIsotopeBilingual">Isotope</system:String>
     <system:String x:Key="ColEstimatedContribution">Estimated Contribution</system:String>
+
+    <!-- Round 184: comprehensive XAML sweep completion (B5, part 8) -->
+    <system:String x:Key="HintStatusLockedByBorrow">Status locked (source is actively on loan)</system:String>
+    <system:String x:Key="HintLocationLockedByBorrow">Location locked (source is actively on loan)</system:String>
+    <system:String x:Key="FieldCapsuleLength">Capsule Length (mm)</system:String>
+    <system:String x:Key="FieldCapsuleDiameter">Capsule Diameter (mm)</system:String>
+    <system:String x:Key="FieldSourceActivityValue">Radioactive Activity</system:String>
+    <system:String x:Key="FieldSourceActivityUnit">Activity Unit</system:String>
+    <system:String x:Key="ToolTipStatusLockedByBorrow">Status cannot be edited for a source currently on active loan</system:String>
+    <system:String x:Key="ToolTipLocationLockedByBorrow">Location cannot be edited for a source currently on active loan</system:String>
+
+    <system:String x:Key="ToolTipClearGlobalSearchText">Clear search text</system:String>
+    <system:String x:Key="ToolTipCtrlKQuickSearch">Press Ctrl+K to quickly jump to search</system:String>
+    <system:String x:Key="LabelUnifiedSearchResults">Unified Search Results</system:String>
+    <system:String x:Key="HintArrowsNavigateEscClose">💡 Use arrows to navigate • Press Esc to close</system:String>
+    <system:String x:Key="MsgTotalMatchesCount">Total matches: {0}</system:String>
+
+    <system:String x:Key="EmptyDeletionsTitle">No deleted items currently</system:String>
+    <system:String x:Key="EmptyDeletionsSubtitle">The deletions log is empty or no results match the search criteria</system:String>
+
+    <system:String x:Key="LabelStorageOnlyBadge">Storage Only</system:String>
+    <system:String x:Key="LabelSelectedSourceInfoTitle">Source Info:</system:String>
+    <system:String x:Key="RunLabelSourcePrefix">• Source: </system:String>
+    <system:String x:Key="RunLabelBorrowerPrefix">• Borrower: </system:String>
+    <system:String x:Key="RunLabelPurposePrefix">• Purpose: </system:String>
+    <system:String x:Key="RunLabelExpectedReturnPrefix">• Expected Return Date: </system:String>
+    <system:String x:Key="RunLabelSourceCodePrefix">• Source Code: </system:String>
+    <system:String x:Key="RunLabelBorrowerNamePrefix">• Borrower Name: </system:String>
+    <system:String x:Key="RunLabelBorrowDatePrefix">• Borrow Date: </system:String>
+    <system:String x:Key="RunLabelNotesPrefix">• Notes: </system:String>
+    <system:String x:Key="RunLabelCurrentStatusPrefix">• Current Status: </system:String>
+    <system:String x:Key="MsgSourceReturnedToStorageSuccess">This source was successfully returned to storage</system:String>
+    <system:String x:Key="RunLabelActualReturnDateRecorded">Recorded actual return date: </system:String>
+    <system:String x:Key="LabelSourcePrefix">Source:</system:String>
+
+    <system:String x:Key="LabelTotalLocationActivity">Total radioactive activity at location:</system:String>
+    <system:String x:Key="LabelDisplayedCount">Displayed: </system:String>
+    <system:String x:Key="LabelOfSeparator"> of </system:String>
+
+    <system:String x:Key="ToolTipGammaConstantUnitOptionalGamma">Approved international unit: µSv·m²/(MBq·h) — optional for gamma-emitting isotopes</system:String>
+    <system:String x:Key="ToolTipGammaConstantUnitOptional">Approved international unit: µSv·m²/(MBq·h) — optional</system:String>
+
+    <system:String x:Key="LabelAt1MeterSuffix"> at 1 meter</system:String>
+    <system:String x:Key="LabelAt1MeterSuffixSpaced"> at 1 meter </system:String>
+    <system:String x:Key="IsotopePhysicalGuidanceOnlyIcrp107">General physical guidance data only (ICRP 107)</system:String>
+
+    <system:String x:Key="IsotopeLibrarySubtitlePrefix">Approved gamma dose constants &amp; shielding properties guide </system:String>
+    <system:String x:Key="LabelMSvPerMBqAt1Meter">(mSv/h)/MBq at 1 meter</system:String>
+    <system:String x:Key="LabelMremPerMicroCiAt1Meter">(mrem/h)/µCi at 1 meter (× 3.7)</system:String>
+
+    <system:String x:Key="PlaceholderAlertMessage">System message appears here...</system:String>
+
+    <!-- Gap fix identified by change-verifier in round 184 (HintAssist.Hint remained hardcoded) -->
+    <system:String x:Key="HintCapsuleLengthExample">e.g. 25.4</system:String>
+    <system:String x:Key="HintCapsuleDiameterExample">e.g. 6.35</system:String>
+    <system:String x:Key="HintSourceActivityExample">e.g. 3.7</system:String>
+    <system:String x:Key="HintGlobalSearchPlaceholder">Quick search across the system (sources, locations, users, isotopes)...</system:String>
+    <system:String x:Key="HintIsotopeSymbolExample">e.g. Cs-137</system:String>
+    <system:String x:Key="HintIsotopeNameEngExample">e.g. Cesium-137</system:String>
+    <system:String x:Key="HintIsotopeNameArExample">e.g. Cesium-137 (Arabic)</system:String>
+    <system:String x:Key="HintEnergyExample">e.g. 661.7</system:String>
+    <system:String x:Key="HintYieldExample">e.g. 0.85</system:String>
+    <system:String x:Key="HintGammaConstantExample">e.g. 0.0772 (µSv·m²/(MBq·h))</system:String>
+    <system:String x:Key="HintArabicNotesPlaceholder">Notes (Arabic)...</system:String>
 </ResourceDictionary>
 
 

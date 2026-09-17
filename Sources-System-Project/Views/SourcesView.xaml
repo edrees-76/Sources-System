@@ -242,7 +242,7 @@
                             </TextBox>
                             
                             <!-- زر البحث -->
-                            <Button Command="{Binding SearchCommand}" Style="{StaticResource MaterialDesignToolButton}" ToolTip="{Binding Converter={StaticResource BoolToValue}, ConverterParameter='Search|بحث'}"
+                            <Button Command="{Binding SearchCommand}" Style="{StaticResource MaterialDesignToolButton}" ToolTip="{DynamicResource BtnSearch}"
                                     DockPanel.Dock="Right" Margin="2,0,4,0" Padding="4" Height="32" Width="32">
                                 <materialDesign:PackIcon Kind="Magnify" Width="20" Height="20" Foreground="{DynamicResource TextPrimary}"/>
                             </Button>

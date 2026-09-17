@@ -376,8 +376,8 @@
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="32"
                             Visibility="{Binding FilteredItems.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}">
                     <materialDesign:PackIcon Kind="TrashCanOutline" Width="64" Height="64" Foreground="{DynamicResource TextSecondary}" Opacity="0.35" HorizontalAlignment="Center"/>
-                    <TextBlock Text="لا توجد عناصر محذوفة حالياً" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" Margin="0,12,0,4" HorizontalAlignment="Center"/>
-                    <TextBlock Text="سجل المحذوفات فارغ أو لا توجد نتائج مطابقة لشروط البحث" FontSize="12.5" Foreground="{DynamicResource TextSecondary}" Opacity="0.75" HorizontalAlignment="Center"/>
+                    <TextBlock Text="{DynamicResource EmptyDeletionsTitle}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" Margin="0,12,0,4" HorizontalAlignment="Center"/>
+                    <TextBlock Text="{DynamicResource EmptyDeletionsSubtitle}" FontSize="12.5" Foreground="{DynamicResource TextSecondary}" Opacity="0.75" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Grid>
         </Border>
