@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Sources.Data;
+using Sources.Helpers;
 using Sources.Models;
 
 namespace Sources.Services;
@@ -64,7 +65,7 @@ public class AlertService : IAlertService
                 {
                     AlertType = "LowActivity",
                     Severity = "Critical",
-                    Message = $"المصدر {source.SourceCode}{symbolPart}: انخفاض حرج في النشاط الإشعاعي (انقضى {maxHalfLivesElapsed:F1} فترة نصف عمر)",
+                    Message = $"{TranslationHelper.GetString("RptColSourceShort") ?? "المصدر"} {source.SourceCode}{symbolPart}: {TranslationHelper.GetFormat("MsgAlertLowActivityCritical", maxHalfLivesElapsed)}",
                     SourceId = source.Id
                 });
             }
@@ -75,7 +76,7 @@ public class AlertService : IAlertService
                 {
                     AlertType = "LowActivity",
                     Severity = "Warning",
-                    Message = $"المصدر {source.SourceCode}{symbolPart}: اقتراب انخفاض النشاط الإشعاعي (انقضى {maxHalfLivesElapsed:F1} فترة نصف عمر من أصل 6)",
+                    Message = $"{TranslationHelper.GetString("RptColSourceShort") ?? "المصدر"} {source.SourceCode}{symbolPart}: {TranslationHelper.GetFormat("MsgAlertLowActivityWarning", maxHalfLivesElapsed)}",
                     SourceId = source.Id
                 });
             }
@@ -95,7 +96,7 @@ public class AlertService : IAlertService
                     {
                         AlertType = "LeakTestDue",
                         Severity = "Warning",
-                        Message = $"المصدر المختوم {source.SourceCode}: لم يتم إجراء أي اختبار تسرب له حتى الآن (مطلوب فحص أولي)",
+                        Message = $"{TranslationHelper.GetString("LabelSealedSourcePrefix") ?? "المصدر المختوم"} {source.SourceCode}: {TranslationHelper.GetString("MsgAlertNoLeakTestYet") ?? "لم يتم إجراء أي اختبار تسرب له حتى الآن (مطلوب فحص أولي)"}",
                         SourceId = source.Id
                     });
                 }
@@ -109,7 +110,7 @@ public class AlertService : IAlertService
                         {
                             AlertType = "LeakTestOverdue",
                             Severity = "Critical",
-                            Message = $"المصدر {source.SourceCode}: اختبار التسرب متأخر بمقدار {overdueDays} يوم (استحق في {dueDate:yyyy/MM/dd})",
+                            Message = $"{TranslationHelper.GetString("RptColSourceShort") ?? "المصدر"} {source.SourceCode}: {TranslationHelper.GetFormat("MsgAlertLeakTestOverdue", overdueDays, dueDate)}",
                             SourceId = source.Id
                         });
                     }
@@ -120,7 +121,7 @@ public class AlertService : IAlertService
                         {
                             AlertType = "LeakTestDue",
                             Severity = "Warning",
-                            Message = $"المصدر {source.SourceCode}: يستحق اختبار التسرب خلال {remainingDays} يوم (تاريخ الاستحقاق: {dueDate:yyyy/MM/dd})",
+                            Message = $"{TranslationHelper.GetString("RptColSourceShort") ?? "المصدر"} {source.SourceCode}: {TranslationHelper.GetFormat("MsgAlertLeakTestDueSoon", remainingDays, dueDate)}",
                             SourceId = source.Id
                         });
                     }
@@ -130,7 +131,7 @@ public class AlertService : IAlertService
                         {
                             AlertType = "LeakTestOverdue",
                             Severity = "Critical",
-                            Message = $"المصدر {source.SourceCode}: نتيجة آخر اختبار تسرب هي رسوب (تسرب إشعاعي مكتشف)",
+                            Message = $"{TranslationHelper.GetString("RptColSourceShort") ?? "المصدر"} {source.SourceCode}: {TranslationHelper.GetString("MsgAlertLeakTestFailed") ?? "نتيجة آخر اختبار تسرب هي رسوب (تسرب إشعاعي مكتشف)"}",
                             SourceId = source.Id
                         });
                     }

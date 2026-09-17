@@ -743,6 +743,14 @@
     <system:String x:Key="AlertsSubtitle">مراقبة مستمرة للمصادر المشعة وتنبيهات انخفاض النشاط الإشعاعي</system:String>
     <system:String x:Key="BtnRefreshAlerts">تحديث وفحص التنبيهات</system:String>
     <system:String x:Key="MsgAlertsRefreshed">تم إعادة فحص وتحديث التنبيهات بنجاح</system:String>
+    <!-- Round 180 (ب5، جزء رابع): AlertService.cs message localization -->
+    <system:String x:Key="MsgAlertLowActivityCritical">انخفاض حرج في النشاط الإشعاعي (انقضى {0:F1} فترة نصف عمر)</system:String>
+    <system:String x:Key="MsgAlertLowActivityWarning">اقتراب انخفاض النشاط الإشعاعي (انقضى {0:F1} فترة نصف عمر من أصل 6)</system:String>
+    <system:String x:Key="LabelSealedSourcePrefix">المصدر المختوم</system:String>
+    <system:String x:Key="MsgAlertNoLeakTestYet">لم يتم إجراء أي اختبار تسرب له حتى الآن (مطلوب فحص أولي)</system:String>
+    <system:String x:Key="MsgAlertLeakTestOverdue">اختبار التسرب متأخر بمقدار {0} يوم (استحق في {1:yyyy/MM/dd})</system:String>
+    <system:String x:Key="MsgAlertLeakTestDueSoon">يستحق اختبار التسرب خلال {0} يوم (تاريخ الاستحقاق: {1:yyyy/MM/dd})</system:String>
+    <system:String x:Key="MsgAlertLeakTestFailed">نتيجة آخر اختبار تسرب هي رسوب (تسرب إشعاعي مكتشف)</system:String>
     <system:String x:Key="LabelTotalAlerts">إجمالي التنبيهات النشطة</system:String>
     <system:String x:Key="LabelLeakTestAlerts">تنبيهات اختبارات التسرب</system:String>
     <system:String x:Key="LabelLowActivityAlerts">تنبيهات انخفاض النشاط</system:String>

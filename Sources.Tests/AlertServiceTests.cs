@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Sources.Data;
+using Sources.Helpers;
 using Sources.Models;
 using Sources.Services;
 using Sources.Tests.Fakes;
@@ -539,7 +540,13 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
         var leakAlert = alerts.FirstOrDefault(a => a.SourceId == source.Id && a.AlertType == "LeakTestOverdue");
         Assert.NotNull(leakAlert);
         Assert.Equal("Critical", leakAlert.Severity);
-        Assert.Contains("متأخر", leakAlert.Message);
+        // نحسب النص المتوقَّع ديناميكياً عبر نفس استدعاء TranslationHelper.GetFormat الذي يستخدمه
+        // AlertService.cs، بدل مطابقة سلسلة ثابتة — يتطابق الطرفان دوماً بغض النظر عن حالة
+        // Application.Current المشتركة على مستوى العملية (نص عربي حقيقي أو اسم المفتاح الخام).
+        var dueDate = oldTest.NextDueDate.Date;
+        int overdueDays = (DateTime.Today - dueDate).Days;
+        var expectedMessage = TranslationHelper.GetFormat("MsgAlertLeakTestOverdue", overdueDays, dueDate);
+        Assert.Contains(expectedMessage, leakAlert.Message);
     }
 
     [Fact]
@@ -578,7 +585,11 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
         var leakAlert = alerts.FirstOrDefault(a => a.SourceId == source.Id && a.AlertType == "LeakTestDue");
         Assert.NotNull(leakAlert);
         Assert.Equal("Warning", leakAlert.Severity);
-        Assert.Contains("يستحق اختبار التسرب خلال", leakAlert.Message);
+        // نفس السبب أعلاه: نحسب النص المتوقَّع ديناميكياً بدل مطابقة سلسلة ثابتة.
+        var dueDate = testRecord.NextDueDate.Date;
+        int remainingDays = (dueDate - DateTime.Today).Days;
+        var expectedMessage = TranslationHelper.GetFormat("MsgAlertLeakTestDueSoon", remainingDays, dueDate);
+        Assert.Contains(expectedMessage, leakAlert.Message);
     }
 
     [Fact]

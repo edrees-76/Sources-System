@@ -746,6 +746,14 @@
     <system:String x:Key="AlertsSubtitle">Continuous monitoring of radioactive sources and low-activity alerts</system:String>
     <system:String x:Key="BtnRefreshAlerts">Check &amp; Refresh Alerts</system:String>
     <system:String x:Key="MsgAlertsRefreshed">Alerts successfully re-checked and updated</system:String>
+    <!-- Round 180 (ب5، جزء رابع): AlertService.cs message localization -->
+    <system:String x:Key="MsgAlertLowActivityCritical">Critical drop in radioactive activity ({0:F1} half-lives elapsed)</system:String>
+    <system:String x:Key="MsgAlertLowActivityWarning">Approaching activity drop threshold ({0:F1} of 6 half-lives elapsed)</system:String>
+    <system:String x:Key="LabelSealedSourcePrefix">Sealed source</system:String>
+    <system:String x:Key="MsgAlertNoLeakTestYet">No leak test has been performed yet (initial check required)</system:String>
+    <system:String x:Key="MsgAlertLeakTestOverdue">Leak test overdue by {0} day(s) (was due on {1:yyyy/MM/dd})</system:String>
+    <system:String x:Key="MsgAlertLeakTestDueSoon">Leak test due in {0} day(s) (due date: {1:yyyy/MM/dd})</system:String>
+    <system:String x:Key="MsgAlertLeakTestFailed">Latest leak test result is Fail (radioactive leak detected)</system:String>
     <system:String x:Key="LabelTotalAlerts">Total Active Alerts</system:String>
     <system:String x:Key="LabelLeakTestAlerts">Leak Test Alerts</system:String>
     <system:String x:Key="LabelLowActivityAlerts">Low Activity Alerts</system:String>
