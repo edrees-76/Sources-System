@@ -180,9 +180,11 @@ public partial class App : Application
 
 
     /// <summary>نص التحذير عند اكتشاف نسخة ثانية قيد التشغيل، باللغة النشطة، مع ارتداد عربي عند تعذّر إيجاد المورد.</summary>
-    public static string GetAlreadyRunningMessage()
+    /// <param name="resourceLookup">دالة بحث عن المورد قابلة للحقن (للاختبار)؛ الافتراضي <see cref="TranslationHelper.GetString"/>.</param>
+    public static string GetAlreadyRunningMessage(Func<string, string?>? resourceLookup = null)
     {
-        return TranslationHelper.GetString("AppAlreadyRunningMessage") ?? "المنظومة تعمل بالفعل على هذا الجهاز.";
+        var lookup = resourceLookup ?? TranslationHelper.GetString;
+        return lookup("AppAlreadyRunningMessage") ?? "المنظومة تعمل بالفعل على هذا الجهاز.";
     }
 
     public static void ApplyLanguage(string cultureCode)

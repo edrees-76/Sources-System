@@ -11,13 +11,13 @@ public class SingleInstanceMutexTests : IDisposable
     }
 
     [Fact]
-    public void GetAlreadyRunningMessage_WhenApplicationCurrentIsNull_ReturnsArabicFallback()
+    public void GetAlreadyRunningMessage_WhenResourceLookupReturnsNull_ReturnsArabicFallback()
     {
-        // في بيئة الاختبار Application.Current فارغ (لا واجهة WPF حقيقية تعمل)،
-        // لذا TranslationHelper.GetString لا يجد المورد ويجب أن يعود نص الارتداد العربي.
-        Assert.Null(System.Windows.Application.Current);
-
-        var message = Sources.App.GetAlreadyRunningMessage();
+        // نحقن دالة بحث تعيد null لمحاكاة تعذّر إيجاد المورد، بدلاً من الاعتماد على
+        // System.Windows.Application.Current الذي قد لا يكون فارغًا حسب ترتيب تنفيذ
+        // الاختبارات الأخرى داخل نفس عملية xunit (WpfStaFixture تُنشئ Application حقيقيًا
+        // ولا تُعيده إلى null). هذا يجعل الاختبار حتميًا بغضّ النظر عن ترتيب التنفيذ.
+        var message = Sources.App.GetAlreadyRunningMessage(_ => null);
 
         Assert.Equal("المنظومة تعمل بالفعل على هذا الجهاز.", message);
     }
