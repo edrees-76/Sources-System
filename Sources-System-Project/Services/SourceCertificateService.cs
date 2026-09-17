@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Sources.Data;
+using Sources.Helpers;
 using Sources.Models;
 
 namespace Sources.Services;
@@ -61,7 +62,7 @@ public class SourceCertificateService : ISourceCertificateService
         if (!activation.Allowed) throw new InvalidOperationException(activation.Message);
 
         if (!File.Exists(filePath))
-            throw new FileNotFoundException("الملف المطلوب إرفاقه غير موجود", filePath);
+            throw new FileNotFoundException(TranslationHelper.GetString("MsgErrAttachCertificateFileNotFound") ?? "الملف المطلوب إرفاقه غير موجود", filePath);
 
         EnsureDirectoryExists();
 
@@ -80,7 +81,7 @@ public class SourceCertificateService : ISourceCertificateService
             StoredFileName = storedName,
             OriginalFileName = originalName,
             AttachedAt = DateTime.Now,
-            AttachedBy = !string.IsNullOrWhiteSpace(attachedBy) ? attachedBy : "غير معروف"
+            AttachedBy = !string.IsNullOrWhiteSpace(attachedBy) ? attachedBy : (TranslationHelper.GetString("TextUnknown") ?? "غير معروف")
         };
 
         using var db = _dbFactory.CreateDbContext();
