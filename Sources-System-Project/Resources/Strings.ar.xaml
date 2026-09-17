@@ -1872,6 +1872,40 @@
     <system:String x:Key="MsgFormatRoomNumber">غرفة {0}</system:String>
     <system:String x:Key="MsgFormatResponsiblePerson">المسؤول: {0}</system:String>
     <system:String x:Key="TextLocationGeneric">موقع</system:String>
+
+    <!-- Round 183 (ب5): ForceChangePasswordDialog + ScreensaverWindow + SettingsView (Debug) + SourceDetailsWindow localization -->
+    <system:String x:Key="ForceChangePasswordWindowTitle">منظومة مصادر - يجب تغيير كلمة المرور</system:String>
+    <system:String x:Key="ForceChangePasswordTitle">يجب تغيير كلمة المرور</system:String>
+    <system:String x:Key="ForceChangePasswordBody">كلمة مرور حساب مدير النظام لا تزال هي الافتراضية. يرجى تعيين كلمة مرور جديدة قبل المتابعة.</system:String>
+    <system:String x:Key="LabelNewPassword">كلمة المرور الجديدة</system:String>
+    <system:String x:Key="LabelConfirmNewPassword">تأكيد كلمة المرور الجديدة</system:String>
+    <system:String x:Key="MsgErrEnterNewPassword">يرجى إدخال كلمة مرور جديدة</system:String>
+    <system:String x:Key="MsgErrPasswordConfirmMismatch">كلمة المرور وتأكيدها غير متطابقين</system:String>
+    <system:String x:Key="MsgErrCannotReuseDefaultAdminPassword">لا يمكن استخدام كلمة المرور الافتراضية "admin" مجدداً. يرجى اختيار كلمة مرور جديدة مختلفة</system:String>
+    <system:String x:Key="ScreensaverWindowTitle">شاشة التوقف | مصادر</system:String>
+    <system:String x:Key="ScreensaverAppTitle">مــصــادر | SOURCES</system:String>
+    <system:String x:Key="ScreensaverCenterName">مركـز البحـوث النوويـة - تاجوراء (TNRC)</system:String>
+    <system:String x:Key="ScreensaverContinueHint">اضغط أي زر أو حرّك المؤشر للمتابعة</system:String>
+    <system:String x:Key="DebugDemoDataTabTitle">بيانات تجريبية (Debug)</system:String>
+    <system:String x:Key="DebugGenerateRealisticDataTitle">توليد بيانات تجريبية واقعية (Debug Mode)</system:String>
+    <system:String x:Key="DebugDemoDataIntro">تتيح هذه الأداة إنشاء حزمة متكاملة من البيانات التجريبية لاختبار شاشات وتقارير وتنبيهات المنظومة:</system:String>
+    <system:String x:Key="DebugDemoDataLocationsBullet">• 20 موقعاً فعالاً تشمل مختبرات ومخازن ومستشفيات وعيادات بمسؤولين مختلفين.</system:String>
+    <system:String x:Key="DebugDemoDataSourcesBullet">• 300 مصدراً مشعاً بتوزيعات واقعية للنشاط الإشعاعي (أحادية ومتعددة النظائر).</system:String>
+    <system:String x:Key="DebugDemoDataAlertsBullet">• 50 مصدراً مخصصاً لاختبار التنبيهات الذكية (25 تحذير + 25 حرج) بحسابات انحلال دقيقة.</system:String>
+    <system:String x:Key="DebugDemoDataBorrowsBullet">• 100 طلب استعارة (70 مرتجع + 15 جاري التسليم + 10 متأخر Overdue + 5 قيد الاعتماد).</system:String>
+    <system:String x:Key="DebugDemoDataNote">⚠️ ملاحظة: هذه الميزة مخصصة لأغراض التطوير والاختبار (DEBUG) وتعمل داخل Transaction لضمان سلامة قاعدة البيانات.</system:String>
+    <system:String x:Key="BtnGenerateDemoDataNow">توليد البيانات التجريبية الآن</system:String>
+    <system:String x:Key="SourceDetailsIdentityCardTitle">بيانات التعريف والموقع</system:String>
+    <system:String x:Key="LabelSourceType">نوع المصدر</system:String>
+    <system:String x:Key="SourceDetailsIsotopesCardTitle">النظائر والنشاط الإشعاعي الحالي</system:String>
+    <system:String x:Key="ColSymbolBilingual">الرمز (Symbol)</system:String>
+    <system:String x:Key="ColCurrentActivityBilingual">النشاط الحالي (Activity)</system:String>
+    <system:String x:Key="ColUnitBilingual">الوحدة (Unit)</system:String>
+    <system:String x:Key="SourceDetailsDoseRateCardTitle">معدل الجرعة الإشعاعية التقديري عند 1 متر</system:String>
+    <system:String x:Key="LabelTotalDoseRateAt1m">القيمة الإجمالية عند 1 متر:</system:String>
+    <system:String x:Key="LabelIsotopeContributionBreakdown">تفصيل مساهمة النظائر:</system:String>
+    <system:String x:Key="ColIsotopeBilingual">النظير (Isotope)</system:String>
+    <system:String x:Key="ColEstimatedContribution">المساهمة التقديرية</system:String>
 </ResourceDictionary>
 
 

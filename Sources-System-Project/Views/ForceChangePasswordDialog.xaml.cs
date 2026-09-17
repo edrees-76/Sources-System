@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
+using Sources.Helpers;
 using Sources.Services;
 
 namespace Sources.Views;
@@ -53,20 +54,20 @@ public partial class ForceChangePasswordDialog : Window
 
         if (string.IsNullOrWhiteSpace(newPassword))
         {
-            ShowError("يرجى إدخال كلمة مرور جديدة");
+            ShowError(TranslationHelper.GetString("MsgErrEnterNewPassword") ?? "يرجى إدخال كلمة مرور جديدة");
             return;
         }
 
         if (newPassword != confirmPassword)
         {
-            ShowError("كلمة المرور وتأكيدها غير متطابقين");
+            ShowError(TranslationHelper.GetString("MsgErrPasswordConfirmMismatch") ?? "كلمة المرور وتأكيدها غير متطابقين");
             return;
         }
 
         // منع الالتفاف على الفرض بإعادة إدخال نفس القيمة الافتراضية
         if (newPassword == "admin")
         {
-            ShowError("لا يمكن استخدام كلمة المرور الافتراضية \"admin\" مجدداً. يرجى اختيار كلمة مرور جديدة مختلفة");
+            ShowError(TranslationHelper.GetString("MsgErrCannotReuseDefaultAdminPassword") ?? "لا يمكن استخدام كلمة المرور الافتراضية \"admin\" مجدداً. يرجى اختيار كلمة مرور جديدة مختلفة");
             return;
         }
 

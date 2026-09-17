@@ -88,7 +88,7 @@
                                 <!-- عنوان البطاقة -->
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
                                     <materialDesign:PackIcon Kind="CardAccountDetailsOutline" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
-                                    <TextBlock Text="بيانات التعريف والموقع" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource SourceDetailsIdentityCardTitle}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
                                 </StackPanel>
 
                                 <!-- شبكة الحقول (Grid 2 أعمدة) -->
@@ -132,7 +132,7 @@
 
                                     <!-- نوع المصدر (صف 4 عمود 0) -->
                                     <StackPanel Grid.Row="4" Grid.Column="0">
-                                        <TextBlock Text="نوع المصدر" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="Medium"/>
+                                        <TextBlock Text="{DynamicResource LabelSourceType}" FontSize="11" Foreground="{DynamicResource TextSecondary}" FontWeight="Medium"/>
                                         <TextBlock Text="{Binding SourceTypeDisplay}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,3,0,0"/>
                                     </StackPanel>
                                 </Grid>
@@ -150,7 +150,7 @@
                                 <!-- عنوان البطاقة -->
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                                     <materialDesign:PackIcon Kind="Atom" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
-                                    <TextBlock Text="النظائر والنشاط الإشعاعي الحالي" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource SourceDetailsIsotopesCardTitle}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
                                 </StackPanel>
 
                                 <!-- جدول النظائر -->
@@ -158,7 +158,7 @@
                                     <DataGrid ItemsSource="{Binding Isotopes}" Style="{StaticResource ModernDataGrid}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column">
                                         <DataGrid.Columns>
                                             <!-- الرمز (Symbol) -->
-                                            <DataGridTemplateColumn Header="الرمز (Symbol)" Width="*">
+                                            <DataGridTemplateColumn Header="{DynamicResource ColSymbolBilingual}" Width="*">
                                                 <DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>
                                                         <TextBlock Text="{Binding Symbol}" FontWeight="Bold" FontSize="13.5" Foreground="{DynamicResource PrimaryBrush}"
@@ -168,7 +168,7 @@
                                             </DataGridTemplateColumn>
 
                                             <!-- النشاط الإشعاعي (Activity) -->
-                                            <DataGridTemplateColumn Header="النشاط الحالي (Activity)" Width="1.5*">
+                                            <DataGridTemplateColumn Header="{DynamicResource ColCurrentActivityBilingual}" Width="1.5*">
                                                 <DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>
                                                         <TextBlock Text="{Binding ActivityDisplay}" FontWeight="Bold" FontSize="13.5" Foreground="{DynamicResource TextPrimary}"
@@ -178,7 +178,7 @@
                                             </DataGridTemplateColumn>
 
                                             <!-- الوحدة (Unit) -->
-                                            <DataGridTemplateColumn Header="الوحدة (Unit)" Width="*">
+                                            <DataGridTemplateColumn Header="{DynamicResource ColUnitBilingual}" Width="*">
                                                 <DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>
                                                         <TextBlock Text="{Binding UnitSymbol}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource TextSecondary}"
@@ -203,7 +203,7 @@
                                 <!-- عنوان البطاقة -->
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                                     <materialDesign:PackIcon Kind="Radiation" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
-                                    <TextBlock Text="معدل الجرعة الإشعاعية التقديري عند 1 متر" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource SourceDetailsDoseRateCardTitle}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
                                 </StackPanel>
 
                                 <!-- البانر الرئيسي لمعدل الجرعة -->
@@ -211,7 +211,7 @@
                                     <StackPanel>
                                         <DockPanel LastChildFill="False">
                                             <StackPanel DockPanel.Dock="Right">
-                                                <TextBlock Text="القيمة الإجمالية عند 1 متر:" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" FontWeight="Medium"/>
+                                                <TextBlock Text="{DynamicResource LabelTotalDoseRateAt1m}" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" FontWeight="Medium"/>
                                                 <TextBlock Text="{Binding DisplayDoseRate}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"
                                                            Margin="0,4,0,0" FlowDirection="LeftToRight" TextAlignment="Right"/>
                                             </StackPanel>
@@ -236,12 +236,12 @@
 
                                 <!-- جدول مصغر لتفصيل مساهمة النظائر -->
                                 <StackPanel Margin="0,12,0,0" Visibility="{Binding HasDoseRateContributions, Converter={StaticResource BoolToVis}}">
-                                    <TextBlock Text="تفصيل مساهمة النظائر:" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,8"/>
+                                    <TextBlock Text="{DynamicResource LabelIsotopeContributionBreakdown}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,8"/>
                                     <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" ClipToBounds="True" Background="{DynamicResource InputBackground}">
                                         <DataGrid ItemsSource="{Binding DoseRateContributions}" Style="{StaticResource ModernDataGrid}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column">
                                             <DataGrid.Columns>
                                                 <!-- النظير -->
-                                                <DataGridTemplateColumn Header="النظير (Isotope)" Width="*">
+                                                <DataGridTemplateColumn Header="{DynamicResource ColIsotopeBilingual}" Width="*">
                                                     <DataGridTemplateColumn.CellTemplate>
                                                         <DataTemplate>
                                                             <TextBlock Text="{Binding Symbol}" FontWeight="Bold" FontSize="12.5" Foreground="{DynamicResource PrimaryBrush}"
@@ -251,7 +251,7 @@
                                                 </DataGridTemplateColumn>
 
                                                 <!-- ثابت غاما -->
-                                                <DataGridTemplateColumn Header="ثابت غاما (Γ)" Width="*">
+                                                <DataGridTemplateColumn Header="{DynamicResource ColGammaConstant}" Width="*">
                                                     <DataGridTemplateColumn.CellTemplate>
                                                         <DataTemplate>
                                                             <TextBlock Text="{Binding GammaConstantDisplay}" FontSize="12" Foreground="{DynamicResource TextSecondary}"
@@ -261,7 +261,7 @@
                                                 </DataGridTemplateColumn>
 
                                                 <!-- المساهمة التقديرية -->
-                                                <DataGridTemplateColumn Header="المساهمة التقديرية" Width="1.2*">
+                                                <DataGridTemplateColumn Header="{DynamicResource ColEstimatedContribution}" Width="1.2*">
                                                     <DataGridTemplateColumn.CellTemplate>
                                                         <DataTemplate>
                                                             <TextBlock Text="{Binding ContributionDisplay}" FontWeight="Bold" FontSize="12.5" Foreground="{DynamicResource PrimaryBrush}"
@@ -271,7 +271,7 @@
                                                 </DataGridTemplateColumn>
 
                                                 <!-- الحالة -->
-                                                <DataGridTemplateColumn Header="الحالة" Width="1.4*">
+                                                <DataGridTemplateColumn Header="{DynamicResource ColStatus}" Width="1.4*">
                                                     <DataGridTemplateColumn.CellTemplate>
                                                         <DataTemplate>
                                                             <TextBlock Text="{Binding StatusText}" FontSize="12" FontWeight="Medium"

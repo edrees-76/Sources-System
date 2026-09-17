@@ -1872,6 +1872,40 @@
     <system:String x:Key="MsgFormatRoomNumber">Room {0}</system:String>
     <system:String x:Key="MsgFormatResponsiblePerson">Responsible: {0}</system:String>
     <system:String x:Key="TextLocationGeneric">Location</system:String>
+
+    <!-- Round 183 (ب5): ForceChangePasswordDialog + ScreensaverWindow + SettingsView (Debug) + SourceDetailsWindow localization -->
+    <system:String x:Key="ForceChangePasswordWindowTitle">Sources System - Password Change Required</system:String>
+    <system:String x:Key="ForceChangePasswordTitle">Password Change Required</system:String>
+    <system:String x:Key="ForceChangePasswordBody">The system administrator account password is still the default. Please set a new password before continuing.</system:String>
+    <system:String x:Key="LabelNewPassword">New Password</system:String>
+    <system:String x:Key="LabelConfirmNewPassword">Confirm New Password</system:String>
+    <system:String x:Key="MsgErrEnterNewPassword">Please enter a new password</system:String>
+    <system:String x:Key="MsgErrPasswordConfirmMismatch">The password and its confirmation do not match</system:String>
+    <system:String x:Key="MsgErrCannotReuseDefaultAdminPassword">The default password "admin" cannot be used again. Please choose a different new password</system:String>
+    <system:String x:Key="ScreensaverWindowTitle">Screensaver | Sources</system:String>
+    <system:String x:Key="ScreensaverAppTitle">S O U R C E S</system:String>
+    <system:String x:Key="ScreensaverCenterName">Tajoura Nuclear Research Center (TNRC)</system:String>
+    <system:String x:Key="ScreensaverContinueHint">Press any key or move the pointer to continue</system:String>
+    <system:String x:Key="DebugDemoDataTabTitle">Demo Data (Debug)</system:String>
+    <system:String x:Key="DebugGenerateRealisticDataTitle">Generate Realistic Demo Data (Debug Mode)</system:String>
+    <system:String x:Key="DebugDemoDataIntro">This tool lets you create a complete demo data package to test the system's screens, reports, and alerts:</system:String>
+    <system:String x:Key="DebugDemoDataLocationsBullet">• 20 active locations including labs, stores, hospitals, and clinics with different responsible persons.</system:String>
+    <system:String x:Key="DebugDemoDataSourcesBullet">• 300 radioactive sources with realistic activity distributions (single and multi-isotope).</system:String>
+    <system:String x:Key="DebugDemoDataAlertsBullet">• 50 sources dedicated to testing smart alerts (25 warning + 25 critical) with precise decay calculations.</system:String>
+    <system:String x:Key="DebugDemoDataBorrowsBullet">• 100 borrow requests (70 returned + 15 in delivery + 10 overdue + 5 pending approval).</system:String>
+    <system:String x:Key="DebugDemoDataNote">⚠️ Note: This feature is intended for development and testing purposes (DEBUG) and runs inside a Transaction to ensure database integrity.</system:String>
+    <system:String x:Key="BtnGenerateDemoDataNow">Generate Demo Data Now</system:String>
+    <system:String x:Key="SourceDetailsIdentityCardTitle">Identification &amp; Location Data</system:String>
+    <system:String x:Key="LabelSourceType">Source Type</system:String>
+    <system:String x:Key="SourceDetailsIsotopesCardTitle">Current Isotopes &amp; Radioactivity</system:String>
+    <system:String x:Key="ColSymbolBilingual">Symbol</system:String>
+    <system:String x:Key="ColCurrentActivityBilingual">Current Activity</system:String>
+    <system:String x:Key="ColUnitBilingual">Unit</system:String>
+    <system:String x:Key="SourceDetailsDoseRateCardTitle">Estimated Radiation Dose Rate at 1 Meter</system:String>
+    <system:String x:Key="LabelTotalDoseRateAt1m">Total value at 1 meter:</system:String>
+    <system:String x:Key="LabelIsotopeContributionBreakdown">Isotope Contribution Breakdown:</system:String>
+    <system:String x:Key="ColIsotopeBilingual">Isotope</system:String>
+    <system:String x:Key="ColEstimatedContribution">Estimated Contribution</system:String>
 </ResourceDictionary>
 
 
