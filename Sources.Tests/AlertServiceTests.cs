@@ -539,7 +539,9 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
         var leakAlert = alerts.FirstOrDefault(a => a.SourceId == source.Id && a.AlertType == "LeakTestOverdue");
         Assert.NotNull(leakAlert);
         Assert.Equal("Critical", leakAlert.Severity);
-        Assert.Contains("متأخر", leakAlert.Message);
+        // في بيئة اختبار xunit لا توجد Application، فتُرجع TranslationHelper.GetFormat اسم المفتاح الخام
+        // (وليس النص العربي) عند فشل GetString الداخلي — نتحقق من استخدام المفتاح الصحيح بدلاً من النص المترجَم.
+        Assert.Contains("MsgAlertLeakTestOverdue", leakAlert.Message);
     }
 
     [Fact]
@@ -578,7 +580,8 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
         var leakAlert = alerts.FirstOrDefault(a => a.SourceId == source.Id && a.AlertType == "LeakTestDue");
         Assert.NotNull(leakAlert);
         Assert.Equal("Warning", leakAlert.Severity);
-        Assert.Contains("يستحق اختبار التسرب خلال", leakAlert.Message);
+        // نفس السبب أعلاه: GetFormat في بيئة الاختبار تُرجع اسم المفتاح الخام.
+        Assert.Contains("MsgAlertLeakTestDueSoon", leakAlert.Message);
     }
 
     [Fact]
