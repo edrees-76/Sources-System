@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Data.Sqlite;
+using Sources.Helpers;
 using Sources.Services;
 using Sources.Tests.Fakes;
 using Xunit;
@@ -337,7 +338,13 @@ public class BackupServiceTests : IDisposable
 
         // Assert
         Assert.False(result.Success);
-        Assert.Contains("أحدث من المنظومة", result.Message);
+        // Round 178: production code now builds this message via TranslationHelper.GetFormat("MsgErrBackupNewerVersionUnknownMigrations", ...).
+        // In this xunit test host there is no running WPF Application, so TranslationHelper.GetString returns null and
+        // GetFormat falls back to returning the raw key name (it never returns null, so no "??" fallback text is used
+        // in production code for this particular message). Assert against that same deterministic fallback instead of
+        // the original hardcoded Arabic literal, mirroring exactly what production code computes in this environment.
+        var expectedMessage = TranslationHelper.GetFormat("MsgErrBackupNewerVersionUnknownMigrations", "20991231999999_FutureUnreleasedFeatureMigration");
+        Assert.Equal(expectedMessage, result.Message);
 
         // Verify original database was preserved
         using var checkConn = new SqliteConnection($"Data Source={_dbPath}");

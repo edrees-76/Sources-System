@@ -1841,6 +1841,19 @@
     <system:String x:Key="MsgErrLeakTestRecordNotFound">Leak test record not found</system:String>
     <system:String x:Key="MsgSuccessLeakTestUpdated">Leak test record updated successfully</system:String>
     <system:String x:Key="MsgSuccessLeakTestDeleted">Leak test record deleted successfully</system:String>
+
+    <!-- Round 178 (Part B5, second part): BackupService.cs message localization -->
+    <system:String x:Key="MsgErrDatabaseNotFound">Database not found</system:String>
+    <system:String x:Key="MsgSuccessBackupCreated">Backup created successfully</system:String>
+    <system:String x:Key="MsgErrBackupFileNotFound">Backup file not found</system:String>
+    <system:String x:Key="MsgErrBackupZipMissingDb">The compressed backup file does not contain a database file.</system:String>
+    <system:String x:Key="MsgErrBackupNoMigrationHistory">The backup does not contain any approved migration history and cannot be restored.</system:String>
+    <system:String x:Key="MsgErrBackupNewerVersionUnknownMigrations">The backup was created by a newer version of the system and contains unknown migrations ({0}); it cannot be restored with this version.</system:String>
+    <system:String x:Key="MsgErrBackupInvalidNoMigrationTable">The backup is invalid and does not contain the system's migration table.</system:String>
+    <system:String x:Key="MsgErrBackupCompatibilityCheckFailed">Failed to verify backup compatibility: {0}</system:String>
+    <system:String x:Key="MsgErrBackupIncompatibleSchema">The backup is incompatible with the current database schema and cannot be restored.</system:String>
+    <system:String x:Key="MsgSuccessRestoreCompleted">Restore completed successfully. Please restart the application.</system:String>
+    <system:String x:Key="MsgErrRestoreFailed">Error during restore: {0}</system:String>
 </ResourceDictionary>
 
 

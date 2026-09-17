@@ -1841,6 +1841,19 @@
     <system:String x:Key="MsgErrLeakTestRecordNotFound">سجل الفحص غير موجود</system:String>
     <system:String x:Key="MsgSuccessLeakTestUpdated">تم تحديث سجل اختبار التسرب بنجاح</system:String>
     <system:String x:Key="MsgSuccessLeakTestDeleted">تم حذف سجل اختبار التسرب بنجاح</system:String>
+
+    <!-- Round 178 (ب5، جزء ثانٍ): BackupService.cs message localization -->
+    <system:String x:Key="MsgErrDatabaseNotFound">قاعدة البيانات غير موجودة</system:String>
+    <system:String x:Key="MsgSuccessBackupCreated">تم إنشاء النسخة الاحتياطية بنجاح</system:String>
+    <system:String x:Key="MsgErrBackupFileNotFound">ملف النسخة الاحتياطية غير موجود</system:String>
+    <system:String x:Key="MsgErrBackupZipMissingDb">ملف النسخة الاحتياطية المضغوط لا يحتوي على ملف قاعدة البيانات.</system:String>
+    <system:String x:Key="MsgErrBackupNoMigrationHistory">النسخة الاحتياطية لا تحتوي على أي سجل ترحيلات معتمد، ولا يمكن استعادتها.</system:String>
+    <system:String x:Key="MsgErrBackupNewerVersionUnknownMigrations">النسخة الاحتياطية أُنشئت بإصدار أحدث من المنظومة وتحتوي على ترحيلات غير معروفة ({0})، ولا يمكن استعادتها بهذا الإصدار.</system:String>
+    <system:String x:Key="MsgErrBackupInvalidNoMigrationTable">النسخة الاحتياطية غير صالحة ولا تحتوي على جدول ترحيلات المنظومة.</system:String>
+    <system:String x:Key="MsgErrBackupCompatibilityCheckFailed">فشل التحقق من توافق النسخة الاحتياطية: {0}</system:String>
+    <system:String x:Key="MsgErrBackupIncompatibleSchema">النسخة الاحتياطية غير متوافقة مع بنية قاعدة البيانات الحالية، ولا يمكن استعادتها.</system:String>
+    <system:String x:Key="MsgSuccessRestoreCompleted">تمت الاستعادة بنجاح. يُرجى إعادة تشغيل التطبيق.</system:String>
+    <system:String x:Key="MsgErrRestoreFailed">خطأ أثناء الاستعادة: {0}</system:String>
 </ResourceDictionary>
 
 
