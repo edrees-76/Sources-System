@@ -104,7 +104,7 @@
                 <!-- عنوان الملخص -->
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
                     <materialDesign:PackIcon Kind="Radioactive" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
-                    <TextBlock Text="إجمالي النشاط الإشعاعي بالموقع:" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="{DynamicResource LabelTotalLocationActivity}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
                 </StackPanel>
 
                 <!-- كروت الوحدات المتعددة (نفس تنسيق لوحة التحكم) -->
@@ -133,11 +133,11 @@
                 <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
                     <Border Background="{DynamicResource InputBackground}" CornerRadius="6" Padding="10,4" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="المعروض: " FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock Text="{DynamicResource LabelDisplayedCount}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
                             <TextBlock Text="{Binding FilteredSourcesCount}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
-                            <TextBlock Text=" من " FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock Text="{DynamicResource LabelOfSeparator}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
                             <TextBlock Text="{Binding TotalSourcesCount}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
-                            <TextBlock Text=" مصدر" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock Text="{DynamicResource TextSourceUnit}" Margin="4,0,0,0" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>

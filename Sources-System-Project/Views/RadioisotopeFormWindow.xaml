@@ -410,7 +410,7 @@
                                             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                                                 <materialDesign:PackIcon Kind="SineWave" Width="15" Height="15" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                                 <TextBlock Text="{DynamicResource FieldGammaConstant}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
-                                                <materialDesign:PackIcon Kind="InformationOutline" Width="14" Height="14" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="6,0,0,0" ToolTip="الوحدة الدولية المعتمدة: µSv·m²/(MBq·h) — اختياري للنظائر الباعثة لأشعة غاما"/>
+                                                <materialDesign:PackIcon Kind="InformationOutline" Width="14" Height="14" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="6,0,0,0" ToolTip="{DynamicResource ToolTipGammaConstantUnitOptionalGamma}"/>
                                             </StackPanel>
 
                                             <!-- زر اقتراح القيمة من فهرس ORNL -->
@@ -428,7 +428,7 @@
                                         <TextBox Text="{Binding EditGammaConstantText, UpdateSourceTrigger=PropertyChanged}" TabIndex="9"
                                                  Style="{StaticResource FormTextBox}"
                                                  materialDesign:HintAssist.Hint="مثال: 0.0772 (µSv·m²/(MBq·h))"
-                                                 ToolTip="الوحدة الدولية المعتمدة: µSv·m²/(MBq·h) — اختياري"/>
+                                                 ToolTip="{DynamicResource ToolTipGammaConstantUnitOptional}"/>
                                     </StackPanel>
                                 </StackPanel>
                             </StackPanel>

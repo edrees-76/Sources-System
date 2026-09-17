@@ -1674,6 +1674,45 @@ worktree الفرع القائم — الوكيل الفرعي عزل نفسه �
 `round-implementer`، ثم تحقُّق مستقل عبر `change-verifier`، ثم مراجعة القائد للفرق الفعلي قبل الاعتماد
 — لا تنفيذاً مباشراً من القائد.
 
+**الجولة 184 (ب5، جزء ثامن — إكمال مسح XAML الشامل):** غُلِّفت كل النصوص العربية الحرفية المتبقية في
+عشرة ملفات مكتشَفة في الجولة 183 (`SourceFormWindow.xaml`، `SourcesView.xaml`، `DashboardView.xaml`،
+`DeletionsView.xaml`، `BorrowFormWindow.xaml`، `LocationDetailsWindow.xaml`،
+`RadioisotopeFormWindow.xaml`، `IsotopeDetailsWindow.xaml`، `IsotopeLibraryView.xaml`،
+`AlertDialog.xaml`) — 44 نصاً بسيطاً بنمط `{DynamicResource Key}` المعتاد (مع إعادة استخدام 5 مفاتيح
+موجودة مسبقاً بالحرف: `BtnSearch`، `DetailLabelCurrentActivity` (بإضافة `Margin` بديلاً عن المسافة
+اللاحقة المفقودة في المفتاح)، `TextSourceUnit` (بنفس أسلوب `Margin`)، `IsotopeLibraryBtnOpenPdf`،
+`IsotopeLibraryBtnOpenIcrpPdf`) وإضافة نحو 40 مفتاحاً جديداً، بالإضافة لخمس حالات خاصة من الجزء ب:
+(1) إصلاح عيب منطقي حقيقي في زر بحث `SourcesView.xaml` — `Binding` بلا `Path` داخل
+`ConverterParameter='Search|بحث'` كان يربط كائن الـViewModel الكامل لا قيمة منطقية، فـ`value is true`
+كانت دائماً `false` وتُعرض العربية دوماً بالصدفة لا بتبديل فعلي؛ استُبدل بـ`{DynamicResource BtnSearch}`
+مباشرة. (2) و(3) **اكتشاف مهم يصحّح افتراض العقد الأصلي:** حاول التنفيذ الأول استخدام
+`ConverterParameter="{DynamicResource ...}"` لسطري توليتيب قفل الحالة/الموقع في `SourceFormWindow.xaml`
+كما اقترح نص العقد حرفياً — نجح `dotnet build` (المُصرِّف يقبل الصياغة)، لكن الاختبار الفعلي
+(`SourceFormWindowTests`) كشف `XamlParseException` وقت التشغيل: *"A 'DynamicResourceExtension' cannot
+be set on the 'ConverterParameter' property of type 'Binding'... can only be set on a DependencyProperty
+of a DependencyObject"* — قيد WPF حقيقي غير موثَّق مسبقاً في هذا المشروع (`Binding.ConverterParameter`
+خاصية CLR عادية وليست `DependencyProperty`). **الحل المعتمد بدلاً من ذلك:** أُزيل `Converter`/
+`ConverterParameter` كليةً من السطرين، وأُضيفت خاصيتان محسوبتان (`StatusLockedTooltip`/
+`LocationLockedTooltip`) في `SourcesViewModel.cs` تُرجعان `string?` (نص عند `IsActivelyBorrowed == true`،
+و`null` — وليس `string.Empty` — لمنع ظهور توليتيب فارغ عند `false`) عبر
+`TranslationHelper.GetString(...) ?? "نص احتياطي"`، مع إشعار `OnPropertyChanged` مزدوج داخل
+`partial void OnIsActivelyBorrowedChanged`؛ ربط الـXAML أصبح `ToolTip="{Binding StatusLockedTooltip}"`
+مباشرة. أُعيد تشغيل `SourceFormWindowTests` (15/15 ناجح) للتأكد من زوال الاستثناء. (4) أُضيفت
+`TotalGlobalSearchResultsText` محسوبة في `DashboardViewModel.cs` (`TranslationHelper.GetFormat`) بدل
+`StringFormat` غير الداعم لـ`DynamicResource`، مع إشعار مرتبط بتغيّر `TotalGlobalSearchResultsCount`.
+(5) أُضيفت `SelectedRequestSourceLabel` محسوبة في `BorrowViewModel.cs` تُبقي `DisplaySourceCode` (بيانات
+تعريفية لمصدر مشع) خارج `TranslationHelper.GetFormat` تماماً وفق قاعدة الجولة 180 (تجميع نصي مباشر
+بلغة C# فقط)، مع إعادة استخدام مفتاح جديد `LabelSourcePrefix` بدل افتراض وجود `RptColSourceShort`
+(الأخير "المصدر" بلا نقطتين فلم يطابق حرفياً). لم يُلمَس أي منطق عمل/حساب فعلي، ولا `_auditService.Log`،
+ولا `LoggerService.LogWarning/LogError`، ولا `LoginWindow`/`LoginView`/`SplashWindow`. **بند مؤجَّل
+للتوثيق فقط (لم يُنفَّذ):** `Models/AllModels.cs` يبني `DisplaySourceCode` بنمط
+`$"{SourceCode} (محذوف)"` في ثلاثة مواضع (~361، ~715، ~1096) — نص عربي حرفي داخل طبقة الـModels نفسها،
+يحتاج جولة منفصلة لاحقاً. `dotnet build` نجح بصفر أخطاء، نفس تحذيرَي `CS8604` المسبقَين بلا علاقة
+(`LoginWindow.xaml.cs`). مجموعة الاختبارات الكاملة غير المفلترة: 1280/1280 ناجح قبل التعديل وبعده،
+0 فشل، 0 تجاوز (لا اختبار جديد مطلوب — نصوص عرض بحتة، والحالات ب2/ب3 غُطِّيت باختبارات قائمة أصلاً).
+تصنيف منخفض إلى متوسط المخاطر مطابق للعقد؛ الحالات الخاصة الخمس نُفِّذت مع تحقق فعلي (بناء + اختبار
+انحداري)، وليس افتراضاً نظرياً لصحة الصياغة.
+
 ## 22. الجولة 157 — نظام التفعيل والنسخة التجريبية (ب9)
 
 ### القرار المعماري

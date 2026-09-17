@@ -476,7 +476,7 @@
                                             <ComboBox SelectedValue="{Binding EditStatus}" SelectedValuePath="Tag" TabIndex="2"
                                                       IsEnabled="{Binding IsActivelyBorrowed, Converter={StaticResource InverseBoolConverter}}"
                                                       ToolTipService.ShowOnDisabled="True"
-                                                      ToolTip="{Binding IsActivelyBorrowed, Converter={StaticResource BoolToValue}, ConverterParameter='لا يمكن تعديل الحالة لمصدر قيد الاستعارة النشطة حالياً|'}"
+                                                      ToolTip="{Binding StatusLockedTooltip}"
                                                       Style="{StaticResource FormComboBox}">
                                                 <ComboBoxItem Content="{DynamicResource StatusInUse}" Tag="InUse" Foreground="{DynamicResource TextPrimary}"/>
                                                 <ComboBoxItem Content="{DynamicResource StatusStorage}" Tag="Storage" Foreground="{DynamicResource TextPrimary}"/>
@@ -485,7 +485,7 @@
                                             </ComboBox>
                                             <StackPanel Visibility="{Binding IsActivelyBorrowed, Converter={StaticResource BoolToVis}}" Margin="0,6,0,0" Orientation="Horizontal">
                                                 <materialDesign:PackIcon Kind="LockOutline" Width="14" Height="14" Foreground="#E0A93E" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                                                <TextBlock Text="الحالة مقفلة (المصدر قيد الاستعارة النشطة)" FontSize="11" Foreground="#E0A93E" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{DynamicResource HintStatusLockedByBorrow}" FontSize="11" Foreground="#E0A93E" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </StackPanel>
                                     </UniformGrid>
@@ -661,7 +661,7 @@
                                         <StackPanel Margin="0,0,12,0">
                                             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                                 <materialDesign:PackIcon Kind="Ruler" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                                <TextBlock Text="طول الكبسولة (مم)" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                <TextBlock Text="{DynamicResource FieldCapsuleLength}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
                                             </StackPanel>
                                             <TextBox Text="{Binding EditCapsuleLengthText, UpdateSourceTrigger=PropertyChanged}"
                                                      Style="{StaticResource FormTextBox}"
@@ -672,7 +672,7 @@
                                         <StackPanel>
                                             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                                 <materialDesign:PackIcon Kind="CircleOutline" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                                <TextBlock Text="قطر الكبسولة (مم)" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                <TextBlock Text="{DynamicResource FieldCapsuleDiameter}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
                                             </StackPanel>
                                             <TextBox Text="{Binding EditCapsuleDiameterText, UpdateSourceTrigger=PropertyChanged}"
                                                      Style="{StaticResource FormTextBox}"
@@ -685,7 +685,7 @@
                                         <StackPanel Margin="0,0,12,0">
                                             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                                 <materialDesign:PackIcon Kind="FlashOutline" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                                <TextBlock Text="النشاط الإشعاعي" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                <TextBlock Text="{DynamicResource FieldSourceActivityValue}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
                                             </StackPanel>
                                             <TextBox Text="{Binding EditActivityText, UpdateSourceTrigger=PropertyChanged}"
                                                      Style="{StaticResource FormTextBox}"
@@ -696,7 +696,7 @@
                                         <StackPanel>
                                             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                                 <materialDesign:PackIcon Kind="Scale" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                                <TextBlock Text="وحدة النشاط" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
+                                                <TextBlock Text="{DynamicResource FieldSourceActivityUnit}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
                                             </StackPanel>
                                             <ComboBox ItemsSource="{Binding ActivityUnits}" SelectedValue="{Binding EditActivityUnitId}"
                                                       SelectedValuePath="Id" DisplayMemberPath="UnitSymbol" Style="{StaticResource FormComboBox}"/>
@@ -709,7 +709,7 @@
                                             BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Margin="0,12,0,0">
                                         <StackPanel Orientation="Horizontal">
                                             <materialDesign:PackIcon Kind="ClockOutline" Width="15" Height="15" Foreground="#0D9488" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                            <TextBlock Text="النشاط الحالي المحسوب: " FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextSecondary}"/>
+                                            <TextBlock Text="{DynamicResource DetailLabelCurrentActivity}" Margin="0,0,4,0" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextSecondary}"/>
                                             <TextBlock Text="{Binding DisplaySourceCurrentActivity}" FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI" Foreground="{DynamicResource TextPrimary}"/>
                                         </StackPanel>
                                     </Border>
@@ -944,11 +944,11 @@
                                                   SelectedValuePath="Id" DisplayMemberPath="LocationName" 
                                                   IsEnabled="{Binding IsActivelyBorrowed, Converter={StaticResource InverseBoolConverter}}"
                                                   ToolTipService.ShowOnDisabled="True"
-                                                  ToolTip="{Binding IsActivelyBorrowed, Converter={StaticResource BoolToValue}, ConverterParameter='لا يمكن تعديل الموقع لمصدر قيد الاستعارة النشطة حالياً|'}"
+                                                  ToolTip="{Binding LocationLockedTooltip}"
                                                   Style="{StaticResource FormComboBox}"/>
                                         <StackPanel Visibility="{Binding IsActivelyBorrowed, Converter={StaticResource BoolToVis}}" Margin="0,6,0,0" Orientation="Horizontal">
                                             <materialDesign:PackIcon Kind="LockOutline" Width="14" Height="14" Foreground="#E0A93E" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                                            <TextBlock Text="الموقع مقفل (المصدر قيد الاستعارة النشطة)" FontSize="11" Foreground="#E0A93E" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{DynamicResource HintLocationLockedByBorrow}" FontSize="11" Foreground="#E0A93E" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </StackPanel>
                                 </UniformGrid>

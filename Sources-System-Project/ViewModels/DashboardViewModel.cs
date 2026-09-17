@@ -155,6 +155,18 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     [ObservableProperty] private GlobalSearchResultItem? _selectedGlobalSearchResultItem;
     private System.Threading.CancellationTokenSource? _globalSearchCts;
 
+    /// <summary>
+    /// نص "إجمالي المطابقات" الجاهز للعرض (الجولة 184) — StringFormat لا يدعم DynamicResource،
+    /// لذا يُبنى النص هنا عبر TranslationHelper.GetFormat بدل تضمين نص عربي حرفي في XAML.
+    /// </summary>
+    public string TotalGlobalSearchResultsText =>
+        TranslationHelper.GetFormat("MsgTotalMatchesCount", TotalGlobalSearchResultsCount);
+
+    partial void OnTotalGlobalSearchResultsCountChanged(int value)
+    {
+        OnPropertyChanged(nameof(TotalGlobalSearchResultsText));
+    }
+
     // ─── ساعة وتاريخ الداشبورد المباشرة ───
     [ObservableProperty] private string _currentDateDisplay = string.Empty;
     [ObservableProperty] private string _currentTimeDisplay = string.Empty;

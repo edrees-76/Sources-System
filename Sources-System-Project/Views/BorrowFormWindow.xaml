@@ -208,7 +208,7 @@
                             <TextBlock Text="{DynamicResource SelectSource}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" DockPanel.Dock="Left"/>
                             <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center" ToolTip="{DynamicResource HintBorrowStorageOnly}">
                                 <materialDesign:PackIcon Kind="InformationOutline" Width="14" Height="14" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                                <TextBlock Text="المخزن فقط" FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource LabelStorageOnlyBadge}" FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </DockPanel>
                         <ComboBox ItemsSource="{Binding AvailableSources}"
@@ -238,7 +238,7 @@
                             </Style>
                         </Border.Style>
                         <StackPanel>
-                            <TextBlock Text="معلومات المصدر:" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,0,6"/>
+                            <TextBlock Text="{DynamicResource LabelSelectedSourceInfoTitle}" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,0,6"/>
                             <TextBlock Text="{Binding SelectedSourceInfo}" FontSize="12" Foreground="{DynamicResource TextSecondary}" LineHeight="20" TextAlignment="Right"/>
                         </StackPanel>
                     </Border>
@@ -292,19 +292,19 @@
                         <StackPanel>
                             <TextBlock Text="{DynamicResource ReviewSummaryTitle}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,0,8"/>
                             <TextBlock Margin="0,0,0,4">
-                                <Run Text="• المصدر: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <Run Text="{DynamicResource RunLabelSourcePrefix}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                 <Run Text="{Binding SelectedSourceForNew.SourceCode, Mode=OneWay}" Foreground="{DynamicResource PrimaryBrush}" FontWeight="Bold"/>
                             </TextBlock>
                             <TextBlock Margin="0,0,0,4">
-                                <Run Text="• المستعير: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <Run Text="{DynamicResource RunLabelBorrowerPrefix}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                 <Run Text="{Binding NewBorrowerName, Mode=OneWay}" Foreground="{DynamicResource TextSecondary}"/>
                             </TextBlock>
                             <TextBlock Margin="0,0,0,4">
-                                <Run Text="• الغرض: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <Run Text="{DynamicResource RunLabelPurposePrefix}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                 <Run Text="{Binding NewPurpose, Mode=OneWay}" Foreground="{DynamicResource TextSecondary}"/>
                             </TextBlock>
                             <TextBlock>
-                                <Run Text="• موعد الإرجاع المتوقع: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <Run Text="{DynamicResource RunLabelExpectedReturnPrefix}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                 <Run Text="{Binding NewExpectedReturnDate, StringFormat='{}{0:yyyy/MM/dd}', Mode=OneWay}" Foreground="{DynamicResource TextSecondary}"/>
                             </TextBlock>
                         </StackPanel>
@@ -354,7 +354,7 @@
 
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock Text="{DynamicResource BorrowDetailsTitle}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="{Binding SelectedRequest.DisplaySourceCode, StringFormat='المصدر: {0}'}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                        <TextBlock Text="{Binding SelectedRequestSourceLabel}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -369,38 +369,38 @@
 
                         <UniformGrid Columns="2" Margin="0,0,0,10">
                             <TextBlock Margin="0,0,0,6">
-                                <Run Text="• كود المصدر: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <Run Text="{DynamicResource RunLabelSourceCodePrefix}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                 <Run Text="{Binding SelectedRequest.DisplaySourceCode, Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
                             </TextBlock>
                             <TextBlock Margin="0,0,0,6">
-                                <Run Text="• اسم المستعير: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <Run Text="{DynamicResource RunLabelBorrowerNamePrefix}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                 <Run Text="{Binding SelectedRequest.BorrowerName, Mode=OneWay}" Foreground="{DynamicResource TextSecondary}"/>
                             </TextBlock>
                         </UniformGrid>
 
                         <UniformGrid Columns="2" Margin="0,0,0,10">
                             <TextBlock Margin="0,0,0,6">
-                                <Run Text="• تاريخ الاستعارة: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <Run Text="{DynamicResource RunLabelBorrowDatePrefix}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                 <Run Text="{Binding SelectedRequest.RequestDate, StringFormat='{}{0:yyyy/MM/dd}', Mode=OneWay}" Foreground="{DynamicResource TextSecondary}"/>
                             </TextBlock>
                             <TextBlock Margin="0,0,0,6">
-                                <Run Text="• موعد الإرجاع المتوقع: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <Run Text="{DynamicResource RunLabelExpectedReturnPrefix}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                 <Run Text="{Binding SelectedRequest.ExpectedReturnDate, StringFormat='{}{0:yyyy/MM/dd}', Mode=OneWay}" Foreground="{DynamicResource TextSecondary}"/>
                             </TextBlock>
                         </UniformGrid>
 
                         <TextBlock Margin="0,0,0,10">
-                            <Run Text="• الغرض: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                            <Run Text="{DynamicResource RunLabelPurposePrefix}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                             <Run Text="{Binding SelectedRequest.Purpose, Mode=OneWay}" Foreground="{DynamicResource TextSecondary}"/>
                         </TextBlock>
 
                         <TextBlock Margin="0,0,0,8" Visibility="{Binding SelectedRequest.Notes, Converter={StaticResource NullToVis}}">
-                            <Run Text="• الملاحظات: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                            <Run Text="{DynamicResource RunLabelNotesPrefix}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                             <Run Text="{Binding SelectedRequest.Notes, Mode=OneWay}" Foreground="{DynamicResource TextSecondary}"/>
                         </TextBlock>
 
                         <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-                            <TextBlock Text="• الحالة الحالية: " FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="{DynamicResource RunLabelCurrentStatusPrefix}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
                             <Border CornerRadius="6" Padding="10,3" Background="#1A4F7FA3">
                                 <TextBlock Text="{Binding SelectedRequest.ArabicStatus}" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource PrimaryBrush}"/>
                             </Border>
@@ -476,10 +476,10 @@
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                             <materialDesign:PackIcon Kind="CheckCircleOutline" Width="20" Height="20" Foreground="#3FAE7A" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <TextBlock Text="تم إرجاع هذا المصدر إلى المخزن بنجاح" FontWeight="Bold" FontSize="13" Foreground="#3FAE7A" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource MsgSourceReturnedToStorageSuccess}" FontWeight="Bold" FontSize="13" Foreground="#3FAE7A" VerticalAlignment="Center"/>
                         </StackPanel>
                         <TextBlock Margin="28,0,0,0">
-                            <Run Text="تاريخ الإرجاع الفعلي المسجّل: " Foreground="{DynamicResource TextSecondary}"/>
+                            <Run Text="{DynamicResource RunLabelActualReturnDateRecorded}" Foreground="{DynamicResource TextSecondary}"/>
                             <Run Text="{Binding SelectedRequest.ActualReturnDate, StringFormat='{}{0:yyyy/MM/dd}', Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                         </TextBlock>
                     </StackPanel>
