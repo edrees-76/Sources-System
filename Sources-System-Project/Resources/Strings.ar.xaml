@@ -1901,6 +1901,7 @@
     <system:String x:Key="ColSymbolBilingual">الرمز (Symbol)</system:String>
     <system:String x:Key="ColCurrentActivityBilingual">النشاط الحالي (Activity)</system:String>
     <system:String x:Key="ColUnitBilingual">الوحدة (Unit)</system:String>
+    <system:String x:Key="ColInitialActivityBilingual">النشاط الابتدائي (Initial Activity)</system:String>
     <system:String x:Key="SourceDetailsDoseRateCardTitle">معدل الجرعة الإشعاعية التقديري عند 1 متر</system:String>
     <system:String x:Key="LabelTotalDoseRateAt1m">القيمة الإجمالية عند 1 متر:</system:String>
     <system:String x:Key="LabelIsotopeContributionBreakdown">تفصيل مساهمة النظائر:</system:String>

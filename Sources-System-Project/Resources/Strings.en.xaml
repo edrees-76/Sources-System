@@ -1901,6 +1901,7 @@
     <system:String x:Key="ColSymbolBilingual">Symbol</system:String>
     <system:String x:Key="ColCurrentActivityBilingual">Current Activity</system:String>
     <system:String x:Key="ColUnitBilingual">Unit</system:String>
+    <system:String x:Key="ColInitialActivityBilingual">Initial Activity</system:String>
     <system:String x:Key="SourceDetailsDoseRateCardTitle">Estimated Radiation Dose Rate at 1 Meter</system:String>
     <system:String x:Key="LabelTotalDoseRateAt1m">Total value at 1 meter:</system:String>
     <system:String x:Key="LabelIsotopeContributionBreakdown">Isotope Contribution Breakdown:</system:String>

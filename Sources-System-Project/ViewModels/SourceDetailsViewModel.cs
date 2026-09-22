@@ -20,6 +20,8 @@ public class SourceDetailsIsotopeItem
     public string Symbol { get; set; } = string.Empty;
     public string ActivityDisplay { get; set; } = string.Empty;
     public string UnitSymbol { get; set; } = string.Empty;
+    public string InitialActivityDisplay { get; set; } = string.Empty;
+    public string InitialActivityUnitSymbol { get; set; } = string.Empty;
 }
 
 /// <summary>
@@ -133,11 +135,21 @@ public partial class SourceDetailsViewModel : ObservableObject
                            ?? "Bq";
 
                 double val = si.CurrentActivityValue ?? 0;
+
+                string initialActivityDisplay = si.InitialActivityValue.HasValue
+                    ? FormatActivity(si.InitialActivityValue.Value)
+                    : (TranslationHelper.GetString("TextNotRecorded") ?? "—");
+                string initialActivityUnit = si.ActivityUnit?.UnitSymbol
+                                           ?? source.InitialActivityUnit?.UnitSymbol
+                                           ?? "Bq";
+
                 Isotopes.Add(new SourceDetailsIsotopeItem
                 {
                     Symbol = si.Radioisotope?.Symbol ?? "—",
                     ActivityDisplay = FormatActivity(val),
-                    UnitSymbol = unit
+                    UnitSymbol = unit,
+                    InitialActivityDisplay = initialActivityDisplay,
+                    InitialActivityUnitSymbol = initialActivityUnit
                 });
             }
         }
@@ -151,7 +163,9 @@ public partial class SourceDetailsViewModel : ObservableObject
             {
                 Symbol = source.Radioisotope?.Symbol ?? "—",
                 ActivityDisplay = FormatActivity(source.CurrentActivityValue),
-                UnitSymbol = unit
+                UnitSymbol = unit,
+                InitialActivityDisplay = FormatActivity(source.InitialActivityValue),
+                InitialActivityUnitSymbol = source.InitialActivityUnit?.UnitSymbol ?? "Bq"
             });
         }
 
