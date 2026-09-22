@@ -547,6 +547,33 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     }
 
     [Fact]
+    public void UnlockAccount_SucceedsEvenWhenLicenseNotActivated_UnlikeOtherWriteOperations()
+    {
+        // Arrange: ترخيص غير مفعَّل صراحة لهذا الاختبار (جهاز جديد في الوضع التجريبي)
+        var fakeLicenseService = new FakeLicenseService { IsActivated = false };
+        var userService = new UserService(_fixture.ContextFactory, licenseService: fakeLicenseService);
+        LoginAsAdmin(userService);
+
+        var user = CreateTestUser(
+            username: "trial_mode_unlock_target",
+            password: "Password123",
+            failedAttempts: 3,
+            lockoutEnd: DateTime.Now.AddMinutes(15));
+
+        // Act: فك القفل يجب أن ينجح رغم عدم التفعيل
+        var (unlockSuccess, unlockMessage) = userService.UnlockAccount(user.Id);
+
+        // Assert: UnlockAccount مستثناة عمداً من فحص RequireActivated
+        Assert.True(unlockSuccess);
+        Assert.Equal("تم فك قفل الحساب", unlockMessage);
+
+        using var context = _fixture.CreateContext();
+        var dbUser = context.Users.Find(user.Id)!;
+        Assert.Null(dbUser.LockoutEnd);
+        Assert.Equal(0, dbUser.FailedLoginAttempts);
+    }
+
+    [Fact]
     public void ResetPassword_WithNonExistentUser_ReturnsNotFound()
     {
         LoginAsAdmin();

@@ -237,11 +237,13 @@ public class UserService : IUserService
     }
 
     /// <summary>فك قفل حساب المستخدم</summary>
+    // عمداً لا يُفحَص AuthorizationGuard.RequireActivated هنا (خلافاً لبقية دوال هذا الملف):
+    // فك قفل الحساب عملية أمان حساب وليست "بيانات عمل" يُقصد بها حارس الوضع التجريبي.
+    // القفل نفسه قد يحدث على جهاز جديد تماماً قبل أن يصبح التفعيل ممكناً أصلاً، فإبقاء الحارس هنا
+    // يُنتج نفس الحلقة المغلقة المُكتشَفة في الجولة 186 لـResetPassword (راجع release-readiness.md).
+    // نفس القرار المعماري طُبِّق هنا في الجولة 190.
     public (bool Success, string Message) UnlockAccount(Guid userId)
     {
-        var activation = AuthorizationGuard.RequireActivated(_licenseService!);
-        if (!activation.Allowed) return (false, activation.Message);
-
         var guard = AuthorizationGuard.RequireAdmin(CurrentUser);
         if (!guard.Allowed) return (false, guard.Message);
 
