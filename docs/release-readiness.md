@@ -2445,3 +2445,59 @@ cannot access the file because it is being used by another process")، لكنه�
 `Sources.Tests\AuthorizationEnforcementTests.cs` — فُحص وتأكَّد أن جميع
 اختباراته تستعمل `FakeLicenseService` بحالتها الافتراضية `IsActivated =
 true`، فلا يتأثر أي منها بإزالة الفحص من `ResetPassword`.
+
+## الجولة 187 — تغيير كلمة المرور الافتراضية أصبح اختيارياً (قرار منتج)
+
+**السياق:** بعد نجاح إصلاح الجولة 186 (كسر الحلقة المغلقة التي كانت تمنع أي
+عميل جديد من إكمال الإعداد)، اتخذ إدريس قراراً منتجاً متعمَّداً — وليس
+تراجعاً عن ذلك الإصلاح ولا عودة للعطل — بإلغاء الطابع الإلزامي لحوار تغيير
+كلمة مرور admin الافتراضية (`ForceChangePasswordDialog`، الجولة 164) نهائياً.
+
+**القرار المعماري:** المستخدم يدخل الآن وينتقل مباشرة إلى الشاشة الرئيسية
+بلا أي حاجز إلزامي، حتى لو كان لا يزال يستخدم كلمة المرور الافتراضية.
+`ForceChangePasswordDialog` بقي في الشيفرة دون حذف ودون تعديل حرف واحد —
+خامل عمداً، بانتظار قرار لاحق قد يعيد استخدامه بصيغة اختيارية من داخل شاشة
+إدارة المستخدمين إن رغب إدريس مستقبلاً.
+
+**المقايضة الأمنية المقبولة صراحة:** نظام حقيقي قد يبقى فترة طويلة على
+admin/admin إن تجاهل المستخدم كل التنبيهات، مقابل احتكاك أقل عند الإعداد
+الأول (لا حاجز إلزامي يمنع الاستخدام الفوري للمنظومة). هذه مقايضة قبِلها
+إدريس صراحة عالماً بمخاطرها.
+
+**آلية التخفيف (بديلة عن الإلزام):**
+1. تنبيه دائم بخطورة **Critical** في نظام التنبيهات (`AlertService.GenerateAlerts`)
+   طالما لا يزال أي مستخدم بحالة `MustChangePassword == true` — نوع تنبيه
+   جديد `DefaultPasswordNotChanged`، بلا `SourceId` (تنبيه على مستوى النظام
+   لا مصدر بعينه)، يُحذف تلقائياً بمجرد ألا يبقى أي مستخدم بهذه الحالة.
+2. رسالة تنبيه بسيطة غير معطِّلة (`DialogHelper.ShowWarning`) تظهر عند كل
+   `Logout()` طالما `CurrentUser.MustChangePassword == true`، بعد تأكيد نية
+   الخروج مباشرة وقبل اكتمال الخروج الفعلي — تذكير متكرر لا إلزام.
+3. الآلية الوحيدة المتبقية لإخراج مستخدم من حالة `MustChangePassword = true`
+   هي `UserService.ResetPassword` (تستدعى من شاشة إدارة المستخدمين)، والتي
+   بقيت بلا أي تغيير في هذه الجولة.
+
+**تكرار تأجيل من الجولة 186:** `AlertService.MarkAsRead`/`DismissAlert`
+المحجوبان بـ`AuthorizationGuard.RequireActivated`، و`UnlockAccount` —
+كلاهما لا يزالان مؤجَّلين لجولة لاحقة، لم تُلمس في هذه الجولة أيضاً.
+
+**النتائج:** `dotnet test` الكامل (بلا فلترة) — 1284/1284 نجاح (Debug)، صفر
+فشل، صفر تجاوز (كان 1281/1281 قبل هذه الجولة، +3 اختبارات جديدة: اختبار
+واحد في `AlertServiceTests.cs` واختباران في `MainViewModelLogoutTests.cs`).
+بناء بصفر أخطاء، نفس تحذيرات `CS8604` المسبقة الوجود فقط
+(`LoginWindow.xaml.cs`/`ViewInstantiationTests.cs`)، صفر تحذيرات جديدة. لا
+ترحيل EF (لا تغيير في مخطط قاعدة البيانات، ولا عمود جديد).
+
+**فحص سلبي مطلوب بالعقد:** رُوجعت `Sources.Tests\ForceChangePasswordDialogTests.cs`
+بالكامل — جميع اختباراتها الأربعة تُنشئ `ForceChangePasswordDialog` مباشرة
+عبر مُنشئها الخاص (`new ForceChangePasswordDialog(mockUserService, userId)`)
+ولا تعتمد إطلاقاً على `MainViewModel.OnLoginSuccess`؛ لذلك بقيت جميعها
+تعمل بلا أي تعديل ولا يوجد أي تعارض مع إزالة الاستدعاء من `OnLoginSuccess`.
+
+**الملفات المتغيرة:** `Sources-System-Project\ViewModels\MainViewModel.cs`
+(حذف الكتلة الشرطية لـ`ForceChangePasswordDialog` من `OnLoginSuccess` +
+إضافة رسالة تذكير عند `Logout`)، `Sources-System-Project\Services\AlertService.cs`
+(تنبيه `DefaultPasswordNotChanged` جديد + تنظيفه عند زوال سببه)،
+`Sources-System-Project\Resources\Strings.ar.xaml` و`Strings.en.xaml`
+(ثلاث مفاتيح ترجمة جديدة)، `Sources.Tests\AlertServiceTests.cs` و
+`Sources.Tests\MainViewModelLogoutTests.cs` (اختبارات جديدة). لم يُلمس
+`ForceChangePasswordDialog.xaml`/`.xaml.cs` إطلاقاً.

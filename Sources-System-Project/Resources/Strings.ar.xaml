@@ -1970,6 +1970,11 @@
     <system:String x:Key="HintYieldExample">مثال: 0.85</system:String>
     <system:String x:Key="HintGammaConstantExample">مثال: 0.0772 (µSv·m²/(MBq·h))</system:String>
     <system:String x:Key="HintArabicNotesPlaceholder">ملاحظات (عربي)...</system:String>
+
+    <!-- Round 187: تنبيه دائم + رسالة تذكير عند الخروج لكلمة المرور الافتراضية -->
+    <system:String x:Key="MsgAlertDefaultPasswordNotChanged">يوجد حساب مستخدم لا يزال يستخدم كلمة المرور الافتراضية. يُنصح بتغييرها فوراً من دواعي الأمان.</system:String>
+    <system:String x:Key="MsgReminderChangeDefaultPassword">لا تزال تستخدم كلمة المرور الافتراضية. يُنصح بتغييرها من شاشة إدارة المستخدمين في أقرب فرصة.</system:String>
+    <system:String x:Key="TitleReminderChangeDefaultPassword">تذكير أمني</system:String>
 </ResourceDictionary>
 
 
