@@ -516,6 +516,37 @@ public class UserServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposabl
     }
 
     [Fact]
+    public void ResetPassword_SucceedsEvenWhenLicenseNotActivated_UnlikeOtherWriteOperations()
+    {
+        // Arrange: ترخيص غير مفعَّل صراحة لهذا الاختبار (جهاز جديد في الوضع التجريبي)
+        var fakeLicenseService = new FakeLicenseService { IsActivated = false };
+        var userService = new UserService(_fixture.ContextFactory, licenseService: fakeLicenseService);
+        LoginAsAdmin(userService);
+
+        var user = CreateTestUser(username: "trial_mode_reset_target", password: "OldPassword123");
+
+        // Act: تغيير كلمة المرور يجب أن ينجح رغم عدم التفعيل
+        var (resetSuccess, resetMessage) = userService.ResetPassword(user.Id, "NewPassword456");
+
+        // Assert: ResetPassword مستثناة عمداً من فحص RequireActivated
+        Assert.True(resetSuccess);
+        Assert.Equal("تم إعادة تعيين كلمة المرور", resetMessage);
+
+        // عملية كتابة أخرى (CreateUser) في نفس حالة عدم التفعيل يجب أن تُرفض،
+        // لإثبات أن الاستثناء مقصور على ResetPassword وحدها
+        var newUser = new User
+        {
+            FullName = "مستخدم جديد أثناء الوضع التجريبي",
+            Username = "trial_mode_new_user",
+            RoleId = _userRole.Id
+        };
+        var (createSuccess, createMessage) = userService.CreateUser(newUser, "AnyPass123!");
+
+        Assert.False(createSuccess);
+        Assert.NotEqual("تم إنشاء المستخدم بنجاح", createMessage);
+    }
+
+    [Fact]
     public void ResetPassword_WithNonExistentUser_ReturnsNotFound()
     {
         LoginAsAdmin();
