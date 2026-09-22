@@ -107,6 +107,13 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
             var result = ActivityDecayResult;
             if (result.IsCalculated && result.CurrentActivityBq.HasValue)
             {
+                var unit = NeutronSource.ActivityUnit;
+                if (unit != null && unit.ConversionToBq != 0)
+                {
+                    double valueInUnit = result.CurrentActivityBq.Value / unit.ConversionToBq;
+                    return FormatActivityValue(valueInUnit, unit.UnitSymbol);
+                }
+
                 return FormatActivityValue(result.CurrentActivityBq.Value, "Bq");
             }
 

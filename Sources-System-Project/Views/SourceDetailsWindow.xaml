@@ -186,6 +186,19 @@
                                                     </DataTemplate>
                                                 </DataGridTemplateColumn.CellTemplate>
                                             </DataGridTemplateColumn>
+
+                                            <!-- النشاط الابتدائي (Initial Activity) -->
+                                            <DataGridTemplateColumn Header="{DynamicResource ColInitialActivityBilingual}" Width="1.5*">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" FlowDirection="LeftToRight">
+                                                            <TextBlock Text="{Binding InitialActivityDisplay}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource TextSecondary}"/>
+                                                            <TextBlock Text=" " FontSize="13"/>
+                                                            <TextBlock Text="{Binding InitialActivityUnitSymbol}" FontWeight="SemiBold" FontSize="12.5" Foreground="{DynamicResource TextSecondary}"/>
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
                                         </DataGrid.Columns>
                                     </DataGrid>
                                 </Border>

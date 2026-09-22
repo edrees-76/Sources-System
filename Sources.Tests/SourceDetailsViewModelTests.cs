@@ -82,6 +82,8 @@ public class SourceDetailsViewModelTests
         Assert.Equal("Cs-137", vm.Isotopes[0].Symbol);
         Assert.Equal("250.5000", vm.Isotopes[0].ActivityDisplay);
         Assert.Equal("mCi", vm.Isotopes[0].UnitSymbol);
+        Assert.Equal("0", vm.Isotopes[0].InitialActivityDisplay);
+        Assert.Equal("Bq", vm.Isotopes[0].InitialActivityUnitSymbol);
 
         // Dose rate card
         Assert.True(vm.HasContributingIsotopes);
@@ -92,6 +94,32 @@ public class SourceDetailsViewModelTests
         Assert.Equal("Cs-137", vm.DoseRateContributions[0].Symbol);
         Assert.True(vm.DoseRateContributions[0].IsContributing);
         Assert.False(vm.DoseRateContributions[0].IsWarning);
+    }
+
+    [Fact]
+    public void Constructor_SingleIsotopeSource_SetsInitialActivityFromSource()
+    {
+        // Arrange
+        var source = new Source
+        {
+            Id = Guid.NewGuid(),
+            SourceCode = "SRC-2024-INIT",
+            Status = "InUse",
+            CalibrationDate = new DateTime(2024, 1, 15),
+            InitialActivityValue = 500.0,
+            InitialActivityUnit = _unitCi,
+            CurrentActivityValue = 250.5,
+            CurrentActivityUnit = _unitMci,
+            Radioisotope = new Radioisotope { Symbol = "Cs-137", RadiationType = "Gamma", GammaConstant = 0.081 }
+        };
+
+        // Act
+        var vm = new SourceDetailsViewModel(source);
+
+        // Assert
+        Assert.Single(vm.Isotopes);
+        Assert.Equal("500", vm.Isotopes[0].InitialActivityDisplay);
+        Assert.Equal("Ci", vm.Isotopes[0].InitialActivityUnitSymbol);
     }
 
     [Fact]
@@ -115,13 +143,15 @@ public class SourceDetailsViewModelTests
                 {
                     Radioisotope = iso1,
                     CurrentActivityValue = 50.0,
-                    ActivityUnit = _unitMci
+                    ActivityUnit = _unitMci,
+                    InitialActivityValue = 75.0
                 },
                 new SourceIsotope
                 {
                     Radioisotope = iso2,
                     CurrentActivityValue = 100.0,
-                    ActivityUnit = _unitMci
+                    ActivityUnit = _unitMci,
+                    InitialActivityValue = null
                 }
             }
         };
@@ -137,9 +167,17 @@ public class SourceDetailsViewModelTests
         Assert.Equal("Co-60", vm.Isotopes[0].Symbol);
         Assert.Equal("50", vm.Isotopes[0].ActivityDisplay);
         Assert.Equal("mCi", vm.Isotopes[0].UnitSymbol);
+        Assert.Equal("75", vm.Isotopes[0].InitialActivityDisplay);
+        Assert.Equal("mCi", vm.Isotopes[0].InitialActivityUnitSymbol);
         Assert.Equal("Sr-90", vm.Isotopes[1].Symbol);
         Assert.Equal("100", vm.Isotopes[1].ActivityDisplay);
         Assert.Equal("mCi", vm.Isotopes[1].UnitSymbol);
+        // "TextNotRecorded" resolves via Application.Current, which may or may not be
+        // populated depending on which other tests ran earlier in the same process —
+        // mirror the ViewModel's own fallback logic instead of hardcoding one literal.
+        string expectedNotRecorded = TranslationHelper.GetString("TextNotRecorded") ?? "—";
+        Assert.Equal(expectedNotRecorded, vm.Isotopes[1].InitialActivityDisplay);
+        Assert.Equal("mCi", vm.Isotopes[1].InitialActivityUnitSymbol);
 
         // Dose rate contributions
         Assert.Equal(2, vm.DoseRateContributions.Count);
