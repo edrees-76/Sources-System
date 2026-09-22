@@ -208,9 +208,12 @@ public class UserService : IUserService
 
     public (bool Success, string Message) ResetPassword(Guid userId, string newPassword)
     {
-        var activation = AuthorizationGuard.RequireActivated(_licenseService!);
-        if (!activation.Allowed) return (false, activation.Message);
-
+        // عمداً لا يُفحَص AuthorizationGuard.RequireActivated هنا (خلافاً لبقية دوال هذا الملف):
+        // تغيير كلمة المرور عملية أمان حساب وليست "بيانات عمل" يُقصد بها حارس الوضع التجريبي.
+        // فرض تغيير كلمة المرور الافتراضية (MustChangePassword) يحدث إلزامياً بعد أول تسجيل دخول
+        // على أي جهاز جديد — أي قبل أي تفعيل ممكن أصلاً. فحص RequireActivated هنا كان يُنتج حلقة
+        // مغلقة تامة تمنع أي عميل جديد من إكمال الإعداد (مُكتشَف واقعياً في الجولة 186؛ راجع
+        // release-readiness.md لتفاصيل إعادة الإنتاج الكاملة).
         var guard = AuthorizationGuard.RequireAdmin(CurrentUser);
         if (!guard.Allowed) return (false, guard.Message);
 
