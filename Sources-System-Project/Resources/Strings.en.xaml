@@ -1970,6 +1970,11 @@
     <system:String x:Key="HintYieldExample">e.g. 0.85</system:String>
     <system:String x:Key="HintGammaConstantExample">e.g. 0.0772 (µSv·m²/(MBq·h))</system:String>
     <system:String x:Key="HintArabicNotesPlaceholder">Notes (Arabic)...</system:String>
+
+    <!-- Round 187: تنبيه دائم + رسالة تذكير عند الخروج لكلمة المرور الافتراضية -->
+    <system:String x:Key="MsgAlertDefaultPasswordNotChanged">A user account is still using the default password. It is recommended to change it immediately for security reasons.</system:String>
+    <system:String x:Key="MsgReminderChangeDefaultPassword">You are still using the default password. It is recommended to change it from the user management screen at your earliest convenience.</system:String>
+    <system:String x:Key="TitleReminderChangeDefaultPassword">Security Reminder</system:String>
 </ResourceDictionary>
 
 

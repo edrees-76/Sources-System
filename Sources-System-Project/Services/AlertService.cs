@@ -139,6 +139,32 @@ public class AlertService : IAlertService
             }
         }
 
+        // ─── تنبيه: كلمة مرور افتراضية لم تُغيَّر بعد (الجولة 187) ───
+        bool anyUserMustChangePassword = db.Users.Any(u => u.MustChangePassword);
+        if (anyUserMustChangePassword)
+        {
+            alerts.Add(new AlertNotification
+            {
+                AlertType = "DefaultPasswordNotChanged",
+                Severity = "Critical",
+                Message = TranslationHelper.GetString("MsgAlertDefaultPasswordNotChanged")
+                    ?? "يوجد حساب مستخدم لا يزال يستخدم كلمة المرور الافتراضية. يُنصح بتغييرها فوراً من دواعي الأمان.",
+                SourceId = null
+            });
+        }
+
+        // تنظيف تنبيه "كلمة المرور الافتراضية" إذا زال سببه (لا يوجد SourceId فلا يشمله التنظيف العام أعلاه)
+        if (!anyUserMustChangePassword)
+        {
+            var obsoletePasswordAlerts = db.AlertNotifications
+                .Where(a => a.AlertType == "DefaultPasswordNotChanged")
+                .ToList();
+            if (obsoletePasswordAlerts.Any())
+            {
+                db.AlertNotifications.RemoveRange(obsoletePasswordAlerts);
+            }
+        }
+
         // تنظيف أي تنبيهات ملغاة من النوع القديم (CalibrationDue أو نص المعايرة)
         var obsoleteAlerts = db.AlertNotifications
             .Where(a => a.AlertType == "CalibrationDue" || a.Message.Contains("معايرة"))

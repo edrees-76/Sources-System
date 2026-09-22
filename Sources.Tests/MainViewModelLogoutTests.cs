@@ -107,10 +107,75 @@ public class MainViewModelLogoutTests : IDisposable
         });
     }
 
+    [Fact]
+    public void Logout_WhenCurrentUserMustChangePassword_ShowsReminderAndProceedsWithLogout()
+    {
+        Fixtures.WpfStaFixture.RunInSta(() =>
+        {
+            // Arrange
+            _mockUserService.Setup(u => u.CurrentUser).Returns(new User
+            {
+                Id = Guid.NewGuid(),
+                FullName = "مدير النظام",
+                Username = "admin",
+                Role = new Role { RoleName = "Admin" },
+                MustChangePassword = true
+            });
+            DialogHelper.ShowConfirmationResult = true;
+
+            using var vm = CreateViewModel();
+            var mockEditable = new MockEditableView(isEditing: false);
+            vm.CurrentView = mockEditable;
+
+            // Act
+            vm.LogoutCommand.Execute(null);
+
+            // Assert: رسالة التذكير الأمني تظهر بعد التأكيد (تحدّث LastTitle/LastMessage)
+            Assert.Equal(TranslationHelper.GetString("TitleReminderChangeDefaultPassword"), DialogHelper.LastTitle);
+            Assert.Equal(TranslationHelper.GetString("MsgReminderChangeDefaultPassword"), DialogHelper.LastMessage);
+            _mockUserService.Verify(u => u.Logout(), Times.Once);
+
+            DialogHelper.ShowConfirmationResult = null;
+        });
+    }
+
+    [Fact]
+    public void Logout_WhenCurrentUserDoesNotNeedPasswordChange_DoesNotShowReminder()
+    {
+        Fixtures.WpfStaFixture.RunInSta(() =>
+        {
+            // Arrange
+            _mockUserService.Setup(u => u.CurrentUser).Returns(new User
+            {
+                Id = Guid.NewGuid(),
+                FullName = "مدير النظام",
+                Username = "admin",
+                Role = new Role { RoleName = "Admin" },
+                MustChangePassword = false
+            });
+            DialogHelper.ShowConfirmationResult = true;
+
+            using var vm = CreateViewModel();
+            var mockEditable = new MockEditableView(isEditing: false);
+            vm.CurrentView = mockEditable;
+
+            // Act
+            vm.LogoutCommand.Execute(null);
+
+            // Assert: لا رسالة تذكير، فقط رسالة تأكيد الخروج نفسها هي آخر ما تم عرضه
+            Assert.Equal(TranslationHelper.GetString("TitleLogout"), DialogHelper.LastTitle);
+            Assert.Equal(TranslationHelper.GetString("MsgConfirmLogout"), DialogHelper.LastMessage);
+            _mockUserService.Verify(u => u.Logout(), Times.Once);
+
+            DialogHelper.ShowConfirmationResult = null;
+        });
+    }
+
     public void Dispose()
     {
         DialogHelper.LastTitle = null;
         DialogHelper.LastMessage = null;
+        DialogHelper.ShowConfirmationResult = null;
     }
 
     private sealed partial class MockEditableView : ObservableObject, IEditableViewModel

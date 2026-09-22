@@ -99,16 +99,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
         StartAlertCheckTimer();
         RefreshSidebarPermissions();
 
-        if (_userService.CurrentUser?.MustChangePassword == true && !DialogHelper.IsTestMode)
-        {
-            var forceChangeDialog = new Sources.Views.ForceChangePasswordDialog(_userService, _userService.CurrentUser.Id);
-            if (Application.Current?.MainWindow != null)
-            {
-                forceChangeDialog.Owner = Application.Current.MainWindow;
-            }
-            forceChangeDialog.ShowDialog();
-        }
-
         NavigateTo("Dashboard");
     }
 
@@ -401,6 +391,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         if (DialogHelper.ShowConfirmation(TranslationHelper.GetString("MsgConfirmLogout") ?? "هل أنت متأكد أنك تريد تسجيل الخروج؟", TranslationHelper.GetString("TitleLogout") ?? "تأكيد الخروج"))
         {
+            if (_userService.CurrentUser?.MustChangePassword == true)
+            {
+                DialogHelper.ShowWarning(
+                    TranslationHelper.GetString("MsgReminderChangeDefaultPassword") ?? "لا تزال تستخدم كلمة المرور الافتراضية. يُنصح بتغييرها من شاشة إدارة المستخدمين في أقرب فرصة.",
+                    TranslationHelper.GetString("TitleReminderChangeDefaultPassword") ?? "تذكير أمني"
+                );
+            }
             ForceLogout();
         }
     }

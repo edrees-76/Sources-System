@@ -448,6 +448,59 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
 
     #endregion
 
+    #region 7. تنبيه كلمة المرور الافتراضية (الجولة 187)
+
+    [Fact]
+    public void GenerateAlerts_WhenUserMustChangePassword_CreatesCriticalAlert_AndRemovesItAfterChange()
+    {
+        // Arrange
+        User user;
+        using (var context = _fixture.CreateContext())
+        {
+            var role = TestDataBuilder.CreateRole();
+            context.Roles.Add(role);
+
+            user = new User
+            {
+                Id = Guid.NewGuid(),
+                FullName = "مدير النظام",
+                Username = "admin-round187",
+                PasswordHash = "hash",
+                RoleId = role.Id,
+                MustChangePassword = true
+            };
+            context.Users.Add(user);
+            context.SaveChanges();
+        }
+
+        // Act 1 - يجب أن يظهر تنبيه حرج طالما لا يزال مستخدم بحاجة لتغيير كلمة المرور
+        var alerts = _alertService.GenerateAlerts();
+        var passwordAlert = alerts.FirstOrDefault(a => a.AlertType == "DefaultPasswordNotChanged");
+
+        // Assert 1
+        Assert.NotNull(passwordAlert);
+        Assert.Equal("Critical", passwordAlert.Severity);
+
+        // Arrange 2 - تغيير كلمة المرور لكل المستخدمين
+        using (var context = _fixture.CreateContext())
+        {
+            var dbUser = context.Users.Find(user.Id);
+            Assert.NotNull(dbUser);
+            dbUser.MustChangePassword = false;
+            context.SaveChanges();
+        }
+
+        // Act 2 - إعادة توليد التنبيهات
+        var updatedAlerts = _alertService.GenerateAlerts();
+
+        // Assert 2 - يجب أن يختفي التنبيه من النشطة وجميع التنبيهات
+        Assert.DoesNotContain(updatedAlerts, a => a.AlertType == "DefaultPasswordNotChanged");
+        Assert.DoesNotContain(_alertService.GetActiveAlerts(), a => a.AlertType == "DefaultPasswordNotChanged");
+        Assert.DoesNotContain(_alertService.GetAllAlerts(), a => a.AlertType == "DefaultPasswordNotChanged");
+    }
+
+    #endregion
+
     #region Periodic Leak Test Alert Tests
 
     [Fact]
