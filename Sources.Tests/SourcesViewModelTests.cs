@@ -985,5 +985,80 @@ public class SourcesViewModelTests : IDisposable
     }
 
     #endregion
+
+    #region Round 192: PagedNeutronSources Current Emission Rate Column
+
+    [Fact]
+    public async Task LoadNeutronDataAsync_WithAm241OneHalfLifeElapsed_ComputesCurrentEmissionRateDisplay()
+    {
+        // Arrange: CalibrationDate exactly one Am-241 half-life (432.2 years) ago, so the
+        // hand-verifiable expected current emission rate is exactly half of the calibrated rate.
+        var neutronTypeId = Guid.NewGuid();
+        double calibratedRate = 2.2e6;
+        double halfLifeDays = 432.2 * NeutronDecayCalculationService.DaysPerYear;
+        DateTime calDate = DateTime.Now.AddDays(-halfLifeDays);
+
+        _mockNeutronSourceService.Setup(s => s.GetAll()).Returns(new List<NeutronSource>
+        {
+            new NeutronSource
+            {
+                Id = Guid.NewGuid(),
+                SourceCode = "NEU-ROW-AM",
+                NeutronSourceTypeId = neutronTypeId,
+                CalibratedEmissionRate = calibratedRate,
+                CalibrationDate = calDate,
+                EmissionCalibrationDate = calDate,
+                NeutronSourceType = new NeutronSourceType { Id = neutronTypeId, Code = "AmBe", HalfLife = 432.2, HalfLifeUnit = "years" }
+            }
+        });
+
+        var vm = CreateViewModel();
+
+        // Act
+        vm.SelectedTab = "Neutron";
+        await vm.LoadNeutronDataAsync();
+
+        // Assert
+        Assert.Single(vm.PagedNeutronSources);
+        var row = vm.PagedNeutronSources[0];
+        Assert.Equal("NEU-ROW-AM", row.SourceCode);
+        Assert.Contains("n/s", row.CurrentEmissionRateDisplay);
+
+        double expected = calibratedRate * 0.5; // one half-life elapsed
+        string expectedDisplay = $"{Sources.Helpers.ScientificNotationParser.FormatScientific(expected)} n/s";
+        Assert.Equal(expectedDisplay, row.CurrentEmissionRateDisplay);
+    }
+
+    [Fact]
+    public async Task LoadNeutronDataAsync_WithMissingNeutronSourceType_ShowsDashForCurrentEmissionRate()
+    {
+        // Arrange: NeutronSourceType not loaded, so the decay calculation cannot be performed.
+        _mockNeutronSourceService.Setup(s => s.GetAll()).Returns(new List<NeutronSource>
+        {
+            new NeutronSource
+            {
+                Id = Guid.NewGuid(),
+                SourceCode = "NEU-ROW-NOTYPE",
+                NeutronSourceTypeId = Guid.NewGuid(),
+                CalibratedEmissionRate = 500,
+                CalibrationDate = DateTime.Today,
+                NeutronSourceType = null
+            }
+        });
+
+        var vm = CreateViewModel();
+
+        // Act
+        vm.SelectedTab = "Neutron";
+        await vm.LoadNeutronDataAsync();
+
+        // Assert
+        Assert.Single(vm.PagedNeutronSources);
+        var row = vm.PagedNeutronSources[0];
+        Assert.Equal("NEU-ROW-NOTYPE", row.SourceCode);
+        Assert.Equal("-", row.CurrentEmissionRateDisplay);
+    }
+
+    #endregion
 }
 

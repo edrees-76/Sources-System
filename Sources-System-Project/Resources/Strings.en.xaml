@@ -1313,6 +1313,7 @@
     <system:String x:Key="HintSearchNeutronSource">Search by code, type, serial number, location...</system:String>
     <system:String x:Key="HeaderRefType">Reference Type</system:String>
     <system:String x:Key="HeaderEmissionRate">Calibrated Emission Rate (n/s)</system:String>
+    <system:String x:Key="HeaderCurrentEmissionRate">Current Emission Rate</system:String>
     <system:String x:Key="HeaderUncertaintyPercent">Uncertainty %</system:String>
     <system:String x:Key="MsgNoNeutronSourcesRecorded">No neutron sources recorded</system:String>
     <system:String x:Key="MsgNoNeutronSourcesHint">You can start by adding a new neutron source using the button above.</system:String>

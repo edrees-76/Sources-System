@@ -827,6 +827,17 @@
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
 
+                                    <!-- معدل الانبعاث الحالي -->
+                                    <DataGridTemplateColumn Header="{DynamicResource HeaderCurrentEmissionRate}" Width="Auto" MinWidth="140">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border Background="#1A0D9488" CornerRadius="4" Padding="6,3" Margin="4,2" HorizontalAlignment="Center">
+                                                    <TextBlock Text="{Binding CurrentEmissionRateDisplay}" FontWeight="Bold" Foreground="#0D9488" FlowDirection="LeftToRight"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
                                     <!-- نسبة عدم اليقين -->
                                     <DataGridTextColumn Header="{DynamicResource HeaderUncertaintyPercent}" Binding="{Binding RelativeExpandedUncertaintyPercent, StringFormat={}{0:N1}%, TargetNullValue='—'}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterAligned}"/>
 
@@ -851,7 +862,7 @@
                                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                                     <!-- عرض التفاصيل -->
                                                     <Button Command="{Binding DataContext.ViewNeutronSourceDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                            CommandParameter="{Binding}"
+                                                            CommandParameter="{Binding NeutronSource}"
                                                             Style="{StaticResource MaterialDesignToolForegroundButton}"
                                                             Padding="4" Height="30" Width="30"
                                                             Foreground="#0D9488" ToolTip="{DynamicResource ToolTipViewDetails}">
@@ -859,7 +870,7 @@
                                                     </Button>
                                                     <!-- تعديل -->
                                                     <Button Command="{Binding DataContext.EditNeutronSourceCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                            CommandParameter="{Binding}"
+                                                            CommandParameter="{Binding NeutronSource}"
                                                             Style="{StaticResource MaterialDesignToolForegroundButton}"
                                                             Padding="4" Height="30" Width="30"
                                                             Foreground="{DynamicResource PrimaryBrush}" ToolTip="{DynamicResource CtxEdit}">
@@ -867,7 +878,7 @@
                                                     </Button>
                                                     <!-- حذف -->
                                                     <Button Command="{Binding DataContext.DeleteNeutronSourceCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                            CommandParameter="{Binding}"
+                                                            CommandParameter="{Binding NeutronSource}"
                                                             Style="{StaticResource MaterialDesignToolForegroundButton}"
                                                             Padding="4" Height="30" Width="30"
                                                             Foreground="{DynamicResource DangerBrush}" ToolTip="{DynamicResource CtxDelete}">
