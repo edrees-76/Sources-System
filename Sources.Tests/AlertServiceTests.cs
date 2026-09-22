@@ -446,6 +446,56 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
         }
     }
 
+    [Fact]
+    public void MarkAsRead_DismissAlert_MarkAllAsRead_SucceedEvenWhenLicenseNotActivated()
+    {
+        // Arrange: ترخيص غير مفعَّل صراحة (جهاز جديد في الوضع التجريبي).
+        // MarkAsRead / DismissAlert / MarkAllAsRead تفاعلات مع تنبيهات موجودة بالفعل،
+        // وليست إنشاءً لبيانات عمل جديدة، لذا لا يجب أن يحجبها فحص RequireActivated (الجولة 190).
+        _fakeLicenseService.IsActivated = false;
+
+        var src1 = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-TRIAL-ALERT-1", calibrationDate: DateTime.Now.AddDays(-7 * 5.27 * 365.25));
+        var src2 = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-TRIAL-ALERT-2", calibrationDate: DateTime.Now.AddDays(-7 * 5.27 * 365.25));
+
+        using (var context = _fixture.CreateContext())
+        {
+            context.Sources.AddRange(src1, src2);
+            context.SaveChanges();
+        }
+
+        var alerts = _alertService.GenerateAlerts();
+        Assert.Equal(2, alerts.Count);
+        var firstAlertId = alerts[0].Id;
+        var secondAlertId = alerts[1].Id;
+
+        // Act 1: MarkAsRead يجب أن ينجح فعلياً في قاعدة البيانات رغم عدم التفعيل
+        _alertService.MarkAsRead(firstAlertId);
+        using (var context = _fixture.CreateContext())
+        {
+            var dbAlert = context.AlertNotifications.Find(firstAlertId);
+            Assert.NotNull(dbAlert);
+            Assert.True(dbAlert.IsRead);
+        }
+
+        // Act 2: DismissAlert يجب أن ينجح فعلياً في قاعدة البيانات رغم عدم التفعيل
+        _alertService.DismissAlert(firstAlertId);
+        using (var context = _fixture.CreateContext())
+        {
+            var dbAlert = context.AlertNotifications.Find(firstAlertId);
+            Assert.NotNull(dbAlert);
+            Assert.True(dbAlert.IsDismissed);
+        }
+
+        // Act 3: MarkAllAsRead يجب أن ينجح فعلياً في قاعدة البيانات رغم عدم التفعيل
+        _alertService.MarkAllAsRead();
+        using (var context = _fixture.CreateContext())
+        {
+            var dbAlert = context.AlertNotifications.Find(secondAlertId);
+            Assert.NotNull(dbAlert);
+            Assert.True(dbAlert.IsRead);
+        }
+    }
+
     #endregion
 
     #region 7. تنبيه كلمة المرور الافتراضية (الجولة 187)

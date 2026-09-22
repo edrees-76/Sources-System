@@ -322,11 +322,14 @@ public class AlertService : IAlertService
         return db.AlertNotifications.Count(a => !a.IsRead && !a.IsDismissed);
     }
 
+    // عمداً لا يُفحَص AuthorizationGuard.RequireActivated في دوال التفاعل الثلاث التالية
+    // (MarkAsRead / DismissAlert / MarkAllAsRead): هذه تفاعلات مع تنبيهات موجودة بالفعل
+    // (تعليم كمقروء / إخفاء) وليست إنشاءً لبيانات عمل جديدة يُقصد بها حارس الوضع التجريبي.
+    // نفس القرار المعماري المتخذ في الجولة 186 لـResetPassword، طُبِّق هنا في الجولة 190.
+
     /// <summary>تعليم تنبيه كمقروء</summary>
     public void MarkAsRead(Guid alertId)
     {
-        if (!AuthorizationGuard.RequireActivated(_licenseService).Allowed) return;
-
         using var db = _dbFactory.CreateDbContext();
         var alert = db.AlertNotifications.Find(alertId);
         if (alert != null)
@@ -339,8 +342,6 @@ public class AlertService : IAlertService
     /// <summary>إخفاء تنبيه</summary>
     public void DismissAlert(Guid alertId)
     {
-        if (!AuthorizationGuard.RequireActivated(_licenseService).Allowed) return;
-
         using var db = _dbFactory.CreateDbContext();
         var alert = db.AlertNotifications.Find(alertId);
         if (alert != null)
@@ -353,8 +354,6 @@ public class AlertService : IAlertService
     /// <summary>تعليم كل التنبيهات كمقروءة</summary>
     public void MarkAllAsRead()
     {
-        if (!AuthorizationGuard.RequireActivated(_licenseService).Allowed) return;
-
         using var db = _dbFactory.CreateDbContext();
         var unread = db.AlertNotifications.Where(a => !a.IsRead && !a.IsDismissed).ToList();
         foreach (var a in unread) a.IsRead = true;
