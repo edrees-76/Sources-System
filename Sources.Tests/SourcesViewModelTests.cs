@@ -775,6 +775,49 @@ public class SourcesViewModelTests : IDisposable
     }
 
     [Fact]
+    public void EditNeutronSource_WithNonBqActivityUnit_DisplaysCurrentActivityConvertedToSourceUnit()
+    {
+        // Arrange: same Am-241 one-half-life setup as the Bq test above, but stored in MBq
+        // (ConversionToBq = 1_000_000) so the displayed current activity must be converted
+        // back to MBq rather than shown in the raw Bq the decay service computes internally.
+        var neutronTypeId = Guid.NewGuid();
+        var unitMBqId = Guid.NewGuid();
+        double initialActivityMBq = 37;
+        double halfLifeDays = 432.2 * NeutronDecayCalculationService.DaysPerYear;
+        DateTime calDate = DateTime.Now.AddDays(-halfLifeDays);
+
+        var target = new NeutronSource
+        {
+            Id = Guid.NewGuid(),
+            SourceCode = "NEU-AM-MBQ-EDIT",
+            NeutronSourceTypeId = neutronTypeId,
+            CalibratedEmissionRate = 500,
+            CalibrationDate = calDate,
+            ActivityValue = initialActivityMBq,
+            ActivityUnitId = unitMBqId,
+            ActivityUnit = new ActivityUnit { Id = unitMBqId, UnitSymbol = "MBq", ConversionToBq = 1_000_000 },
+            NeutronSourceType = new NeutronSourceType { Id = neutronTypeId, Code = "AmBe", HalfLife = 432.2, HalfLifeUnit = "years" }
+        };
+
+        var vm = CreateViewModel();
+
+        // Act
+        vm.EditNeutronSourceCommand.Execute(target);
+
+        // Assert
+        Assert.NotEmpty(vm.DisplaySourceCurrentActivity);
+        Assert.Contains("MBq", vm.DisplaySourceCurrentActivity);
+        Assert.DoesNotContain("Bq ", vm.DisplaySourceCurrentActivity.Replace("MBq", ""));
+
+        var match = System.Text.RegularExpressions.Regex.Match(vm.DisplaySourceCurrentActivity, @"[\d.,]+");
+        Assert.True(match.Success, $"Expected a numeric activity value in '{vm.DisplaySourceCurrentActivity}'");
+        double displayedValue = double.Parse(match.Value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture);
+        double expectedMBq = initialActivityMBq * 0.5; // one half-life elapsed
+        Assert.True(Math.Abs(displayedValue - expectedMBq) / expectedMBq < 0.001,
+            $"Expected ≈{expectedMBq} MBq (half of initial after one half-life), got {displayedValue}");
+    }
+
+    [Fact]
     public void EditNeutronSource_WithNoStoredAm241Activity_ShowsNeutralNotRecordedDisplay()
     {
         // Arrange

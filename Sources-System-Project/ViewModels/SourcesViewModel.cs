@@ -872,7 +872,16 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         var result = _neutronDecayService.CalculateCurrentSourceActivity(target);
         if (result.IsCalculated && result.CurrentActivityBq.HasValue)
         {
-            DisplaySourceCurrentActivity = FormatActivityValue(result.CurrentActivityBq.Value, "Bq");
+            var unit = target.ActivityUnit;
+            if (unit != null && unit.ConversionToBq != 0)
+            {
+                double valueInUnit = result.CurrentActivityBq.Value / unit.ConversionToBq;
+                DisplaySourceCurrentActivity = FormatActivityValue(valueInUnit, unit.UnitSymbol);
+            }
+            else
+            {
+                DisplaySourceCurrentActivity = FormatActivityValue(result.CurrentActivityBq.Value, "Bq");
+            }
             return;
         }
 
