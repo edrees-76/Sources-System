@@ -358,7 +358,9 @@ public class Source
 
     /// <summary>كود المصدر مع حالة الحذف إن وُجد</summary>
     [NotMapped]
-    public string DisplaySourceCode => IsDeleted ? $"{SourceCode} (محذوف)" : SourceCode;
+    public string DisplaySourceCode => IsDeleted
+        ? $"{SourceCode} {Sources.Helpers.TranslationHelper.GetString("TextDeletedSuffix") ?? "(محذوف)"}"
+        : SourceCode;
 
     private DoseRateResult? _currentDoseRateResult;
 
@@ -713,7 +715,7 @@ public class BorrowRequest
     /// <summary>كود المصدر للعرض مع تمييز المصادر المحذوفة</summary>
     [NotMapped]
     public string DisplaySourceCode => Source != null
-        ? (Source.IsDeleted ? $"{Source.SourceCode} (محذوف)" : Source.SourceCode)
+        ? (Source.IsDeleted ? $"{Source.SourceCode} {Sources.Helpers.TranslationHelper.GetString("TextDeletedSuffix") ?? "(محذوف)"}" : Source.SourceCode)
         : "-";
 }
 
@@ -1093,7 +1095,9 @@ public class NeutronSource
     };
 
     [NotMapped]
-    public string DisplaySourceCode => IsDeleted ? $"{SourceCode} (محذوف)" : SourceCode;
+    public string DisplaySourceCode => IsDeleted
+        ? $"{SourceCode} {Sources.Helpers.TranslationHelper.GetString("TextDeletedSuffix") ?? "(محذوف)"}"
+        : SourceCode;
 
     [NotMapped]
     public string DisplayEmissionRate => $"{ScientificNotationParser.FormatScientific(CalibratedEmissionRate)} n/s";

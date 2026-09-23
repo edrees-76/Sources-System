@@ -1981,6 +1981,7 @@
     <!-- Round 195: permission list separators -->
     <system:String x:Key="TextPermissionDeltaSeparator">, </system:String>
     <system:String x:Key="TextPermissionListSeparator">, </system:String>
+    <system:String x:Key="TextDeletedSuffix">(Deleted)</system:String>
 </ResourceDictionary>
 
 

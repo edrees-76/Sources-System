@@ -1981,6 +1981,7 @@
     <!-- Round 195: فواصل قوائم الصلاحيات -->
     <system:String x:Key="TextPermissionDeltaSeparator" xml:space="preserve"> ، </system:String>
     <system:String x:Key="TextPermissionListSeparator" xml:space="preserve">، </system:String>
+    <system:String x:Key="TextDeletedSuffix">(محذوف)</system:String>
 </ResourceDictionary>
 
 
