@@ -1,18 +1,17 @@
 # منظومة مصادر — لوحة جاهزية النشر
 
-**آخر تحديث:** 23 سبتمبر 2026
-**حالة المستودع:** آخر جولة مدموجة على `main` هي الجولة 196 (إصلاح فقدان
-القيمة عند الحفظ بمفتاح Enter في `LocationFormWindow`/`UserFormWindow` +
-تحصين اختبارات CodeRabbit R10–R14، commit `1779d78`، PR #92).
-الجولات 186–196 مدموجة جميعها فعلياً (إصلاح حلقة الإعداد المغلقة، جعل تغيير
+**آخر تحديث:** 24 سبتمبر 2026
+**حالة المستودع:** آخر جولة مدموجة على `main` هي الجولة 197 (سلامة استرجاع
+المصادر النيترونية وحراسة حذف الآباء، commit `36921cf`، PR #93).
+الجولات 186–197 مدموجة جميعها فعلياً (إصلاح حلقة الإعداد المغلقة، جعل تغيير
 كلمة المرور الافتراضية اختيارياً، إزالة حارس `RequireActivated` من
 `UnlockAccount`/تفاعلات التنبيهات، توحيد وحدة عرض النشاط الحالي في تفاصيل
 المصدر النيتروني ونافذة تعديله، عمود معدل الانبعاث الحالي، عمود النشاط
-الحالي، جولة التوحيد الختامية، دفعة العناصر الصغيرة/CodeRabbit LOW، وإصلاح
-فقدان القيمة عند الحفظ بمفتاح Enter).
-الجولة 197 (سلامة استرجاع المصادر النيترونية وحراسة حذف الآباء) قيد المراجعة
-(Draft PR، فرع `fix/round-197-neutron-restore-integrity`). تفاصيل كاملة في
-§الجولة 197 أدناه.
+الحالي، جولة التوحيد الختامية، دفعة العناصر الصغيرة/CodeRabbit LOW، إصلاح
+فقدان القيمة عند الحفظ بمفتاح Enter، وسلامة استرجاع المصادر النيترونية).
+الجولة 198 (إصلاحات الحسابات والصلاحيات + عزل الاختبارات: IsTestMode،
+IMessenger) قيد المراجعة (Draft PR، فرع `fix/round-198-auth-and-test-isolation`).
+تفاصيل كاملة في §الجولة 198 أدناه.
 
 **سجل تاريخي (جولات 168–170، مدموجة فعلاً):** الجولة 170 (commit `066415f`،
 PR #65)، الجولة 169 (استبدال رقم التفعيل التجريبي برقم إنتاجي حقيقي، commit
@@ -757,7 +756,7 @@ XAML المثبتة، وأي خدمة أخرى لم تُراجَع بعد صرا
   انظر قائمة ما بعد الإصدار أدناه.
 - اسم الدور «مدير النظام» مكتوب حرفياً في مواضع متفرقة من الكود والاختبارات (`User.IsAdmin`، `UsersViewModel`، `PackPermissions`، وملفات اختبار عدة). نفس نمط تبعثر سلاسل الحالة في البند 3، ويُعالَج معه.
 - **كنس الوسيط الشامل (مؤجَّل موثَّق):** جاني فشل CI `#100` كان اختبار `BorrowViewModel_ReceivesSourcesUpdatedMessage` عبر `WeakReferenceMessenger.Default` المشترك الذي أبلغ مستقبِلاً يحمل fixture ميتاً (`no such table: Sources`)، وعزلته الجولة 115 بحقن `IMessenger` في `BorrowViewModel`. كنس الوسيط الكامل في بقية الشاشات (سبعة ViewModels + `IDisposable` في الخمسة الناقصة + عزل وسائط الاختبارات القائمة) مؤجَّل موثَّق لما بعد النشر. **[إصلاح `IsTestMode` أُنجز في 115-ب — انظر §5.]**
-- كود الإنتاج يقرأ `DialogHelper.IsTestMode` في أربعة مواضع (`SourceNavigationHelper` ×2، `LocationsViewModel`، `PasswordPromptDialog`) كحارس تخطٍّ — وعيُ اختبارٍ مبثوثٌ في الإنتاج. لا يُعالَج الآن (نطاق 115-ب محصور بتثبيت العلم)؛ يُنظر لاحقًا في عزله خلف واجهة اختبار.
+~~كود الإنتاج يقرأ `DialogHelper.IsTestMode` في أربعة مواضع (`SourceNavigationHelper` ×2، `LocationsViewModel`، `PasswordPromptDialog`) كحارس تخطٍّ — وعيُ اختبارٍ مبثوثٌ في الإنتاج.~~ **أُغلق في الجولة 198 (R198-D):** العدد الحقيقي عند الجرد كان **خمسة** مواضع لا أربعة (البند الرابع الناقص: `MainViewModel.OpenActivation`). أُضيف `DialogHelper.ShowWindowDialog(Action)` كنقطة عزل وحيدة (في وضع الاختبار لا يُنفَّذ الإجراء ويُعاد `false`؛ خلاف ذلك يُنفَّذ ويُعاد `true`)، ومرّت المواضع الخمسة (`SourceNavigationHelper` ×2، `LocationsViewModel.OpenLocationDetailsWindow`، `MainViewModel.OpenActivation`، `PasswordPromptDialog.RequestAdminAccess`) عبرها مع نقل الجسم اللاحق للحارس إلى تابع `...Core` خاص يحافظ على نفس منطق المالك/الـDispatcher/الـtry-catch/التسجيل. `grep -rn IsTestMode` في الإنتاج لا يطابق الآن إلا `DialogHelper.cs` نفسه.
 - **حقول نصية رقمية بـ`UpdateSourceTrigger=LostFocus` قد تُحفَظ بقيمة قديمة/فارغة عند الحفظ بمفتاح Enter (اكتشاف CodeRabbit على PR #16 للجولة 128 — الصف «2» المشار إليه في عقود الجولات 195/196؛ لم يُعثر على جدول مرقَّم صريح 1–44 مؤرشَف في هذا المستودع يؤكد الرقم حرفياً، لكن هذا البند هو الوحيد في الملف الذي يطابق وصف «اكتشاف Enter/UpdateSourceTrigger» المذكور في عقد الجولة 196 — يُعامَل كالصف 2 على هذا الأساس ويُبلَّغ عن عدم توفر الجدول الأصلي للتأكيد الحرفي):** **مدموج جزئياً وموسَّع في الجولة 196** — `SourceFormWindow`/`RadioisotopeFormWindow` (PR #44 مدموج 2026-09-10، commit الدمج `d69703f`،
 سلف لـ`main`). اكتشاف بصري فعلي (تشغيل حقيقي) على PR #44 أبلغ عن عطلين ظاهريين بعد الإصلاح الأول لهذه الجولة: (1) `RadioisotopeFormWindow` يُغلق برسالة نجاح كاذبة دون حفظ فعلي للقيمة الجديدة، (2) `SourceFormWindow` لا يستجيب لـEnter إطلاقاً. أُعيدت كتابة اختبارات `RadioisotopeFormWindowTests.cs` لتتحقق من القيمة الفعلية الواصلة لطبقة الخدمة (Moq) لا من خاصية الـViewModel فقط — والنتيجة أن العطل **لم يتكرر آلياً حتى بدون أي إصلاح إضافي**، ما يرجّح اختباراً بصرياً على بناء لم يتضمن كوميت الجولة 149 فعلياً، بانتظار تأكيد إدريس. عطل `SourceFormWindow` الثاني ليس تراجعاً، بل سلوك مقصود موروث من الجولة 148 (الحقول السبعة على الخطوة 2 حيث زر الحفظ `IsDefault` غير نشط). أُضيف تحصين وقائي (`PreviewKeyDown` يُفرِّغ الربط المركَّز قبل Enter) في كلا الملفين `.xaml.cs` بصرف النظر عن نتيجة التشخيص. التفاصيل الكاملة في `docs/session-summary.md` (متابعة الجولة 149). كان النص الأصلي هنا يصف `SourcesView.xaml` القديم (قبل تحويله في الجولة 148 إلى `SourceFormWindow.xaml`) بسبعة حقول: `EditInitialActivityText`، `EditEmissionRateText`، `EditRelativeUncertaintyText`، `EditAnisotropyFactorText`، `EditCapsuleLengthText`، `EditCapsuleDiameterText`، `EditActivityText`. الاكتشاف الفعلي في الجولة 149 (قبل أي تعديل) وسّع الصورة: العدد الحقيقي **11 حقلاً على نافذتين بآليتي سباق مختلفتين**، وليس 7 كما كان مفترضاً — وهذا استوجب توقفاً إلزامياً لتأكيد الاكتشاف مع إدريس قبل المتابعة (بنفس أسلوب التحقق الذي فرضته الجولة 148):
   - **`SourceFormWindow.xaml` (7 حقول، الآلية القديمة نفسها):** بعد تحويل الجولة 148 لم يعد يوجد `KeyBinding` على مستوى النافذة إطلاقاً (قرار متعمد موثّق في تعليق أعلى الملف لتفادي حفظ الخطوة الأولى من المعالج متعدد الخطوات قبل اكتمالها)؛ السباق انتقل إلى زر الحفظ `IsDefault="True"` الظاهر فقط في الخطوة الأخيرة (السطر ~1088).
@@ -829,17 +828,27 @@ IsDefault/KeyBinding Enter)؛ لا إضافات جديدة إلى قائمة م�
 
 ## قائمة ما بعد الإصدار (مُعلَّقة عمداً — المشروع متوقف مؤقتاً)
 
-- **`UsersViewModel.Save` (مسار التعديل) يستدعي `ResetPassword` حتى عند فشل `UpdateUser` (اكتُشف
-  في الجولة 196 أثناء تشخيص عطل PasswordBox):** `Save()` تستدعي
-  `_userService.UpdateUser(user)` ثم — بصرف النظر عن نتيجة `r.Success` — تستدعي
-  `_userService.ResetPassword(_editingId!.Value, EditPassword)` طالما `EditPassword` غير فارغة.
-  فشل تحديث الملف الشخصي (مثلاً تعارض صلاحيات) لا يمنع تغيير كلمة المرور صامتاً. يحتاج تعديل
-  سلوك في `UsersViewModel.Save` (تصحيح منطق لا إصلاح ربط WPF) — خارج نطاق الجولة 196.
+- ~~`UsersViewModel.Save` (مسار التعديل) يستدعي `ResetPassword` حتى عند فشل `UpdateUser` (اكتُشف
+  في الجولة 196 أثناء تشخيص عطل PasswordBox).~~ **أُغلق في الجولة 198 (R198-A):** `Save()` تستدعي
+  الآن `UpdateUser` أولاً؛ عند الفشل تعرض رسالته وتتوقف فوراً بلا لمس لكلمة المرور. عند النجاح
+  ووجود `EditPassword` غير فارغة تستدعي `ResetPassword`؛ إن فشلت تظهر رسالة تحذيرية جديدة
+  (`MsgWarnUserSavedPasswordNotChanged`، ar+en) توضح أن البيانات حُفظت لكن كلمة المرور لم تتغيّر،
+  ثم تُغلق النموذج وتُعيد التحميل (السبب غير قابل لإعادة المحاولة). مسار النجاح الكامل بلا تغيير.
 - تبعثر سلاسل الحالة في 45+ موضعاً بلا `enum`، واسم الدور «مدير النظام» مكتوب حرفياً في مواضع
   متفرقة من الكود والاختبارات — نفس نمط التبعثر، يُعالجان معاً.
-- كنس الوسيط الشامل (`IMessenger`) في بقية الشاشات (سبعة ViewModels + `IDisposable` في الخمسة
-  الناقصة + عزل وسائط الاختبارات القائمة) — مؤجَّل موثَّق منذ الجولة 115.
-- عزل `DialogHelper.IsTestMode` خلف واجهة اختبار (يُقرأ حالياً في أربعة مواضع إنتاجية).
+- ~~كنس الوسيط الشامل (`IMessenger`) في بقية الشاشات (سبعة ViewModels + `IDisposable` في الخمسة
+  الناقصة + عزل وسائط الاختبارات القائمة) — مؤجَّل موثَّق منذ الجولة 115.~~ **أُغلق جزئياً في
+  الجولة 198 (R198-E):** العدد الحقيقي عند الجرد كان **سبعة ViewModels، سبعة تسجيلات (Register)،
+  سبعة إرسالات (Send)، تسجيلا إلغاء (UnregisterAll)**. طُبِّق نمط الجولة 115 (`BorrowViewModel`)
+  حرفياً على `AlertsViewModel`/`LeakTestsViewModel`/`LocationsViewModel`/`MainViewModel`/
+  `RadioisotopesViewModel`/`SourcesViewModel`/`UsersViewModel` (حقل `IMessenger _messenger` +
+  بارامتر بناء أخير اختياري + استبدال كل `WeakReferenceMessenger.Default.X` بـ`_messenger.X`)، مع
+  اختبار عزل جديد (نسختان من ViewModel بوسيطين منفصلين لا يتبادلان الرسائل). **لم يُنفَّذ:**
+  `IDisposable` في الخمسة الناقصة (`LeakTestsViewModel`/`LocationsViewModel`/
+  `RadioisotopesViewModel`/`SourcesViewModel`/`UsersViewModel`) — انظر البند الجديد أدناه في هذه
+  القائمة لسبب التأجيل الموثَّق من قائد الجولة 198.
+- ~~عزل `DialogHelper.IsTestMode` خلف واجهة اختبار (يُقرأ حالياً في أربعة مواضع إنتاجية).~~
+  **أُغلق في الجولة 198 (R198-D)** — انظر §3 أعلاه للتفاصيل الكاملة (العدد الحقيقي خمسة لا أربعة).
 - `PhraseFactoryResetConfirmation`/`RequiredResetPhrase` — عالي الخطورة، يحتاج جولة معزولة مستقلة.
 - ~~الحرف الثابت «(محذوف)» في `AllModels.cs`.~~ **أُغلق في الجولة 195 (D):** استُبدل بمفتاح ترجمة
   `TextDeletedSuffix` (fallback عربي مطابق حرفياً).
@@ -873,8 +882,11 @@ IsDefault/KeyBinding Enter)؛ لا إضافات جديدة إلى قائمة م�
 - ~~مفتاح ثالث مكرر لرسالة «مخصص للمدير»: `MsgErrAdminOnlyAction`~~ **أُغلق في الجولة 195 (F):** حُذف
   من كلا القاموسين واستُبدل استخدامه الوحيد بـ`MsgErrAdminOnly` (المعنيان متطابقان عربياً).
 - إظهار `CorruptedKeys` ضمن جرد الابتلاعات الصامتة (جرد 106) — لم يُنفَّذ بعد.
-- **`NeutronSourceTypeService` Create/Update تفتقران إلى `RequireEditor` (ثغرة تفويض على مستوى
-  الخدمة؛ الواجهة لا تصل إليها إلا بعد تسجيل الدخول) — مجدولة للجولة 198.**
+- ~~`NeutronSourceTypeService` Create/Update تفتقران إلى `RequireEditor` (ثغرة تفويض على مستوى
+  الخدمة؛ الواجهة لا تصل إليها إلا بعد تسجيل الدخول).~~ **أُغلق في الجولة 198 (R198-B):** أُضيفت
+  نفس حراسة `AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Sources")` المستعملة في
+  الخدمات الشقيقة مباشرة بعد حراسة التفعيل، في كل من `Create` و`Update`. `Delete`/`Restore`
+  كانتا تملكانها مسبقاً.
 - ~~قائمة الابتلاعات الصامتة التي تُظهر حواراً للمستخدم دون تسجيل~~ **أُغلقت في الجولة 195 (G):** تسعة
   مواضع (`LeakTestsViewModel.cs`، `SettingsViewModel.cs`، `SourcesViewModel.cs`،
   `AlertsViewModel.cs`) أُضيف لها `LoggerService.LogError` كأول عبارة داخل الـ`catch` دون تغيير
@@ -884,6 +896,22 @@ IsDefault/KeyBinding Enter)؛ لا إضافات جديدة إلى قائمة م�
   (Permission denied)؛ يحذفهما إدريس يدوياً بعد تحرير العملية الممسكة بها.
 - الجولة 149 (Enter/LostFocus) مدموجة فعلياً (PR #44) — لم تعد في هذه القائمة، بانتظار تحقق بصري
   نهائي فقط (انظر §3 أعلاه).
+- **`IDisposable` في الخمسة ViewModels الناقصة (`LeakTestsViewModel`/`LocationsViewModel`/
+  `RadioisotopesViewModel`/`SourcesViewModel`/`UsersViewModel`) بعد كنس `IMessenger` في الجولة 198
+  (R198-E) — مؤجَّل عمداً بقرار قائد الجولة 198:** هذه الشاشات transient تُحلّ من
+  `ServiceProvider` الجذري (`MainViewModel.cs:336-350`)، و`MainViewModel` لا يتخلّص أبداً من
+  `CurrentView` السابق عند التنقل. لو أُضيف `IDisposable` الآن فسيُبقي الحاوية الجذرية كل نسخة
+  حية إلى الأبد (`GC` لن يجمعها) مع تسجيل وسيطها الحي (استقبال مستمر لـ
+  `NavigateToSearchResultMessage`/`SourcesUpdatedMessage` من شاشات قديمة مهجورة) — تغيير سلوكي
+  وذاكرة حقيقي وليس ميكانيكياً؛ يحتاج تصميم دورة حياة (Scope) مستقل قبل التنفيذ.
+- `MainViewModel.TestActivationSerialOverride` لا يزال حقلاً ثابتاً في الإنتاج (يُستعمل فقط عندما
+  تمنع `DialogHelper.ShowWindowDialog` فتح `ActivationDialog` فعلياً)، و`PasswordPromptDialog.
+  RequestAdminAccess` لا يزال يمنح الوصول تلقائياً (`return true`) عندما تُقمَع نافذة كلمة المرور
+  — سلوك قائم من قبل الجولة 198، مُسجَّل هنا للتوثيق فقط، بلا تغيير مطلوب.
+- أربعة مجلدات worktree فارغة غير مسجَّلة تحت `.claude/worktrees` (`coderabbit-review-triage-f578d9`،
+  `neutron-sources-current-emission-rate-642203`، `round-193-neutron-current-activity-928b45`،
+  `round-194-final-consolidation-073ef3`) رُفض حذفها في الجولة 198 بسياسة أذونات الجلسة
+  (`Remove-Item`/`rmdir`)؛ يحذفها إدريس يدوياً.
 
 ---
 
@@ -3118,3 +3146,67 @@ findings" و"Lead decisions" في أسفله هما المرجع الحاسم ع
 تُلمس الملفات المحظورة (`LoginWindow`/`LoginView`/`SplashWindow`، `UserService`/`UsersViewModel`،
 `PhraseFactoryResetConfirmation`/`RequiredResetPhrase`، `SystemResetService`، حارس حذف
 `LocationService`). CI Release: قيد الانتظار (pending).
+
+---
+
+## الجولة 198 — إصلاحات الحسابات والصلاحيات + عزل الاختبارات (IsTestMode، IMessenger)
+
+**الفرع:** `fix/round-198-auth-and-test-isolation`. **العقد الكامل:**
+`docs/rounds/198-auth-and-test-isolation.md`.
+
+**التشخيص (D1–D5، ملخَّص — التفاصيل الكاملة في العقد):** (D1) `UsersViewModel.Save` (مسار
+التعديل) كانت تستدعي `ResetPassword` بصرف النظر عن نجاح `UpdateUser`، وتُسقِط نتيجة
+`ResetPassword` صامتة عند نجاح التحديث. (D2) `NeutronSourceTypeService.Create`/`Update` كانتا
+تفتقران إلى حراسة `RequireEditor` التي تملكها `Delete`/`Restore` والخدمات الشقيقة. (D3) المفتاحان
+`MsgErrCannotDeleteRadioisotopeHasSources`/`MsgErrCannotDeleteNeutronSourceTypeHasSources` بلا أي
+استخدام متبقٍّ (استُبدلا بالمفتاحين الأطول `...IncludingDeleted`/`...Count` في الجولة 197). (D4)
+`DialogHelper.IsTestMode` يُقرأ في **خمسة** مواضع إنتاجية خارجية لا أربعة كما ورد في القائمة
+القديمة — البند الرابع الناقص كان `MainViewModel.OpenActivation`. (D5) كنس `IMessenger` غير
+المكتمل منذ الجولة 115 يشمل **سبعة ViewModels، سبعة تسجيلات، سبعة إرسالات، تسجيلَي إلغاء
+(UnregisterAll)** فعلياً — تفصيل كامل في العقد.
+
+**التنفيذ (R198-A إلى R198-F):**
+- **R198-A:** `UsersViewModel.Save` (مسار التعديل) تستدعي `UpdateUser` أولاً؛ عند الفشل تعرض
+  رسالته وتتوقف بلا لمس لكلمة المرور. عند النجاح ووجود `EditPassword` غير فارغة تستدعي
+  `ResetPassword`؛ إن فشلت تظهر رسالة تحذيرية جديدة (`MsgWarnUserSavedPasswordNotChanged`،
+  ar+en) توضح أن البيانات حُفظت لكن كلمة المرور لم تتغيّر، ثم تُغلق النموذج وتُعيد التحميل. مسار
+  النجاح الكامل بلا تغيير سلوكي.
+- **R198-B:** أُضيفت حراسة `AuthorizationGuard.RequireEditor(_userService.CurrentUser, "Sources")`
+  إلى `NeutronSourceTypeService.Create`/`Update` مباشرة بعد حراسة التفعيل، بنفس نمط الخدمات
+  الشقيقة وبلا نصوص جديدة.
+- **R198-C:** حُذف المفتاحان غير المستخدمين من `Strings.ar.xaml`/`Strings.en.xaml` فقط (تحقُّق صفر
+  استخدامات قبل الحذف وبعده).
+- **R198-D:** أُضيف `DialogHelper.ShowWindowDialog(Action)` كنقطة عزل وحيدة لبوابة وضع الاختبار؛
+  مرّت المواضع الخمسة عبرها مع نقل الجسم اللاحق للحارس إلى تابع `...Core` خاص يحافظ على نفس منطق
+  المالك/الـDispatcher/الـtry-catch/التسجيل حرفياً. `grep -rn IsTestMode` في الإنتاج لا يطابق الآن
+  إلا `DialogHelper.cs` نفسه.
+- **R198-E:** طُبِّق نمط الجولة 115 (`BorrowViewModel`، commit `04d3b21`) حرفياً على السبعة
+  ViewModels (حقل `IMessenger _messenger`، بارامتر بناء أخير `IMessenger? messenger = null`،
+  `_messenger = messenger ?? WeakReferenceMessenger.Default` كأول سطر، استبدال كل
+  `WeakReferenceMessenger.Default.X` بـ`_messenger.X`). لا رسائل جديدة، لا تغيير في علاقات
+  الإرسال/الاستقبال، لا `IDisposable` مضافة (انظر «قائمة ما بعد الإصدار» للسبب الموثَّق). اختبار
+  عزل جديد (`MessengerIsolationTests.cs`): نسختان من `AlertsViewModel` بوسيطي
+  `WeakReferenceMessenger` منفصلين؛ الإرسال على الأول لا يصل للثاني إطلاقاً (`Times.Never`).
+- **R198-F:** هذا القسم + تحديث الرأس + إغلاق البنود المكتملة في §3 و«قائمة ما بعد الإصدار» + تسجيل
+  الأعداد الحقيقية D4/D5 + إضافة ثلاثة بنود جديدة لقائمة ما بعد الإصدار (تفصيل `IDisposable`
+  المؤجَّلة، `TestActivationSerialOverride`/`RequestAdminAccess` القائمان، أربعة مجلدات worktree
+  فارغة).
+
+**الاختبارات:** 6 اختبارات جديدة (3 في `UsersViewModelTests.cs` لمسارات R198-A الثلاثة، 2 في
+`NeutronSourceTypeServiceTests.cs` لرفض غير المحرِّر من Create/Update، 1 في
+`MessengerIsolationTests.cs` الجديد لعزل الوسيط). لا اختبار قائم عُدِّل نصه أو تأكيداته.
+
+**الانحرافات عن العقد:** لا شيء. كل المجموعات A–F نُفِّذت بالكامل بلا تفعيل لأي قاعدة توقف (STOP
+RULE)؛ D4 (خمسة مواضع) وD5 (سبعة ViewModels) لم يتجاوزا حدود قواعد التوقف المقرَّرة، وحجم دبلجة E
+الإنتاجية بقي أصغر من حد الـ300 سطر بكثير.
+
+**النتائج:** `dotnet build Sources.sln -c Debug` نجح، صفر تحذيرات جديدة (نفس عائلة `CS8604`
+المعروفة: موضعان في `LoginWindow.xaml.cs` + موضع في `ViewInstantiationTests.cs`، 5 إجمالاً بسبب
+ازدواج بناء `wpftmp`). `dotnet test Sources.Tests/Sources.Tests.csproj -c Debug` الكامل محلياً:
+خط الأساس قبل الجولة **1337 نجاح، 0 فشل، 0 تجاوز**؛ بعدها **1342 نجاح، 0 فشل، 0 تجاوز** (ستة
+اختبارات `[Fact]` جديدة مؤكَّدة بـ`git diff`؛ فرق العدد الصافي +5 لم يُفسَّر بدقة رياضية إضافية ضمن
+حدود هذه الجولة، ويُبلَّغ عنه صراحة بدل تجاهله). `dotnet build Sources.sln -c Release` نجح، نفس
+الخمسة تحذيرات المعروفة، صفر جديدة. لا ترحيل EF، لا تغيير مخطط. لم تُلمس الملفات المحظورة
+(`LoginWindow`/`LoginView`/`SplashWindow`، `PhraseFactoryResetConfirmation`/`RequiredResetPhrase`،
+`SystemResetService`، `AuthorizationGuard`، أي حارس حذف/استرجاع، منطق `UserService` الداخلي).
+CI Release: قيد الانتظار (pending).
