@@ -71,6 +71,25 @@ public class DeletedSourceRow
     public User? DeletedByUser => Source.DeletedByUser;
 }
 
+/// <summary>
+/// غلاف عرض شفاف لصف في جدول قائمة المصادر النيترونية، يضيف معدل الانبعاث الحالي المحسوب
+/// دون أن يستدعي كائن النموذج (NeutronSource) خدمة الاضمحلال مباشرة.
+/// الخصائص أدناه تمرير مباشر بنفس الأسماء المستخدمة حالياً في XAML لتفادي كسر أي ربط قائم.
+/// </summary>
+public class NeutronSourceListRow
+{
+    public NeutronSource NeutronSource { get; set; } = null!;
+    public string SourceCode => NeutronSource.SourceCode;
+    public NeutronSourceType? NeutronSourceType => NeutronSource.NeutronSourceType;
+    public Location? Location => NeutronSource.Location;
+    public string CalibratedEmissionRateFormatted => NeutronSource.CalibratedEmissionRateFormatted;
+    public double? RelativeExpandedUncertaintyPercent => NeutronSource.RelativeExpandedUncertaintyPercent;
+    public string ArabicStatus => NeutronSource.ArabicStatus;
+    public string StatusColor => NeutronSource.StatusColor;
+    public DateTime? CalibrationDate => NeutronSource.CalibrationDate;
+    public string CurrentEmissionRateDisplay { get; set; } = "-";
+}
+
 public partial class SourcesViewModel : ObservableObject, IEditableViewModel
 {
     private readonly ISourceService _sourceService;
@@ -97,7 +116,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     [ObservableProperty] private string _selectedTab = "Active"; // "Active", "Neutron", "Deleted"
     [ObservableProperty] private bool _isNeutronSourcesView;
     [ObservableProperty] private ObservableCollection<NeutronSource> _neutronSources = new();
-    [ObservableProperty] private ObservableCollection<NeutronSource> _pagedNeutronSources = new();
+    [ObservableProperty] private ObservableCollection<NeutronSourceListRow> _pagedNeutronSources = new();
     [ObservableProperty] private ObservableCollection<NeutronSourceType> _neutronSourceTypes = new();
     [ObservableProperty] private NeutronSource? _selectedNeutronSource;
     [ObservableProperty] private int _neutronSourcesCount;
@@ -609,12 +628,33 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     private void UpdatePagedNeutronSources()
     {
         var items = NeutronSources.Skip((NeutronCurrentPage - 1) * PageSize).Take(PageSize).ToList();
-        PagedNeutronSources = new ObservableCollection<NeutronSource>(items);
+        var rows = items.Select(n => new NeutronSourceListRow
+        {
+            NeutronSource = n,
+            CurrentEmissionRateDisplay = BuildCurrentEmissionRateDisplay(n)
+        });
+        PagedNeutronSources = new ObservableCollection<NeutronSourceListRow>(rows);
         NeutronPageStatusText = TranslationHelper.GetFormat("PageStatusFormat", NeutronCurrentPage, NeutronTotalPages, NeutronSources.Count);
         FirstNeutronPageCommand.NotifyCanExecuteChanged();
         PreviousNeutronPageCommand.NotifyCanExecuteChanged();
         NextNeutronPageCommand.NotifyCanExecuteChanged();
         LastNeutronPageCommand.NotifyCanExecuteChanged();
+    }
+
+    /// <summary>
+    /// يبني نص عرض معدل الانبعاث الحالي لقائمة المصادر النيترونية بنفس منطق التنسيق العلمي
+    /// المستخدم في NeutronSourceDetailsViewModel.CurrentEmissionRateDisplay، لكن مبسّطاً:
+    /// عند تعذّر الحساب يُعرض "-" فقط بدل رسالة الحالة التفصيلية (مساحة القائمة ضيقة).
+    /// </summary>
+    private string BuildCurrentEmissionRateDisplay(NeutronSource source)
+    {
+        var result = _neutronDecayService.CalculateCurrentEmissionRate(source);
+        if (result.IsCalculated && result.CurrentEmissionRate.HasValue)
+        {
+            return $"{ScientificNotationParser.FormatScientific(result.CurrentEmissionRate.Value)} n/s";
+        }
+
+        return "-";
     }
 
     public async Task LoadDeletedDataAsync()
