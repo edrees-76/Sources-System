@@ -1,18 +1,17 @@
 # منظومة مصادر — لوحة جاهزية النشر
 
 **آخر تحديث:** 23 سبتمبر 2026
-**حالة المستودع:** آخر جولة مدموجة على `main` هي الجولة 194 (جولة التوحيد
-الختامية — تسجيل الابتلاعات الصامتة، توحيد رسالة المدير، توحيد مصطلح
-H*(10)، قائمة ما بعد الإصدار، commit `9769602`، PR #90). الجولات 186–194
-مدموجة جميعها فعلياً (إصلاح حلقة الإعداد المغلقة، جعل تغيير كلمة المرور
-الافتراضية اختيارياً، إزالة حارس `RequireActivated` من `UnlockAccount`/
-تفاعلات التنبيهات، توحيد وحدة عرض النشاط الحالي في تفاصيل المصدر النيتروني
-ونافذة تعديله، عمود معدل الانبعاث الحالي، عمود النشاط الحالي، وجولة
-التوحيد الختامية).
-الجولة 195 (دفعة عناصر صغيرة + صفوف CodeRabbit LOW + تنظيف worktrees) قيد
-المراجعة (Draft PR #91 غير مدموج بعد، فرع `chore/round-195-small-items-batch`؛
-CI أخضر بالكامل — تشغيل `35839242121`، 1309/1309 نجاح، 0 فشل، 0 تجاوز).
-تفاصيل كاملة في §الجولة 195 أدناه.
+**حالة المستودع:** آخر جولة مدموجة على `main` هي الجولة 195 (دفعة عناصر
+صغيرة + صفوف CodeRabbit LOW + تنظيف worktrees، commit `fd8ee36`، PR #91).
+الجولات 186–195 مدموجة جميعها فعلياً (إصلاح حلقة الإعداد المغلقة، جعل تغيير
+كلمة المرور الافتراضية اختيارياً، إزالة حارس `RequireActivated` من
+`UnlockAccount`/تفاعلات التنبيهات، توحيد وحدة عرض النشاط الحالي في تفاصيل
+المصدر النيتروني ونافذة تعديله، عمود معدل الانبعاث الحالي، عمود النشاط
+الحالي، جولة التوحيد الختامية، ودفعة العناصر الصغيرة/CodeRabbit LOW).
+الجولة 196 (إصلاح فقدان القيمة عند الحفظ بمفتاح Enter في
+`LocationFormWindow`/`UserFormWindow` + تحصين اختبارات CodeRabbit R10–R14)
+قيد المراجعة (Draft PR، فرع `fix/round-196-enter-save-test-hardening`).
+تفاصيل كاملة في §الجولة 196 أدناه.
 
 **سجل تاريخي (جولات 168–170، مدموجة فعلاً):** الجولة 170 (commit `066415f`،
 PR #65)، الجولة 169 (استبدال رقم التفعيل التجريبي برقم إنتاجي حقيقي، commit
@@ -758,12 +757,32 @@ XAML المثبتة، وأي خدمة أخرى لم تُراجَع بعد صرا
 - اسم الدور «مدير النظام» مكتوب حرفياً في مواضع متفرقة من الكود والاختبارات (`User.IsAdmin`، `UsersViewModel`، `PackPermissions`، وملفات اختبار عدة). نفس نمط تبعثر سلاسل الحالة في البند 3، ويُعالَج معه.
 - **كنس الوسيط الشامل (مؤجَّل موثَّق):** جاني فشل CI `#100` كان اختبار `BorrowViewModel_ReceivesSourcesUpdatedMessage` عبر `WeakReferenceMessenger.Default` المشترك الذي أبلغ مستقبِلاً يحمل fixture ميتاً (`no such table: Sources`)، وعزلته الجولة 115 بحقن `IMessenger` في `BorrowViewModel`. كنس الوسيط الكامل في بقية الشاشات (سبعة ViewModels + `IDisposable` في الخمسة الناقصة + عزل وسائط الاختبارات القائمة) مؤجَّل موثَّق لما بعد النشر. **[إصلاح `IsTestMode` أُنجز في 115-ب — انظر §5.]**
 - كود الإنتاج يقرأ `DialogHelper.IsTestMode` في أربعة مواضع (`SourceNavigationHelper` ×2، `LocationsViewModel`، `PasswordPromptDialog`) كحارس تخطٍّ — وعيُ اختبارٍ مبثوثٌ في الإنتاج. لا يُعالَج الآن (نطاق 115-ب محصور بتثبيت العلم)؛ يُنظر لاحقًا في عزله خلف واجهة اختبار.
-- **حقول نصية رقمية بـ`UpdateSourceTrigger=LostFocus` قد تُحفَظ بقيمة قديمة/فارغة عند الحفظ بمفتاح Enter (اكتشاف CodeRabbit على PR #16 للجولة 128، مؤجَّل موثَّق):** **مدموج — بانتظار تحقق بصري نهائي من إدريس** (PR #44 مدموج 2026-09-10، commit الدمج `d69703f`،
+- **حقول نصية رقمية بـ`UpdateSourceTrigger=LostFocus` قد تُحفَظ بقيمة قديمة/فارغة عند الحفظ بمفتاح Enter (اكتشاف CodeRabbit على PR #16 للجولة 128 — الصف «2» المشار إليه في عقود الجولات 195/196؛ لم يُعثر على جدول مرقَّم صريح 1–44 مؤرشَف في هذا المستودع يؤكد الرقم حرفياً، لكن هذا البند هو الوحيد في الملف الذي يطابق وصف «اكتشاف Enter/UpdateSourceTrigger» المذكور في عقد الجولة 196 — يُعامَل كالصف 2 على هذا الأساس ويُبلَّغ عن عدم توفر الجدول الأصلي للتأكيد الحرفي):** **مدموج جزئياً وموسَّع في الجولة 196** — `SourceFormWindow`/`RadioisotopeFormWindow` (PR #44 مدموج 2026-09-10، commit الدمج `d69703f`،
 سلف لـ`main`). اكتشاف بصري فعلي (تشغيل حقيقي) على PR #44 أبلغ عن عطلين ظاهريين بعد الإصلاح الأول لهذه الجولة: (1) `RadioisotopeFormWindow` يُغلق برسالة نجاح كاذبة دون حفظ فعلي للقيمة الجديدة، (2) `SourceFormWindow` لا يستجيب لـEnter إطلاقاً. أُعيدت كتابة اختبارات `RadioisotopeFormWindowTests.cs` لتتحقق من القيمة الفعلية الواصلة لطبقة الخدمة (Moq) لا من خاصية الـViewModel فقط — والنتيجة أن العطل **لم يتكرر آلياً حتى بدون أي إصلاح إضافي**، ما يرجّح اختباراً بصرياً على بناء لم يتضمن كوميت الجولة 149 فعلياً، بانتظار تأكيد إدريس. عطل `SourceFormWindow` الثاني ليس تراجعاً، بل سلوك مقصود موروث من الجولة 148 (الحقول السبعة على الخطوة 2 حيث زر الحفظ `IsDefault` غير نشط). أُضيف تحصين وقائي (`PreviewKeyDown` يُفرِّغ الربط المركَّز قبل Enter) في كلا الملفين `.xaml.cs` بصرف النظر عن نتيجة التشخيص. التفاصيل الكاملة في `docs/session-summary.md` (متابعة الجولة 149). كان النص الأصلي هنا يصف `SourcesView.xaml` القديم (قبل تحويله في الجولة 148 إلى `SourceFormWindow.xaml`) بسبعة حقول: `EditInitialActivityText`، `EditEmissionRateText`، `EditRelativeUncertaintyText`، `EditAnisotropyFactorText`، `EditCapsuleLengthText`، `EditCapsuleDiameterText`، `EditActivityText`. الاكتشاف الفعلي في الجولة 149 (قبل أي تعديل) وسّع الصورة: العدد الحقيقي **11 حقلاً على نافذتين بآليتي سباق مختلفتين**، وليس 7 كما كان مفترضاً — وهذا استوجب توقفاً إلزامياً لتأكيد الاكتشاف مع إدريس قبل المتابعة (بنفس أسلوب التحقق الذي فرضته الجولة 148):
   - **`SourceFormWindow.xaml` (7 حقول، الآلية القديمة نفسها):** بعد تحويل الجولة 148 لم يعد يوجد `KeyBinding` على مستوى النافذة إطلاقاً (قرار متعمد موثّق في تعليق أعلى الملف لتفادي حفظ الخطوة الأولى من المعالج متعدد الخطوات قبل اكتمالها)؛ السباق انتقل إلى زر الحفظ `IsDefault="True"` الظاهر فقط في الخطوة الأخيرة (السطر ~1088).
   - **`RadioisotopeFormWindow.xaml` (4 حقول إضافية اكتُشفت في هذه الجولة، لم تكن موثَّقة سابقاً): `EditHalfLifeText`، `EditEnergyText`، `EditYieldText`، `EditGammaConstantText`.** هذه النافذة تحمل `KeyBinding Key="Return" Command="{Binding SaveCommand}"` صريحاً على `Window.InputBindings` (قرار مثبَّت من الجولة 146: أمر حفظ واحد بلا تفريع يُستدعى من أي خطوة) — أي أن آليتها مطابقة تماماً لافتراض العقد الأصلي.
 
   **الإصلاح المُطبَّق:** تغيير `UpdateSourceTrigger` من `LostFocus` إلى `PropertyChanged` على الحقول الإحدى عشر جميعها في كلا الملفين، بلا أي تعديل في `SourcesViewModel.cs`/`RadioisotopesViewModel.cs` (معالِجات `On<Property>TextChanged` الجزئية كانت متوافقة مسبقاً — تتعامل مع النص الفارغ/غير القابل للتحليل بإرجاع `null`/`0` دون رمي استثناء أو إعادة كتابة الخاصية النصية). 11 اختبار انحدار جديد (`RadioisotopeFormWindowTests.cs` ×4، `SourceFormWindowTests.cs` ×7) يحاكي KeyDown بمفتاح Enter فعلياً على العنصر المركَّز دون فقدان تركيز يدوي، وأثبت فشله على السلوك القديم عبر `git stash push -u`/`git stash apply` قبل تطبيق الإصلاح. انظر `docs/rounds/149-enter-lostfocus-numeric-fields.md` للعقد الكامل.
+
+  **أُغلق بالكامل بالجولة 196** (فرع `fix/round-196-enter-save-test-hardening`): وسّع نفس نمط
+  الجولة 149 — لكن هذه المرة الآلية الحاسمة اكتُشفت في **الكود-خلف** لا XAML وحده: معالج
+  `PreviewKeyDown` على مستوى النافذة (`SourceFormWindow.xaml.cs:23،38-45`،
+  `RadioisotopeFormWindow.xaml.cs:23،39-46`) يُفرِّغ (Flush) قيمة أي TextBox يحمل التركيز إلى
+  الربط عبر `BindingExpression.UpdateSource()` قبل وصول Enter إلى `SaveCommand`، بصرف النظر عن
+  `UpdateSourceTrigger` في XAML. **قرار قائد الجولة (مُصرَّح به، يعدّل بند الكود-خلف الممنوع في
+  عقد الجولة 196):** طُبِّق نفس المعالج حرفياً (نفس المنطق، تعليق عربي جديد يوثّق أنه امتداد
+  للجولة 149) في `LocationFormWindow.xaml.cs`/`UserFormWindow.xaml.cs`، إلى جانب
+  `UpdateSourceTrigger=PropertyChanged` على كل TextBox (`LocationFormWindow.xaml`:51،65،71،75؛
+  `UserFormWindow.xaml`:51،57،68). **اكتشاف إضافي غير متوقَّع بالعقد الأصلي (قرار القائد الثاني):**
+  صندوق كلمة المرور في `UserFormWindow` (PasswordBox عبر
+  `materialDesign:PasswordBoxAssist.Password`) كان عرضة لنفس العطل تماماً — MaterialDesignThemes
+  5.3 يضبط `DefaultUpdateSourceTrigger=LostFocus` على هذه الخاصية المرفقة، فتبقى `EditPassword`
+  فارغة وقت وصول Enter رغم أن الخاصية المرفقة نفسها تحمل القيمة الجديدة فعلياً (Binding Active،
+  IsDirty=true حتى `UpdateSource()` صريح). أُصلح في التزام منفصل `R196-A-fix` بإضافة
+  `UpdateSourceTrigger=PropertyChanged` إلى ربط `PasswordBoxAssist.Password` في
+  `UserFormWindow.xaml:61` فقط (بلا أي تعديل كود-خلف)، مع اختبارَي انحدار جديدين يثبتان الفشل قبل
+  الإصلاح والنجاح بعده على مساري الإنشاء والتعديل. انظر `docs/rounds/196-enter-save-and-test-hardening.md`
+  (قسم «قرار القائد الثاني») للتفاصيل الكاملة.
 
 ~~**عمود «النشاط الحالي» غائب عن جدول المصادر النيترونية:** جدول المصادر النيترونية (`SourcesView.xaml`)
 لا يعرض عمود «النشاط الحالي» رغم أن الحساب (`_neutronDecayService.CalculateCurrentSourceActivity`
@@ -783,10 +802,17 @@ XAML المثبتة، وأي خدمة أخرى لم تُراجَع بعد صرا
 **متابعة CodeRabbit (فُرزت فعلياً في الجولة 195):** العدد الحقيقي 44 تعليقاً (لا 51)، منها 14 لا
 يزال صالحاً؛ PRs #18–#90 لم تُراجَع تلقائياً مطلقاً. **4** صفوف LOW نُفِّذت في الجولة 195 (H1 صيغة
 "غير مسجّل"/مسافة الوحدة الفارغة، H2 `NeutronSourceType.DisplayName`، H3 تحميل واحد لكل تبديل
-تبويب، H4 تجميع Regex + NBSP/NNBSP)؛ صفوف موجَّهة للجولة 196: `LocationFormWindow`/
-`UserFormWindow` وصفوف تقوية الاختبارات؛ صفوف موجَّهة للجولة 197: منطق
-`NeutronSourceService.Restore` ومعالجة `AppDbContext` القديمة لـAm-241/Be؛ `SimpleArabicStatus`
-موجَّه لجولات enum الحالة. ·
+تبويب، H4 تجميع Regex + NBSP/NNBSP)؛ **أُغلقت في الجولة 196** الصفوف الموجَّهة لها: الصف «2»
+(انظر البند أعلاه في §3 — إصلاح Enter لـ`LocationFormWindow`/`UserFormWindow` + PasswordBox)
+وصفوف تقوية الاختبارات R10 (تأجيل التأكيدات خارج ردود نداء `BeginInvoke` في
+`LocationsFormWindowTests.cs`)، R11 (تثبيت `GetAllSources`/`GetDeletedSources` في
+`NeutronSourcesUITests.cs`)، R12 (حذف `Task.Delay(100)` غير الحتمي)، R13 (تأكيد إيجابي على غياب
+حاوية المعالج القديم من `SourcesView`)، R14 (فحص قائمتَي الحالة والموقع كل على حدة). صفوف موجَّهة
+للجولة 197: منطق `NeutronSourceService.Restore` ومعالجة `AppDbContext` القديمة لـAm-241/Be؛
+`SimpleArabicStatus` موجَّه لجولات enum الحالة. **جرد D4 (الجولة 196):** مسح كل نوافذ Enter→حفظ
+الأخرى (`ActivationDialog`، `AlertDialog`، `ForceChangePasswordDialog`/`PasswordPromptDialog`،
+`FirstRunWizardWindow`) لم يجد أي نافذة أخرى تطابق النمط (TextBox بربط LostFocus + زر
+IsDefault/KeyBinding Enter)؛ لا إضافات جديدة إلى قائمة ما بعد الإصدار من هذا المسح. ·
 ~~`Build and Test #82` أحمر ولم يُفحص~~ **أُغلق في الجولة 194 كمتقادم:** التشغيل `33579070894` كان
 على commit `1cf6617` (2026-09-02) وفشل بثلاثة إخفاقات كلها في `SourcesViewModelTests`
 (`SaveAsync_WithFutureCalibrationDate_FailsAndShowsErrorMessage`،
@@ -796,6 +822,12 @@ XAML المثبتة، وأي خدمة أخرى لم تُراجَع بعد صرا
 
 ## قائمة ما بعد الإصدار (مُعلَّقة عمداً — المشروع متوقف مؤقتاً)
 
+- **`UsersViewModel.Save` (مسار التعديل) يستدعي `ResetPassword` حتى عند فشل `UpdateUser` (اكتُشف
+  في الجولة 196 أثناء تشخيص عطل PasswordBox):** `Save()` تستدعي
+  `_userService.UpdateUser(user)` ثم — بصرف النظر عن نتيجة `r.Success` — تستدعي
+  `_userService.ResetPassword(_editingId!.Value, EditPassword)` طالما `EditPassword` غير فارغة.
+  فشل تحديث الملف الشخصي (مثلاً تعارض صلاحيات) لا يمنع تغيير كلمة المرور صامتاً. يحتاج تعديل
+  سلوك في `UsersViewModel.Save` (تصحيح منطق لا إصلاح ربط WPF) — خارج نطاق الجولة 196.
 - تبعثر سلاسل الحالة في 45+ موضعاً بلا `enum`، واسم الدور «مدير النظام» مكتوب حرفياً في مواضع
   متفرقة من الكود والاختبارات — نفس نمط التبعثر، يُعالجان معاً.
 - كنس الوسيط الشامل (`IMessenger`) في بقية الشاشات (سبعة ViewModels + `IDisposable` في الخمسة
@@ -2928,3 +2960,80 @@ findings" و"Lead decisions" في أسفله هما المرجع الحاسم ع
 لا ترحيل EF (تأكَّد `dotnet ef migrations has-pending-model-changes` عند H2). لم تُلمس الملفات
 المحظورة، ولا منطق `NeutronSourceService.Restore`/معالجة `AppDbContext` القديمة لـAm-241/Be
 (محجوزان للجولة 197)، ولا `LocationFormWindow`/`UserFormWindow` (محجوزان للجولة 196).
+
+## الجولة 196 — إصلاح فقدان القيمة عند الحفظ بمفتاح Enter (LocationFormWindow/UserFormWindow) + تحصين اختبارات CodeRabbit R10–R14
+
+**الفرع:** `fix/round-196-enter-save-test-hardening`. **العقد الكامل:** `docs/rounds/196-enter-save-and-test-hardening.md`.
+
+**التشخيص (D1–D5، ملخَّص — التفاصيل الكاملة في العقد):** الآلية الحاسمة لإصلاح الجولة 149
+(`SourceFormWindow`/`RadioisotopeFormWindow`) ليست XAML فقط (`UpdateSourceTrigger=PropertyChanged`)
+بل معالج `PreviewKeyDown` على مستوى النافذة في الكود-خلف يُفرِّغ (Flush) قيمة أي TextBox يحمل
+التركيز إلى الربط قبل وصول Enter إلى `SaveCommand` — طبقة ثانية مستقلة تماماً. `LocationFormWindow`
+و`UserFormWindow` كانتا تفتقدان الطبقتين معاً (كل الحقول `LostFocus` الافتراضي، ولا معالج
+`PreviewKeyDown` إطلاقاً)، فيمكن أن يُحفَظ نص قديم/فارغ عند الضغط على Enter مباشرة بعد الكتابة.
+
+**الإصلاح (R196-A + R196-A-fix):**
+- `LocationFormWindow.xaml`: `UpdateSourceTrigger=PropertyChanged` على EditName/EditBuilding/EditRoom/EditPerson.
+- `UserFormWindow.xaml`: نفس الشيء على EditFullName/EditUsername/EditEmail، بالإضافة إلى
+  `UpdateSourceTrigger=PropertyChanged` على ربط `PasswordBoxAssist.Password` (R196-A-fix، انظر أدناه).
+- `LocationFormWindow.xaml.cs`/`UserFormWindow.xaml.cs`: معالج `PreviewKeyDown` جديد مطابق حرفياً
+  لمنطق `SourceFormWindow.xaml.cs`، مسجَّل في المُنشئ، بتعليق عربي يوثّق أنه امتداد للجولة 149
+  وأُضيف في الجولة 196. لا تغيير آخر في الكود-خلف.
+
+**الانحراف المصرَّح به (قرار القائد، 2026-09-23):** عقد الجولة كان يمنع أي تعديل كود-خلف بافتراض
+أن نمط الجولة 149 كان XAML فقط؛ التشخيص الفعلي (D1) أثبت العكس. أُذن صراحة بتعديل الكود-خلف
+محصوراً بمعالج `PreviewKeyDown` (تسجيله وجسمه) دون أي تغيير آخر.
+
+**اكتشاف إضافي غير متوقَّع (قرار القائد الثاني — تصحيح D3):** اختبار PasswordBox الأول في
+`UserFormWindow` (مسار المستخدم الجديد) فشل حتى **بمعزل تام عن Enter** — القيمة المكتوبة في
+الصندوق لم تصل إلى `UsersViewModel.EditPassword` إطلاقاً. التشخيص: `MaterialDesignThemes 5.3` يضبط
+`DefaultUpdateSourceTrigger=LostFocus` على `PasswordBoxAssist.PasswordProperty` (خلافاً لـ
+`TextBox.TextProperty` الذي افتراضه `PropertyChanged`)؛ القيمة تصل فعلاً إلى الخاصية المرفقة
+(Binding `Active`، `IsDirty=true`) لكنها لا تُدفَع للمصدر إلا بفقدان التركيز أو `UpdateSource()`
+صريح — ومعالج `PreviewKeyDown` الجديد لا يعالجها أصلاً لأنه يستهدف `TextBox` حصراً. الأثر العملي:
+رفض إنشاء مستخدم جديد بكلمة مرور "فارغة" رغم كتابتها، ونجاح ظاهري لتعديل مستخدم قائم بينما
+`UserService.ResetPassword` تُسقَط صامتاً. الإصلاح الأصغر الممكن، XAML فقط، بكوميت منفصل
+`R196-A-fix`: `UserFormWindow.xaml:61` يضيف `UpdateSourceTrigger=PropertyChanged` إلى ربط
+`PasswordBoxAssist.Password`. اختباران جديدان أُثبت فشلهما الفعلي قبل الإصلاح ونجاحهما بعده (مسار
+الإنشاء عبر `CreateUser`، ومسار التعديل عبر `ResetPassword`).
+
+**اكتشاف جديد لقائمة ما بعد الإصدار (لم يُصلَح، خارج نطاق الجولة):** `UsersViewModel.Save` (مسار
+التعديل) يستدعي `ResetPassword` حتى عند فشل `UpdateUser` — انظر القائمة أعلاه.
+
+**الاختبارات (R196-A/A-fix):** 9 اختبارات انحدار جديدة في `LocationsFormWindowTests.cs` (5:
+4 حقول + اختبار عزل معالج) و`UserFormWindowTests.cs` (4: EditFullName، EditEmail، EditUsername
+عبر مسار الإنشاء، اختبار عزل معالج) تحاكي التوجيه الحقيقي لأحداث WPF (نفق `PreviewKeyDownEvent` ثم
+فقاعة `KeyDownEvent`، لا `KeyDownEvent` وحدها كما في الجولة 149) وتتحقق من القيمة الفعلية الواصلة
+لطبقة الخدمة عبر Moq Callback لا خاصية الـViewModel وحدها. + اختباران في R196-A-fix لصندوق كلمة
+المرور. المجموع: 11 اختباراً جديداً صافياً.
+
+**تحصين الاختبارات (R196-B، ملفات اختبار فقط):**
+- R10 — `LocationsFormWindowTests.cs`: نُقلت التأكيدات الواقعة داخل ردود نداء
+  `Dispatcher.BeginInvoke` (أثناء حلقة `ShowDialog` المتداخلة) إلى ما بعد عودة `Execute` في ثلاثة
+  اختبارات.
+- R11 — `NeutronSourcesUITests.cs`: تثبيت `GetAllSources()`/`GetDeletedSources()` بقائمة فارغة على
+  ستة مواقع `Mock<ISourceService>` غير مُهيَّأة.
+- R12 — `NeutronSourcesUITests.cs`: حذف `Task.Delay(100)` بعد تأكيد أن
+  `ReportsViewModel.OnSelectedReportChanged → LoadReport()` متزامن تماماً؛ الاختبار أصبح `void` لا
+  `async Task`.
+- R13 — `SourceFormWindowTests.cs`: تأكيد إيجابي مباشر (`AnyElementBindsVisibilityToIsEditing`) على
+  غياب حاوية المعالج القديم من `SourcesView` — `ScrollViewer` كان مربوطاً
+  `Visibility="{Binding IsEditing}"` وأزالته الجولة 148 (commit `e296a95`).
+- R14 — `SourceFormWindowTests.cs`: قائمتا "الحالة" (`EditStatus`) و"الموقع" (`EditLocationId`)
+  تُحدَّدان كل على حدة بمسار SelectedValue Binding وتُفحَصان منفردتين.
+
+الفئات الثلاث المعدَّلة أُعيد تشغيلها 10 مرات متتالية بدون أي فشل عابر: `LocationsFormWindowTests`
+8/8×10، `NeutronSourcesUITests` 77/77×10، `SourceFormWindowTests` 15/15×10.
+
+**جرد D4 (نوافذ أخرى قد تحمل نفس العطل):** `ActivationDialog` (يقرأ `TxtSerial.Text` مباشرة في
+الكود-خلف؛ لا ربط)، `AlertDialog` (لا TextBox)، `ForceChangePasswordDialog`/`PasswordPromptDialog`
+(PasswordBox تُقرأ من الكود-خلف)، `FirstRunWizardWindow` (TextBox الوحيد `IsReadOnly`) — **لا نافذة
+أخرى تطابق النمط؛ لا إضافة لقائمة ما بعد الإصدار.**
+
+**النتائج:** `dotnet build Sources.sln -c Debug` نجح بنفس تحذيرات `CS8604` الثلاث المعروفة مسبقاً
+فقط (`LoginWindow.xaml.cs`:104،:199، `ViewInstantiationTests.cs`:218) — صفر تحذيرات جديدة.
+`dotnet test Sources.sln -c Debug` الكامل محلياً: خط الأساس قبل الجولة **1311 نجاح، 0 فشل، 0
+تجاوز**؛ بعدها **1322 نجاح، 0 فشل، 0 تجاوز** (+11). لا ترحيل EF. لم تُلمس الملفات المحظورة
+(`LoginWindow`/`LoginView`/`SplashWindow`، `PhraseFactoryResetConfirmation`/`RequiredResetPhrase`)
+ولا `UserService`/`LocationService`/`NeutronSourceService.Restore`/`AppDbContext` ولا أي كود
+ثقافة/`FlowDirection`. CI Release: قيد الانتظار (pending).
