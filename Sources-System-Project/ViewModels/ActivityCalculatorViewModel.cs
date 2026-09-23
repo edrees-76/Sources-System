@@ -150,8 +150,9 @@ public partial class ActivityCalculatorViewModel : ObservableObject
             var all = _isotopeService.GetAll();
             Isotopes = new ObservableCollection<Radioisotope>(all);
         }
-        catch
+        catch (Exception ex)
         {
+            LoggerService.LogError("ActivityCalculatorViewModel: failed to load isotopes", ex);
             Isotopes = new ObservableCollection<Radioisotope>();
         }
     }
@@ -571,8 +572,9 @@ public partial class ActivityCalculatorViewModel : ObservableObject
             ChartLegendItems = legendList;
             HasChartData = true;
         }
-        catch
+        catch (Exception ex)
         {
+            LoggerService.LogError("ActivityCalculatorViewModel: failed to build decay chart", ex);
             HasChartData = false;
         }
     }

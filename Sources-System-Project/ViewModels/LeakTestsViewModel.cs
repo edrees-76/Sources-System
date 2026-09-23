@@ -315,7 +315,10 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
                 {
                     WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    LoggerService.LogError("LeakTestsViewModel: failed to broadcast SourcesUpdatedMessage after update", ex);
+                }
                 DialogHelper.ShowInfo(message, TranslationHelper.GetString("TitleSuccess") ?? "نجاح العملية");
             }
             else
@@ -346,7 +349,10 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
                 {
                     WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    LoggerService.LogError("LeakTestsViewModel: failed to broadcast SourcesUpdatedMessage after add", ex);
+                }
                 DialogHelper.ShowInfo(message, TranslationHelper.GetString("TitleSuccess") ?? "نجاح العملية");
             }
             else
@@ -375,7 +381,10 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
             {
                 WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("LeakTestsViewModel: failed to broadcast SourcesUpdatedMessage after delete", ex);
+            }
             DialogHelper.ShowInfo(message, TranslationHelper.GetString("TitleLeakTestDeleteSuccess") ?? "نجاح الحذف");
         }
         else

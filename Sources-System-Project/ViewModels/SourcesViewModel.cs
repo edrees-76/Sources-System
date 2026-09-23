@@ -1735,9 +1735,10 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
 
             TotalActivityItems = items;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // في حالة خطأ، عرض القيمة الافتراضية
+            LoggerService.LogError("SourcesViewModel: failed to compute total activity items", ex);
         }
     }
 

@@ -1,18 +1,17 @@
 # منظومة مصادر — لوحة جاهزية النشر
 
 **آخر تحديث:** 23 سبتمبر 2026
-**حالة المستودع:** آخر جولة مدموجة على `main` هي الجولة 192 (إضافة عمود
-«معدل الانبعاث الحالي» لجدول قائمة المصادر النيترونية، commit `c473746`،
-PR #88). الجولات 186–192 مدموجة جميعها فعلياً (إصلاح حلقة الإعداد المغلقة،
-جعل تغيير كلمة المرور الافتراضية اختيارياً، إزالة حارس `RequireActivated`
-من `UnlockAccount`/تفاعلات التنبيهات، توحيد وحدة عرض النشاط الحالي في
-تفاصيل المصدر النيتروني ونافذة تعديله، وعمود معدل الانبعاث الحالي)؛ كانت
-غائبة سابقاً عن هذا الملف بسبب فجوة توثيق صُحِّحت بالكامل في الجولة 193
-استناداً حصراً إلى `git log`/أوصاف الـPR — انظر أقسامها أدناه.
-الجولة 193 قيد المراجعة (Draft PR غير مدموج بعد، فرع
-`claude/round-193-neutron-current-activity-928b45`): إضافة عمود «النشاط
-الحالي» لنفس الجدول (يُغلق البند المؤجَّل في §3) + هذا اللحاق التوثيقي.
-تفاصيل كاملة في §الجولة 193 أدناه.
+**حالة المستودع:** آخر جولة مدموجة على `main` هي الجولة 193 (إضافة عمود
+«النشاط الحالي» لجدول قائمة المصادر النيترونية + لحاق توثيقي، commit
+`354128b`، PR #89). الجولات 186–193 مدموجة جميعها فعلياً (إصلاح حلقة
+الإعداد المغلقة، جعل تغيير كلمة المرور الافتراضية اختيارياً، إزالة حارس
+`RequireActivated` من `UnlockAccount`/تفاعلات التنبيهات، توحيد وحدة عرض
+النشاط الحالي في تفاصيل المصدر النيتروني ونافذة تعديله، عمود معدل الانبعاث
+الحالي، وعمود النشاط الحالي).
+الجولة 194 (جولة التوحيد الختامية — تسجيل الابتلاعات الصامتة، توحيد رسالة
+المدير، توحيد مصطلح H*(10)، قائمة ما بعد الإصدار) قيد المراجعة (Draft PR
+غير مدموج بعد، فرع `chore/round-194-final-consolidation`). تفاصيل كاملة في
+§الجولة 194 أدناه.
 
 **سجل تاريخي (جولات 168–170، مدموجة فعلاً):** الجولة 170 (commit `066415f`،
 PR #65)، الجولة 169 (استبدال رقم التفعيل التجريبي برقم إنتاجي حقيقي، commit
@@ -720,18 +719,36 @@ XAML المثبتة، وأي خدمة أخرى لم تُراجَع بعد صرا
 
 ## 3. متبقٍ وليس مانع نشر
 
-**تسجيل الابتلاع الصامت (جرد 106):** `App.xaml.cs` (المظهر) + `LeakTestsViewModel` + `LoginWindow.xaml.cs` · `DashboardViewModel` + `SettingsViewModel` + `SourceDetailsViewModel` ومعها إظهار `CorruptedKeys` · `SourcesViewModel` + `AlertsViewModel` + `ActivityCalculatorViewModel` · إعادة مسح بمعيار «هل بدأ الفعل بنقرة صريحة من المستخدم؟»
+~~**تسجيل الابتلاع الصامت (جرد 106):** `App.xaml.cs` (المظهر) + `LeakTestsViewModel` + `LoginWindow.xaml.cs` · `DashboardViewModel` + `SettingsViewModel` + `SourceDetailsViewModel` ومعها إظهار `CorruptedKeys` · `SourcesViewModel` + `AlertsViewModel` + `ActivityCalculatorViewModel` · إعادة مسح بمعيار «هل بدأ الفعل بنقرة صريحة من المستخدم؟»~~
+**أُغلق في الجولة 194** لكل الملفات القابلة للمس: `App.xaml.cs` (`ApplyTheme` ×3، `ApplyAccentColor` ×1) ·
+`LeakTestsViewModel.cs` (بث `SourcesUpdatedMessage` بعد تعديل/إضافة/حذف، ×3) ·
+`DashboardViewModel.cs` (تجاوز نهاية منحنى التحلل ×1، فشل منحنى مصدر واحد ×1، فشل عام لتحديث منحنيات
+التحلل ×1، فشل بطاقة ملخص الاستعارة ×1) · `SettingsViewModel.cs` (قراءة آخر نسخة احتياطية ×1) ·
+`SourceDetailsViewModel.cs` (تحديد مسار صورة المصدر ×1) · `SourcesViewModel.cs` (حساب إجمالي النشاط
+×1) · `AlertsViewModel.cs` (تحميل المواقع ×1) · `ActivityCalculatorViewModel.cs` (تحميل النظائر ×1،
+بناء مخطط التحلل ×1) — تسجيل فقط عبر `LoggerService.LogError`/`LogWarning`، بلا أي تغيير في السلوك أو
+التدفق. `LoginWindow.xaml.cs` استُثني عمداً (ملف محظور حسب قواعد المشروع). إظهار `CorruptedKeys` (جرد
+106) لم يُنفَّذ — يبقى في قائمة ما بعد الإصدار أدناه.
 
-**أمنية مؤجَّلة:** `SeedData` يبتلع فشل ترقية هاش المدير — ~~`PasswordHelper.VerifyPassword` يبتلع فشل BCrypt بلا تسجيل~~ أُغلق في الجولة 117 بإضافة `LoggerService.LogError` داخل catch دون تغيير قيمة الإرجاع أو التوقيع (انظر §5)
+~~**أمنية مؤجَّلة:** `SeedData` يبتلع فشل ترقية هاش المدير~~ — **أُغلق في الجولة 194** بإضافة
+`LoggerService.LogError` داخل catch (`AppDbContext.cs:327`) دون تغيير قيمة الإرجاع أو التوقيع —
+~~`PasswordHelper.VerifyPassword` يبتلع فشل BCrypt بلا تسجيل~~ أُغلق في الجولة 117 بإضافة
+`LoggerService.LogError` داخل catch دون تغيير قيمة الإرجاع أو التوقيع (انظر §5)
 - ~~القفل بعد المحاولات الفاشلة~~ — **موجود ويعمل، شُطب من القائمة.** تبيّن بالفحص في الجولة 111 أن `UserService.Login` ينفّذه فعلاً: خمس محاولات فاشلة ثم قفل خمس عشرة دقيقة، مع عدّاد يخبر المستخدم بالمتبقي، وتسجيل في السجل، ودالة `UnlockAccount` للمدير. كان مصنَّفاً مؤجَّلاً استناداً إلى توثيق قديم لا إلى الكود.
 
 **دين تقني:** `SettingsHelper` يهجر الملف القديم بعد فشل نسخ عابر (أُدخل في 105-ب) · `LoggerService.cs:9` يبني مسار السجلات يدوياً · 5 تحذيرات `CS8604` مؤكَّدة من CI وموزَّعة على `LoginWindow.xaml.cs` (السطران 104 و199، مكرران لأن الحل يبني `Sources.csproj` ونسخة `wpftmp` مؤقتة) و `ViewInstantiationTests.cs:304`، وتحذيرات `LoginWindow` لا تُعالَج لأن الملف تحت الحظر المطلق — فهي قرار لا دين مفتوح · تبعثر سلاسل الحالة في 45+ موضعاً بلا `enum` · تباين ألوان الحالة · ازدواج وحدات الحاسبة · تكرار `SimpleArabicStatus` · `TestDataGeneratorService` بلا مصادر نيترونية · توحيد UTC · وضوح رسالة تكرار `SourceCode` عند الاسترجاع · مسح double.TryParse: أُغلقت جميع مسارات الحفظ وقُيِّدت بالخدمات والواجهات (الجولتان 109 و110)، والمتبقي تفاعلي خالص في الذاكرة (ActivityCalculatorViewModel)
 - ~~`UsersViewModel.UpdateRoleSummaries` تكتب وصف صلاحيات الدور **نصاً ثابتاً** مُرمَّزاً في الكود~~ — أُغلق في الجولة 116 باستبداله ببيان الضبط الفردي (انظر §5).
-- رسالتان عربيتان متقاربتان لمعنى واحد: `MsgErrAdminOnly` القائم («غير مصرح: هذه العملية مخصصة لمدير النظام فقط») يستعمله `PasswordPromptDialog`، و `MsgErrOperationAdminOnly` المستحدث في الجولة 111 للحارس. الفصل كان صحيحاً وقتها تفادياً لتغيير نص قائم، ويلزم توحيدهما لاحقاً.
+- ~~رسالتان عربيتان متقاربتان لمعنى واحد: `MsgErrAdminOnly` القائم («غير مصرح: هذه العملية مخصصة لمدير النظام فقط») يستعمله `PasswordPromptDialog`، و `MsgErrOperationAdminOnly` المستحدث في الجولة 111 للحارس. الفصل كان صحيحاً وقتها تفادياً لتغيير نص قائم، ويلزم توحيدهما لاحقاً.~~
+  **أُغلق في الجولة 194:** `AuthorizationGuard.RequireAdmin` يستعمل الآن `MsgErrAdminOnly` نفسه؛
+  `MsgErrOperationAdminOnly` حُذف من `Strings.ar.xaml`/`Strings.en.xaml` (تحقق صفر استخدامات متبقية)،
+  و9 اختبارات في `AuthorizationEnforcementTests.cs` عُدِّلت لتفحص نص `MsgErrAdminOnly` بنفس القوة. مفتاح
+  ثالث `MsgErrAdminOnlyAction` (يستعمله `SettingsViewModel.cs:501` لإعادة الضبط من المصنع) لم يُمس —
+  انظر قائمة ما بعد الإصدار أدناه.
 - اسم الدور «مدير النظام» مكتوب حرفياً في مواضع متفرقة من الكود والاختبارات (`User.IsAdmin`، `UsersViewModel`، `PackPermissions`، وملفات اختبار عدة). نفس نمط تبعثر سلاسل الحالة في البند 3، ويُعالَج معه.
 - **كنس الوسيط الشامل (مؤجَّل موثَّق):** جاني فشل CI `#100` كان اختبار `BorrowViewModel_ReceivesSourcesUpdatedMessage` عبر `WeakReferenceMessenger.Default` المشترك الذي أبلغ مستقبِلاً يحمل fixture ميتاً (`no such table: Sources`)، وعزلته الجولة 115 بحقن `IMessenger` في `BorrowViewModel`. كنس الوسيط الكامل في بقية الشاشات (سبعة ViewModels + `IDisposable` في الخمسة الناقصة + عزل وسائط الاختبارات القائمة) مؤجَّل موثَّق لما بعد النشر. **[إصلاح `IsTestMode` أُنجز في 115-ب — انظر §5.]**
 - كود الإنتاج يقرأ `DialogHelper.IsTestMode` في أربعة مواضع (`SourceNavigationHelper` ×2، `LocationsViewModel`، `PasswordPromptDialog`) كحارس تخطٍّ — وعيُ اختبارٍ مبثوثٌ في الإنتاج. لا يُعالَج الآن (نطاق 115-ب محصور بتثبيت العلم)؛ يُنظر لاحقًا في عزله خلف واجهة اختبار.
-- **حقول نصية رقمية بـ`UpdateSourceTrigger=LostFocus` قد تُحفَظ بقيمة قديمة/فارغة عند الحفظ بمفتاح Enter (اكتشاف CodeRabbit على PR #16 للجولة 128، مؤجَّل موثَّق):** **لم يُغلق نهائياً بعد — التوقف عن الدمج قائم بطلب إدريس الصريح.** اكتشاف بصري فعلي (تشغيل حقيقي) على PR #44 أبلغ عن عطلين ظاهريين بعد الإصلاح الأول لهذه الجولة: (1) `RadioisotopeFormWindow` يُغلق برسالة نجاح كاذبة دون حفظ فعلي للقيمة الجديدة، (2) `SourceFormWindow` لا يستجيب لـEnter إطلاقاً. أُعيدت كتابة اختبارات `RadioisotopeFormWindowTests.cs` لتتحقق من القيمة الفعلية الواصلة لطبقة الخدمة (Moq) لا من خاصية الـViewModel فقط — والنتيجة أن العطل **لم يتكرر آلياً حتى بدون أي إصلاح إضافي**، ما يرجّح اختباراً بصرياً على بناء لم يتضمن كوميت الجولة 149 فعلياً، بانتظار تأكيد إدريس. عطل `SourceFormWindow` الثاني ليس تراجعاً، بل سلوك مقصود موروث من الجولة 148 (الحقول السبعة على الخطوة 2 حيث زر الحفظ `IsDefault` غير نشط). أُضيف تحصين وقائي (`PreviewKeyDown` يُفرِّغ الربط المركَّز قبل Enter) في كلا الملفين `.xaml.cs` بصرف النظر عن نتيجة التشخيص. التفاصيل الكاملة في `docs/session-summary.md` (متابعة الجولة 149). كان النص الأصلي هنا يصف `SourcesView.xaml` القديم (قبل تحويله في الجولة 148 إلى `SourceFormWindow.xaml`) بسبعة حقول: `EditInitialActivityText`، `EditEmissionRateText`، `EditRelativeUncertaintyText`، `EditAnisotropyFactorText`، `EditCapsuleLengthText`، `EditCapsuleDiameterText`، `EditActivityText`. الاكتشاف الفعلي في الجولة 149 (قبل أي تعديل) وسّع الصورة: العدد الحقيقي **11 حقلاً على نافذتين بآليتي سباق مختلفتين**، وليس 7 كما كان مفترضاً — وهذا استوجب توقفاً إلزامياً لتأكيد الاكتشاف مع إدريس قبل المتابعة (بنفس أسلوب التحقق الذي فرضته الجولة 148):
+- **حقول نصية رقمية بـ`UpdateSourceTrigger=LostFocus` قد تُحفَظ بقيمة قديمة/فارغة عند الحفظ بمفتاح Enter (اكتشاف CodeRabbit على PR #16 للجولة 128، مؤجَّل موثَّق):** **مدموج — بانتظار تحقق بصري نهائي من إدريس** (PR #44 مدموج 2026-09-10، commit الدمج `d69703f`،
+سلف لـ`main`). اكتشاف بصري فعلي (تشغيل حقيقي) على PR #44 أبلغ عن عطلين ظاهريين بعد الإصلاح الأول لهذه الجولة: (1) `RadioisotopeFormWindow` يُغلق برسالة نجاح كاذبة دون حفظ فعلي للقيمة الجديدة، (2) `SourceFormWindow` لا يستجيب لـEnter إطلاقاً. أُعيدت كتابة اختبارات `RadioisotopeFormWindowTests.cs` لتتحقق من القيمة الفعلية الواصلة لطبقة الخدمة (Moq) لا من خاصية الـViewModel فقط — والنتيجة أن العطل **لم يتكرر آلياً حتى بدون أي إصلاح إضافي**، ما يرجّح اختباراً بصرياً على بناء لم يتضمن كوميت الجولة 149 فعلياً، بانتظار تأكيد إدريس. عطل `SourceFormWindow` الثاني ليس تراجعاً، بل سلوك مقصود موروث من الجولة 148 (الحقول السبعة على الخطوة 2 حيث زر الحفظ `IsDefault` غير نشط). أُضيف تحصين وقائي (`PreviewKeyDown` يُفرِّغ الربط المركَّز قبل Enter) في كلا الملفين `.xaml.cs` بصرف النظر عن نتيجة التشخيص. التفاصيل الكاملة في `docs/session-summary.md` (متابعة الجولة 149). كان النص الأصلي هنا يصف `SourcesView.xaml` القديم (قبل تحويله في الجولة 148 إلى `SourceFormWindow.xaml`) بسبعة حقول: `EditInitialActivityText`، `EditEmissionRateText`، `EditRelativeUncertaintyText`، `EditAnisotropyFactorText`، `EditCapsuleLengthText`، `EditCapsuleDiameterText`، `EditActivityText`. الاكتشاف الفعلي في الجولة 149 (قبل أي تعديل) وسّع الصورة: العدد الحقيقي **11 حقلاً على نافذتين بآليتي سباق مختلفتين**، وليس 7 كما كان مفترضاً — وهذا استوجب توقفاً إلزامياً لتأكيد الاكتشاف مع إدريس قبل المتابعة (بنفس أسلوب التحقق الذي فرضته الجولة 148):
   - **`SourceFormWindow.xaml` (7 حقول، الآلية القديمة نفسها):** بعد تحويل الجولة 148 لم يعد يوجد `KeyBinding` على مستوى النافذة إطلاقاً (قرار متعمد موثّق في تعليق أعلى الملف لتفادي حفظ الخطوة الأولى من المعالج متعدد الخطوات قبل اكتمالها)؛ السباق انتقل إلى زر الحفظ `IsDefault="True"` الظاهر فقط في الخطوة الأخيرة (السطر ~1088).
   - **`RadioisotopeFormWindow.xaml` (4 حقول إضافية اكتُشفت في هذه الجولة، لم تكن موثَّقة سابقاً): `EditHalfLifeText`، `EditEnergyText`، `EditYieldText`، `EditGammaConstantText`.** هذه النافذة تحمل `KeyBinding Key="Return" Command="{Binding SaveCommand}"` صريحاً على `Window.InputBindings` (قرار مثبَّت من الجولة 146: أمر حفظ واحد بلا تفريع يُستدعى من أي خطوة) — أي أن آليتها مطابقة تماماً لافتراض العقد الأصلي.
 
@@ -752,7 +769,50 @@ XAML المثبتة، وأي خدمة أخرى لم تُراجَع بعد صرا
 
 **تعليق متقطّع في عدّاء GitHub:** وقع مرتين في أقل من ساعة على كود مرّ أخضر قبله وبعده، وحُصر أثره بمهلة الوظيفة والخطوة في الجولة 114. المؤشّر: خطوة اختبارات تتجاوز خمس دقائق مع أنها تنتهي في 73 ثانية. الإجراء عند تكراره: إعادة تشغيل التشغيل نفسه بلا تعديل كود، ولا يُفتح تحقيق في الحزمة إلا إن فشل التشغيل المعاد على الـ commit نفسه.
 
-**متابعة:** 51 تعليقاً تراكمياً في CodeRabbit عبر 47 مراجعة · `Build and Test #82` أحمر ولم يُفحص
+**متابعة:** 51 تعليقاً تراكمياً في CodeRabbit عبر 47 مراجعة (انظر قائمة ما بعد الإصدار أدناه) ·
+~~`Build and Test #82` أحمر ولم يُفحص~~ **أُغلق في الجولة 194 كمتقادم:** التشغيل `33579070894` كان
+على commit `1cf6617` (2026-09-02) وفشل بثلاثة إخفاقات كلها في `SourcesViewModelTests`
+(`SaveAsync_WithFutureCalibrationDate_FailsAndShowsErrorMessage`،
+`SaveAsync_WhenDisablingMultiIsotope_ForSourceWithMultipleSavedIsotopes_FailsAndShowsErrorMessage`،
+`SaveAsync_MultiIsotope_WithFutureCalibrationDate_Fails`)؛ `main` أخضر منذ ذلك الحين، وآخر تشغيل
+`Build and Test #323` على `354128b` نجح بالكامل.
+
+## قائمة ما بعد الإصدار (مُعلَّقة عمداً — المشروع متوقف مؤقتاً)
+
+- تبعثر سلاسل الحالة في 45+ موضعاً بلا `enum`، واسم الدور «مدير النظام» مكتوب حرفياً في مواضع
+  متفرقة من الكود والاختبارات — نفس نمط التبعثر، يُعالجان معاً.
+- كنس الوسيط الشامل (`IMessenger`) في بقية الشاشات (سبعة ViewModels + `IDisposable` في الخمسة
+  الناقصة + عزل وسائط الاختبارات القائمة) — مؤجَّل موثَّق منذ الجولة 115.
+- عزل `DialogHelper.IsTestMode` خلف واجهة اختبار (يُقرأ حالياً في أربعة مواضع إنتاجية).
+- `PhraseFactoryResetConfirmation`/`RequiredResetPhrase` — عالي الخطورة، يحتاج جولة معزولة مستقلة.
+- الحرف الثابت «(محذوف)» في `AllModels.cs`.
+- قرار لغة سجل التدقيق (audit log).
+- الفواصل العربية في قوائم `UsersViewModel`.
+- توحيد استعمال UTC عبر النظام.
+- ازدواج وحدات حاسبة النشاط.
+- تكرار `SimpleArabicStatus`.
+- هجرة `SettingsHelper` للملف القديم بعد فشل نسخ عابر (تُرك كما هو منذ 105-ب).
+- `LoggerService.cs:9` يبني مسار السجلات يدوياً.
+- توحيد `SourceCertificate.AttachedBy` إلى `Guid?`.
+- إزالة `UpdateAllCurrentActivities` (يحتاج موافقة إدريس الصريحة قبل أي تنفيذ).
+- `TestDataGeneratorService` لا يولّد مصادر نيترونية.
+- وضوح رسالة تكرار `SourceCode` عند الاسترجاع.
+- الأرقام الهندية (Hindi digits) في نصوص المثبِّت (installer).
+- 51 تعليقاً تراكمياً من CodeRabbit عبر 47 مراجعة — جلسة فرز مستقلة، وليست جولة برمجة.
+- مفتاح ثالث مكرر لرسالة «مخصص للمدير»: `MsgErrAdminOnlyAction` (يستعمله `SettingsViewModel.cs:501`
+  في مسار إعادة الضبط من المصنع) — لم يُمس في توحيد الجولة 194 لأنه خارج نطاقها.
+- إظهار `CorruptedKeys` ضمن جرد الابتلاعات الصامتة (جرد 106) — لم يُنفَّذ بعد.
+- قائمة الابتلاعات الصامتة التي تُظهر حواراً للمستخدم دون تسجيل (من اكتشاف D3 للجولة 194):
+  `LeakTestsViewModel.cs` (:427/:450)، `SettingsViewModel.cs` (:550/:620)، `SourcesViewModel.cs`
+  (:1461/:1498/:1513/:1623)، `AlertsViewModel.cs` (:201) — تُركت لتبقى الجولة صغيرة؛ ليست ابتلاعات
+  صامتة فعلية لأن المستخدم يرى الخطأ، لكنها لا تُسجَّل للتشخيص اللاحق.
+- ملف عمل (worktree) محلي `agent-ad1b968703bae6642` (فرع `worktree-agent-ad1b968703bae6642`،
+  commit محلي `e6a6fd7` بلا PR) أُبقي كما هو في الجولة 194 لعدم وجود إثبات دمج.
+- مجلدان فارغان متبقيان تحت `.claude/worktrees`: `neutron-sources-current-emission-rate-642203`
+  و`round-193-neutron-current-activity-928b45` — أُلغي تسجيلهما من Git لكن مجلداتهما مقفلة
+  (Permission denied)؛ يحذفهما إدريس يدوياً بعد تحرير العملية الممسكة بها.
+- الجولة 149 (Enter/LostFocus) مدموجة فعلياً (PR #44) — لم تعد في هذه القائمة، بانتظار تحقق بصري
+  نهائي فقط (انظر §3 أعلاه).
 
 ---
 
@@ -813,8 +873,11 @@ XAML المثبتة، وأي خدمة أخرى لم تُراجَع بعد صرا
 لا توجد بنود مؤجلة حالياً — نُقلت البنود 6 و8 و9 إلى المنتهية في الجولة 113.
 
 ### دَين تحسين مسجَّل
-توحيد المصطلح العربي للكمية H*(10) عبر الكود: رسالة الخطأ تقول "الجرعة المحيطية"،
-وتعليق AllModels.cs:965 يقول "المكافئ المحيطي". نفس الكمية، صياغتان. تجميلي، بعد الإصدار.
+~~توحيد المصطلح العربي للكمية H*(10) عبر الكود: رسالة الخطأ تقول "الجرعة المحيطية"،
+وتعليق AllModels.cs:965 يقول "المكافئ المحيطي". نفس الكمية، صياغتان. تجميلي، بعد الإصدار.~~
+**أُغلق في الجولة 194:** المصطلح المعتمد الآن «المكافئ المحيطي للجرعة» في `Strings.ar.xaml`
+(`MsgErrInvalidAmbientDoseConversionFinite`)، والنصين الاحتياطيين في `NeutronSourceTypeService.cs`
+(:76، :131)، وتعليق `AllModels.cs:968`.
 
 ---
 
@@ -1785,9 +1848,10 @@ of a DependencyObject"* — قيد WPF حقيقي غير موثَّق مسبقا
 `DatabasePaths`"). التحقق عبر تجزئة SHA-256 مقابل قائمة ثابتة صغيرة من التجزئات المُضمَّنة في الكود
 (`LicenseService._validHashes`) — لا رقم تسلسلي صريح في الكود المصدري، ولا ربط بمعرِّف جهاز.
 
-**تنبيه صريح لإدريس:** الرقم التسلسلي المُضمَّن حالياً في `LicenseService.cs` هو رقم عنصر نائب
+~~**تنبيه صريح لإدريس:** الرقم التسلسلي المُضمَّن حالياً في `LicenseService.cs` هو رقم عنصر نائب
 (placeholder) بقيمة `"SOURCES-2026-TRIAL-ACTIVATE"` فقط لأغراض هذه الجولة. **يجب استبدال/إضافة
-التجزئة الحقيقية في `_validHashes` قبل أي إصدار للإنتاج** — لا تُعامَل هذه القيمة كنهائية.
+التجزئة الحقيقية في `_validHashes` قبل أي إصدار للإنتاج** — لا تُعامَل هذه القيمة كنهائية.~~
+**صُحِّح في الجولة 169 (commit `9e207cb`، PR #64):** استُبدل الرقم التجريبي برقم إنتاجي حقيقي.
 
 ### ثغرة تفويض قائمة أصلاً — اكتُشفت أثناء هذه الجولة، لم تُصلَح
 
@@ -2713,3 +2777,72 @@ commit `c473746`، PR #88.
 `ViewInstantiationTests.cs`:218)، صفر تحذيرات جديدة. لا ترحيل EF (لا
 تغيير في المخطط). لم تُلمس الملفات الثلاثة المحظورة
 (`LoginWindow`/`LoginView`/`SplashWindow`). الانحراف عن العقد: none.
+
+---
+
+## الجولة 194
+
+جولة التوحيد الختامية (المفترضة الأخيرة قبل توقف المشروع مؤقتاً). التنفيذ الفعلي جرى في worktree
+منفصل خاص بالوكيل المنفِّذ (agent worktree)؛ worktree الجلسة القيادية
+(`round-194-final-consolidation-073ef3`) لم يحمل سوى نسخة العقد غير المُثبَّتة بـgit، دون أي تعديل
+كود فيه.
+
+**C1 — SeedData:** `Sources-System-Project/Data/AppDbContext.cs:327` — `catch { }` الصامت حول ترقية
+هاش المدير الافتراضي أصبح `catch (Exception ex)` مع `LoggerService.LogError("SeedData: failed to
+verify/upgrade the default admin password hash", ex)`، مع إبقاء التعليق العربي الأصلي. لا تغيير في
+التدفق أو التوقيع.
+
+**C2 — توحيد رسالة «مخصص للمدير»:** `AuthorizationGuard.RequireAdmin` (`AuthorizationGuard.cs:39-40`)
+يستعمل الآن `MsgErrAdminOnly` بدل `MsgErrOperationAdminOnly`. المفتاح الثاني حُذف من
+`Strings.ar.xaml` و`Strings.en.xaml` بعد التحقق من صفر استخدامات متبقية في .cs/.xaml. تسعة اختبارات
+في `Sources.Tests/AuthorizationEnforcementTests.cs` (الأسطر 142، 174، 200، 227، 252، 282، 308، 341،
+367) استُبدل فيها النص الحرفي «مقصورة على مدير النظام» بـ«مخصصة لمدير النظام فقط» — نفس قوة التأكيد.
+`MsgErrAdminOnlyAction` (`SettingsViewModel.cs:501`) لم يُمس، كما ينص العقد.
+
+**C3 — تسجيل الابتلاعات الصامتة (منطقياً فقط، بلا حوار جديد ولا تغيير تدفق):**
+- `App.xaml.cs`: `ApplyTheme` (الأسطر ~248، ~269، ~282) و`ApplyAccentColor` (~318، باسم متغير
+  `innerEx` لتفادي تعارض مع `ex` في الـtry الخارجي).
+- `ViewModels/LeakTestsViewModel.cs`: بث `SourcesUpdatedMessage` بعد تحديث/إضافة/حذف سجل اختبار
+  التسرب (ثلاثة مواضع).
+- `ViewModels/DashboardViewModel.cs`: تجاوز تاريخ نهاية منحنى التحلل (`LogWarning`)، فشل منحنى مصدر
+  واحد، فشل عام لتحديث منحنيات التحلل، فشل بطاقة ملخص الاستعارة — مع إبقاء أسطر `Console.Error`
+  القائمة كما هي.
+- `ViewModels/SettingsViewModel.cs` (قراءة آخر نسخة احتياطية)، `SourceDetailsViewModel.cs` (تحديد
+  مسار صورة المصدر)، `SourcesViewModel.cs` (حساب إجمالي النشاط، مع إبقاء التعليق العربي)،
+  `AlertsViewModel.cs` (تحميل المواقع)، `ActivityCalculatorViewModel.cs` (تحميل النظائر، وبناء مخطط
+  التحلل).
+- لم تُمس: `App.xaml.cs:23` (معالج الأعطال الشامل الصامت عمداً) و`App.xaml.cs:369` (خارج نطاق
+  «المظهر»، والاستثناء مسجَّل بالفعل قبله).
+
+**C4 — توحيد مصطلح H*(10):** المصطلح المعتمد «المكافئ المحيطي للجرعة» في `Strings.ar.xaml`
+(`MsgErrInvalidAmbientDoseConversionFinite`) والنصين الاحتياطيين المطابقين في
+`Services/NeutronSourceTypeService.cs` (:76، :131)، وتعليق `Models/AllModels.cs:968`. لا تغيير في
+أي معرِّف.
+
+**التوثيق:** تحديث رأس هذا الملف (main = الجولة 193، `354128b`، PR #89؛ الجولة 194 قيد المراجعة)،
+إغلاق بنود §3 الثلاثة أعلاه (الابتلاعات الصامتة، أمنية SeedData، الرسالتان المتقاربتان)، تحديث بند
+الجولة 149 إلى «مدموج»، إغلاق `Build and Test #82` كمتقادم، إضافة قسم «قائمة ما بعد الإصدار»، تصحيح
+ملاحظة §22 حول الرقم التسلسلي التجريبي (صُحِّحت فعلياً في الجولة 169)، وشطب بند H*(10) في §5. إضافة
+مدخل الجولة 194 في `docs/session-summary.md`.
+
+**الملفات المتغيرة:** `Sources-System-Project/Data/AppDbContext.cs`،
+`Sources-System-Project/Services/AuthorizationGuard.cs`،
+`Sources-System-Project/Resources/Strings.ar.xaml`، `Sources-System-Project/Resources/Strings.en.xaml`،
+`Sources.Tests/AuthorizationEnforcementTests.cs`، `Sources-System-Project/App.xaml.cs`،
+`Sources-System-Project/ViewModels/LeakTestsViewModel.cs`،
+`Sources-System-Project/ViewModels/DashboardViewModel.cs`،
+`Sources-System-Project/ViewModels/SettingsViewModel.cs`،
+`Sources-System-Project/ViewModels/SourceDetailsViewModel.cs`،
+`Sources-System-Project/ViewModels/SourcesViewModel.cs`،
+`Sources-System-Project/ViewModels/AlertsViewModel.cs`،
+`Sources-System-Project/ViewModels/ActivityCalculatorViewModel.cs`،
+`Sources-System-Project/Services/NeutronSourceTypeService.cs`،
+`Sources-System-Project/Models/AllModels.cs`، `docs/rounds/194-final-consolidation.md`،
+`docs/release-readiness.md`، `docs/session-summary.md`.
+
+**النتائج:** `dotnet build Sources.sln -c Debug` نجح بنفس تحذيرات `CS8604` الثلاث المعروفة مسبقاً
+فقط (مكرَّرة بسبب `wpftmp`؛ 5 أسطر تحذير إجمالاً لثلاثة مواقع فريدة) — صفر تحذيرات جديدة.
+`dotnet test Sources.sln -c Debug` الكامل: **1296 نجاح، 0 فشل، 0 تجاوز** (مطابق للتوقع). لا ترحيل EF.
+لم تُلمس الملفات المحظورة (`LoginWindow`/`LoginView`/`SplashWindow`،
+`PhraseFactoryResetConfirmation`/`RequiredResetPhrase`، `UserService.UnlockAccount`). الانحراف عن
+العقد: none.

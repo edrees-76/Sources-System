@@ -1595,8 +1595,9 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
                             endDate = startDate.AddSeconds(secondsToAdd);
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        LoggerService.LogWarning($"DashboardViewModel: decay-curve end date overflow, clamped to max: {ex.Message}");
                         endDate = DateTime.MaxValue.AddDays(-1);
                     }
 
@@ -1656,6 +1657,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
                         catch (Exception ex)
                         {
                             Console.Error.WriteLine($"[DecayCurve] Error for source {sourcesToRender[i].SourceCode}: {ex.Message}");
+                            LoggerService.LogError($"DashboardViewModel: decay curve failed for source {sourcesToRender[i].SourceCode}", ex);
                         }
                     }
 
@@ -1698,6 +1700,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             Console.Error.WriteLine($"[DecayCurve] General error: {ex.Message}\n{ex.StackTrace}");
+            LoggerService.LogError("DashboardViewModel: UpdateDecayCurves general failure", ex);
         }
 
         // Always set the chart properties — even if data generation failed
@@ -1775,8 +1778,9 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
                 ActiveCount   = active
             };
         }
-        catch
+        catch (Exception ex)
         {
+            LoggerService.LogError("DashboardViewModel: UpdateBorrowSummaryCard failed", ex);
             BorrowSummary = new DashboardBorrowSummary();
         }
     }
