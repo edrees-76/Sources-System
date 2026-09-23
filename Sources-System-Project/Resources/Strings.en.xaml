@@ -232,7 +232,6 @@
     <system:String x:Key="MsgErrIncorrectPhrase">Confirmation phrase does not match, please type it exactly</system:String>
     <system:String x:Key="MsgErrIncorrectAdminPassword">Incorrect password</system:String>
     <system:String x:Key="MsgErrNoCurrentUserLoggedIn">No user is currently logged in</system:String>
-    <system:String x:Key="MsgErrAdminOnlyAction">Unauthorized: This action is restricted to System Administrators only</system:String>
     <system:String x:Key="MsgErrCompletePreviousStages">Please complete the previous stages first</system:String>
     <system:String x:Key="MsgErrResetServiceUnavailable">System reset service is currently unavailable</system:String>
     <system:String x:Key="MsgBusyExecutingFactoryReset">Taking mandatory safety backup and resetting the system...</system:String>

@@ -499,7 +499,7 @@ public partial class SettingsViewModel : ObservableObject
     {
         if (!IsAdmin)
         {
-            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrAdminOnlyAction") ?? "غير مصرح: هذه العملية مخصصة لمدير النظام فقط", TranslationHelper.GetString("TitleFactoryReset") ?? "إعادة ضبط المنظومة");
+            DialogHelper.ShowError(TranslationHelper.GetString("MsgErrAdminOnly") ?? "غير مصرح: هذه العملية مخصصة لمدير النظام فقط", TranslationHelper.GetString("TitleFactoryReset") ?? "إعادة ضبط المنظومة");
             return;
         }
 

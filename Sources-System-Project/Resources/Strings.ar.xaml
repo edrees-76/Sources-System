@@ -229,7 +229,6 @@
     <system:String x:Key="MsgErrIncorrectPhrase">جملة التأكيد غير متطابقة، يرجى كتابتها بدقة</system:String>
     <system:String x:Key="MsgErrIncorrectAdminPassword">كلمة المرور غير صحيحة</system:String>
     <system:String x:Key="MsgErrNoCurrentUserLoggedIn">لا يوجد مستخدم مسجل حالياً</system:String>
-    <system:String x:Key="MsgErrAdminOnlyAction">غير مصرح: هذه العملية مخصصة لمدير النظام فقط</system:String>
     <system:String x:Key="MsgErrCompletePreviousStages">يرجى إكمال المرحلتين السابقتين أولاً</system:String>
     <system:String x:Key="MsgErrResetServiceUnavailable">خدمة إعادة ضبط المنظومة غير متوفرة</system:String>
     <system:String x:Key="MsgBusyExecutingFactoryReset">جاري أخذ نسخة احتياطية إجبارية وتصفير المنظومة...</system:String>
