@@ -2799,7 +2799,7 @@ verify/upgrade the default admin password hash", ex)`، مع إبقاء التع
 367) استُبدل فيها النص الحرفي «مقصورة على مدير النظام» بـ«مخصصة لمدير النظام فقط» — نفس قوة التأكيد.
 `MsgErrAdminOnlyAction` (`SettingsViewModel.cs:501`) لم يُمس، كما ينص العقد.
 
-**C3 — تسجيل الابتلاعات الصامتة (منطقياً فقط، بلا حوار جديد ولا تغيير تدفق):**
+**C3 — تسجيل الابتلاعات الصامتة (تسجيل فقط، بلا حوار جديد ولا تغيير تدفق):**
 - `App.xaml.cs`: `ApplyTheme` (الأسطر ~248، ~269، ~282) و`ApplyAccentColor` (~318، باسم متغير
   `innerEx` لتفادي تعارض مع `ex` في الـtry الخارجي).
 - `ViewModels/LeakTestsViewModel.cs`: بث `SourcesUpdatedMessage` بعد تحديث/إضافة/حذف سجل اختبار
@@ -2845,4 +2845,4 @@ verify/upgrade the default admin password hash", ex)`، مع إبقاء التع
 `dotnet test Sources.sln -c Debug` الكامل: **1296 نجاح، 0 فشل، 0 تجاوز** (مطابق للتوقع). لا ترحيل EF.
 لم تُلمس الملفات المحظورة (`LoginWindow`/`LoginView`/`SplashWindow`،
 `PhraseFactoryResetConfirmation`/`RequiredResetPhrase`، `UserService.UnlockAccount`). الانحراف عن
-العقد: none.
+العقد: لا انحراف في المحتوى. انحراف إجرائي: التنفيذ جرى في worktree الوكيل المنفِّذ (`agent-a9da21004d2c78acc`) لأن الوكيل معزول عن worktree الجلسة، وبلغ الوكيل حد أدواره بعد الـcommit فتولّى القائد إعادة البناء والاختبار (1296/0/0) والدفع وفتح الـDraft PR.
