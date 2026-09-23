@@ -207,11 +207,14 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
         if (!guard.Allowed) return (false, guard.Message);
 
         using var db = _dbFactory.CreateDbContext();
-        var item = db.NeutronSourceTypes.Include(t => t.NeutronSources).FirstOrDefault(t => t.Id == id);
+        var item = db.NeutronSourceTypes.FirstOrDefault(t => t.Id == id);
         if (item == null) return (false, TranslationHelper.GetString("MsgErrNeutronSourceTypeNotFound") ?? "نوع المصدر غير موجود");
 
-        if (item.NeutronSources.Any() || db.NeutronSources.Any(n => n.NeutronSourceTypeId == id))
-            return (false, TranslationHelper.GetString("MsgErrCannotDeleteNeutronSourceTypeHasSources") ?? "لا يمكن حذف نوع مصدر نيتروني مرتبط بمصادر نيترونية");
+        // يشمل الفحص جميع المصادر النيترونية المرتبطة، النشطة والمحذوفة، لمنع بقاء "سجل شبح" لا يظهر
+        // في القائمة النشطة ولا في سجل المحذوفات إذا استُرجع النوع لاحقاً (الجولة 197)
+        var linkedCount = db.NeutronSources.IgnoreQueryFilters().Count(n => n.NeutronSourceTypeId == id);
+        if (linkedCount > 0)
+            return (false, string.Format(TranslationHelper.GetString("MsgErrCannotDeleteNeutronSourceTypeHasSourcesCount") ?? "لا يمكن حذف نوع مصدر نيتروني مرتبط بـ {0} مصدر نيتروني (بما في ذلك المحذوفة المحفوظة في سجل المحذوفات)", linkedCount));
 
         var oldValuesObj = new
         {

@@ -1624,6 +1624,7 @@
     <system:String x:Key="MsgErrNeutronSourceTypeNotFound">نوع المصدر غير موجود</system:String>
     <system:String x:Key="MsgSuccessNeutronSourceTypeUpdated">تم تحديث نوع المصدر النيتروني</system:String>
     <system:String x:Key="MsgErrCannotDeleteNeutronSourceTypeHasSources">لا يمكن حذف نوع مصدر نيتروني مرتبط بمصادر نيترونية</system:String>
+    <system:String x:Key="MsgErrCannotDeleteNeutronSourceTypeHasSourcesCount">لا يمكن حذف نوع المصدر النيتروني لأنه لا يزال مرتبطاً بـ {0} مصدر نيتروني، بما في ذلك المحذوفة المحفوظة في سجل المحذوفات.</system:String>
     <system:String x:Key="MsgSuccessNeutronSourceTypeDeleted">تم حذف نوع المصدر النيتروني</system:String>
     <system:String x:Key="MsgErrNeutronSourceTypeNotDeleted">نوع المصدر غير محذوف أصلاً</system:String>
     <system:String x:Key="MsgErrCannotRestoreNeutronSourceTypeCodeConflict">لا يمكن استرجاع نوع المصدر لوجود نوع نشط آخر بنفس الرمز ({0})</system:String>
