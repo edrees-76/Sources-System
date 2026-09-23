@@ -222,6 +222,48 @@ public class NeutronSourceTypeServiceTests : IClassFixture<SqliteInMemoryFixture
         Assert.Equal("Spontaneous Fission", updateNewValuesDoc.RootElement.GetProperty("ReactionType").GetString());
     }
 
+    /// <summary>الجولة 198-B: مستخدم غير محرِّر (IsEditor=false) يُرفض من Create.</summary>
+    [Fact]
+    public void Create_NonEditorUser_ReturnsFailure()
+    {
+        _fakeUserService.CurrentUser!.IsEditor = false;
+
+        var newType = new NeutronSourceType { Code = "Non-Editor-1", NameEn = "Test", HalfLife = 10 };
+        var (success, message) = _sut.Create(newType);
+
+        Assert.False(success);
+        Assert.Contains("للاطّلاع فقط", message);
+
+        using var db = _fixture.CreateContext();
+        Assert.False(db.NeutronSourceTypes.Any(t => t.Code == "Non-Editor-1"));
+    }
+
+    /// <summary>الجولة 198-B: مستخدم غير محرِّر (IsEditor=false) يُرفض من Update.</summary>
+    [Fact]
+    public void Update_NonEditorUser_ReturnsFailure()
+    {
+        var id = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.NeutronSourceTypes.Add(new NeutronSourceType { Id = id, Code = "Cf-252", NameEn = "Old Name", HalfLife = 2.645 });
+            db.SaveChanges();
+        }
+
+        _fakeUserService.CurrentUser!.IsEditor = false;
+
+        var updateItem = new NeutronSourceType { Id = id, Code = "Cf-252", NameEn = "Should Not Change", HalfLife = 2.645 };
+        var (success, message) = _sut.Update(updateItem);
+
+        Assert.False(success);
+        Assert.Contains("للاطّلاع فقط", message);
+
+        using (var db = _fixture.CreateContext())
+        {
+            var unchanged = db.NeutronSourceTypes.Find(id);
+            Assert.Equal("Old Name", unchanged!.NameEn);
+        }
+    }
+
     [Fact]
     public void Delete_TypeWithoutSources_ReturnsSuccess_SoftDeletes_AndLogsAudit()
     {
