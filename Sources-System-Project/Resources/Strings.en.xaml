@@ -1607,7 +1607,6 @@
     <system:String x:Key="MsgSuccessRadioisotopeCreated">Radioisotope added successfully</system:String>
     <system:String x:Key="MsgErrRadioisotopeNotFound">Radioisotope not found</system:String>
     <system:String x:Key="MsgSuccessRadioisotopeUpdated">Radioisotope updated</system:String>
-    <system:String x:Key="MsgErrCannotDeleteRadioisotopeHasSources">Cannot delete an isotope linked to sources</system:String>
     <system:String x:Key="MsgErrCannotDeleteRadioisotopeHasSourcesIncludingDeleted">Cannot delete this isotope: it is still referenced by one or more sources, including deleted ones kept in the deleted items log.</system:String>
     <system:String x:Key="MsgSuccessRadioisotopeDeleted">Radioisotope deleted</system:String>
     <system:String x:Key="MsgErrRadioisotopeNotDeleted">Radioisotope is not deleted</system:String>
@@ -1623,7 +1622,6 @@
     <system:String x:Key="MsgSuccessNeutronSourceTypeCreated">Neutron source type added successfully</system:String>
     <system:String x:Key="MsgErrNeutronSourceTypeNotFound">Neutron source type not found</system:String>
     <system:String x:Key="MsgSuccessNeutronSourceTypeUpdated">Neutron source type updated</system:String>
-    <system:String x:Key="MsgErrCannotDeleteNeutronSourceTypeHasSources">Cannot delete a neutron source type linked to neutron sources</system:String>
     <system:String x:Key="MsgErrCannotDeleteNeutronSourceTypeHasSourcesCount">Cannot delete this neutron source type: it is still referenced by {0} neutron source(s), including deleted ones kept in the deleted items log.</system:String>
     <system:String x:Key="MsgSuccessNeutronSourceTypeDeleted">Neutron source type deleted</system:String>
     <system:String x:Key="MsgErrNeutronSourceTypeNotDeleted">Neutron source type is not deleted</system:String>
