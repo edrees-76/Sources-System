@@ -1060,5 +1060,119 @@ public class SourcesViewModelTests : IDisposable
     }
 
     #endregion
+
+    #region Round 193: PagedNeutronSources Current Activity Column
+
+    [Fact]
+    public async Task LoadNeutronDataAsync_WithAm241OneHalfLifeElapsed_ComputesCurrentActivityDisplay()
+    {
+        // Arrange: CalibrationDate exactly one Am-241 half-life (432.2 years) ago, so the
+        // hand-verifiable expected current activity is exactly half of the recorded activity value.
+        var neutronTypeId = Guid.NewGuid();
+        double halfLifeDays = 432.2 * NeutronDecayCalculationService.DaysPerYear;
+        DateTime calDate = DateTime.Now.AddDays(-halfLifeDays);
+
+        _mockNeutronSourceService.Setup(s => s.GetAll()).Returns(new List<NeutronSource>
+        {
+            new NeutronSource
+            {
+                Id = Guid.NewGuid(),
+                SourceCode = "NEU-ROW-ACT",
+                NeutronSourceTypeId = neutronTypeId,
+                ActivityValue = 100,
+                ActivityUnitId = _unitBqId,
+                ActivityUnit = new ActivityUnit { Id = _unitBqId, UnitName = "Megabecquerel", UnitSymbol = "MBq", ConversionToBq = 1e6 },
+                CalibrationDate = calDate,
+                EmissionCalibrationDate = calDate,
+                NeutronSourceType = new NeutronSourceType { Id = neutronTypeId, Code = "AmBe", HalfLife = 432.2, HalfLifeUnit = "years" }
+            }
+        });
+
+        var vm = CreateViewModel();
+
+        // Act
+        vm.SelectedTab = "Neutron";
+        await vm.LoadNeutronDataAsync();
+
+        // Assert
+        Assert.Single(vm.PagedNeutronSources);
+        var row = vm.PagedNeutronSources[0];
+        Assert.Equal("NEU-ROW-ACT", row.SourceCode);
+
+        string expectedDisplay = $"{(50.0).ToString("N4")} MBq";
+        Assert.Equal(expectedDisplay, row.CurrentActivityDisplay);
+    }
+
+    [Fact]
+    public async Task LoadNeutronDataAsync_WithNullActivityValue_ShowsDashForCurrentActivity()
+    {
+        // Arrange: ActivityValue not recorded, so the decay calculation cannot be performed.
+        _mockNeutronSourceService.Setup(s => s.GetAll()).Returns(new List<NeutronSource>
+        {
+            new NeutronSource
+            {
+                Id = Guid.NewGuid(),
+                SourceCode = "NEU-ROW-NOACT",
+                NeutronSourceTypeId = Guid.NewGuid(),
+                ActivityValue = null,
+                ActivityUnitId = null,
+                CalibrationDate = DateTime.Today,
+                NeutronSourceType = null
+            }
+        });
+
+        var vm = CreateViewModel();
+
+        // Act
+        vm.SelectedTab = "Neutron";
+        await vm.LoadNeutronDataAsync();
+
+        // Assert
+        Assert.Single(vm.PagedNeutronSources);
+        var row = vm.PagedNeutronSources[0];
+        Assert.Equal("NEU-ROW-NOACT", row.SourceCode);
+        Assert.Equal("-", row.CurrentActivityDisplay);
+    }
+
+    [Fact]
+    public async Task LoadNeutronDataAsync_CurrentActivityDisplay_MatchesDetailsViewModel()
+    {
+        // Arrange: same source configuration as T1, verifying the list row's computed display
+        // string is consistent with NeutronSourceDetailsViewModel's CurrentActivityDisplay for the
+        // exact same NeutronSource instance.
+        var neutronTypeId = Guid.NewGuid();
+        double halfLifeDays = 432.2 * NeutronDecayCalculationService.DaysPerYear;
+        DateTime calDate = DateTime.Now.AddDays(-halfLifeDays);
+
+        var source = new NeutronSource
+        {
+            Id = Guid.NewGuid(),
+            SourceCode = "NEU-ROW-CONSISTENCY",
+            NeutronSourceTypeId = neutronTypeId,
+            ActivityValue = 100,
+            ActivityUnitId = _unitBqId,
+            ActivityUnit = new ActivityUnit { Id = _unitBqId, UnitName = "Megabecquerel", UnitSymbol = "MBq", ConversionToBq = 1e6 },
+            CalibrationDate = calDate,
+            EmissionCalibrationDate = calDate,
+            NeutronSourceType = new NeutronSourceType { Id = neutronTypeId, Code = "AmBe", HalfLife = 432.2, HalfLifeUnit = "years" }
+        };
+
+        _mockNeutronSourceService.Setup(s => s.GetAll()).Returns(new List<NeutronSource> { source });
+
+        var vm = CreateViewModel();
+
+        // Act
+        vm.SelectedTab = "Neutron";
+        await vm.LoadNeutronDataAsync();
+
+        // Assert
+        Assert.Single(vm.PagedNeutronSources);
+        var row = vm.PagedNeutronSources[0];
+
+        var detailsVm = new NeutronSourceDetailsViewModel(source);
+        Assert.Equal(detailsVm.CurrentActivityDisplay, row.CurrentActivityDisplay);
+    }
+
+    #endregion
 }
 
