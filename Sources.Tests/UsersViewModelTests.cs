@@ -110,4 +110,50 @@ public class UsersViewModelTests
             }
         });
     }
+
+    /// <summary>
+    /// الجولة 195-A-fix: يتحقق أن مفتاحي فاصل قائمة الصلاحيات يحافظان على المسافة
+    /// اللاصقة بهما بالعربية والإنجليزية (يتطلب xml:space="preserve" في كلا القاموسين).
+    /// </summary>
+    [Fact]
+    public void TextPermissionSeparators_PreserveSpaces_InArabicAndEnglish()
+    {
+        Sources.Tests.Fixtures.WpfStaFixture.RunInSta(() =>
+        {
+            var dicts = System.Windows.Application.Current.Resources.MergedDictionaries;
+            int arabicDictIndex = -1;
+            for (int i = 0; i < dicts.Count; i++)
+            {
+                var src = dicts[i].Source?.OriginalString;
+                if (src != null && src.Contains("Strings.ar.xaml"))
+                {
+                    arabicDictIndex = i;
+                    break;
+                }
+            }
+            Assert.True(arabicDictIndex >= 0, "Strings.ar.xaml dictionary must already be loaded by WpfStaFixture.");
+
+            // Arabic (default-loaded dictionary)
+            Assert.Equal(" ، ", TranslationHelper.GetString("TextPermissionDeltaSeparator"));
+            Assert.Equal("، ", TranslationHelper.GetString("TextPermissionListSeparator"));
+
+            try
+            {
+                dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.en.xaml", UriKind.Absolute)
+                };
+
+                Assert.Equal(", ", TranslationHelper.GetString("TextPermissionDeltaSeparator"));
+                Assert.Equal(", ", TranslationHelper.GetString("TextPermissionListSeparator"));
+            }
+            finally
+            {
+                dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.ar.xaml", UriKind.Absolute)
+                };
+            }
+        });
+    }
 }

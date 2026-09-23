@@ -555,7 +555,7 @@ public static class TestDataGeneratorService
                         CalibrationDate = calibDate,
                         EmissionCalibrationDate = calibDate,
                         CalibratedEmissionRate = 1.0e6 + (random.NextDouble() * 4.9e7), // 1.0e6 - 5.0e7 n/s
-                        AnisotropyFactor = null, // غير مقاس — لا يُفترض بقيمة افتراضية (ISO 8529-2 §5.2.1)
+                        AnisotropyFactor = null, // غير مقاس — لا قيمة افتراضية
                         ActivityValue = null,
                         ActivityUnitId = null,
                         AddedBy = currentUserId,
