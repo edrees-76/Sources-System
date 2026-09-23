@@ -214,7 +214,7 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
         // في القائمة النشطة ولا في سجل المحذوفات إذا استُرجع النوع لاحقاً (الجولة 197)
         var linkedCount = db.NeutronSources.IgnoreQueryFilters().Count(n => n.NeutronSourceTypeId == id);
         if (linkedCount > 0)
-            return (false, string.Format(TranslationHelper.GetString("MsgErrCannotDeleteNeutronSourceTypeHasSourcesCount") ?? "لا يمكن حذف نوع مصدر نيتروني مرتبط بـ {0} مصدر نيتروني (بما في ذلك المحذوفة المحفوظة في سجل المحذوفات)", linkedCount));
+            return (false, string.Format(TranslationHelper.GetString("MsgErrCannotDeleteNeutronSourceTypeHasSourcesCount") ?? "لا يمكن حذف نوع المصدر النيتروني لأنه لا يزال مرتبطاً بـ {0} مصدر نيتروني، بما في ذلك المحذوفة المحفوظة في سجل المحذوفات.", linkedCount));
 
         var oldValuesObj = new
         {
