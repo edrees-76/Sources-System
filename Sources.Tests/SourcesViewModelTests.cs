@@ -1177,6 +1177,33 @@ public class SourcesViewModelTests : IDisposable
 
     #region Round 195-H3: Single Load Per Tab Switch
 
+    /// <summary>
+    /// الجولة 195-I-fix: المُنشئ يستدعي LoadDataAsync عبر "fire-and-forget" (`_ = LoadDataAsync()`)؛
+    /// انتظار `vm.LoadDataAsync()` مرة أخرى لا يضمن اكتمال هذا التحميل الأصلي قبله (سباق حقيقي).
+    /// `_neutronSourceService.GetAll()` هو آخر استدعاء خدمة في مسار تبويب "Active" (LoadDataAsync
+    /// :478-482)، فاستطلاعه حتى يُستدعى مرة واحدة على الأقل علامة موثوقة على اكتمال التحميل
+    /// الأولي، بعدها لا يتبقى أي استدعاء خدمة آخر من مسار المُنشئ يمكن أن يلوّث القياس اللاحق.
+    /// </summary>
+    private static async Task WaitUntilConstructorLoadSettledAsync(Mock<INeutronSourceService> mockNeutronSourceService)
+    {
+        var deadline = DateTime.UtcNow.AddSeconds(5);
+        while (!mockNeutronSourceService.Invocations.Any(inv => inv.Method.Name == nameof(INeutronSourceService.GetAll)))
+        {
+            if (DateTime.UtcNow > deadline)
+            {
+                throw new TimeoutException("Timed out waiting for the constructor's fire-and-forget LoadDataAsync to reach INeutronSourceService.GetAll().");
+            }
+            await Task.Delay(10);
+        }
+
+        // Extra grace period: GetAll() is the last mock call in the Active-tab path, but the
+        // fire-and-forget Task itself may still have a pending continuation (assigning
+        // ObservableCollection/OnPropertyChanged) scheduled on the thread pool. Give it a moment
+        // to fully unwind before the caller clears invocation history, to avoid a rare race where
+        // a stray call is recorded after Clear().
+        await Task.Delay(50);
+    }
+
     [Fact]
     public async Task SwitchToNeutronSourcesAsync_LoadsNeutronDataExactlyOnce()
     {
@@ -1184,9 +1211,7 @@ public class SourcesViewModelTests : IDisposable
         _mockNeutronSourceService.Setup(s => s.GetAll()).Returns(new List<NeutronSource>());
         _mockSourceService.Setup(s => s.GetDeletedSources()).Returns(new List<Source>());
         var vm = CreateViewModel();
-        // Settle the constructor's fire-and-forget initial (Active-tab) load before measuring,
-        // so its own calls are not mistaken for the tab-switch load.
-        await vm.LoadDataAsync();
+        await WaitUntilConstructorLoadSettledAsync(_mockNeutronSourceService);
         _mockNeutronSourceService.Invocations.Clear();
 
         // Act
@@ -1201,10 +1226,9 @@ public class SourcesViewModelTests : IDisposable
     {
         // Arrange
         _mockSourceService.Setup(s => s.GetDeletedSources()).Returns(new List<Source>());
+        _mockNeutronSourceService.Setup(s => s.GetAll()).Returns(new List<NeutronSource>());
         var vm = CreateViewModel();
-        // Settle the constructor's fire-and-forget initial (Active-tab) load before measuring
-        // (it also queries GetDeletedSources() for the deleted-count badge).
-        await vm.LoadDataAsync();
+        await WaitUntilConstructorLoadSettledAsync(_mockNeutronSourceService);
         _mockSourceService.Invocations.Clear();
 
         // Act
@@ -1219,7 +1243,11 @@ public class SourcesViewModelTests : IDisposable
     {
         // Arrange
         _mockNeutronSourceService.Setup(s => s.GetAll()).Returns(new List<NeutronSource>());
+        _mockSourceService.Setup(s => s.GetDeletedSources()).Returns(new List<Source>());
         var vm = CreateViewModel();
+        await WaitUntilConstructorLoadSettledAsync(_mockNeutronSourceService);
+        _mockNeutronSourceService.Invocations.Clear();
+
         await vm.SwitchToNeutronSourcesAsync();
         _mockNeutronSourceService.Invocations.Clear();
 
@@ -1228,6 +1256,36 @@ public class SourcesViewModelTests : IDisposable
 
         // Assert
         _mockNeutronSourceService.Verify(s => s.GetAll(), Times.Once);
+    }
+
+    /// <summary>
+    /// الجولة 195-I-fix: يثبت أن حوار "لا نتائج" يظهر مرة واحدة على الأكثر لكل تبديل تبويب —
+    /// مستنتَج من تحميل واحد بالضبط (GetAll مرة واحدة)، إذ لا عدّاد استدعاءات في DialogHelper
+    /// (LastMessage فقط)؛ استدعاء واحد لـLoadNeutronDataAsync يعني حواراً واحداً على الأكثر.
+    /// </summary>
+    [Fact]
+    public async Task SwitchToNeutronSourcesAsync_WithNoMatchingResults_ShowsNoResultsDialogAndLoadsOnce()
+    {
+        // Arrange
+        _mockNeutronSourceService.Setup(s => s.GetAll()).Returns(new List<NeutronSource>());
+        _mockSourceService.Setup(s => s.GetDeletedSources()).Returns(new List<Source>());
+        var vm = CreateViewModel();
+        await WaitUntilConstructorLoadSettledAsync(_mockNeutronSourceService);
+
+        vm.SearchText = "no-such-neutron-source-xyz";
+        await WaitUntilConstructorLoadSettledAsync(_mockNeutronSourceService); // settle any load triggered by SearchText too
+        _mockNeutronSourceService.Invocations.Clear();
+        DialogHelper.LastMessage = null;
+
+        // Act
+        await vm.SwitchToNeutronSourcesAsync();
+
+        // Assert
+        _mockNeutronSourceService.Verify(s => s.GetAll(), Times.Once);
+        var expectedMessage = TranslationHelper.GetString("MsgNoSearchNeutronSource")
+            ?? TranslationHelper.GetString("MsgNoSearchSource")
+            ?? "لم يتم العثور على مصادر نيترونية تطابق معايير البحث.";
+        Assert.Equal(expectedMessage, DialogHelper.LastMessage);
     }
 
     #endregion
