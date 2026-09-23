@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Messaging;
 using Moq;
@@ -231,6 +234,230 @@ public class LocationsFormWindowTests
                 finally
                 {
                     window.Close();
+                }
+            }
+            finally
+            {
+                WeakReferenceMessenger.Default.UnregisterAll(vm);
+            }
+        });
+    }
+
+    /// <summary>
+    /// يبحث في الشجرة المرئية عن أول TextBox مربوط (Binding) بمسار الخاصية المحدَّدة على
+    /// TextBox.TextProperty — يُستخدَم لإيجاد الحقل الفعلي دون الاعتماد على x:Name.
+    /// </summary>
+    private static TextBox? FindTextBoxByBindingPath(DependencyObject root, string propertyPath)
+    {
+        for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = System.Windows.Media.VisualTreeHelper.GetChild(root, i);
+            if (child is TextBox textBox)
+            {
+                var expression = BindingOperations.GetBindingExpression(textBox, TextBox.TextProperty);
+                if (expression?.ParentBinding?.Path?.Path == propertyPath) return textBox;
+            }
+            var nested = FindTextBoxByBindingPath(child, propertyPath);
+            if (nested != null) return nested;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// يحاكي ضغطة مفتاح Enter الحقيقية على العنصر المركَّز: يطلق أولاً حدث النفق
+    /// Keyboard.PreviewKeyDownEvent (الذي يصل إلى معالج PreviewKeyDown على مستوى النافذة —
+    /// إصلاح الجولة 149/196 — قبل وصوله إلى العنصر نفسه)، ثم يطلق حدث الفقاعة
+    /// Keyboard.KeyDownEvent (ما لم يكن حدث المعاينة قد عولج/Handled بالفعل)، تماماً كما يحدث
+    /// في التوجيه الحقيقي لأحداث لوحة المفاتيح في WPF (Tunnel ثم Bubble). النسخة السابقة
+    /// (الجولة 149) كانت تُطلق KeyDownEvent فقط، فلم تكن تختبر معالج PreviewKeyDown إطلاقاً.
+    /// </summary>
+    private static void SimulateEnterKeyPress(UIElement element)
+    {
+        Assert.Same(element, Keyboard.FocusedElement);
+
+        var source = PresentationSource.FromVisual(element);
+
+        var previewArgs = new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Enter)
+        {
+            RoutedEvent = Keyboard.PreviewKeyDownEvent
+        };
+        element.RaiseEvent(previewArgs);
+
+        if (previewArgs.Handled) return;
+
+        var args = new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Enter)
+        {
+            RoutedEvent = Keyboard.KeyDownEvent
+        };
+        element.RaiseEvent(args);
+    }
+
+    /// <summary>
+    /// اختبار انحدار (الجولة 196): يحرِّر موقعاً موجوداً فعلاً عبر EditCommand الحقيقي، يكتب قيمة
+    /// جديدة في أحد الحقول (UpdateSourceTrigger=PropertyChanged في XAML + معالج PreviewKeyDown في
+    /// الكود-خلف)، ثم يضغط Enter والتركيز لا يزال داخل الحقل. يتحقق من القيمة الفعلية التي وصلت
+    /// لطبقة الخدمة ILocationService.Update عبر Moq Callback (لا من خاصية الـViewModel وحدها)،
+    /// وأن Update استُدعيت مرة واحدة بالضبط، وأن IsEditing أصبحت false (نجاح حقيقي أغلق النافذة).
+    /// </summary>
+    private static void AssertEnterCommitsNewValue_ForLocationField(
+        string bindingPath,
+        string newTextValue,
+        System.Func<Location, string?> readPersistedValue)
+    {
+        RunInSta(() =>
+        {
+            var existing = new Location
+            {
+                Id = System.Guid.NewGuid(),
+                LocationName = "المخزن الرئيسي",
+                LocationType = "Storage",
+                Building = "المبنى أ",
+                Room = "101",
+                ResponsiblePerson = "أحمد"
+            };
+
+            var mockService = new Mock<ILocationService>();
+            mockService.Setup(s => s.GetAll()).Returns(new List<Location> { existing });
+            Location? persistedItem = null;
+            int updateCallCount = 0;
+            mockService.Setup(s => s.Update(It.IsAny<Location>()))
+                .Callback<Location>(item => { persistedItem = item; updateCallCount++; })
+                .Returns((true, "تم تحديث الموقع"));
+
+            var vm = new LocationsViewModel(mockService.Object);
+            try
+            {
+                vm.LoadData();
+                vm.Selected = vm.Locations.First(l => l.Id == existing.Id);
+                vm.EditCommand.Execute(null);
+
+                var formWindow = new LocationFormWindow
+                {
+                    DataContext = vm,
+                    WindowStartupLocation = WindowStartupLocation.Manual,
+                    ShowInTaskbar = false,
+                    ShowActivated = false,
+                    Left = -5000,
+                    Top = -5000
+                };
+
+                formWindow.Show();
+                try
+                {
+                    formWindow.UpdateLayout();
+
+                    var textBox = FindTextBoxByBindingPath(formWindow, bindingPath);
+                    Assert.NotNull(textBox);
+
+                    textBox!.Focus();
+                    Assert.Same(textBox, Keyboard.FocusedElement);
+
+                    textBox.Text = newTextValue;
+                    SimulateEnterKeyPress(textBox);
+
+                    Assert.Equal(1, updateCallCount); // حفظ واحد بالضبط، لا حفظ مزدوج
+                    Assert.NotNull(persistedItem);
+                    Assert.Equal(newTextValue, readPersistedValue(persistedItem!));
+                    Assert.False(vm.IsEditing); // النافذة أُغلقت فعلاً — نجاح حقيقي لا رسالة كاذبة
+                }
+                finally
+                {
+                    formWindow.Close();
+                }
+            }
+            finally
+            {
+                WeakReferenceMessenger.Default.UnregisterAll(vm);
+            }
+        });
+    }
+
+    [Fact]
+    public void LocationFormWindow_EnterAfterTyping_PersistsNewValue_ForEditName()
+        => AssertEnterCommitsNewValue_ForLocationField("EditName", "مخزن جديد", l => l.LocationName);
+
+    [Fact]
+    public void LocationFormWindow_EnterAfterTyping_PersistsNewValue_ForEditBuilding()
+        => AssertEnterCommitsNewValue_ForLocationField("EditBuilding", "المبنى ب", l => l.Building);
+
+    [Fact]
+    public void LocationFormWindow_EnterAfterTyping_PersistsNewValue_ForEditRoom()
+        => AssertEnterCommitsNewValue_ForLocationField("EditRoom", "202", l => l.Room);
+
+    [Fact]
+    public void LocationFormWindow_EnterAfterTyping_PersistsNewValue_ForEditPerson()
+        => AssertEnterCommitsNewValue_ForLocationField("EditPerson", "سارة", l => l.ResponsiblePerson);
+
+    /// <summary>
+    /// إثبات عزل المعالج (الجولة 196): يعيد ربط EditName صراحةً بمشغّل LostFocus (الافتراضي)
+    /// بدلاً من PropertyChanged، لإثبات أن معالج PreviewKeyDown في الكود-خلف وحده — بمعزل تام عن
+    /// UpdateSourceTrigger في XAML — كافٍ لتفريغ القيمة الجديدة إلى الربط قبل الحفظ عند Enter.
+    /// </summary>
+    [Fact]
+    public void LocationFormWindow_EnterAfterTyping_PersistsNewValue_EvenWhenTextBoxUsesLostFocusTrigger()
+    {
+        RunInSta(() =>
+        {
+            var existing = new Location
+            {
+                Id = System.Guid.NewGuid(),
+                LocationName = "المخزن الرئيسي",
+                LocationType = "Storage",
+                Building = "المبنى أ",
+                Room = "101",
+                ResponsiblePerson = "أحمد"
+            };
+
+            var mockService = new Mock<ILocationService>();
+            mockService.Setup(s => s.GetAll()).Returns(new List<Location> { existing });
+            Location? persistedItem = null;
+            int updateCallCount = 0;
+            mockService.Setup(s => s.Update(It.IsAny<Location>()))
+                .Callback<Location>(item => { persistedItem = item; updateCallCount++; })
+                .Returns((true, "تم تحديث الموقع"));
+
+            var vm = new LocationsViewModel(mockService.Object);
+            try
+            {
+                vm.LoadData();
+                vm.Selected = vm.Locations.First(l => l.Id == existing.Id);
+                vm.EditCommand.Execute(null);
+
+                var formWindow = new LocationFormWindow
+                {
+                    DataContext = vm,
+                    WindowStartupLocation = WindowStartupLocation.Manual,
+                    ShowInTaskbar = false,
+                    ShowActivated = false,
+                    Left = -5000,
+                    Top = -5000
+                };
+
+                formWindow.Show();
+                try
+                {
+                    formWindow.UpdateLayout();
+
+                    var textBox = FindTextBoxByBindingPath(formWindow, "EditName");
+                    Assert.NotNull(textBox);
+
+                    BindingOperations.SetBinding(textBox, TextBox.TextProperty,
+                        new Binding("EditName") { UpdateSourceTrigger = UpdateSourceTrigger.LostFocus, Mode = BindingMode.TwoWay });
+
+                    textBox!.Focus();
+                    Assert.Same(textBox, Keyboard.FocusedElement);
+
+                    textBox.Text = "اسم بمعزل عن الربط الفوري";
+                    SimulateEnterKeyPress(textBox);
+
+                    Assert.Equal(1, updateCallCount);
+                    Assert.NotNull(persistedItem);
+                    Assert.Equal("اسم بمعزل عن الربط الفوري", persistedItem!.LocationName);
+                    Assert.False(vm.IsEditing);
+                }
+                finally
+                {
+                    formWindow.Close();
                 }
             }
             finally

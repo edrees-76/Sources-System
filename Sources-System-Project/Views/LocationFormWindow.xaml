@@ -48,7 +48,7 @@
 
                 <StackPanel Margin="0,0,0,12">
                     <TextBlock Text="{DynamicResource FieldNameReq}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
-                    <TextBox Text="{Binding EditName}" Style="{StaticResource FormTextBox}"/>
+                    <TextBox Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBox}"/>
                 </StackPanel>
                 <UniformGrid Columns="2" Margin="0,0,0,12">
                     <StackPanel Margin="0,0,12,0">
@@ -62,17 +62,17 @@
                     </StackPanel>
                     <StackPanel>
                         <TextBlock Text="{DynamicResource FieldBuilding}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding EditBuilding}" Style="{StaticResource FormTextBox}"/>
+                        <TextBox Text="{Binding EditBuilding, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBox}"/>
                     </StackPanel>
                 </UniformGrid>
                 <UniformGrid Columns="2" Margin="0,0,0,12">
                     <StackPanel Margin="0,0,12,0">
                         <TextBlock Text="{DynamicResource FieldRoom}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding EditRoom}" Style="{StaticResource FormTextBox}"/>
+                        <TextBox Text="{Binding EditRoom, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBox}"/>
                     </StackPanel>
                     <StackPanel>
                         <TextBlock Text="{DynamicResource FieldResponsible}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding EditPerson}" Style="{StaticResource FormTextBox}"/>
+                        <TextBox Text="{Binding EditPerson, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBox}"/>
                     </StackPanel>
                 </UniformGrid>
 

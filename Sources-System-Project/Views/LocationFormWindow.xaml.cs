@@ -1,5 +1,7 @@
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 using Sources.ViewModels;
 
 namespace Sources.Views;
@@ -18,6 +20,22 @@ public partial class LocationFormWindow : Window
     {
         InitializeComponent();
         Closing += LocationFormWindow_Closing;
+        PreviewKeyDown += LocationFormWindow_PreviewKeyDown;
+    }
+
+    /// <summary>
+    /// يطبّق نفس إصلاح الجولة 149 (انظر SourceFormWindow.xaml.cs): معالجة PreviewKeyDown
+    /// (نفقي/Tunnel) على مستوى النافذة لمفتاح Enter تُجبِر أي TextBox يحمل التركيز حالياً على
+    /// تفريغ (Flush) قيمته إلى خاصية الربط فوراً عبر BindingExpression.UpdateSource() قبل أن
+    /// يصل Enter إلى منطق زر الحفظ الافتراضي (IsDefault). أُضيف في الجولة 196.
+    /// </summary>
+    private void LocationFormWindow_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter) return;
+        if (Keyboard.FocusedElement is not TextBox focusedTextBox) return;
+
+        var bindingExpression = focusedTextBox.GetBindingExpression(TextBox.TextProperty);
+        bindingExpression?.UpdateSource();
     }
 
     private void LocationFormWindow_Closing(object? sender, CancelEventArgs e)
