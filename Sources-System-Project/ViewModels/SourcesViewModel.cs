@@ -1460,6 +1460,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         }
         catch (Exception ex)
         {
+            LoggerService.LogError("SourcesViewModel: save failed", ex);
             ShowMessage(TranslationHelper.GetFormat("MsgErrGeneral", ex.Message));
             return;
         }
@@ -1495,7 +1496,11 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                 await _reportingService.GenerateInventoryReportPdfAsync(Sources, sfd.FileName, TranslationHelper.GetString("TitleInventoryReportPdf") ?? "تقرير جرد المصادر المشعة");
                 FileHelper.OpenFile(sfd.FileName);
             }
-            catch (Exception ex) { DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrExportPdf", ex.Message)); }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("SourcesViewModel: PDF export failed", ex);
+                DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrExportPdf", ex.Message));
+            }
         }
     }
 
@@ -1510,7 +1515,11 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                 await _reportingService.GenerateInventoryReportExcelAsync(Sources, sfd.FileName, TranslationHelper.GetString("TitleInventoryReportExcel") ?? "جرد المصادر");
                 FileHelper.OpenFile(sfd.FileName);
             }
-            catch (Exception ex) { DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrExportExcel", ex.Message)); }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("SourcesViewModel: Excel export failed", ex);
+                DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrExportExcel", ex.Message));
+            }
         }
     }
 
@@ -1622,6 +1631,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
             }
             catch (Exception ex)
             {
+                LoggerService.LogError("SourcesViewModel: image load failed", ex);
                 DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrImageLoad", ex.Message));
             }
         }

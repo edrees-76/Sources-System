@@ -550,6 +550,7 @@ public partial class SettingsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
+            LoggerService.LogError("SettingsViewModel: factory reset failed", ex);
             DialogHelper.ShowError(
                 string.Format(TranslationHelper.GetString("MsgFactoryResetFailed") ?? "فشلت عملية إعادة ضبط المنظومة: {0}", ex.Message),
                 TranslationHelper.GetString("TitleFactoryReset") ?? "إعادة ضبط المنظومة");
@@ -621,6 +622,7 @@ public partial class SettingsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
+            LoggerService.LogError("SettingsViewModel: DEBUG test data generation failed", ex);
             DialogHelper.ShowError($"حدث خطأ أثناء توليد البيانات: {ex.Message}", "خطأ");
         }
         finally

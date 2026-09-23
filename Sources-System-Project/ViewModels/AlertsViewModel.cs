@@ -201,6 +201,7 @@ public partial class AlertsViewModel : ObservableObject, IDisposable
         }
         catch (Exception ex)
         {
+            LoggerService.LogError("AlertsViewModel: LoadData failed", ex);
             ShowMessage(TranslationHelper.GetFormat("MsgErrGeneral", ex.Message));
         }
     }
