@@ -16,6 +16,7 @@ public partial class RadioisotopesViewModel : ObservableObject, IEditableViewMod
 {
     private readonly IRadioisotopeService _service;
     private readonly IIsotopeLibraryService _libraryService;
+    private readonly IMessenger _messenger;
 
     public ISnackbarMessageQueue? MessageQueue { get; }
 
@@ -93,8 +94,9 @@ public partial class RadioisotopesViewModel : ObservableObject, IEditableViewMod
     }
     private Guid? _editingId;
 
-    public RadioisotopesViewModel(IRadioisotopeService service, IIsotopeLibraryService? libraryService = null)
+    public RadioisotopesViewModel(IRadioisotopeService service, IIsotopeLibraryService? libraryService = null, IMessenger? messenger = null)
     {
+        _messenger = messenger ?? WeakReferenceMessenger.Default;
         _service = service;
         _libraryService = libraryService ?? new IsotopeLibraryService();
 
@@ -116,7 +118,7 @@ public partial class RadioisotopesViewModel : ObservableObject, IEditableViewMod
 
         LoadData();
 
-        CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Register<Sources.Messages.NavigateToSearchResultMessage>(this, (r, m) =>
+        _messenger.Register<Sources.Messages.NavigateToSearchResultMessage>(this, (r, m) =>
         {
             if (m.Category == SearchCategory.Radioisotopes)
             {

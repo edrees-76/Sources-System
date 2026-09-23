@@ -18,6 +18,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly IAlertService _alertService;
     private readonly ISystemSettingsService _settingsService;
     private readonly ILicenseService _licenseService;
+    private readonly IMessenger _messenger;
 
     [ObservableProperty] private ObservableObject? _currentView;
     [ObservableProperty] private string _currentViewName = "Dashboard";
@@ -38,8 +39,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// فتح ActivationDialog فعلياً)، يُستعمل هذا الرقم مباشرة كمُدخل للتفعيل بدل فتح النافذة.</summary>
     public static string? TestActivationSerialOverride { get; set; }
 
-    public MainViewModel(IUserService userService, IAlertService alertService, ISystemSettingsService settingsService, ILicenseService licenseService)
+    public MainViewModel(IUserService userService, IAlertService alertService, ISystemSettingsService settingsService, ILicenseService licenseService, IMessenger? messenger = null)
     {
+        _messenger = messenger ?? WeakReferenceMessenger.Default;
         _userService = userService;
         _alertService = alertService;
         _settingsService = settingsService;
@@ -48,7 +50,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         IsTrialMode = !_licenseService.IsActivated;
 
         // التسجيل لاستقبال رسائل تحديث المصادر وتحديث التنبيهات فورياً
-        WeakReferenceMessenger.Default.Register<Sources.Messages.SourcesUpdatedMessage>(this, (r, m) =>
+        _messenger.Register<Sources.Messages.SourcesUpdatedMessage>(this, (r, m) =>
         {
             RunOnUI(RefreshNotifications);
         });
@@ -508,6 +510,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         _alertTimer?.Stop();
         _inactivityTimer?.Stop();
-        WeakReferenceMessenger.Default.UnregisterAll(this);
+        _messenger.UnregisterAll(this);
     }
 }

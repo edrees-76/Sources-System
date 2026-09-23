@@ -21,6 +21,7 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
     private readonly IReportingService _reportingService;
     private readonly IUserService _userService;
     private readonly ISystemSettingsService _settingsService;
+    private readonly IMessenger _messenger;
 
     // ─── مجموعات العرض ───
     [ObservableProperty] private ObservableCollection<LeakTestRecord> _pagedRecords = new();
@@ -62,15 +63,17 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
         ISourceService sourceService,
         IReportingService reportingService,
         IUserService userService,
-        ISystemSettingsService settingsService)
+        ISystemSettingsService settingsService,
+        IMessenger? messenger = null)
     {
+        _messenger = messenger ?? WeakReferenceMessenger.Default;
         _leakTestService = leakTestService;
         _sourceService = sourceService;
         _reportingService = reportingService;
         _userService = userService;
         _settingsService = settingsService;
 
-        WeakReferenceMessenger.Default.Register<SourcesUpdatedMessage>(this);
+        _messenger.Register<SourcesUpdatedMessage>(this);
     }
 
     public async Task InitializeAsync()
@@ -313,7 +316,7 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
                 await LoadDataAsync();
                 try
                 {
-                    WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
+                    _messenger.Send(new SourcesUpdatedMessage());
                 }
                 catch (Exception ex)
                 {
@@ -347,7 +350,7 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
                 await LoadDataAsync();
                 try
                 {
-                    WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
+                    _messenger.Send(new SourcesUpdatedMessage());
                 }
                 catch (Exception ex)
                 {
@@ -379,7 +382,7 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
             await LoadDataAsync();
             try
             {
-                WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
+                _messenger.Send(new SourcesUpdatedMessage());
             }
             catch (Exception ex)
             {
