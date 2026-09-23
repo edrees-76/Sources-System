@@ -1344,6 +1344,8 @@
     <system:String x:Key="MsgSuccessNeutronSourceDeleted">Neutron source deleted</system:String>
     <system:String x:Key="MsgErrNeutronSourceNotDeleted">The neutron source is not deleted</system:String>
     <system:String x:Key="MsgErrNeutronSourceRestoreCodeInUse">This neutron source cannot be restored: the code ({0}) is currently used by another active neutron source. Change that active source's code first, then retry the restore.</system:String>
+    <system:String x:Key="MsgErrNeutronSourceRestoreTypeDeleted">Cannot restore the neutron source because its type "{0}" is currently deleted. Please restore the type first, then try again.</system:String>
+    <system:String x:Key="MsgErrNeutronSourceRestoreLocationDeleted">Cannot restore the neutron source because its location "{0}" is currently deleted. Please restore the location first from the deleted items log, then try again.</system:String>
     <system:String x:Key="MsgSuccessNeutronSourceRestored">Neutron source {0} restored successfully</system:String>
 
     <!-- Round 137: SourcesViewModel.cs validation/report message localization -->
