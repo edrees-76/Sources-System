@@ -1385,6 +1385,7 @@
     <system:String x:Key="MsgErrSourceNotDeleted">المصدر غير محذوف أصلاً</system:String>
     <system:String x:Key="MsgErrSourceRestoreCodeInUse">لا يمكن استرجاع هذا المصدر: الكود ({0}) مستخدم حالياً لمصدر نشط آخر. غيّر كود المصدر النشط أولاً ثم أعد محاولة الاسترجاع.</system:String>
     <system:String x:Key="MsgErrSourceRestoreLocationDeleted">لا يمكن استرجاع المصدر لأن موقعه الأصلي "{0}" محذوف حالياً. يرجى استرجاع الموقع أولاً من سجل المحذوفات ثم إعادة المحاولة.</system:String>
+    <system:String x:Key="MsgErrSourceRestoreRadioisotopeDeleted">لا يمكن استرجاع المصدر لأن النظير "{0}" محذوف حالياً. يرجى استرجاعه أولاً من سجل المحذوفات ثم إعادة المحاولة.</system:String>
     <system:String x:Key="MsgSuccessSourceRestored">تم استرجاع المصدر {0} إلى موقع {1} بحالة {2}</system:String>
 
     <!-- Round 132 (فرعية ثالثة لـب5): UserService.cs validation/success message localization -->
@@ -1607,6 +1608,7 @@
     <system:String x:Key="MsgErrRadioisotopeNotFound">النظير غير موجود</system:String>
     <system:String x:Key="MsgSuccessRadioisotopeUpdated">تم تحديث النظير</system:String>
     <system:String x:Key="MsgErrCannotDeleteRadioisotopeHasSources">لا يمكن حذف نظير مرتبط بمصادر</system:String>
+    <system:String x:Key="MsgErrCannotDeleteRadioisotopeHasSourcesIncludingDeleted">لا يمكن حذف هذا النظير لأنه لا يزال مرتبطاً بمصدر أو أكثر، بما في ذلك المحذوفة المحفوظة في سجل المحذوفات.</system:String>
     <system:String x:Key="MsgSuccessRadioisotopeDeleted">تم حذف النظير</system:String>
     <system:String x:Key="MsgErrRadioisotopeNotDeleted">النظير غير محذوف أصلاً</system:String>
     <system:String x:Key="MsgErrCannotRestoreRadioisotopeSymbolConflict">لا يمكن استرجاع النظير لوجود نظير نشط آخر بنفس الرمز ({0})</system:String>

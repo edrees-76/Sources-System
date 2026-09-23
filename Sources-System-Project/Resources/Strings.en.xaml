@@ -1387,6 +1387,7 @@
     <system:String x:Key="MsgErrSourceNotDeleted">The source is not deleted</system:String>
     <system:String x:Key="MsgErrSourceRestoreCodeInUse">This source cannot be restored: the code ({0}) is currently used by another active source. Change that active source's code first, then retry the restore.</system:String>
     <system:String x:Key="MsgErrSourceRestoreLocationDeleted">Cannot restore the source because its original location "{0}" is currently deleted. Please restore the location first from the deleted items log, then try again.</system:String>
+    <system:String x:Key="MsgErrSourceRestoreRadioisotopeDeleted">Cannot restore the source because the radioisotope "{0}" is currently deleted. Please restore it first from the deleted items log, then try again.</system:String>
     <system:String x:Key="MsgSuccessSourceRestored">Source {0} restored to location {1} with status {2}</system:String>
 
     <!-- Round 132 (third sub-round of B5): UserService.cs validation/success message localization -->
@@ -1607,6 +1608,7 @@
     <system:String x:Key="MsgErrRadioisotopeNotFound">Radioisotope not found</system:String>
     <system:String x:Key="MsgSuccessRadioisotopeUpdated">Radioisotope updated</system:String>
     <system:String x:Key="MsgErrCannotDeleteRadioisotopeHasSources">Cannot delete an isotope linked to sources</system:String>
+    <system:String x:Key="MsgErrCannotDeleteRadioisotopeHasSourcesIncludingDeleted">Cannot delete this isotope: it is still referenced by one or more sources, including deleted ones kept in the deleted items log.</system:String>
     <system:String x:Key="MsgSuccessRadioisotopeDeleted">Radioisotope deleted</system:String>
     <system:String x:Key="MsgErrRadioisotopeNotDeleted">Radioisotope is not deleted</system:String>
     <system:String x:Key="MsgErrCannotRestoreRadioisotopeSymbolConflict">Cannot restore the isotope because another active isotope with the same symbol ({0}) exists</system:String>
