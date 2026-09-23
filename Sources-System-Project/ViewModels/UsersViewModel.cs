@@ -687,18 +687,28 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
                 Permissions = perms
             };
             var r = _userService.UpdateUser(user);
-            if (!string.IsNullOrWhiteSpace(EditPassword))
-                _userService.ResetPassword(_editingId!.Value, EditPassword);
-            ShowMsg(r.Message);
-            if (r.Success)
+            if (!r.Success)
             {
-                IsEditing = false;
-                LoadData();
-            }
-            else
-            {
+                ShowMsg(r.Message);
                 DialogHelper.ShowError(r.Message);
+                return;
             }
+            if (!string.IsNullOrWhiteSpace(EditPassword))
+            {
+                var resetResult = _userService.ResetPassword(_editingId!.Value, EditPassword);
+                if (!resetResult.Success)
+                {
+                    var msg = string.Format(TranslationHelper.GetString("MsgWarnUserSavedPasswordNotChanged") ?? "تم حفظ بيانات المستخدم، لكن لم تُغيَّر كلمة المرور: {0}", resetResult.Message);
+                    ShowMsg(msg);
+                    DialogHelper.ShowWarning(msg);
+                    IsEditing = false;
+                    LoadData();
+                    return;
+                }
+            }
+            ShowMsg(r.Message);
+            IsEditing = false;
+            LoadData();
         }
     }
 

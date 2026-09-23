@@ -1688,6 +1688,7 @@
     <system:String x:Key="FieldNameExpectedReturnDate">Expected Return Date</system:String>
     <system:String x:Key="MsgErrCannotFreezeOwnAccount">You cannot freeze your own account</system:String>
     <system:String x:Key="MsgConfirmDeleteUser">Are you sure you want to delete this user?</system:String>
+    <system:String x:Key="MsgWarnUserSavedPasswordNotChanged">User data was saved, but the password was NOT changed: {0}</system:String>
     <system:String x:Key="TitleConfirmDelete">Confirm Deletion</system:String>
 
     <!-- Round 156: Dashboard/LeakTests/Settings/SourceDetails/Borrow translation (ب5 batch 2, expanded) -->

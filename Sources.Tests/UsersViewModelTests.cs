@@ -156,4 +156,98 @@ public class UsersViewModelTests
             }
         });
     }
+
+    /// <summary>
+    /// الجولة 198-A: عند فشل تحديث بيانات المستخدم في مسار التعديل، يجب ألا يُستدعى
+    /// ResetPassword إطلاقاً حتى لو كانت كلمة مرور جديدة قد أُدخلت.
+    /// </summary>
+    [Fact]
+    public void Save_EditPath_UpdateUserFails_NeverCallsResetPassword()
+    {
+        var existingUser = new User { Id = Guid.NewGuid(), Username = "target_user", FullName = "Target User" };
+        var role = new Role { Id = Guid.NewGuid(), RoleName = "مستخدم", Permissions = "" };
+
+        var mockUserService = new Mock<IUserService>();
+        mockUserService.Setup(s => s.GetAllUsers()).Returns(new List<User> { existingUser });
+        mockUserService.Setup(s => s.GetAllRoles()).Returns(new List<Role> { role });
+        mockUserService.Setup(s => s.GetAuditLogs(null, null, null)).Returns(new List<AuditLog>());
+        mockUserService.Setup(s => s.UpdateUser(It.IsAny<User>())).Returns((false, "فشل التحديث"));
+
+        var mockReportingService = new Mock<IReportingService>();
+
+        var vm = new UsersViewModel(mockUserService.Object, mockReportingService.Object);
+        vm.Selected = existingUser;
+        vm.EditCommand.Execute(null);
+        vm.EditFullName = "Target User Updated";
+        vm.EditPassword = "NewP@ssw0rd1";
+
+        vm.SaveCommand.Execute(null);
+
+        mockUserService.Verify(s => s.ResetPassword(It.IsAny<Guid>(), It.IsAny<string>()), Times.Never);
+        Assert.Equal("فشل التحديث", vm.Message);
+        Assert.True(vm.IsEditing);
+    }
+
+    /// <summary>
+    /// الجولة 198-A: عند نجاح تحديث بيانات المستخدم وفشل إعادة تعيين كلمة المرور،
+    /// يجب أن تظهر رسالة تحذيرية توضح أن البيانات حُفظت لكن كلمة المرور لم تتغيّر.
+    /// </summary>
+    [Fact]
+    public void Save_EditPath_UpdateSucceeds_ResetPasswordFails_ShowsPartialSaveWarning()
+    {
+        var existingUser = new User { Id = Guid.NewGuid(), Username = "target_user", FullName = "Target User" };
+        var role = new Role { Id = Guid.NewGuid(), RoleName = "مستخدم", Permissions = "" };
+
+        var mockUserService = new Mock<IUserService>();
+        mockUserService.Setup(s => s.GetAllUsers()).Returns(new List<User> { existingUser });
+        mockUserService.Setup(s => s.GetAllRoles()).Returns(new List<Role> { role });
+        mockUserService.Setup(s => s.GetAuditLogs(null, null, null)).Returns(new List<AuditLog>());
+        mockUserService.Setup(s => s.UpdateUser(It.IsAny<User>())).Returns((true, "تم الحفظ"));
+        mockUserService.Setup(s => s.ResetPassword(It.IsAny<Guid>(), It.IsAny<string>())).Returns((false, "لا يمكن تعديل حساب المدير الأساسي"));
+
+        var mockReportingService = new Mock<IReportingService>();
+
+        var vm = new UsersViewModel(mockUserService.Object, mockReportingService.Object);
+        vm.Selected = existingUser;
+        vm.EditCommand.Execute(null);
+        vm.EditFullName = "Target User Updated";
+        vm.EditPassword = "NewP@ssw0rd1";
+
+        vm.SaveCommand.Execute(null);
+
+        mockUserService.Verify(s => s.ResetPassword(existingUser.Id, "NewP@ssw0rd1"), Times.Once);
+        Assert.Contains("لا يمكن تعديل حساب المدير الأساسي", vm.Message);
+        Assert.False(vm.IsEditing);
+    }
+
+    /// <summary>
+    /// الجولة 198-A: مسار النجاح الكامل (تحديث + إعادة تعيين كلمة المرور) يبقى دون تغيير سلوكي.
+    /// </summary>
+    [Fact]
+    public void Save_EditPath_UpdateAndResetSucceed_ClosesFormWithSuccessMessage()
+    {
+        var existingUser = new User { Id = Guid.NewGuid(), Username = "target_user", FullName = "Target User" };
+        var role = new Role { Id = Guid.NewGuid(), RoleName = "مستخدم", Permissions = "" };
+
+        var mockUserService = new Mock<IUserService>();
+        mockUserService.Setup(s => s.GetAllUsers()).Returns(new List<User> { existingUser });
+        mockUserService.Setup(s => s.GetAllRoles()).Returns(new List<Role> { role });
+        mockUserService.Setup(s => s.GetAuditLogs(null, null, null)).Returns(new List<AuditLog>());
+        mockUserService.Setup(s => s.UpdateUser(It.IsAny<User>())).Returns((true, "تم حفظ بيانات المستخدم بنجاح"));
+        mockUserService.Setup(s => s.ResetPassword(It.IsAny<Guid>(), It.IsAny<string>())).Returns((true, "تم تغيير كلمة المرور"));
+
+        var mockReportingService = new Mock<IReportingService>();
+
+        var vm = new UsersViewModel(mockUserService.Object, mockReportingService.Object);
+        vm.Selected = existingUser;
+        vm.EditCommand.Execute(null);
+        vm.EditFullName = "Target User Updated";
+        vm.EditPassword = "NewP@ssw0rd1";
+
+        vm.SaveCommand.Execute(null);
+
+        mockUserService.Verify(s => s.ResetPassword(existingUser.Id, "NewP@ssw0rd1"), Times.Once);
+        Assert.Equal("تم حفظ بيانات المستخدم بنجاح", vm.Message);
+        Assert.False(vm.IsEditing);
+    }
 }

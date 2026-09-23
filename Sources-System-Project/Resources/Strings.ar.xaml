@@ -1688,6 +1688,7 @@
     <system:String x:Key="FieldNameExpectedReturnDate">تاريخ الإرجاع المتوقع</system:String>
     <system:String x:Key="MsgErrCannotFreezeOwnAccount">لا يمكنك تجميد حسابك الحالي</system:String>
     <system:String x:Key="MsgConfirmDeleteUser">هل أنت متأكد من حذف هذا المستخدم؟</system:String>
+    <system:String x:Key="MsgWarnUserSavedPasswordNotChanged">تم حفظ بيانات المستخدم، لكن لم تُغيَّر كلمة المرور: {0}</system:String>
     <system:String x:Key="TitleConfirmDelete">تأكيد الحذف</system:String>
 
     <!-- الجولة 156: ترجمة Dashboard/LeakTests/Settings/SourceDetails/Borrow (ب5 — الدفعة 2، موسَّعة) -->
