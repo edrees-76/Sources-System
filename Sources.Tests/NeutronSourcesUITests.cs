@@ -69,6 +69,8 @@ public class NeutronSourcesUITests : IDisposable
     {
         // Arrange
         var mockSourceService = new Mock<ISourceService>();
+        mockSourceService.Setup(s => s.GetAllSources()).Returns(new List<Source>());
+        mockSourceService.Setup(s => s.GetDeletedSources()).Returns(new List<Source>());
         var mockIsotopeService = new Mock<IRadioisotopeService>();
         var mockLocationService = new Mock<ILocationService>();
         var mockReportingService = new Mock<IReportingService>();
@@ -118,6 +120,8 @@ public class NeutronSourcesUITests : IDisposable
     {
         // Arrange
         var mockSourceService = new Mock<ISourceService>();
+        mockSourceService.Setup(s => s.GetAllSources()).Returns(new List<Source>());
+        mockSourceService.Setup(s => s.GetDeletedSources()).Returns(new List<Source>());
         var mockIsotopeService = new Mock<IRadioisotopeService>();
         var mockLocationService = new Mock<ILocationService>();
         var mockReportingService = new Mock<IReportingService>();
@@ -166,6 +170,8 @@ public class NeutronSourcesUITests : IDisposable
     {
         // Arrange
         var mockSourceService = new Mock<ISourceService>();
+        mockSourceService.Setup(s => s.GetAllSources()).Returns(new List<Source>());
+        mockSourceService.Setup(s => s.GetDeletedSources()).Returns(new List<Source>());
         var mockIsotopeService = new Mock<IRadioisotopeService>();
         var mockLocationService = new Mock<ILocationService>();
         var mockReportingService = new Mock<IReportingService>();
@@ -273,6 +279,8 @@ public class NeutronSourcesUITests : IDisposable
         }
 
         var mockSourceService = new Mock<ISourceService>();
+        mockSourceService.Setup(s => s.GetAllSources()).Returns(new List<Source>());
+        mockSourceService.Setup(s => s.GetDeletedSources()).Returns(new List<Source>());
         var mockIsotopeService = new Mock<IRadioisotopeService>();
         var mockLocationService = new Mock<ILocationService>();
         var mockUserService = new Mock<IUserService>();
@@ -307,7 +315,7 @@ public class NeutronSourcesUITests : IDisposable
     }
 
     [Fact]
-    public async Task ReportsViewModel_NeutronInventory_LoadsDataAndExports()
+    public void ReportsViewModel_NeutronInventory_LoadsDataAndExports()
     {
         // Arrange - Seed neutron source
         using (var db = _fixture.CreateContext())
@@ -326,6 +334,8 @@ public class NeutronSourcesUITests : IDisposable
         }
 
         var mockSourceService = new Mock<ISourceService>();
+        mockSourceService.Setup(s => s.GetAllSources()).Returns(new List<Source>());
+        mockSourceService.Setup(s => s.GetDeletedSources()).Returns(new List<Source>());
         var mockBorrowService = new Mock<IBorrowService>();
         var mockReportingService = new Mock<IReportingService>();
         var mockSettingsService = new Mock<ISystemSettingsService>();
@@ -354,8 +364,10 @@ public class NeutronSourcesUITests : IDisposable
             mockNeutronService.Object);
 
         // Act - Select neutron inventory report
+        // R196-B/R12: لا حاجة لأي انتظار هنا — OnSelectedReportChanged يستدعي LoadReport()
+        // بشكل متزامن تماماً (ReportsViewModel.cs)، فتكون NeutronInventoryData محدَّثة فوراً
+        // بمجرد عودة أمر تعيين الخاصية، دون أي Task.Delay غير حتمي.
         vm.SelectedReport = "NeutronInventoryReport";
-        await Task.Delay(100);
 
         // Assert
         Assert.Single(vm.NeutronInventoryData);
@@ -789,6 +801,8 @@ public class NeutronSourcesUITests : IDisposable
     {
         // Arrange
         var mockSourceService = new Mock<ISourceService>();
+        mockSourceService.Setup(s => s.GetAllSources()).Returns(new List<Source>());
+        mockSourceService.Setup(s => s.GetDeletedSources()).Returns(new List<Source>());
         var mockIsotopeService = new Mock<IRadioisotopeService>();
         var mockLocationService = new Mock<ILocationService>();
         var mockReportingService = new Mock<IReportingService>();

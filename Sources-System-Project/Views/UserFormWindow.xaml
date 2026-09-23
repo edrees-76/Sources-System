@@ -48,24 +48,24 @@
             <!-- البيانات الأساسية -->
             <StackPanel Margin="0,0,0,12">
                 <TextBlock Text="{DynamicResource FieldFullNameReq}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
-                <TextBox Text="{Binding EditFullName}" Style="{StaticResource FormTextBox}"/>
+                <TextBox Text="{Binding EditFullName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBox}"/>
             </StackPanel>
 
             <UniformGrid Columns="2" Margin="0,0,0,12">
                 <StackPanel Margin="0,0,12,0">
                     <TextBlock Text="{DynamicResource FieldUsernameReq}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
-                    <TextBox Text="{Binding EditUsername}" Style="{StaticResource FormTextBox}" IsEnabled="{Binding IsNew}"/>
+                    <TextBox Text="{Binding EditUsername, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBox}" IsEnabled="{Binding IsNew}"/>
                 </StackPanel>
                 <StackPanel>
                     <TextBlock Text="{DynamicResource FieldPassword}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
-                    <PasswordBox materialDesign:PasswordBoxAssist.Password="{Binding EditPassword, Mode=TwoWay}" Style="{StaticResource FormPasswordBox}"/>
+                    <PasswordBox materialDesign:PasswordBoxAssist.Password="{Binding EditPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormPasswordBox}"/>
                 </StackPanel>
             </UniformGrid>
 
             <UniformGrid Columns="2" Margin="0,0,0,12">
                 <StackPanel Margin="0,0,12,0">
                     <TextBlock Text="{DynamicResource FieldEmail}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
-                    <TextBox Text="{Binding EditEmail}" Style="{StaticResource FormTextBox}"/>
+                    <TextBox Text="{Binding EditEmail, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBox}"/>
                 </StackPanel>
                 <StackPanel>
                     <TextBlock Text="{DynamicResource FieldRoleReq}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
