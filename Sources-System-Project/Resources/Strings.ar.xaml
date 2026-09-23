@@ -1342,7 +1342,7 @@
     <system:String x:Key="MsgSuccessNeutronSourceDeleted">تم حذف المصدر النيتروني</system:String>
     <system:String x:Key="MsgErrNeutronSourceNotDeleted">المصدر النيتروني غير محذوف أصلاً</system:String>
     <system:String x:Key="MsgErrNeutronSourceRestoreCodeInUse">لا يمكن استرجاع هذا المصدر النيتروني: الكود ({0}) مستخدم حالياً لمصدر نيتروني نشط آخر. غيّر كود المصدر النشط أولاً ثم أعد محاولة الاسترجاع.</system:String>
-    <system:String x:Key="MsgErrNeutronSourceRestoreTypeDeleted">لا يمكن استرجاع المصدر النيتروني لأن نوعه "{0}" محذوف حالياً. يرجى استرجاع النوع أولاً ثم إعادة المحاولة.</system:String>
+    <system:String x:Key="MsgErrNeutronSourceRestoreTypeDeleted">لا يمكن استرجاع المصدر النيتروني لأن نوعه "{0}" محذوف حالياً.</system:String>
     <system:String x:Key="MsgErrNeutronSourceRestoreLocationDeleted">لا يمكن استرجاع المصدر النيتروني لأن موقعه "{0}" محذوف حالياً. يرجى استرجاع الموقع أولاً من سجل المحذوفات ثم إعادة المحاولة.</system:String>
     <system:String x:Key="MsgSuccessNeutronSourceRestored">تم استرجاع المصدر النيتروني {0}</system:String>
 

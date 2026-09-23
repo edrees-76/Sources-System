@@ -397,7 +397,7 @@ public class NeutronSourceService : INeutronSourceService
         var neutronType = db.NeutronSourceTypes.IgnoreQueryFilters().FirstOrDefault(t => t.Id == item.NeutronSourceTypeId);
         if (neutronType != null && neutronType.IsDeleted)
         {
-            return (false, string.Format(TranslationHelper.GetString("MsgErrNeutronSourceRestoreTypeDeleted") ?? "لا يمكن استرجاع المصدر النيتروني لأن نوعه \"{0}\" محذوف حالياً. يرجى استرجاع النوع أولاً ثم إعادة المحاولة.", neutronType.Code));
+            return (false, string.Format(TranslationHelper.GetString("MsgErrNeutronSourceRestoreTypeDeleted") ?? "لا يمكن استرجاع المصدر النيتروني لأن نوعه \"{0}\" محذوف حالياً.", neutronType.Code));
         }
 
         // فحص الموقع: إذا كان للمصدر النيتروني موقع، تحقق هل الموقع محذوف
