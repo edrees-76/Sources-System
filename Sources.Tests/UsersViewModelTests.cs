@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CommunityToolkit.Mvvm.Messaging;
 using Moq;
 using Sources.Helpers;
 using Sources.Models;
@@ -175,7 +176,7 @@ public class UsersViewModelTests
 
         var mockReportingService = new Mock<IReportingService>();
 
-        var vm = new UsersViewModel(mockUserService.Object, mockReportingService.Object);
+        var vm = new UsersViewModel(mockUserService.Object, mockReportingService.Object, messenger: new WeakReferenceMessenger());
         vm.Selected = existingUser;
         vm.EditCommand.Execute(null);
         vm.EditFullName = "Target User Updated";
@@ -207,7 +208,7 @@ public class UsersViewModelTests
 
         var mockReportingService = new Mock<IReportingService>();
 
-        var vm = new UsersViewModel(mockUserService.Object, mockReportingService.Object);
+        var vm = new UsersViewModel(mockUserService.Object, mockReportingService.Object, messenger: new WeakReferenceMessenger());
         vm.Selected = existingUser;
         vm.EditCommand.Execute(null);
         vm.EditFullName = "Target User Updated";
@@ -216,7 +217,11 @@ public class UsersViewModelTests
         vm.SaveCommand.Execute(null);
 
         mockUserService.Verify(s => s.ResetPassword(existingUser.Id, "NewP@ssw0rd1"), Times.Once);
-        Assert.Contains("لا يمكن تعديل حساب المدير الأساسي", vm.Message);
+        var expectedMessage = string.Format(
+            TranslationHelper.GetString("MsgWarnUserSavedPasswordNotChanged") ?? "تم حفظ بيانات المستخدم، لكن لم تُغيَّر كلمة المرور: {0}",
+            "لا يمكن تعديل حساب المدير الأساسي");
+        Assert.Equal(expectedMessage, vm.Message);
+        Assert.Equal(expectedMessage, DialogHelper.LastMessage);
         Assert.False(vm.IsEditing);
     }
 
@@ -238,7 +243,7 @@ public class UsersViewModelTests
 
         var mockReportingService = new Mock<IReportingService>();
 
-        var vm = new UsersViewModel(mockUserService.Object, mockReportingService.Object);
+        var vm = new UsersViewModel(mockUserService.Object, mockReportingService.Object, messenger: new WeakReferenceMessenger());
         vm.Selected = existingUser;
         vm.EditCommand.Execute(null);
         vm.EditFullName = "Target User Updated";
