@@ -1,12 +1,12 @@
 using System;
 using System.IO;
+using Sources.Data;
 
 namespace Sources.Services;
 
 public static class LoggerService
 {
-    private static readonly string LogDir = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Sources", "Logs");
+    private static readonly string LogDir = DatabasePaths.LogsDirectory;
 
     public static void LogInfo(string message) => WriteLog("INFO", message);
     public static void LogWarning(string message) => WriteLog("WARN", message);

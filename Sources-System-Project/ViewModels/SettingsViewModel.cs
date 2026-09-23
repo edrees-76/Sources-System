@@ -609,7 +609,8 @@ public partial class SettingsViewModel : ObservableObject
                     $"   - \u2066{result.ReturnedBorrows}\u2069 مسترجع (\u2066Returned\u2069)\n" +
                     $"   - \u2066{result.DeliveredBorrows}\u2069 جاري التسليم / نشط (\u2066Delivered\u2069)\n" +
                     $"   - \u2066{result.OverdueBorrows}\u2069 متأخر (\u2066Overdue\u2069)\n" +
-                    $"   - \u2066{result.PendingOrApprovedBorrows}\u2069 معلّق / معتمد (\u2066Pending/Approved\u2069)";
+                    $"   - \u2066{result.PendingOrApprovedBorrows}\u2069 معلّق / معتمد (\u2066Pending/Approved\u2069)\n" +
+                    $"• المصادر النيترونية: \u2066{result.TotalNeutronSources}\u2069 مصدراً";
 
                 DialogHelper.ShowInfo(summary, "ملخص توليد البيانات التجريبية");
             }

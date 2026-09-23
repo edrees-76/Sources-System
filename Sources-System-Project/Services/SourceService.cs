@@ -431,7 +431,7 @@ public class SourceService : ISourceService
         var lowerCode = source.SourceCode?.Trim().ToLower() ?? string.Empty;
         if (db.Sources.Any(s => s.Id != id && s.SourceCode.ToLower() == lowerCode))
         {
-            return (false, string.Format(TranslationHelper.GetString("MsgErrSourceRestoreConflict") ?? "لا يمكن استرجاع المصدر لوجود مصدر نشط آخر بنفس الكود ({0})", source.SourceCode));
+            return (false, string.Format(TranslationHelper.GetString("MsgErrSourceRestoreCodeInUse") ?? "لا يمكن استرجاع هذا المصدر: الكود ({0}) مستخدم حالياً لمصدر نشط آخر. غيّر كود المصدر النشط أولاً ثم أعد محاولة الاسترجاع.", source.SourceCode));
         }
 
         // فحص الموقع: إذا كان للمصدر موقع أصلي، تحقق هل الموقع محذوف
