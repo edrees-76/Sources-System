@@ -1,13 +1,18 @@
 # منظومة مصادر — لوحة جاهزية النشر
 
-**آخر تحديث:** 22 سبتمبر 2026
-**حالة المستودع:** آخر جولة مدموجة على `main` هي الجولة 185 (توثيق إغلاق
-ب5، commit `ad7e8dc`، PR #80). الجولة 186 قيد المراجعة أيضاً (Draft PR غير
-مدموج، فرع `fix/round-186-trial-mode-password-reset-deadlock`): **إصلاح
-عطل حرج** يمنع أي عميل جديد تماماً من إكمال الإعداد — حلقة مغلقة بين حارس
-الوضع التجريبي (`AuthorizationGuard.RequireActivated`) وفرض تغيير كلمة
-مرور admin الإلزامي (`MustChangePassword`/`ForceChangePasswordDialog`).
-تفاصيل كاملة في §الجولة 186 أدناه.
+**آخر تحديث:** 23 سبتمبر 2026
+**حالة المستودع:** آخر جولة مدموجة على `main` هي الجولة 192 (إضافة عمود
+«معدل الانبعاث الحالي» لجدول قائمة المصادر النيترونية، commit `c473746`،
+PR #88). الجولات 186–192 مدموجة جميعها فعلياً (إصلاح حلقة الإعداد المغلقة،
+جعل تغيير كلمة المرور الافتراضية اختيارياً، إزالة حارس `RequireActivated`
+من `UnlockAccount`/تفاعلات التنبيهات، توحيد وحدة عرض النشاط الحالي في
+تفاصيل المصدر النيتروني ونافذة تعديله، وعمود معدل الانبعاث الحالي)؛ كانت
+غائبة سابقاً عن هذا الملف بسبب فجوة توثيق صُحِّحت بالكامل في الجولة 193
+استناداً حصراً إلى `git log`/أوصاف الـPR — انظر أقسامها أدناه.
+الجولة 193 قيد المراجعة (Draft PR غير مدموج بعد، فرع
+`claude/round-193-neutron-current-activity-928b45`): إضافة عمود «النشاط
+الحالي» لنفس الجدول (يُغلق البند المؤجَّل في §3) + هذا اللحاق التوثيقي.
+تفاصيل كاملة في §الجولة 193 أدناه.
 
 **سجل تاريخي (جولات 168–170، مدموجة فعلاً):** الجولة 170 (commit `066415f`،
 PR #65)، الجولة 169 (استبدال رقم التفعيل التجريبي برقم إنتاجي حقيقي، commit
@@ -732,11 +737,18 @@ XAML المثبتة، وأي خدمة أخرى لم تُراجَع بعد صرا
 
   **الإصلاح المُطبَّق:** تغيير `UpdateSourceTrigger` من `LostFocus` إلى `PropertyChanged` على الحقول الإحدى عشر جميعها في كلا الملفين، بلا أي تعديل في `SourcesViewModel.cs`/`RadioisotopesViewModel.cs` (معالِجات `On<Property>TextChanged` الجزئية كانت متوافقة مسبقاً — تتعامل مع النص الفارغ/غير القابل للتحليل بإرجاع `null`/`0` دون رمي استثناء أو إعادة كتابة الخاصية النصية). 11 اختبار انحدار جديد (`RadioisotopeFormWindowTests.cs` ×4، `SourceFormWindowTests.cs` ×7) يحاكي KeyDown بمفتاح Enter فعلياً على العنصر المركَّز دون فقدان تركيز يدوي، وأثبت فشله على السلوك القديم عبر `git stash push -u`/`git stash apply` قبل تطبيق الإصلاح. انظر `docs/rounds/149-enter-lostfocus-numeric-fields.md` للعقد الكامل.
 
-**عمود «النشاط الحالي» غائب عن جدول المصادر النيترونية:** جدول المصادر النيترونية (`SourcesView.xaml`)
+~~**عمود «النشاط الحالي» غائب عن جدول المصادر النيترونية:** جدول المصادر النيترونية (`SourcesView.xaml`)
 لا يعرض عمود «النشاط الحالي» رغم أن الحساب (`_neutronDecayService.CalculateCurrentSourceActivity`
 عبر `DisplaySourceCurrentActivity`) موجود وصحيح ومُستخدَم فعلاً في نافذة التعديل. جدولا المصادر
 العادية والمحذوفة يعرضان عمود `CurrentActivityWithUnit`، بينما جدول المصادر النيترونية لا يحتويه.
-مؤجَّل لجولة XAML مستقلة قصيرة بعد إغلاق ب5، لإضافة عمود مماثل بنفس أسلوب التنسيق.
+مؤجَّل لجولة XAML مستقلة قصيرة بعد إغلاق ب5، لإضافة عمود مماثل بنفس أسلوب التنسيق.**~~
+**أُغلق بالجولة 193** (فرع `claude/round-193-neutron-current-activity-928b45`): أُضيف عمود
+«النشاط الحالي» (`HeaderCurrentActivity`) إلى جدول قائمة المصادر النيترونية، بنفس نمط عمود
+«معدل الانبعاث الحالي» من الجولة 192 — غلاف عرض `NeutronSourceListRow.CurrentActivityDisplay`
+جديد يحسب القيمة عبر `_neutronDecayService.CalculateCurrentSourceActivity(source)` ويُنسِّقها
+بنفس منطق الفرع الناجح في `NeutronSourceDetailsViewModel.CurrentActivityDisplay` (تحويل إلى
+وحدة `source.ActivityUnit` أو Bq عند غيابها)، دون تعديل أيٍّ من الخدمة أو نموذج التفاصيل. انظر
+§الجولة 193 أدناه للتفاصيل الكاملة.
 
 **تعليق متقطّع في عدّاء GitHub:** وقع مرتين في أقل من ساعة على كود مرّ أخضر قبله وبعده، وحُصر أثره بمهلة الوظيفة والخطوة في الجولة 114. المؤشّر: خطوة اختبارات تتجاوز خمس دقائق مع أنها تنتهي في 73 ثانية. الإجراء عند تكراره: إعادة تشغيل التشغيل نفسه بلا تعديل كود، ولا يُفتح تحقيق في الحزمة إلا إن فشل التشغيل المعاد على الـ commit نفسه.
 
@@ -2530,3 +2542,170 @@ restore نظيفة، وليس تراجعاً حقيقياً في الكود. إ�
 لاحق فهذا هو النمط الطبيعي الموثَّق في كل الجولات السابقة، ولا يستدعي أي قلق.
 هذه الملاحظة تشخيصية بحتة، الغرض منها توفير الوقت إن تكرر نفس خطأ NuGet
 مستقبلاً على أي جهاز بناء آخر.
+
+---
+
+## الجولة 188 — إغلاق ب8 (نظام النشر) نهائياً بعد اكتمال التحقق اليدوي الخماسي
+
+توثيق فقط (commit `d5f7bbf`، PR #84، فرع `docs/round-188-close-b8-deployment`).
+أُنجزت خطوات التحقق اليدوي الخمس الإلزامية من `docs/deployment-guide.md` §4
+بالكامل على `SourcesSystemSetup_v1.0.0.exe` المبني من `main` عند commit
+`f7be7f7`، على جهاز إدريس (تثبيت نظيف، إدخال بيانات حقيقية، ترقية فوق
+تثبيت قائم، إلغاء التثبيت، إعادة التثبيت مع التقاط بيانات المستخدم القديمة
+تلقائياً). ب8 مكتملة بالكامل؛ جميع بنود ما قبل النشر (ب1–ب8) مكتملة الآن.
+لا تعديل كود، لا اختبارات، لا ترحيل EF.
+
+---
+
+## الجولة 189 — إظهار النشاط الابتدائي بجانب الحالي في تفاصيل المصدر المشع وتوحيد وحدة العرض في تفاصيل المصدر النيتروني
+
+commit `4b038ba`، PR #85، فرع مدموج (لا فرع مستقل موثَّق منفصل عن الـPR).
+
+**التغيير:** تفاصيل المصدر المشع أضافت `InitialActivityDisplay`/
+`InitialActivityUnitSymbol` إلى `SourceDetailsIsotopeItem` (عمود جديد بجدول
+النظائر والنشاط، لكل من حالة النظائر المفصّلة والنظير الواحد)، مع علامة
+"غير مسجّل" واضحة عند غياب النشاط الابتدائي لنظير معيّن. تفاصيل المصدر
+النيتروني: `NeutronSourceDetailsViewModel.CurrentActivityDisplay` حُوِّل
+لعرض النشاط الحالي بوحدة `NeutronSource.ActivityUnit` بدلاً من إجباره على
+Bq، مع سقوط آمن إلى Bq عند غياب الوحدة أو معامل التحويل (`ConversionToBq
+== 0`). تعديل طبقة عرض فقط — لا تغيير في أي معامل تحويل علمي أو منطق
+اضمحلال، ولا ترحيل EF.
+
+**الملفات المتغيرة:** `SourceDetailsViewModel.cs`،
+`NeutronSourceDetailsViewModel.cs`، `SourceDetailsWindow.xaml`،
+`Strings.ar.xaml`/`Strings.en.xaml`، اختبارات موسَّعة في
+`SourceDetailsViewModelTests.cs` وملف جديد
+`NeutronSourceDetailsViewModelTests.cs` (7 ملفات، 189 إضافة/4 حذف حسب
+`git show --stat`).
+
+**النتائج (حسب وصف الـPR):** اختبارات مستهدفة `SourceDetailsViewModelTests`
+و`NeutronSourceDetailsViewModelTests` 14/14 ناجحة؛ مجموعة الاختبارات
+الكاملة 1288/1288 نجاح، 0 فشل، 0 تجاوز؛ بناء بصفر أخطاء.
+
+---
+
+## الجولة 190 — إزالة حارس `RequireActivated` من `UnlockAccount` ومن دوال التفاعل مع التنبيهات
+
+commit `9950995`، PR #86.
+
+**القرار المعماري:** بنفس القرار المتخذ في الجولة 186 لـ`ResetPassword` —
+فك قفل الحساب (`UserService.UnlockAccount`) وتفاعلات التنبيهات الموجودة
+بالفعل (`AlertService.MarkAsRead`/`DismissAlert`/`MarkAllAsRead`) عمليات
+أمان حساب/تفاعل مع بيانات موجودة، وليست إنشاءً لبيانات عمل جديدة يقصد بها
+حارس الوضع التجريبي (`AuthorizationGuard.RequireActivated`). أُزيل الحارس
+من الدوال الأربع مع تعليقات توثيقية تشرح السبب بنفس أسلوب `ResetPassword`.
+لا تغيير في منطق قفل الحساب نفسه (15 دقيقة / 5 محاولات) ولا في
+`GenerateAlerts`. هذا يُغلق البند المؤجَّل الموثَّق سابقاً في §الجولة 187
+("`AlertService.MarkAsRead`/`DismissAlert` و`UnlockAccount` لا يزالان
+مؤجَّلين").
+
+**الملفات المتغيرة:** `AlertService.cs`، `UserService.cs`، اختبارات جديدة
+في `AlertServiceTests.cs`/`UserServiceTests.cs` (4 ملفات، 87 إضافة/9 حذف).
+
+**النتائج (حسب وصف الـPR):** `dotnet build Sources.sln -c Debug` نجح، 0
+أخطاء، 5 تحذيرات `CS8604` (نفس القائمة مسبقاً، لم يتغيّر عددها).
+`dotnet test` قبل التعديل (على `4b038ba`): 1288/1288 نجاح؛ بعد التعديل:
+1290/1290 نجاح (+2 اختباران جديدان)، 0 فشل، 0 تجاوز.
+
+---
+
+## الجولة 191 — إصلاح عدم تطابق وحدة النشاط الحالي في نافذة تعديل المصدر النيتروني
+
+commit `bb64808`، PR #87.
+
+**المشكلة:** `DisplaySourceCurrentActivity` في `SourcesViewModel.cs`
+(تُحدَّث عبر `UpdateDisplaySourceCurrentActivity`) كانت تعرض النشاط الحالي
+المحسوب دائماً بوحدة Bq الثابتة، بينما النشاط الابتدائي المعروض بجانبه
+(`EditActivityText`) يُعرض بوحدة `target.ActivityUnit`، فيمنع مقارنة
+بصرية مباشرة بين القيمتين في نافذة تعديل مصدر نيتروني قائم — نفس عيب
+العرض الذي أُصلح بالجولة 189 في
+`NeutronSourceDetailsViewModel.CurrentActivityDisplay`، لكنه فات في هذا
+الملف المنفصل.
+
+**التغيير:** طُبِّق نفس منطق التحويل والحارس من الجولة 189 على
+`DisplaySourceCurrentActivity`. لا علاقة له بمنطق حساب الاضمحلال نفسه
+(`INeutronDecayCalculationService`)، ولا بـ`NeutronSourceDetailsViewModel.cs`
+(أُصلح بالجولة 189)، ولا بـ`SourceFormWindow.xaml`.
+
+**الملفات المتغيرة:** `SourcesViewModel.cs` (11 سطراً)، اختبار جديد في
+`SourcesViewModelTests.cs`
+(`EditNeutronSource_WithNonBqActivityUnit_DisplaysCurrentActivityConvertedToSourceUnit`)
+(2 ملفات، 53 إضافة/1 حذف).
+
+**النتائج:** `dotnet test Sources.sln`: 1291/1291 نجاح، 0 فشل، 0 تجاوز.
+بناء: 0 تحذير جديد، 0 خطأ. الانحراف عن العقد: none.
+
+---
+
+## الجولة 192 — إضافة عمود «معدل الانبعاث الحالي» لجدول قائمة المصادر النيترونية
+
+commit `c473746`، PR #88.
+
+**التغيير:** غلاف عرض شفاف جديد `NeutronSourceListRow` (بنفس نمط
+`DeletedSourceRow`/`LocationNeutronSourceRow` القائم) يحسب معدل الانبعاث
+الحالي عبر `INeutronDecayCalculationService.CalculateCurrentEmissionRate`
+دون أن يستدعي كائن النموذج `NeutronSource` الخدمة مباشرة عبر دالة بناء
+جديدة `BuildCurrentEmissionRateDisplay(NeutronSource)`؛ `PagedNeutronSources`
+تحوّل من `ObservableCollection<NeutronSource>` إلى
+`ObservableCollection<NeutronSourceListRow>` داخل
+`UpdatePagedNeutronSources()`. عمود جديد "معدل الانبعاث الحالي" في
+`SourcesView.xaml` بنفس تنسيق عمود معدل الانبعاث المُعاير
+(`DataGridTemplateColumn`، `Border` خلفية `#1A0D9488`، نص عريض بلون
+`#0D9488`)، ومفتاح ترجمة جديد `HeaderCurrentEmissionRate`. صُحِّح أيضاً
+`CommandParameter` لأزرار عرض التفاصيل/تعديل/حذف الثلاثة لتمرير
+`NeutronSource` الفعلي بدل الغلاف الجديد (تفادياً لكسر ربط قائم على نوع
+الكائن).
+
+**الملفات المتغيرة:** `SourcesViewModel.cs`، `SourcesView.xaml`،
+`Strings.ar.xaml`/`Strings.en.xaml`، اختباران جديدان في
+`SourcesViewModelTests.cs` (سيناريو اضمحلال Am-241 بعد نصف عمر واحد
+2.2×10⁶ → 1.1×10⁶ n/s، وسيناريو `NeutronSourceType == null` يُظهر "-")
+(5 ملفات، 133 إضافة/5 حذف).
+
+**النتائج (حسب وصف الـPR):** 1291 قبل هذه الجولة → 1293 بعد إضافة
+الاختبارين الجديدين (Debug/CI)، 0 فشل، 0 تجاوز؛ بناء بلا تحذيرات جديدة
+(فقط `CS8604` القديمة في `LoginWindow.xaml.cs`).
+
+---
+
+## الجولة 193 — إضافة عمود «النشاط الحالي» لجدول قائمة المصادر النيترونية + لحاق توثيقي للجولات 189–192
+
+فرع `claude/round-193-neutron-current-activity-928b45`، Draft PR غير مدموج
+بعد (انظر رابط الـPR في تقرير الجولة).
+
+**التغيير:** بنفس نمط الجولة 192 حرفياً لكن للنشاط بدل معدل الانبعاث.
+`NeutronSourceListRow.CurrentActivityDisplay` جديدة، بدالة بناء جديدة
+`BuildCurrentActivityDisplay(NeutronSource)` تستدعي
+`_neutronDecayService.CalculateCurrentSourceActivity(source)` وتُنسِّق
+الناتج بنفس منطق الفرع الناجح في
+`NeutronSourceDetailsViewModel.CurrentActivityDisplay` (تحويل إلى وحدة
+`source.ActivityUnit` عبر `FormatActivityValue`، أو Bq عند غياب
+الوحدة/معامل التحويل)، دون تعديل أيٍّ من `NeutronSourceDetailsViewModel`/
+`NeutronDecayCalculationService`/`FormatActivityValue` أنفسها. عمود جديد
+في `SourcesView.xaml` مباشرة بعد عمود "عدم اليقين %" وقبل عمود الحالة،
+بنفس تنسيق عمود الجولة 192. مفتاح ترجمة جديد `HeaderCurrentActivity` في
+`Strings.ar.xaml`/`Strings.en.xaml` (بدل إعادة استخدام أي من المفاتيح
+القائمة `ColCurrentActivity`/`LabelCurrentActivity`/غيرها، إذ لا يشترك
+أيٌّ منها بنفس الدور الدلالي لعمود جدول بنمط الجولة 192). هذا يُغلق البند
+المؤجَّل الموثَّق سابقاً في §3 ("عمود «النشاط الحالي» غائب عن جدول
+المصادر النيترونية").
+
+**التوثيق:** أُضيفت هذه الجولة نفسها بالإضافة إلى إدخالات الجولات 188–192
+الغائبة عن `docs/session-summary.md` وعن هذا الملف (فجوة توثيق مكتشفة
+أثناء هذه الجولة، مُصحَّحة الآن استناداً حصراً إلى `git log`/أوصاف الـPR
+لا استنتاجاً).
+
+**الملفات المتغيرة:** `SourcesViewModel.cs`، `SourcesView.xaml`،
+`Strings.ar.xaml`/`Strings.en.xaml`، ثلاثة اختبارات جديدة في
+`SourcesViewModelTests.cs` تحت `#region Round 193` (حالة اضمحلال Am-241
+بعد نصف عمر واحد 100 → 50 MBq، حالة `ActivityValue == null` تُظهر "-"،
+وحالة تطابق العرض بين الصف والـ`NeutronSourceDetailsViewModel` لنفس
+الكائن)، `docs/session-summary.md`، `docs/release-readiness.md` (هذا
+الملف).
+
+**النتائج:** `dotnet test Sources.sln` الكامل 1296/1296 نجاح (Debug، يطابق
+توقّع العقد 1291+3+2)، 0 فشل، 0 تجاوز؛ بناء بنفس تحذيرات `CS8604` الثلاث
+المعروفة مسبقاً فقط (`LoginWindow.xaml.cs`:104،:199،
+`ViewInstantiationTests.cs`:218)، صفر تحذيرات جديدة. لا ترحيل EF (لا
+تغيير في المخطط). لم تُلمس الملفات الثلاثة المحظورة
+(`LoginWindow`/`LoginView`/`SplashWindow`). الانحراف عن العقد: none.

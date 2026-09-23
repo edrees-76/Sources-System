@@ -1312,6 +1312,7 @@
     <system:String x:Key="HeaderRefType">النوع المرجعي</system:String>
     <system:String x:Key="HeaderEmissionRate">معدل الانبعاث المُعاير (n/s)</system:String>
     <system:String x:Key="HeaderCurrentEmissionRate">معدل الانبعاث الحالي</system:String>
+    <system:String x:Key="HeaderCurrentActivity">النشاط الحالي</system:String>
     <system:String x:Key="HeaderUncertaintyPercent">عدم اليقين %</system:String>
     <system:String x:Key="MsgNoNeutronSourcesRecorded">لا توجد مصادر نيترونية مسجلة</system:String>
     <system:String x:Key="MsgNoNeutronSourcesHint">يمكنك البدء بإضافة مصدر نيتروني جديد من زر الإضافة أعلاه.</system:String>

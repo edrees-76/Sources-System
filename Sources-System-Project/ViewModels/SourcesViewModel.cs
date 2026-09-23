@@ -88,6 +88,7 @@ public class NeutronSourceListRow
     public string StatusColor => NeutronSource.StatusColor;
     public DateTime? CalibrationDate => NeutronSource.CalibrationDate;
     public string CurrentEmissionRateDisplay { get; set; } = "-";
+    public string CurrentActivityDisplay { get; set; } = "-";
 }
 
 public partial class SourcesViewModel : ObservableObject, IEditableViewModel
@@ -631,7 +632,8 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         var rows = items.Select(n => new NeutronSourceListRow
         {
             NeutronSource = n,
-            CurrentEmissionRateDisplay = BuildCurrentEmissionRateDisplay(n)
+            CurrentEmissionRateDisplay = BuildCurrentEmissionRateDisplay(n),
+            CurrentActivityDisplay = BuildCurrentActivityDisplay(n)
         });
         PagedNeutronSources = new ObservableCollection<NeutronSourceListRow>(rows);
         NeutronPageStatusText = TranslationHelper.GetFormat("PageStatusFormat", NeutronCurrentPage, NeutronTotalPages, NeutronSources.Count);
@@ -652,6 +654,29 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         if (result.IsCalculated && result.CurrentEmissionRate.HasValue)
         {
             return $"{ScientificNotationParser.FormatScientific(result.CurrentEmissionRate.Value)} n/s";
+        }
+
+        return "-";
+    }
+
+    /// <summary>
+    /// يبني نص عرض النشاط الحالي لقائمة المصادر النيترونية بنفس منطق التنسيق العلمي
+    /// المستخدم في NeutronSourceDetailsViewModel.CurrentActivityDisplay (الفرع الناجح فقط)، لكن
+    /// مبسّطاً: عند تعذّر الحساب يُعرض "-" فقط بدل رسالة الحالة التفصيلية (مساحة القائمة ضيقة).
+    /// </summary>
+    private string BuildCurrentActivityDisplay(NeutronSource source)
+    {
+        var result = _neutronDecayService.CalculateCurrentSourceActivity(source);
+        if (result.IsCalculated && result.CurrentActivityBq.HasValue)
+        {
+            var unit = source.ActivityUnit;
+            if (unit != null && unit.ConversionToBq != 0)
+            {
+                double valueInUnit = result.CurrentActivityBq.Value / unit.ConversionToBq;
+                return FormatActivityValue(valueInUnit, unit.UnitSymbol);
+            }
+
+            return FormatActivityValue(result.CurrentActivityBq.Value, "Bq");
         }
 
         return "-";

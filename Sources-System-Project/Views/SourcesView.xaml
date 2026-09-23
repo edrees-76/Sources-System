@@ -841,6 +841,17 @@
                                     <!-- نسبة عدم اليقين -->
                                     <DataGridTextColumn Header="{DynamicResource HeaderUncertaintyPercent}" Binding="{Binding RelativeExpandedUncertaintyPercent, StringFormat={}{0:N1}%, TargetNullValue='—'}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterAligned}"/>
 
+                                    <!-- النشاط الحالي -->
+                                    <DataGridTemplateColumn Header="{DynamicResource HeaderCurrentActivity}" Width="Auto" MinWidth="140">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border Background="#1A0D9488" CornerRadius="4" Padding="6,3" Margin="4,2" HorizontalAlignment="Center">
+                                                    <TextBlock Text="{Binding CurrentActivityDisplay}" FontWeight="Bold" Foreground="#0D9488" FlowDirection="LeftToRight"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
                                     <!-- الحالة -->
                                     <DataGridTemplateColumn Header="{DynamicResource ColStatus}" Width="Auto" MinWidth="100">
                                         <DataGridTemplateColumn.CellTemplate>
