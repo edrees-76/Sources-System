@@ -26,6 +26,15 @@ public static class ScientificNotationParser
         ['٥'] = '5', ['٦'] = '6', ['٧'] = '7', ['٨'] = '8', ['٩'] = '9'
     };
 
+    private static readonly Regex ExpFormatRegex = new(
+        @"^(?:(?<base>[-+]?[0-9]+(?:\.[0-9]+)?)\s*[xX\*×]\s*)?10\^(?<exp>[-+]?[0-9]+)$", RegexOptions.Compiled);
+
+    private static readonly Regex PowFormatRegex = new(
+        @"^(?<base>[-+]?[0-9]+(?:\.[0-9]+)?)\s*\^\s*(?<exp>[-+]?[0-9]+)$", RegexOptions.Compiled);
+
+    private static readonly Regex MulFormatRegex = new(
+        @"^(?<left>[-+]?[0-9]+(?:\.[0-9]+)?)\s*[xX\*×]\s*(?<right>[-+]?[0-9]+(?:\.[0-9]+)?)$", RegexOptions.Compiled);
+
     /// <summary>
     /// يحاول تحويل النص المدخل إلى رقم double يدعم كافة الصيغ العلمية والعادية
     /// </summary>
@@ -47,7 +56,7 @@ public static class ScientificNotationParser
 
         // 2. محاولة التحويل عبر regex لصيغ الأس العشري: base × 10^exp أو 10^exp
         // تدعم: 1.1x10^7, 1.1X10^7, 1.1×10^7, 1.1*10^7, 10^7, 10^-3, 1.1x10^+7 (علامة ^ إلزامية للأس)
-        var matchExp = Regex.Match(normalized, @"^(?:(?<base>[-+]?[0-9]+(?:\.[0-9]+)?)\s*[xX\*×]\s*)?10\^(?<exp>[-+]?[0-9]+)$");
+        var matchExp = ExpFormatRegex.Match(normalized);
         if (matchExp.Success)
         {
             double baseVal = 1.0;
@@ -68,7 +77,7 @@ public static class ScientificNotationParser
         }
 
         // 3. صيغة الأس العام مثل base^exp
-        var matchPow = Regex.Match(normalized, @"^(?<base>[-+]?[0-9]+(?:\.[0-9]+)?)\s*\^\s*(?<exp>[-+]?[0-9]+)$");
+        var matchPow = PowFormatRegex.Match(normalized);
         if (matchPow.Success)
         {
             if (double.TryParse(matchPow.Groups["base"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out double b) &&
@@ -80,7 +89,7 @@ public static class ScientificNotationParser
         }
 
         // 4. صيغة الضرب العادي مثل 1.1×1000000 أو 5x1000 أو 2*500000
-        var matchMul = Regex.Match(normalized, @"^(?<left>[-+]?[0-9]+(?:\.[0-9]+)?)\s*[xX\*×]\s*(?<right>[-+]?[0-9]+(?:\.[0-9]+)?)$");
+        var matchMul = MulFormatRegex.Match(normalized);
         if (matchMul.Success)
         {
             if (double.TryParse(matchMul.Groups["left"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out double left) &&
@@ -189,8 +198,8 @@ public static class ScientificNotationParser
 
         string str = sb.ToString().Trim();
 
-        // إزالة المسافات
-        str = str.Replace(" ", "");
+        // إزالة المسافات (العادية + غير القابلة للفصل NBSP + الرفيعة NNBSP)
+        str = str.Replace(" ", "").Replace(" ", "").Replace(" ", "");
 
         // معالجة فواصل الآلاف الإنجليزية مثل 11,000,000 أو 1,234.56
         if (str.Contains(',') && str.Contains('.'))

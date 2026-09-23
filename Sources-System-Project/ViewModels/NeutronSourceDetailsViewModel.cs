@@ -44,6 +44,7 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
     public string SerialNumber => !string.IsNullOrWhiteSpace(NeutronSource.SerialNumber) ? NeutronSource.SerialNumber : "-";
     public string TypeCode => NeutronSource.NeutronSourceType?.Code ?? "-";
     public string TypeNameAr => !string.IsNullOrWhiteSpace(NeutronSource.NeutronSourceType?.NameAr) ? NeutronSource.NeutronSourceType.NameAr : (NeutronSource.NeutronSourceType?.NameEn ?? "-");
+    public string TypeDisplayName => NeutronSource.NeutronSourceType?.DisplayName is { Length: > 0 } n ? n : "-";
     public string TypeNameEn => !string.IsNullOrWhiteSpace(NeutronSource.NeutronSourceType?.NameEn) ? NeutronSource.NeutronSourceType.NameEn : "-";
     public string ReactionType => !string.IsNullOrWhiteSpace(NeutronSource.NeutronSourceType?.ReactionType) ? NeutronSource.NeutronSourceType.ReactionType : "-";
     public string TargetMaterial => !string.IsNullOrWhiteSpace(NeutronSource.NeutronSourceType?.TargetMaterial) ? NeutronSource.NeutronSourceType.TargetMaterial : "-";

@@ -128,18 +128,18 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     [ObservableProperty] private bool _isManagingNeutronTypes;
     [ObservableProperty] private NeutronSourceTypesViewModel? _neutronTypesManagementViewModel;
 
+    private Task? _tabLoadTask;
+
     partial void OnSelectedTabChanged(string value)
     {
         IsNeutronSourcesView = value == "Neutron";
         IsDeletedSourcesView = value == "Deleted";
-        if (value == "Neutron")
+        _tabLoadTask = value switch
         {
-            _ = LoadNeutronDataAsync();
-        }
-        else if (value == "Deleted")
-        {
-            _ = LoadDeletedDataAsync();
-        }
+            "Neutron" => LoadNeutronDataAsync(),
+            "Deleted" => LoadDeletedDataAsync(),
+            _ => null
+        };
     }
 
     // ─── خصائص التقسيم إلى صفحات (Pagination) ───
@@ -443,19 +443,21 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     [RelayCommand]
     public async Task SwitchToNeutronSourcesAsync()
     {
+        _tabLoadTask = null;
         SelectedTab = "Neutron";
         IsDeletedSourcesView = false;
         IsNeutronSourcesView = true;
-        await LoadNeutronDataAsync();
+        await (_tabLoadTask ?? LoadNeutronDataAsync());
     }
 
     [RelayCommand]
     public async Task SwitchToDeletedSourcesAsync()
     {
+        _tabLoadTask = null;
         SelectedTab = "Deleted";
         IsDeletedSourcesView = true;
         IsNeutronSourcesView = false;
-        await LoadDeletedDataAsync();
+        await (_tabLoadTask ?? LoadDeletedDataAsync());
     }
 
     [RelayCommand]

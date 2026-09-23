@@ -999,6 +999,17 @@ public class NeutronSourceType
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+    [NotMapped]
+    public string DisplayName
+    {
+        get
+        {
+            bool isArabic = System.Threading.Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName == "ar";
+            if (isArabic) return !string.IsNullOrEmpty(NameAr) ? NameAr : NameEn;
+            return !string.IsNullOrEmpty(NameEn) ? NameEn : NameAr ?? string.Empty;
+        }
+    }
+
     public ICollection<NeutronSource> NeutronSources { get; set; } = new List<NeutronSource>();
 }
 
@@ -1116,8 +1127,10 @@ public class NeutronSource
 
     [NotMapped]
     public string ActivityValueFormatted => ActivityValue.HasValue && ActivityUnit != null
-        ? $"{ActivityValue.Value} {ActivityUnit.UnitSymbol}"
-        : "غير مسجّل";
+        ? (string.IsNullOrEmpty(ActivityUnit.UnitSymbol)
+            ? $"{ActivityValue.Value}"
+            : $"{ActivityValue.Value} {ActivityUnit.UnitSymbol}")
+        : Sources.Helpers.TranslationHelper.GetString("TextNotRecorded") ?? "غير مسجّل";
 }
 
 // ─── شهادات ومستندات المصادر ───

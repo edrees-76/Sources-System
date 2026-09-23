@@ -102,7 +102,7 @@
                                     <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,10">
                                         <TextBlock Text="{DynamicResource DetailLabelNeutronRefType}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                                         <TextBlock Text="{Binding TypeCode}" FontSize="14" FontWeight="Bold" Foreground="#0D9488" Margin="0,2,0,0"/>
-                                        <TextBlock Text="{Binding TypeNameAr}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                                        <TextBlock Text="{Binding TypeDisplayName}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
                                     </StackPanel>
 
                                     <!-- تفاعل التوليد -->

@@ -807,7 +807,7 @@
                                             <DataTemplate>
                                                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
                                                     <TextBlock Text="{Binding NeutronSourceType.Code}" FontWeight="Bold" Foreground="#0D9488" TextAlignment="Center"/>
-                                                    <TextBlock Text="{Binding NeutronSourceType.NameAr}" FontSize="11" Foreground="{DynamicResource TextSecondary}" TextAlignment="Center"/>
+                                                    <TextBlock Text="{Binding NeutronSourceType.DisplayName}" FontSize="11" Foreground="{DynamicResource TextSecondary}" TextAlignment="Center"/>
                                                 </StackPanel>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
