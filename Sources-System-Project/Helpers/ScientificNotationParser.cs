@@ -199,7 +199,7 @@ public static class ScientificNotationParser
         string str = sb.ToString().Trim();
 
         // إزالة المسافات (العادية + غير القابلة للفصل NBSP + الرفيعة NNBSP)
-        str = str.Replace(" ", "").Replace(" ", "").Replace(" ", "");
+        str = str.Replace(" ", "").Replace("\u00A0", "").Replace("\u202F", "");
 
         // معالجة فواصل الآلاف الإنجليزية مثل 11,000,000 أو 1,234.56
         if (str.Contains(',') && str.Contains('.'))
