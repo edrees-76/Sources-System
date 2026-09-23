@@ -58,7 +58,7 @@
                 </StackPanel>
                 <StackPanel>
                     <TextBlock Text="{DynamicResource FieldPassword}" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
-                    <PasswordBox materialDesign:PasswordBoxAssist.Password="{Binding EditPassword, Mode=TwoWay}" Style="{StaticResource FormPasswordBox}"/>
+                    <PasswordBox materialDesign:PasswordBoxAssist.Password="{Binding EditPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormPasswordBox}"/>
                 </StackPanel>
             </UniformGrid>
 

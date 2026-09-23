@@ -157,3 +157,36 @@ on every bound TextBox, plus the identical `PreviewKeyDown` Enter flush handler 
 **Authorized deviation (architect, 2026-09-23):** the code-behind restriction was written on a wrong assumption about
 D1. Code-behind changes are limited to that PreviewKeyDown flush handler (its registration and method), with no other
 code-behind change. No PasswordBox change unless the regression test proves the password is stale.
+
+### Lead decision 2 — PasswordBox (D3 corrected)
+The regression test written for commit A (`UserFormWindow_EnterAfterTyping_PersistsCurrentPassword_OnNewUserPath`)
+proved D3's expectation wrong: setting `passwordBox.Password` did not flow into `UsersViewModel.EditPassword` at
+all before `SaveCommand` ran, with or without Enter. Diagnosis: MaterialDesignThemes 5.3's
+`PasswordBoxAssist.PasswordProperty` metadata sets `DefaultUpdateSourceTrigger = LostFocus` (unlike a plain
+`TextBox.TextProperty`, whose default is `PropertyChanged`). A lead probe confirmed the attached property itself
+receives `"NewPass#196"` and the underlying `BindingExpression` is `Active` with `IsDirty=true` — the value is not
+lost, it is simply not pushed to the source until `LostFocus` (or an explicit `UpdateSource()`) fires. Since the
+window's `PreviewKeyDown` flush handler only targets `TextBox` (`Keyboard.FocusedElement is not TextBox
+focusedTextBox`), it never reaches the `PasswordBox`, so Enter always saw a stale (empty, on the new-user path)
+`EditPassword`. Effect on users: new-user creation was refused with "password required" even after typing one;
+editing an existing user showed a false "success" message while `UserService.ResetPassword` was silently skipped
+(the typed password was never sent).
+
+**Fix (authorized, smallest possible, XAML-only):** `UserFormWindow.xaml:61` —
+`materialDesign:PasswordBoxAssist.Password="{Binding EditPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"`.
+No other XAML change, no code-behind change (the existing `PreviewKeyDown` flush handler is irrelevant to this fix
+and was left untouched).
+
+**Proof:** both regression tests
+(`UserFormWindow_EnterAfterTyping_PersistsCurrentPassword_OnNewUserPath`,
+`UserFormWindow_EnterAfterTyping_PersistsCurrentPassword_OnEditPath_CallsResetPassword`) were run against the
+pre-fix XAML first and both failed (`Assert.Equal() Failure: Expected: 1, Actual: 0` on the mocked
+`CreateUser`/`ResetPassword` call count), then passed after the one-line XAML change (9/9 `UserFormWindowTests`
+passing, confirmed over 10 consecutive `dotnet test` runs with zero flakiness).
+
+**New post-release backlog item (not fixed in this round):** `UsersViewModel.Save` (edit path) calls
+`_userService.ResetPassword(_editingId!.Value, EditPassword)` unconditionally whenever `EditPassword` is
+non-empty, even when the preceding `_userService.UpdateUser(user)` call failed (`r.Success == false`). This means
+a failed profile update can still silently change the user's password. Out of scope for round 196 (behavioral
+change to `UsersViewModel.Save`, not a WPF binding/Enter-key fix); recorded in
+`docs/release-readiness.md` → "قائمة ما بعد الإصدار".

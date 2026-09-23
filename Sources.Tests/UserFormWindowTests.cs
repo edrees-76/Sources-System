@@ -547,4 +547,169 @@ public class UserFormWindowTests
             }
         });
     }
+
+    /// <summary>
+    /// اختبار انحدار (الجولة 196، قرار القائد الثاني — تصحيح D3): صندوق كلمة المرور
+    /// (PasswordBox) في مسار المستخدم الجديد. أثبت التشخيص أن
+    /// materialDesign:PasswordBoxAssist.PasswordProperty في MaterialDesignThemes 5.3 له
+    /// DefaultUpdateSourceTrigger=LostFocus، فيبقى EditPassword فارغاً وقت وصول Enter إلى
+    /// SaveCommand رغم أن الخاصية المرفقة نفسها تحمل القيمة الجديدة فعلياً (Binding Active،
+    /// IsDirty=true) — تفريغ صريح لاحق فقط (UpdateSource) يوصلها. الإصلاح في UserFormWindow.xaml
+    /// (Mode=TwoWay, UpdateSourceTrigger=PropertyChanged) يجعل الربط يتحدّث مع كل PasswordChanged
+    /// بلا حاجة لأي معالج كود-خلف إضافي، مطابقاً لسلوك حقول EditFullName/EditUsername/EditEmail.
+    /// </summary>
+    [Fact]
+    public void UserFormWindow_EnterAfterTyping_PersistsCurrentPassword_OnNewUserPath()
+    {
+        RunInSta(() =>
+        {
+            var role = CreateRole();
+            var mockUserService = new Mock<IUserService>();
+            mockUserService.Setup(s => s.GetAllUsers()).Returns(new List<User>());
+            mockUserService.Setup(s => s.GetAllRoles()).Returns(new List<Role> { role });
+            mockUserService.Setup(s => s.GetAuditLogs(null, null, null)).Returns(new List<AuditLog>());
+            User? persistedItem = null;
+            string? persistedPassword = null;
+            int createCallCount = 0;
+            mockUserService.Setup(s => s.CreateUser(It.IsAny<User>(), It.IsAny<string>()))
+                .Callback<User, string>((item, pwd) => { persistedItem = item; persistedPassword = pwd; createCallCount++; })
+                .Returns((true, "تم إنشاء المستخدم"));
+            var mockReportingService = new Mock<IReportingService>();
+
+            var vm = new UsersViewModel(mockUserService.Object, mockReportingService.Object);
+            try
+            {
+                vm.LoadData();
+                vm.AddNewCommand.Execute(null);
+                vm.EditFullName = "مستخدم تجريبي جديد";
+                vm.EditUsername = "newuser196pwd";
+                vm.EditRoleId = role.Id;
+
+                var formWindow = new UserFormWindow
+                {
+                    DataContext = vm,
+                    WindowStartupLocation = WindowStartupLocation.Manual,
+                    ShowInTaskbar = false,
+                    ShowActivated = false,
+                    Left = -5000,
+                    Top = -5000
+                };
+
+                formWindow.Show();
+                try
+                {
+                    formWindow.UpdateLayout();
+
+                    var passwordBox = FindFirstVisualChild<PasswordBox>(formWindow);
+                    Assert.NotNull(passwordBox);
+
+                    passwordBox!.Focus();
+                    Assert.Same(passwordBox, Keyboard.FocusedElement);
+
+                    passwordBox.Password = "NewPass#196";
+                    SimulateEnterKeyPress(passwordBox);
+
+                    Assert.Equal(1, createCallCount);
+                    Assert.NotNull(persistedItem);
+                    Assert.Equal("newuser196pwd", persistedItem!.Username);
+                    Assert.Equal("NewPass#196", persistedPassword);
+                    Assert.False(vm.IsEditing);
+                }
+                finally
+                {
+                    formWindow.Close();
+                }
+            }
+            finally
+            {
+                WeakReferenceMessenger.Default.UnregisterAll(vm);
+            }
+        });
+    }
+
+    /// <summary>
+    /// اختبار انحدار (الجولة 196، قرار القائد الثاني) على مسار تعديل مستخدم موجود: يتحقق أن
+    /// ضغط Enter بعد كتابة كلمة مرور جديدة في PasswordBox أثناء التعديل يرسل القيمة الفعلية إلى
+    /// IUserService.ResetPassword — لا كلمة مرور فارغة/قديمة تُسقط الاستدعاء صامتاً.
+    /// </summary>
+    [Fact]
+    public void UserFormWindow_EnterAfterTyping_PersistsCurrentPassword_OnEditPath_CallsResetPassword()
+    {
+        RunInSta(() =>
+        {
+            var role = CreateRole();
+            var existing = new User
+            {
+                Id = System.Guid.NewGuid(),
+                FullName = "مستخدم قائم",
+                Username = "existinguser196",
+                Email = "existing196@example.com",
+                RoleId = role.Id,
+                Role = role,
+                IsActive = true,
+                IsEditor = true,
+                Permissions = "Sources"
+            };
+
+            var mockUserService = new Mock<IUserService>();
+            mockUserService.Setup(s => s.GetAllUsers()).Returns(new List<User> { existing });
+            mockUserService.Setup(s => s.GetAllRoles()).Returns(new List<Role> { role });
+            mockUserService.Setup(s => s.GetAuditLogs(null, null, null)).Returns(new List<AuditLog>());
+            mockUserService.Setup(s => s.UpdateUser(It.IsAny<User>()))
+                .Returns((true, "تم تحديث المستخدم"));
+            Guid? resetPasswordUserId = null;
+            string? resetPasswordValue = null;
+            int resetPasswordCallCount = 0;
+            mockUserService.Setup(s => s.ResetPassword(It.IsAny<System.Guid>(), It.IsAny<string>()))
+                .Callback<System.Guid, string>((id, pwd) => { resetPasswordUserId = id; resetPasswordValue = pwd; resetPasswordCallCount++; })
+                .Returns((true, "تم تغيير كلمة المرور"));
+            var mockReportingService = new Mock<IReportingService>();
+
+            var vm = new UsersViewModel(mockUserService.Object, mockReportingService.Object);
+            try
+            {
+                vm.LoadData();
+                vm.Selected = vm.Users.First(u => u.Id == existing.Id);
+                vm.EditCommand.Execute(null);
+
+                var formWindow = new UserFormWindow
+                {
+                    DataContext = vm,
+                    WindowStartupLocation = WindowStartupLocation.Manual,
+                    ShowInTaskbar = false,
+                    ShowActivated = false,
+                    Left = -5000,
+                    Top = -5000
+                };
+
+                formWindow.Show();
+                try
+                {
+                    formWindow.UpdateLayout();
+
+                    var passwordBox = FindFirstVisualChild<PasswordBox>(formWindow);
+                    Assert.NotNull(passwordBox);
+
+                    passwordBox!.Focus();
+                    Assert.Same(passwordBox, Keyboard.FocusedElement);
+
+                    passwordBox.Password = "NewPass#196";
+                    SimulateEnterKeyPress(passwordBox);
+
+                    Assert.Equal(1, resetPasswordCallCount);
+                    Assert.Equal(existing.Id, resetPasswordUserId);
+                    Assert.Equal("NewPass#196", resetPasswordValue);
+                    Assert.False(vm.IsEditing);
+                }
+                finally
+                {
+                    formWindow.Close();
+                }
+            }
+            finally
+            {
+                WeakReferenceMessenger.Default.UnregisterAll(vm);
+            }
+        });
+    }
 }
