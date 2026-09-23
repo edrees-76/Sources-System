@@ -818,6 +818,93 @@ public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         Assert.True(stillDeleted.IsDeleted);
     }
 
+    /// <summary>الجولة 197 (قرار المعماري 2): استرجاع مصدر يُرفض إذا كان النظير الأساسي محذوفاً.</summary>
+    [Fact]
+    public void RestoreSource_WhenPrimaryRadioisotopeIsDeleted_FailsWithClearMessage()
+    {
+        // Arrange
+        var source = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-R197-ISO");
+        _sourceService.CreateSource(source);
+        _sourceService.DeleteSource(source.Id);
+
+        using (var context = _fixture.CreateContext())
+        {
+            var iso = context.Radioisotopes.Find(_isoCs137.Id);
+            iso!.IsDeleted = true;
+            iso.DeletedAt = DateTime.Now;
+            context.SaveChanges();
+        }
+
+        // Act
+        var result = _sourceService.RestoreSource(source.Id);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Contains(_isoCs137.Symbol, result.Message);
+
+        using var verifyContext = _fixture.CreateContext();
+        var stillDeleted = verifyContext.Sources.IgnoreQueryFilters().First(s => s.Id == source.Id);
+        Assert.True(stillDeleted.IsDeleted);
+    }
+
+    /// <summary>الجولة 197 (قرار المعماري 2): استرجاع مصدر يُرفض إذا كان نظير مرتبط عبر
+    /// SourceIsotopes محذوفاً، حتى لو كان النظير الأساسي نشطاً.</summary>
+    [Fact]
+    public void RestoreSource_WhenSourceIsotopesLinkedRadioisotopeIsDeleted_FailsWithClearMessage()
+    {
+        // Arrange
+        var source = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-R197-SI", hasDetailedIsotopes: true);
+        _sourceService.CreateSource(source);
+
+        var sourceIsotope = TestDataBuilder.CreateSourceIsotope(source, _isoCo60, _unitBq);
+        using (var context = _fixture.CreateContext())
+        {
+            context.SourceIsotopes.Add(sourceIsotope);
+            context.SaveChanges();
+        }
+
+        _sourceService.DeleteSource(source.Id);
+
+        using (var context = _fixture.CreateContext())
+        {
+            var iso = context.Radioisotopes.Find(_isoCo60.Id);
+            iso!.IsDeleted = true;
+            iso.DeletedAt = DateTime.Now;
+            context.SaveChanges();
+        }
+
+        // Act
+        var result = _sourceService.RestoreSource(source.Id);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Contains(_isoCo60.Symbol, result.Message);
+
+        using var verifyContext = _fixture.CreateContext();
+        var stillDeleted = verifyContext.Sources.IgnoreQueryFilters().First(s => s.Id == source.Id);
+        Assert.True(stillDeleted.IsDeleted);
+    }
+
+    /// <summary>الجولة 197: الاسترجاع ينجح عندما يكون الموقع والنظير الأساسي والنظائر المرتبطة
+    /// عبر SourceIsotopes كلها نشطة.</summary>
+    [Fact]
+    public void RestoreSource_WhenAllParentsAreActive_Succeeds()
+    {
+        // Arrange
+        var source = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-R197-OK");
+        _sourceService.CreateSource(source);
+        _sourceService.DeleteSource(source.Id);
+
+        // Act
+        var result = _sourceService.RestoreSource(source.Id);
+
+        // Assert
+        Assert.True(result.Success);
+        var restored = _sourceService.GetSourceById(source.Id);
+        Assert.NotNull(restored);
+        Assert.False(restored!.IsDeleted);
+    }
+
     #endregion
 
     #region 5. Queries & Edge Cases Tests
