@@ -401,7 +401,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
             var deltaList = new List<string>();
             foreach (var a in added) deltaList.Add($"+ {TranslatePermissionName(a)}");
             foreach (var r in removed) deltaList.Add($"- {TranslatePermissionName(r)}");
-            finalNewValue = $"{newDisplay} [{string.Join(" ، ", deltaList)}]";
+            finalNewValue = $"{newDisplay} [{string.Join(TranslationHelper.GetString("TextPermissionDeltaSeparator") ?? " ، ", deltaList)}]";
         }
 
         return new AuditDiffItem
@@ -433,7 +433,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
             return TranslationHelper.GetString("TextAllPermissionsLabel") ?? "كافة الصلاحيات (All)";
         }
         var translatedNames = set.Select(TranslatePermissionName);
-        return string.Join("، ", translatedNames);
+        return string.Join(TranslationHelper.GetString("TextPermissionListSeparator") ?? "، ", translatedNames);
     }
 
     private static string TranslatePermissionName(string perm)

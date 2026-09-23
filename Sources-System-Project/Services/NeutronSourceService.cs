@@ -395,7 +395,7 @@ public class NeutronSourceService : INeutronSourceService
 
         var lowerCode = item.SourceCode.Trim().ToLower();
         if (db.NeutronSources.Any(n => !n.IsDeleted && n.Id != id && n.SourceCode.ToLower() == lowerCode))
-            return (false, string.Format(TranslationHelper.GetString("MsgErrNeutronSourceRestoreConflict") ?? "لا يمكن استرجاع المصدر النيتروني لوجود مصدر نشط آخر بنفس الكود ({0})", item.SourceCode));
+            return (false, string.Format(TranslationHelper.GetString("MsgErrNeutronSourceRestoreCodeInUse") ?? "لا يمكن استرجاع هذا المصدر النيتروني: الكود ({0}) مستخدم حالياً لمصدر نيتروني نشط آخر. غيّر كود المصدر النشط أولاً ثم أعد محاولة الاسترجاع.", item.SourceCode));
 
         item.IsDeleted = false;
         item.DeletedAt = null;

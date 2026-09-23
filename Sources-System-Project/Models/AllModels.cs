@@ -358,7 +358,9 @@ public class Source
 
     /// <summary>كود المصدر مع حالة الحذف إن وُجد</summary>
     [NotMapped]
-    public string DisplaySourceCode => IsDeleted ? $"{SourceCode} (محذوف)" : SourceCode;
+    public string DisplaySourceCode => IsDeleted
+        ? $"{SourceCode} {Sources.Helpers.TranslationHelper.GetString("TextDeletedSuffix") ?? "(محذوف)"}"
+        : SourceCode;
 
     private DoseRateResult? _currentDoseRateResult;
 
@@ -713,7 +715,7 @@ public class BorrowRequest
     /// <summary>كود المصدر للعرض مع تمييز المصادر المحذوفة</summary>
     [NotMapped]
     public string DisplaySourceCode => Source != null
-        ? (Source.IsDeleted ? $"{Source.SourceCode} (محذوف)" : Source.SourceCode)
+        ? (Source.IsDeleted ? $"{Source.SourceCode} {Sources.Helpers.TranslationHelper.GetString("TextDeletedSuffix") ?? "(محذوف)"}" : Source.SourceCode)
         : "-";
 }
 
@@ -997,6 +999,17 @@ public class NeutronSourceType
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+    [NotMapped]
+    public string DisplayName
+    {
+        get
+        {
+            bool isArabic = System.Threading.Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName == "ar";
+            if (isArabic) return !string.IsNullOrEmpty(NameAr) ? NameAr : NameEn;
+            return !string.IsNullOrEmpty(NameEn) ? NameEn : NameAr ?? string.Empty;
+        }
+    }
+
     public ICollection<NeutronSource> NeutronSources { get; set; } = new List<NeutronSource>();
 }
 
@@ -1093,7 +1106,9 @@ public class NeutronSource
     };
 
     [NotMapped]
-    public string DisplaySourceCode => IsDeleted ? $"{SourceCode} (محذوف)" : SourceCode;
+    public string DisplaySourceCode => IsDeleted
+        ? $"{SourceCode} {Sources.Helpers.TranslationHelper.GetString("TextDeletedSuffix") ?? "(محذوف)"}"
+        : SourceCode;
 
     [NotMapped]
     public string DisplayEmissionRate => $"{ScientificNotationParser.FormatScientific(CalibratedEmissionRate)} n/s";
@@ -1112,8 +1127,10 @@ public class NeutronSource
 
     [NotMapped]
     public string ActivityValueFormatted => ActivityValue.HasValue && ActivityUnit != null
-        ? $"{ActivityValue.Value} {ActivityUnit.UnitSymbol}"
-        : "غير مسجّل";
+        ? (string.IsNullOrEmpty(ActivityUnit.UnitSymbol)
+            ? $"{ActivityValue.Value}"
+            : $"{ActivityValue.Value} {ActivityUnit.UnitSymbol}")
+        : Sources.Helpers.TranslationHelper.GetString("TextNotRecorded") ?? "غير مسجّل";
 }
 
 // ─── شهادات ومستندات المصادر ───

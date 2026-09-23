@@ -402,6 +402,35 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
         Assert.Equal("NS-REST", restoreNewValuesDoc.RootElement.GetProperty("SourceCode").GetString());
     }
 
+    /// <summary>الجولة 195-I: رسالة استرجاع المصدر النيتروني عند تعارض الكود مع مصدر نيتروني
+    /// نشط آخر بنفس الكود.</summary>
+    [Fact]
+    public void Restore_WhenActiveNeutronSourceUsesSameCode_FailsWithClearMessage()
+    {
+        // Arrange
+        var deletedId = Guid.NewGuid();
+        var typeId = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Am-241/Be", NameEn = "Am-Be", HalfLife = 432.2 });
+            db.NeutronSources.Add(new NeutronSource { Id = deletedId, SourceCode = "NS-R195", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, IsDeleted = true, DeletedAt = DateTime.Now });
+            db.NeutronSources.Add(new NeutronSource { SourceCode = "NS-R195", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 2e6 });
+            db.SaveChanges();
+        }
+
+        // Act
+        var (success, message) = _sut.Restore(deletedId);
+
+        // Assert
+        Assert.False(success);
+        Assert.Contains("غيّر كود المصدر النشط أولاً", message);
+        Assert.Contains("NS-R195", message);
+
+        using var context = _fixture.CreateContext();
+        var stillDeleted = context.NeutronSources.IgnoreQueryFilters().First(n => n.Id == deletedId);
+        Assert.True(stillDeleted.IsDeleted);
+    }
+
     [Fact]
     public void Location_Delete_FailsWhenActiveNeutronSourceExistsInLocation()
     {

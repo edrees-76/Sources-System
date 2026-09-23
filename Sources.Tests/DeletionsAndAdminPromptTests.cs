@@ -1067,6 +1067,53 @@ namespace Sources.Tests
             });
         }
 
+        /// <summary>الجولة 195-I: يتحقق أن لاحقة "(محذوف)" في DisplaySourceCode تُترجَم بالإنجليزية
+        /// وتبقى بالعربية دون تغيير (Source و NeutronSource).</summary>
+        [Fact]
+        public void DisplaySourceCode_DeletedSuffix_TranslatesToEnglish_AndStaysArabicByDefault()
+        {
+            var source = new Source { SourceCode = "SRC-X", IsDeleted = true };
+            var neutronSource = new NeutronSource { SourceCode = "SRC-X", IsDeleted = true };
+
+            // العربية (الافتراضية) دون تغيير
+            Assert.Equal("SRC-X (محذوف)", source.DisplaySourceCode);
+            Assert.Equal("SRC-X (محذوف)", neutronSource.DisplaySourceCode);
+
+            int arabicDictIndex = -1;
+            Sources.Tests.Fixtures.WpfStaFixture.RunInSta(() =>
+            {
+                var dicts = System.Windows.Application.Current.Resources.MergedDictionaries;
+                for (int i = 0; i < dicts.Count; i++)
+                {
+                    var src = dicts[i].Source?.OriginalString;
+                    if (src != null && src.Contains("Strings.ar.xaml"))
+                    {
+                        arabicDictIndex = i;
+                        break;
+                    }
+                }
+                Assert.True(arabicDictIndex >= 0, "Strings.ar.xaml dictionary must already be loaded by WpfStaFixture.");
+
+                try
+                {
+                    dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                    {
+                        Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.en.xaml", UriKind.Absolute)
+                    };
+
+                    Assert.Equal("SRC-X (Deleted)", source.DisplaySourceCode);
+                    Assert.Equal("SRC-X (Deleted)", neutronSource.DisplaySourceCode);
+                }
+                finally
+                {
+                    dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                    {
+                        Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.ar.xaml", UriKind.Absolute)
+                    };
+                }
+            });
+        }
+
         #endregion
     }
 }

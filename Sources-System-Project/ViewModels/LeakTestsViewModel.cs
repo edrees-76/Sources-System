@@ -435,6 +435,7 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
             }
             catch (Exception ex)
             {
+                LoggerService.LogError("LeakTestsViewModel: PDF export failed", ex);
                 DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrExportPdfFailedFormat", ex.Message));
             }
         }
@@ -458,6 +459,7 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
             }
             catch (Exception ex)
             {
+                LoggerService.LogError("LeakTestsViewModel: Excel export failed", ex);
                 DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrExportExcelFailedFormat", ex.Message));
             }
         }

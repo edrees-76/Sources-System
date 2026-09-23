@@ -20,6 +20,9 @@ public static class DatabasePaths
 
     public static string BackupsDirectory => Path.Combine(AppDataDirectory, "Backups");
 
+    /// <summary>مجلد ملفات السجل (Logs).</summary>
+    public static string LogsDirectory => Path.Combine(AppDataDirectory, "Logs");
+
     /// <summary>المسار القديم للقاعدة بجوار الملف التنفيذي، قبل الانتقال إلى LocalAppData.</summary>
     public static string LegacyDbPath => Path.Combine(
         AppDomain.CurrentDomain.BaseDirectory, DatabaseFileName);

@@ -976,6 +976,125 @@ public class NeutronSourcesUITests : IDisposable
         Assert.Equal("غير مسجّل", source.ActivityValueFormatted);
     }
 
+    /// <summary>الجولة 195-H2: DisplayName يعرض NameAr تحت الثقافة العربية.</summary>
+    [Fact]
+    public void NeutronSourceType_DisplayName_UsesArabicName_UnderArabicCulture()
+    {
+        var previous = System.Threading.Thread.CurrentThread.CurrentUICulture;
+        try
+        {
+            System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("ar");
+            var type = new NeutronSourceType { NameAr = "كاليفورنيوم-252", NameEn = "Californium-252" };
+            Assert.Equal("كاليفورنيوم-252", type.DisplayName);
+        }
+        finally
+        {
+            System.Threading.Thread.CurrentThread.CurrentUICulture = previous;
+        }
+    }
+
+    /// <summary>الجولة 195-H2: DisplayName يعرض NameEn تحت الثقافة الإنجليزية.</summary>
+    [Fact]
+    public void NeutronSourceType_DisplayName_UsesEnglishName_UnderEnglishCulture()
+    {
+        var previous = System.Threading.Thread.CurrentThread.CurrentUICulture;
+        try
+        {
+            System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("en-US");
+            var type = new NeutronSourceType { NameAr = "كاليفورنيوم-252", NameEn = "Californium-252" };
+            Assert.Equal("Californium-252", type.DisplayName);
+        }
+        finally
+        {
+            System.Threading.Thread.CurrentThread.CurrentUICulture = previous;
+        }
+    }
+
+    /// <summary>الجولة 195-H2: عند فراغ الاسم العربي وثقافة عربية، يسقط إلى الاسم الإنجليزي.</summary>
+    [Fact]
+    public void NeutronSourceType_DisplayName_FallsBackToEnglish_WhenArabicNameEmpty_UnderArabicCulture()
+    {
+        var previous = System.Threading.Thread.CurrentThread.CurrentUICulture;
+        try
+        {
+            System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("ar");
+            var type = new NeutronSourceType { NameAr = "", NameEn = "Californium-252" };
+            Assert.Equal("Californium-252", type.DisplayName);
+        }
+        finally
+        {
+            System.Threading.Thread.CurrentThread.CurrentUICulture = previous;
+        }
+    }
+
+    /// <summary>الجولة 195-H1: صيغة عرض النشاط مع رمز وحدة معتاد.</summary>
+    [Fact]
+    public void NeutronSource_ActivityValueFormatted_WithUnitSymbol_ShowsValueAndSymbol()
+    {
+        var source = new NeutronSource
+        {
+            SourceCode = "NS-ACT-05",
+            ActivityValue = 42.0,
+            ActivityUnit = new ActivityUnit { UnitName = "Megabecquerel", UnitSymbol = "MBq", ConversionToBq = 1.0e6 }
+        };
+
+        Assert.Equal("42 MBq", source.ActivityValueFormatted);
+    }
+
+    /// <summary>الجولة 195-H1: لا مسافة زائدة عندما يكون رمز الوحدة فارغاً.</summary>
+    [Fact]
+    public void NeutronSource_ActivityValueFormatted_WithEmptyUnitSymbol_ShowsValueWithoutTrailingSpace()
+    {
+        var source = new NeutronSource
+        {
+            SourceCode = "NS-ACT-06",
+            ActivityValue = 42.0,
+            ActivityUnit = new ActivityUnit { UnitName = "Custom", UnitSymbol = "", ConversionToBq = 1.0 }
+        };
+
+        Assert.Equal("42", source.ActivityValueFormatted);
+    }
+
+    /// <summary>الجولة 195-H1: نص "غير مسجّل" مترجم عند تفعيل الإنجليزية.</summary>
+    [Fact]
+    public void NeutronSource_ActivityValueFormatted_UsesEnglishNotRecorded_WhenEnglishLanguageActive()
+    {
+        var source = new NeutronSource { SourceCode = "NS-ACT-07", ActivityValue = null };
+
+        int arabicDictIndex = -1;
+        Sources.Tests.Fixtures.WpfStaFixture.RunInSta(() =>
+        {
+            var dicts = System.Windows.Application.Current.Resources.MergedDictionaries;
+            for (int i = 0; i < dicts.Count; i++)
+            {
+                var src = dicts[i].Source?.OriginalString;
+                if (src != null && src.Contains("Strings.ar.xaml"))
+                {
+                    arabicDictIndex = i;
+                    break;
+                }
+            }
+            Assert.True(arabicDictIndex >= 0, "Strings.ar.xaml dictionary must already be loaded by WpfStaFixture.");
+
+            try
+            {
+                dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.en.xaml", UriKind.Absolute)
+                };
+
+                Assert.Equal("Not recorded", source.ActivityValueFormatted);
+            }
+            finally
+            {
+                dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.ar.xaml", UriKind.Absolute)
+                };
+            }
+        });
+    }
+
     [Theory]
     [InlineData("1.1×1000000", 1100000.0, 1.1)]
     [InlineData("5x1000", 5000.0, 5.0)]
@@ -1037,6 +1156,34 @@ public class NeutronSourcesUITests : IDisposable
         Assert.True(success);
         Assert.Equal(22000.0, result);
         Assert.NotEqual(22.0, result); // Must not treat 11,000 as 11.000 leading to 11 * 2 = 22
+    }
+
+    /// <summary>الجولة 195-H4: يتحقق أولاً أن السلوك بالمسافة العادية يُعطي القيمة المتوقعة
+    /// (2.5×10^6)، مطابقةً للسلوك الحالي قبل إضافة دعم NBSP/NNBSP.</summary>
+    [Fact]
+    public void ScientificNotationParser_PlainSpaceAroundMultiplicationSign_ParsesCorrectly_BaselineBehavior()
+    {
+        bool success = ScientificNotationParser.TryParse("2.5 \u00d7 10^6", out double result);
+        Assert.True(success);
+        Assert.Equal(2.5e6, result);
+    }
+
+    /// <summary>الجولة 195-H4: مسافة NBSP (U+00A0) حول علامة الضرب تُقرأ كالمسافة العادية تماماً.</summary>
+    [Fact]
+    public void ScientificNotationParser_NonBreakingSpaceAroundMultiplicationSign_ParsesSameAsPlainSpace()
+    {
+        bool success = ScientificNotationParser.TryParse("2.5\u00A0\u00d7\u00A010^6", out double result);
+        Assert.True(success);
+        Assert.Equal(2.5e6, result);
+    }
+
+    /// <summary>الجولة 195-H4: مسافة NNBSP الرفيعة (U+202F) حول علامة الضرب تُقرأ كالمسافة العادية.</summary>
+    [Fact]
+    public void ScientificNotationParser_NarrowNoBreakSpaceAroundMultiplicationSign_ParsesSameAsPlainSpace()
+    {
+        bool success = ScientificNotationParser.TryParse("3\u202F\u00d7\u202F10^4", out double result);
+        Assert.True(success);
+        Assert.Equal(3e4, result);
     }
 }
 

@@ -229,7 +229,6 @@
     <system:String x:Key="MsgErrIncorrectPhrase">جملة التأكيد غير متطابقة، يرجى كتابتها بدقة</system:String>
     <system:String x:Key="MsgErrIncorrectAdminPassword">كلمة المرور غير صحيحة</system:String>
     <system:String x:Key="MsgErrNoCurrentUserLoggedIn">لا يوجد مستخدم مسجل حالياً</system:String>
-    <system:String x:Key="MsgErrAdminOnlyAction">غير مصرح: هذه العملية مخصصة لمدير النظام فقط</system:String>
     <system:String x:Key="MsgErrCompletePreviousStages">يرجى إكمال المرحلتين السابقتين أولاً</system:String>
     <system:String x:Key="MsgErrResetServiceUnavailable">خدمة إعادة ضبط المنظومة غير متوفرة</system:String>
     <system:String x:Key="MsgBusyExecutingFactoryReset">جاري أخذ نسخة احتياطية إجبارية وتصفير المنظومة...</system:String>
@@ -1342,7 +1341,7 @@
     <system:String x:Key="MsgSuccessNeutronSourceUpdated">تم تحديث المصدر النيتروني</system:String>
     <system:String x:Key="MsgSuccessNeutronSourceDeleted">تم حذف المصدر النيتروني</system:String>
     <system:String x:Key="MsgErrNeutronSourceNotDeleted">المصدر النيتروني غير محذوف أصلاً</system:String>
-    <system:String x:Key="MsgErrNeutronSourceRestoreConflict">لا يمكن استرجاع المصدر النيتروني لوجود مصدر نشط آخر بنفس الكود ({0})</system:String>
+    <system:String x:Key="MsgErrNeutronSourceRestoreCodeInUse">لا يمكن استرجاع هذا المصدر النيتروني: الكود ({0}) مستخدم حالياً لمصدر نيتروني نشط آخر. غيّر كود المصدر النشط أولاً ثم أعد محاولة الاسترجاع.</system:String>
     <system:String x:Key="MsgSuccessNeutronSourceRestored">تم استرجاع المصدر النيتروني {0}</system:String>
 
     <!-- Round 137: SourcesViewModel.cs validation/report message localization -->
@@ -1382,7 +1381,7 @@
     <system:String x:Key="MsgErrCannotDeleteSourceReason">لا يمكن حذف المصدر {0}</system:String>
     <system:String x:Key="MsgSuccessSourceDeleted">تم حذف المصدر بنجاح</system:String>
     <system:String x:Key="MsgErrSourceNotDeleted">المصدر غير محذوف أصلاً</system:String>
-    <system:String x:Key="MsgErrSourceRestoreConflict">لا يمكن استرجاع المصدر لوجود مصدر نشط آخر بنفس الكود ({0})</system:String>
+    <system:String x:Key="MsgErrSourceRestoreCodeInUse">لا يمكن استرجاع هذا المصدر: الكود ({0}) مستخدم حالياً لمصدر نشط آخر. غيّر كود المصدر النشط أولاً ثم أعد محاولة الاسترجاع.</system:String>
     <system:String x:Key="MsgErrSourceRestoreLocationDeleted">لا يمكن استرجاع المصدر لأن موقعه الأصلي "{0}" محذوف حالياً. يرجى استرجاع الموقع أولاً من سجل المحذوفات ثم إعادة المحاولة.</system:String>
     <system:String x:Key="MsgSuccessSourceRestored">تم استرجاع المصدر {0} إلى موقع {1} بحالة {2}</system:String>
 
@@ -1977,6 +1976,11 @@
     <system:String x:Key="MsgAlertDefaultPasswordNotChanged">يوجد حساب مستخدم لا يزال يستخدم كلمة المرور الافتراضية. يُنصح بتغييرها فوراً من دواعي الأمان.</system:String>
     <system:String x:Key="MsgReminderChangeDefaultPassword">لا تزال تستخدم كلمة المرور الافتراضية. يُنصح بتغييرها من شاشة إدارة المستخدمين في أقرب فرصة.</system:String>
     <system:String x:Key="TitleReminderChangeDefaultPassword">تذكير أمني</system:String>
+
+    <!-- Round 195: فواصل قوائم الصلاحيات -->
+    <system:String x:Key="TextPermissionDeltaSeparator" xml:space="preserve"> ، </system:String>
+    <system:String x:Key="TextPermissionListSeparator" xml:space="preserve">، </system:String>
+    <system:String x:Key="TextDeletedSuffix">(محذوف)</system:String>
 </ResourceDictionary>
 
 

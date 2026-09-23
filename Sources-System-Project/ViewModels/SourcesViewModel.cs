@@ -128,18 +128,18 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     [ObservableProperty] private bool _isManagingNeutronTypes;
     [ObservableProperty] private NeutronSourceTypesViewModel? _neutronTypesManagementViewModel;
 
+    private Task? _tabLoadTask;
+
     partial void OnSelectedTabChanged(string value)
     {
         IsNeutronSourcesView = value == "Neutron";
         IsDeletedSourcesView = value == "Deleted";
-        if (value == "Neutron")
+        _tabLoadTask = value switch
         {
-            _ = LoadNeutronDataAsync();
-        }
-        else if (value == "Deleted")
-        {
-            _ = LoadDeletedDataAsync();
-        }
+            "Neutron" => LoadNeutronDataAsync(),
+            "Deleted" => LoadDeletedDataAsync(),
+            _ => null
+        };
     }
 
     // ─── خصائص التقسيم إلى صفحات (Pagination) ───
@@ -443,19 +443,21 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     [RelayCommand]
     public async Task SwitchToNeutronSourcesAsync()
     {
+        _tabLoadTask = null;
         SelectedTab = "Neutron";
         IsDeletedSourcesView = false;
         IsNeutronSourcesView = true;
-        await LoadNeutronDataAsync();
+        await (_tabLoadTask ?? LoadNeutronDataAsync());
     }
 
     [RelayCommand]
     public async Task SwitchToDeletedSourcesAsync()
     {
+        _tabLoadTask = null;
         SelectedTab = "Deleted";
         IsDeletedSourcesView = true;
         IsNeutronSourcesView = false;
-        await LoadDeletedDataAsync();
+        await (_tabLoadTask ?? LoadDeletedDataAsync());
     }
 
     [RelayCommand]
@@ -1460,6 +1462,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         }
         catch (Exception ex)
         {
+            LoggerService.LogError("SourcesViewModel: save failed", ex);
             ShowMessage(TranslationHelper.GetFormat("MsgErrGeneral", ex.Message));
             return;
         }
@@ -1495,7 +1498,11 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                 await _reportingService.GenerateInventoryReportPdfAsync(Sources, sfd.FileName, TranslationHelper.GetString("TitleInventoryReportPdf") ?? "تقرير جرد المصادر المشعة");
                 FileHelper.OpenFile(sfd.FileName);
             }
-            catch (Exception ex) { DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrExportPdf", ex.Message)); }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("SourcesViewModel: PDF export failed", ex);
+                DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrExportPdf", ex.Message));
+            }
         }
     }
 
@@ -1510,7 +1517,11 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                 await _reportingService.GenerateInventoryReportExcelAsync(Sources, sfd.FileName, TranslationHelper.GetString("TitleInventoryReportExcel") ?? "جرد المصادر");
                 FileHelper.OpenFile(sfd.FileName);
             }
-            catch (Exception ex) { DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrExportExcel", ex.Message)); }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("SourcesViewModel: Excel export failed", ex);
+                DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrExportExcel", ex.Message));
+            }
         }
     }
 
@@ -1622,6 +1633,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
             }
             catch (Exception ex)
             {
+                LoggerService.LogError("SourcesViewModel: image load failed", ex);
                 DialogHelper.ShowError(TranslationHelper.GetFormat("MsgErrImageLoad", ex.Message));
             }
         }

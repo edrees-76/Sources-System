@@ -232,7 +232,6 @@
     <system:String x:Key="MsgErrIncorrectPhrase">Confirmation phrase does not match, please type it exactly</system:String>
     <system:String x:Key="MsgErrIncorrectAdminPassword">Incorrect password</system:String>
     <system:String x:Key="MsgErrNoCurrentUserLoggedIn">No user is currently logged in</system:String>
-    <system:String x:Key="MsgErrAdminOnlyAction">Unauthorized: This action is restricted to System Administrators only</system:String>
     <system:String x:Key="MsgErrCompletePreviousStages">Please complete the previous stages first</system:String>
     <system:String x:Key="MsgErrResetServiceUnavailable">System reset service is currently unavailable</system:String>
     <system:String x:Key="MsgBusyExecutingFactoryReset">Taking mandatory safety backup and resetting the system...</system:String>
@@ -1344,7 +1343,7 @@
     <system:String x:Key="MsgSuccessNeutronSourceUpdated">Neutron source updated</system:String>
     <system:String x:Key="MsgSuccessNeutronSourceDeleted">Neutron source deleted</system:String>
     <system:String x:Key="MsgErrNeutronSourceNotDeleted">The neutron source is not deleted</system:String>
-    <system:String x:Key="MsgErrNeutronSourceRestoreConflict">Cannot restore the neutron source because another active source with the same code exists ({0})</system:String>
+    <system:String x:Key="MsgErrNeutronSourceRestoreCodeInUse">This neutron source cannot be restored: the code ({0}) is currently used by another active neutron source. Change that active source's code first, then retry the restore.</system:String>
     <system:String x:Key="MsgSuccessNeutronSourceRestored">Neutron source {0} restored successfully</system:String>
 
     <!-- Round 137: SourcesViewModel.cs validation/report message localization -->
@@ -1384,7 +1383,7 @@
     <system:String x:Key="MsgErrCannotDeleteSourceReason">Cannot delete the source {0}</system:String>
     <system:String x:Key="MsgSuccessSourceDeleted">Source deleted successfully</system:String>
     <system:String x:Key="MsgErrSourceNotDeleted">The source is not deleted</system:String>
-    <system:String x:Key="MsgErrSourceRestoreConflict">Cannot restore the source because another active source with the same code exists ({0})</system:String>
+    <system:String x:Key="MsgErrSourceRestoreCodeInUse">This source cannot be restored: the code ({0}) is currently used by another active source. Change that active source's code first, then retry the restore.</system:String>
     <system:String x:Key="MsgErrSourceRestoreLocationDeleted">Cannot restore the source because its original location "{0}" is currently deleted. Please restore the location first from the deleted items log, then try again.</system:String>
     <system:String x:Key="MsgSuccessSourceRestored">Source {0} restored to location {1} with status {2}</system:String>
 
@@ -1977,6 +1976,11 @@
     <system:String x:Key="MsgAlertDefaultPasswordNotChanged">A user account is still using the default password. It is recommended to change it immediately for security reasons.</system:String>
     <system:String x:Key="MsgReminderChangeDefaultPassword">You are still using the default password. It is recommended to change it from the user management screen at your earliest convenience.</system:String>
     <system:String x:Key="TitleReminderChangeDefaultPassword">Security Reminder</system:String>
+
+    <!-- Round 195: permission list separators -->
+    <system:String x:Key="TextPermissionDeltaSeparator" xml:space="preserve">, </system:String>
+    <system:String x:Key="TextPermissionListSeparator" xml:space="preserve">, </system:String>
+    <system:String x:Key="TextDeletedSuffix">(Deleted)</system:String>
 </ResourceDictionary>
 
 

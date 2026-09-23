@@ -431,7 +431,7 @@ public class SourceService : ISourceService
         var lowerCode = source.SourceCode?.Trim().ToLower() ?? string.Empty;
         if (db.Sources.Any(s => s.Id != id && s.SourceCode.ToLower() == lowerCode))
         {
-            return (false, string.Format(TranslationHelper.GetString("MsgErrSourceRestoreConflict") ?? "لا يمكن استرجاع المصدر لوجود مصدر نشط آخر بنفس الكود ({0})", source.SourceCode));
+            return (false, string.Format(TranslationHelper.GetString("MsgErrSourceRestoreCodeInUse") ?? "لا يمكن استرجاع هذا المصدر: الكود ({0}) مستخدم حالياً لمصدر نشط آخر. غيّر كود المصدر النشط أولاً ثم أعد محاولة الاسترجاع.", source.SourceCode));
         }
 
         // فحص الموقع: إذا كان للمصدر موقع أصلي، تحقق هل الموقع محذوف
@@ -467,31 +467,6 @@ public class SourceService : ISourceService
 
         _auditService.LogWithChanges("Restore", "Sources", id, $"استرجاع مصدر: {source.SourceCode} إلى موقع {locationName} (الحالة: {statusDisplay})", null, newValuesJson);
         return (true, msg);
-    }
-
-    /// <summary>
-    /// تحديث النشاط الحالي لجميع المصادر في قاعدة البيانات
-    /// </summary>
-    public void UpdateAllCurrentActivities()
-    {
-        using var db = _dbFactory.CreateDbContext();
-        var sources = db.Sources
-            .Include(s => s.Radioisotope)
-            .Include(s => s.InitialActivityUnit)
-            .Include(s => s.CurrentActivityUnit)
-            .Include(s => s.SourceIsotopes).ThenInclude(si => si.Radioisotope)
-            .Include(s => s.SourceIsotopes).ThenInclude(si => si.ActivityUnit)
-            .Where(s => s.Status == "InUse" || s.Status == "Storage")
-            .ToList();
-
-        var isotopesDict = db.Radioisotopes.ToDictionary(r => r.Id);
-        var unitsDict = db.ActivityUnits.ToDictionary(u => u.Id);
-
-        foreach (var source in sources)
-        {
-            CalculateSourceCurrentActivityInMemory(source, isotopesDict, unitsDict);
-        }
-        db.SaveChanges();
     }
 
     public void UpdateCurrentActivity(Source source, AppDbContext db)

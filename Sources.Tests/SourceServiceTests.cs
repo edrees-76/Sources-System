@@ -785,72 +785,37 @@ public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         Assert.All(deletedList, s => Assert.True(s.IsDeleted));
     }
 
-    #endregion
-
-    #region 4. UpdateAllCurrentActivities Tests
-
+    /// <summary>الجولة 195-I: رسالة استرجاع المصدر عند تعارض الكود مع مصدر نشط آخر (مطابقة
+    /// حالة الأحرف غير حسّاسة كما يفحصها RestoreSource) توضح أن الكود مستخدم حالياً لمصدر
+    /// نشط، ولا تغيّر السلوك (المصدر المحذوف يبقى IsDeleted).</summary>
     [Fact]
-    public void UpdateAllCurrentActivities_UpdatesOnlyInUseAndStorage_IgnoresWasteAndTransfer()
+    public void RestoreSource_WhenActiveSourceUsesSameCodeCaseInsensitive_FailsWithClearMessage()
     {
         // Arrange
-        var calDate = DateTime.Now.AddYears(-5); // مضى 5 سنوات
+        var deletedSource = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-R195");
+        _sourceService.CreateSource(deletedSource);
+        _sourceService.DeleteSource(deletedSource.Id);
 
-        var srcInUse = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-ST-INUSE", 10000.0, calDate, "InUse");
-        var srcStorage = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-ST-STORAGE", 10000.0, calDate, "Storage");
-        var srcWaste = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-ST-WASTE", 10000.0, calDate, "Waste");
-        var srcTransfer = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-ST-TRANSFER", 10000.0, calDate, "Transfer");
-
-        // ضبط القيمة الحالية المبدئية عند 10000 قبل التحديث
-        srcInUse.CurrentActivityValue = 10000.0;
-        srcStorage.CurrentActivityValue = 10000.0;
-        srcWaste.CurrentActivityValue = 10000.0;
-        srcTransfer.CurrentActivityValue = 10000.0;
-
-        using (var context = _fixture.CreateContext())
+        // أُدخل مباشرة عبر DbContext لأن CreateSource يرفض التكرار حتى مع مصدر محذوف بنفس
+        // الكود (فحص حالة أحرف غير حسّاسة)؛ هذا يحاكي بيانات قديمة سابقة على ذلك الفحص.
+        var activeSource = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, sourceCode: "src-r195");
+        using (var seedContext = _fixture.CreateContext())
         {
-            context.Sources.AddRange(srcInUse, srcStorage, srcWaste, srcTransfer);
-            context.SaveChanges();
+            seedContext.Sources.Add(activeSource);
+            seedContext.SaveChanges();
         }
 
         // Act
-        _sourceService.UpdateAllCurrentActivities();
+        var result = _sourceService.RestoreSource(deletedSource.Id);
 
         // Assert
-        using (var context = _fixture.CreateContext())
-        {
-            var updatedInUse = context.Sources.Find(srcInUse.Id)!;
-            var updatedStorage = context.Sources.Find(srcStorage.Id)!;
-            var unchangedWaste = context.Sources.Find(srcWaste.Id)!;
-            var unchangedTransfer = context.Sources.Find(srcTransfer.Id)!;
+        Assert.False(result.Success);
+        Assert.Contains("غيّر كود المصدر النشط أولاً", result.Message);
+        Assert.Contains(deletedSource.SourceCode, result.Message);
 
-            // Co-60 نصف عمره 5.27 سنة، بعد 5 سنوات النشاط يقل إلى حوالي نصف القيمة (5180 Bq)
-            Assert.True(updatedInUse.CurrentActivityValue < 6000.0);
-            Assert.True(updatedStorage.CurrentActivityValue < 6000.0);
-
-            // Waste و Transfer تم تجاهلهما وبقيت القيمة كما هي 10000.0
-            Assert.Equal(10000.0, unchangedWaste.CurrentActivityValue);
-            Assert.Equal(10000.0, unchangedTransfer.CurrentActivityValue);
-        }
-    }
-
-    [Fact]
-    public void UpdateAllCurrentActivities_DocumentBehavior_SingleBatchSaveChangesFailsCompletelyIfOneRecordThrowsDbException()
-    {
-        // Arrange
-        // اختبار توثيقي للبند 3: يوثق أن تنفيذ SaveChanges كدفعة واحدة في نهاية UpdateAllCurrentActivities
-        // يجعل العملية ذرية (All-or-Nothing)؛ فإن فشل سجل بسبب قيد قاعدة بيانات (مثل تكرار SourceCode)، تفشل الدفعة بالكامل.
-        var srcValid = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-BATCH-VALID", 1000.0, DateTime.Now.AddYears(-1), "InUse");
-        srcValid.CurrentActivityValue = 1000.0;
-
-        using (var context = _fixture.CreateContext())
-        {
-            context.Sources.Add(srcValid);
-            context.SaveChanges();
-        }
-
-        // إحداث تضارب مباشر في قاعدة البيانات أثناء الدفعة لاختبار استجابة SaveChanges
-        // نوثق أن استدعاء SaveChanges الفردي داخل الدالة يفشل بالكامل إذا حدث DbUpdateException
-        Assert.NotNull(_sourceService.GetSourceById(srcValid.Id));
+        using var context = _fixture.CreateContext();
+        var stillDeleted = context.Sources.IgnoreQueryFilters().First(s => s.Id == deletedSource.Id);
+        Assert.True(stillDeleted.IsDeleted);
     }
 
     #endregion

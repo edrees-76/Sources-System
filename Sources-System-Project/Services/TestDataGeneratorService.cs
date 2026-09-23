@@ -27,6 +27,7 @@ public class TestDataGenerationResult
     public int DeliveredBorrows { get; set; }
     public int OverdueBorrows { get; set; }
     public int PendingOrApprovedBorrows { get; set; }
+    public int TotalNeutronSources { get; set; }
 }
 
 /// <summary>
@@ -522,6 +523,54 @@ public static class TestDataGeneratorService
                 }
 
                 result.TotalBorrowRequests = generatedBorrowRequests.Count;
+
+                // ─────────────────────────────────────────────────────────────
+                // 4. المصادر النيترونية (NeutronSources) — حتى 4 مصادر تجريبية
+                // ─────────────────────────────────────────────────────────────
+                var neutronTypeCodes = new[] { "Cf-252", "Am-241/Be-Small", "Am-241/Be-Large", "Pu-239/Be" };
+                var neutronCodes = new[] { "NS-TEST-001", "NS-TEST-002", "NS-TEST-003", "NS-TEST-004" };
+                var neutronStatuses = new[] { "Storage", "InUse" };
+                var generatedNeutronSources = new List<NeutronSource>();
+
+                for (int i = 0; i < neutronCodes.Length; i++)
+                {
+                    var code = neutronCodes[i];
+                    bool codeExists = db.NeutronSources.IgnoreQueryFilters().Any(ns => ns.SourceCode == code);
+                    if (codeExists) continue;
+
+                    var typeCode = neutronTypeCodes[i];
+                    var neutronType = db.NeutronSourceTypes.IgnoreQueryFilters().FirstOrDefault(nt => nt.Code == typeCode);
+                    if (neutronType == null) continue;
+
+                    var location = allLocations[random.Next(allLocations.Count)];
+                    var calibDate = DateTime.Now.AddDays(-random.Next(90, 900));
+
+                    var neutronSource = new NeutronSource
+                    {
+                        Id = Guid.NewGuid(),
+                        SourceCode = code,
+                        NeutronSourceTypeId = neutronType.Id,
+                        LocationId = location.Id,
+                        Status = neutronStatuses[random.Next(neutronStatuses.Length)],
+                        CalibrationDate = calibDate,
+                        EmissionCalibrationDate = calibDate,
+                        CalibratedEmissionRate = 1.0e6 + (random.NextDouble() * 4.9e7), // 1.0e6 - 5.0e7 n/s
+                        AnisotropyFactor = null, // غير مقاس — لا قيمة افتراضية
+                        ActivityValue = null,
+                        ActivityUnitId = null,
+                        AddedBy = currentUserId,
+                        Notes = "بيانات تجريبية (DEBUG)"
+                    };
+                    generatedNeutronSources.Add(neutronSource);
+                }
+
+                if (generatedNeutronSources.Count > 0)
+                {
+                    db.NeutronSources.AddRange(generatedNeutronSources);
+                    db.SaveChanges();
+                }
+
+                result.TotalNeutronSources = generatedNeutronSources.Count;
 
                 // اعتماد العملية ككل في قاعدة البيانات
                 transaction.Commit();
