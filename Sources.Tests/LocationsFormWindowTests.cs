@@ -124,17 +124,21 @@ public class LocationsFormWindowTests
                     // مسار التنفيذ الحالي بمضخة رسائل متداخلة (nested message pump) خاصة به.
                     // لذا يُجدوَل التحقق والإغلاق عبر Dispatcher.BeginInvoke قبل استدعاء الأمر،
                     // فتُنفَّذ هذه الخطوة أثناء تشغيل حلقة ShowDialog() المتداخلة نفسها، لا بعدها.
+                    // R196-B/R10: تُلتقَط القيم فقط داخل رد نداء BeginInvoke (بينما حلقة ShowDialog
+                    // المتداخلة ما زالت نشطة)، وتُؤجَّل كل التأكيدات إلى ما بعد عودة Execute — حتى لا
+                    // يُخفي فشل تأكيد داخل الحلقة المتداخلة استثناءً يصعب تتبعه.
                     LocationFormWindow? capturedFormWindow = null;
+                    bool wasEditingDuringCallback = false;
+                    object? capturedDataContext = null;
+                    Visibility dataGridVisibilityDuringCallback = Visibility.Collapsed;
                     Dispatcher.CurrentDispatcher.BeginInvoke(new System.Action(() =>
                     {
                         capturedFormWindow = Application.Current.Windows
                             .OfType<LocationFormWindow>()
                             .FirstOrDefault();
-
-                        Assert.NotNull(capturedFormWindow);
-                        Assert.True(vm.IsEditing);
-                        Assert.Equal(vm, capturedFormWindow!.DataContext);
-                        Assert.Equal(Visibility.Visible, dataGrid!.Visibility);
+                        wasEditingDuringCallback = vm.IsEditing;
+                        capturedDataContext = capturedFormWindow?.DataContext;
+                        dataGridVisibilityDuringCallback = dataGrid!.Visibility;
 
                         vm.CancelEditCommand.Execute(null);
                     }), DispatcherPriority.ApplicationIdle);
@@ -143,6 +147,10 @@ public class LocationsFormWindowTests
 
                     // بعد عودة AddNewCommand.Execute، تكون LocationFormWindow قد أُغلقت فعلاً
                     // (CancelEditCommand أعاد IsEditing إلى false فأغلق الكود-خلف النافذة).
+                    Assert.NotNull(capturedFormWindow);
+                    Assert.True(wasEditingDuringCallback);
+                    Assert.Equal(vm, capturedDataContext);
+                    Assert.Equal(Visibility.Visible, dataGridVisibilityDuringCallback);
                     Assert.False(vm.IsEditing);
                     Assert.DoesNotContain(capturedFormWindow, Application.Current.Windows.OfType<LocationFormWindow>());
                     Assert.Equal(Visibility.Visible, dataGrid!.Visibility);
@@ -189,21 +197,25 @@ public class LocationsFormWindowTests
                     // الخطوة 1: فتح LocationFormWindow عبر AddNewCommand، ثم محاكاة الإغلاق عبر
                     // زر ✕ الأصلي (Close() مباشرة على النافذة نفسها — وليس عبر CancelEditCommand)،
                     // بنفس أسلوب الجدولة عبر Dispatcher.BeginInvoke.
+                    LocationFormWindow? formWindowDuringCallback = null;
+                    bool wasEditingDuringFirstCallback = false;
                     Dispatcher.CurrentDispatcher.BeginInvoke(new System.Action(() =>
                     {
-                        var formWindow = Application.Current.Windows
+                        formWindowDuringCallback = Application.Current.Windows
                             .OfType<LocationFormWindow>()
                             .FirstOrDefault();
-
-                        Assert.NotNull(formWindow);
-                        Assert.True(vm.IsEditing);
+                        wasEditingDuringFirstCallback = vm.IsEditing;
 
                         // محاكاة إغلاق عبر ✕ / Alt+F4: استدعاء Close() مباشرة على النافذة،
                         // وليس عبر CancelEditCommand.
-                        formWindow!.Close();
+                        formWindowDuringCallback?.Close();
                     }), DispatcherPriority.ApplicationIdle);
 
                     vm.AddNewCommand.Execute(null);
+
+                    // R196-B/R10: التأكيدات بعد عودة Execute مباشرة، لا داخل رد النداء.
+                    Assert.NotNull(formWindowDuringCallback);
+                    Assert.True(wasEditingDuringFirstCallback);
 
                     // بعد الإغلاق عبر ✕، يجب أن تُصفَّر IsEditing تلقائياً عبر معالج Closing
                     // في LocationFormWindow (الذي يستدعي CancelEditCommand داخلياً)، دون أن يحتاج
@@ -214,14 +226,13 @@ public class LocationsFormWindowTests
                     // الخطوة 2: التأكد من أن نافذة جديدة فعلاً تُفتح عند استدعاء AddNewCommand
                     // مرة أخرى (وليس لا شيء بسبب مرجع نافذة سابق عالق يمنع الفتح).
                     LocationFormWindow? secondFormWindow = null;
+                    bool wasEditingDuringSecondCallback = false;
                     Dispatcher.CurrentDispatcher.BeginInvoke(new System.Action(() =>
                     {
                         secondFormWindow = Application.Current.Windows
                             .OfType<LocationFormWindow>()
                             .FirstOrDefault();
-
-                        Assert.NotNull(secondFormWindow);
-                        Assert.True(vm.IsEditing);
+                        wasEditingDuringSecondCallback = vm.IsEditing;
 
                         vm.CancelEditCommand.Execute(null);
                     }), DispatcherPriority.ApplicationIdle);
@@ -229,6 +240,7 @@ public class LocationsFormWindowTests
                     vm.AddNewCommand.Execute(null);
 
                     Assert.NotNull(secondFormWindow);
+                    Assert.True(wasEditingDuringSecondCallback);
                     Assert.False(vm.IsEditing);
                 }
                 finally

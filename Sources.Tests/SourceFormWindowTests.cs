@@ -91,6 +91,33 @@ public class SourceFormWindowTests : IDisposable
         Top = -5000
     };
 
+    /// <summary>
+    /// يبحث في الشجرة المنطقية/المرئية عن أي عنصر تُربَط خاصية Visibility فيه مباشرة بمسار
+    /// "IsEditing" — وهو المعرّف الدقيق للتراكب القديم (In-View Modal Overlay) الذي أزالته
+    /// الجولة 148 من SourcesView.xaml (كان ScrollViewer الجذر للمعالج القديم مربوطاً حرفياً
+    /// بـ`Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}"`؛ انظر commit
+    /// e296a95 «الجولة 148»: `git show e296a95 -- Sources-System-Project/Views/SourcesView.xaml`).
+    /// بعد الجولة 148 لا يوجد أي binding من هذا النوع في SourcesView.xaml إطلاقاً
+    /// (`grep -n "IsEditing" Sources-System-Project/Views/SourcesView.xaml` لا يُعيد شيئاً)، لذا
+    /// فإن عدم وجود أي عنصر من هذا النوع في الشجرة المرئية الحيّة هو الدليل المباشر على غياب
+    /// المعالج القديم، لا مجرد غياب SourceFormWindow (الذي قد يكون غائباً لأسباب أخرى).
+    /// </summary>
+    private static bool AnyElementBindsVisibilityToIsEditing(DependencyObject root)
+    {
+        if (root is UIElement element)
+        {
+            var expression = BindingOperations.GetBindingExpression(element, UIElement.VisibilityProperty);
+            if (expression?.ParentBinding?.Path?.Path == "IsEditing") return true;
+        }
+
+        for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = System.Windows.Media.VisualTreeHelper.GetChild(root, i);
+            if (AnyElementBindsVisibilityToIsEditing(child)) return true;
+        }
+        return false;
+    }
+
     [Fact]
     public void SourcesView_HostedInRealWindow_HasNoInlineEditingOverlay()
     {
@@ -109,6 +136,10 @@ public class SourceFormWindowTests : IDisposable
                     // لم يعد المعالج جزءاً من شجرة SourcesView المرئية إطلاقاً.
                     Assert.False(vm.IsEditing);
                     Assert.Empty(Application.Current.Windows.OfType<SourceFormWindow>());
+
+                    // R196-B/R13: تأكيد إيجابي مباشر على غياب حاوية المعالج القديم — لا يوجد أي
+                    // عنصر تُربَط خاصيته Visibility بمسار "IsEditing" ضمن شجرة SourcesView الحيّة.
+                    Assert.False(AnyElementBindsVisibilityToIsEditing(view));
                 }
                 finally
                 {
@@ -321,16 +352,19 @@ public class SourceFormWindowTests : IDisposable
                     vm.CurrentStep = 3; // لإخراج قائمة "الموقع" إلى شجرة العرض كذلك
                     formWindow.UpdateLayout();
 
-                    var comboBoxes = FindVisualChildren<System.Windows.Controls.ComboBox>(formWindow).ToList();
-                    Assert.NotEmpty(comboBoxes);
+                    // R196-B/R14: التحقق من قائمتَي "الحالة" و"الموقع" كل على حدة بمسار الربط
+                    // (EditStatus/EditLocationId) بدل تأكيد عام "عنصر واحد معطَّل على الأقل"،
+                    // الذي كان يمرّ حتى لو تعطّلت قائمة الحالة فقط دون قائمة الموقع أو العكس.
+                    var statusComboBox = FindComboBoxBySelectedValueBindingPath(formWindow, "EditStatus");
+                    var locationComboBox = FindComboBoxBySelectedValueBindingPath(formWindow, "EditLocationId");
 
-                    var disabledBoxes = comboBoxes.Where(c => !c.IsEnabled).ToList();
-                    Assert.True(disabledBoxes.Count >= 1, "At least Status or Location ComboBox should be disabled");
+                    Assert.NotNull(statusComboBox);
+                    Assert.False(statusComboBox!.IsEnabled);
+                    Assert.True(System.Windows.Controls.ToolTipService.GetShowOnDisabled(statusComboBox));
 
-                    foreach (var box in disabledBoxes)
-                    {
-                        Assert.True(System.Windows.Controls.ToolTipService.GetShowOnDisabled(box));
-                    }
+                    Assert.NotNull(locationComboBox);
+                    Assert.False(locationComboBox!.IsEnabled);
+                    Assert.True(System.Windows.Controls.ToolTipService.GetShowOnDisabled(locationComboBox));
                 }
                 finally
                 {
@@ -374,6 +408,27 @@ public class SourceFormWindowTests : IDisposable
                 if (expression?.ParentBinding?.Path?.Path == propertyPath) return textBox;
             }
             var nested = FindTextBoxByBindingPath(child, propertyPath);
+            if (nested != null) return nested;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// يبحث في الشجرة المرئية عن أول ComboBox مربوط (Binding) بمسار الخاصية المحدَّدة على
+    /// ComboBox.SelectedValueProperty — يُستخدَم لإيجاد قائمة "الحالة" أو "الموقع" تحديداً
+    /// دون الاعتماد على x:Name أو على ترتيبها بين عناصر ComboBox الأخرى (الجولة 196/R14).
+    /// </summary>
+    private static System.Windows.Controls.ComboBox? FindComboBoxBySelectedValueBindingPath(DependencyObject root, string propertyPath)
+    {
+        for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = System.Windows.Media.VisualTreeHelper.GetChild(root, i);
+            if (child is System.Windows.Controls.ComboBox comboBox)
+            {
+                var expression = BindingOperations.GetBindingExpression(comboBox, System.Windows.Controls.ComboBox.SelectedValueProperty);
+                if (expression?.ParentBinding?.Path?.Path == propertyPath) return comboBox;
+            }
+            var nested = FindComboBoxBySelectedValueBindingPath(child, propertyPath);
             if (nested != null) return nested;
         }
         return null;
