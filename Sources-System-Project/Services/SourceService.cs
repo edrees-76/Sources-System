@@ -469,31 +469,6 @@ public class SourceService : ISourceService
         return (true, msg);
     }
 
-    /// <summary>
-    /// تحديث النشاط الحالي لجميع المصادر في قاعدة البيانات
-    /// </summary>
-    public void UpdateAllCurrentActivities()
-    {
-        using var db = _dbFactory.CreateDbContext();
-        var sources = db.Sources
-            .Include(s => s.Radioisotope)
-            .Include(s => s.InitialActivityUnit)
-            .Include(s => s.CurrentActivityUnit)
-            .Include(s => s.SourceIsotopes).ThenInclude(si => si.Radioisotope)
-            .Include(s => s.SourceIsotopes).ThenInclude(si => si.ActivityUnit)
-            .Where(s => s.Status == "InUse" || s.Status == "Storage")
-            .ToList();
-
-        var isotopesDict = db.Radioisotopes.ToDictionary(r => r.Id);
-        var unitsDict = db.ActivityUnits.ToDictionary(u => u.Id);
-
-        foreach (var source in sources)
-        {
-            CalculateSourceCurrentActivityInMemory(source, isotopesDict, unitsDict);
-        }
-        db.SaveChanges();
-    }
-
     public void UpdateCurrentActivity(Source source, AppDbContext db)
     {
         var isotopesDict = db.Radioisotopes.ToDictionary(r => r.Id);

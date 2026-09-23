@@ -11,7 +11,6 @@ public interface ISourceService
     (bool Success, string Message) CreateSource(Source source, List<SourceIsotope>? isotopes = null);
     (bool Success, string Message) UpdateSource(Source source, List<SourceIsotope>? isotopes = null);
     (bool Success, string Message) DeleteSource(Guid id);
-    void UpdateAllCurrentActivities();
     int GetTotalSourcesCount();
     List<Source> GetLowActivitySources(double threshold);
     bool HasActiveBorrow(Guid sourceId);
