@@ -1174,5 +1174,62 @@ public class SourcesViewModelTests : IDisposable
     }
 
     #endregion
+
+    #region Round 195-H3: Single Load Per Tab Switch
+
+    [Fact]
+    public async Task SwitchToNeutronSourcesAsync_LoadsNeutronDataExactlyOnce()
+    {
+        // Arrange
+        _mockNeutronSourceService.Setup(s => s.GetAll()).Returns(new List<NeutronSource>());
+        _mockSourceService.Setup(s => s.GetDeletedSources()).Returns(new List<Source>());
+        var vm = CreateViewModel();
+        // Settle the constructor's fire-and-forget initial (Active-tab) load before measuring,
+        // so its own calls are not mistaken for the tab-switch load.
+        await vm.LoadDataAsync();
+        _mockNeutronSourceService.Invocations.Clear();
+
+        // Act
+        await vm.SwitchToNeutronSourcesAsync();
+
+        // Assert: the tab-changed handler and the command must share a single load, not two
+        _mockNeutronSourceService.Verify(s => s.GetAll(), Times.Once);
+    }
+
+    [Fact]
+    public async Task SwitchToDeletedSourcesAsync_LoadsDeletedDataExactlyOnce()
+    {
+        // Arrange
+        _mockSourceService.Setup(s => s.GetDeletedSources()).Returns(new List<Source>());
+        var vm = CreateViewModel();
+        // Settle the constructor's fire-and-forget initial (Active-tab) load before measuring
+        // (it also queries GetDeletedSources() for the deleted-count badge).
+        await vm.LoadDataAsync();
+        _mockSourceService.Invocations.Clear();
+
+        // Act
+        await vm.SwitchToDeletedSourcesAsync();
+
+        // Assert
+        _mockSourceService.Verify(s => s.GetDeletedSources(), Times.Once);
+    }
+
+    [Fact]
+    public async Task SwitchToNeutronSourcesAsync_CalledAgainOnSameTab_LoadsExactlyOnceMore()
+    {
+        // Arrange
+        _mockNeutronSourceService.Setup(s => s.GetAll()).Returns(new List<NeutronSource>());
+        var vm = CreateViewModel();
+        await vm.SwitchToNeutronSourcesAsync();
+        _mockNeutronSourceService.Invocations.Clear();
+
+        // Act: re-clicking the tab that is already selected must still refresh exactly once
+        await vm.SwitchToNeutronSourcesAsync();
+
+        // Assert
+        _mockNeutronSourceService.Verify(s => s.GetAll(), Times.Once);
+    }
+
+    #endregion
 }
 

@@ -785,6 +785,39 @@ public class SourceServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         Assert.All(deletedList, s => Assert.True(s.IsDeleted));
     }
 
+    /// <summary>الجولة 195-I: رسالة استرجاع المصدر عند تعارض الكود مع مصدر نشط آخر (مطابقة
+    /// حالة الأحرف غير حسّاسة كما يفحصها RestoreSource) توضح أن الكود مستخدم حالياً لمصدر
+    /// نشط، ولا تغيّر السلوك (المصدر المحذوف يبقى IsDeleted).</summary>
+    [Fact]
+    public void RestoreSource_WhenActiveSourceUsesSameCodeCaseInsensitive_FailsWithClearMessage()
+    {
+        // Arrange
+        var deletedSource = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, sourceCode: "SRC-R195");
+        _sourceService.CreateSource(deletedSource);
+        _sourceService.DeleteSource(deletedSource.Id);
+
+        // أُدخل مباشرة عبر DbContext لأن CreateSource يرفض التكرار حتى مع مصدر محذوف بنفس
+        // الكود (فحص حالة أحرف غير حسّاسة)؛ هذا يحاكي بيانات قديمة سابقة على ذلك الفحص.
+        var activeSource = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, sourceCode: "src-r195");
+        using (var seedContext = _fixture.CreateContext())
+        {
+            seedContext.Sources.Add(activeSource);
+            seedContext.SaveChanges();
+        }
+
+        // Act
+        var result = _sourceService.RestoreSource(deletedSource.Id);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Contains("غيّر كود المصدر النشط أولاً", result.Message);
+        Assert.Contains(deletedSource.SourceCode, result.Message);
+
+        using var context = _fixture.CreateContext();
+        var stillDeleted = context.Sources.IgnoreQueryFilters().First(s => s.Id == deletedSource.Id);
+        Assert.True(stillDeleted.IsDeleted);
+    }
+
     #endregion
 
     #region 5. Queries & Edge Cases Tests
