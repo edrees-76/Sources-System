@@ -451,7 +451,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
 
         // Assert
         Assert.False(success);
-        Assert.Contains("Cf-252", message);
+        Assert.Equal(string.Format(TranslationHelper.GetString("MsgErrNeutronSourceRestoreTypeDeleted") ?? "لا يمكن استرجاع المصدر النيتروني لأن نوعه \"{0}\" محذوف حالياً.", "Cf-252"), message);
 
         using var context = _fixture.CreateContext();
         var stillDeleted = context.NeutronSources.IgnoreQueryFilters().First(n => n.Id == nsId);
@@ -479,7 +479,7 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
 
         // Assert
         Assert.False(success);
-        Assert.Contains("مخزن قديم", message);
+        Assert.Equal(string.Format(TranslationHelper.GetString("MsgErrNeutronSourceRestoreLocationDeleted") ?? "لا يمكن استرجاع المصدر النيتروني لأن موقعه \"{0}\" محذوف حالياً. يرجى استرجاع الموقع أولاً من سجل المحذوفات ثم إعادة المحاولة.", "مخزن قديم"), message);
 
         using var context = _fixture.CreateContext();
         var stillDeleted = context.NeutronSources.IgnoreQueryFilters().First(n => n.Id == nsId);
