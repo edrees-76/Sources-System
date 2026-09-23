@@ -257,14 +257,18 @@ public partial class LocationsViewModel : ObservableObject, IEditableViewModel
             return;
         }
 
-        if (DialogHelper.IsTestMode) return;
+        DialogHelper.ShowWindowDialog(() => OpenLocationDetailsWindowCore(target, sources));
+    }
 
+    /// <summary>الجسم الفعلي لفتح نافذة تفاصيل الموقع (بعد اجتياز بوابة وضع الاختبار)</summary>
+    private void OpenLocationDetailsWindowCore(Location target, IEnumerable<Source> sources)
+    {
         var app = System.Windows.Application.Current;
         if (app == null) return;
 
         if (app.Dispatcher != null && !app.Dispatcher.CheckAccess())
         {
-            app.Dispatcher.BeginInvoke(() => OpenLocationDetailsWindow(target, sources));
+            app.Dispatcher.BeginInvoke(() => OpenLocationDetailsWindowCore(target, sources));
             return;
         }
 

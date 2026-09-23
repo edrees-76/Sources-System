@@ -34,8 +34,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private System.Windows.Threading.DispatcherTimer? _alertTimer;
     private bool _loginSessionInitialized;
 
-    /// <summary>خاصية اختبارية: عند تعيينها في وضع الاختبار (DialogHelper.IsTestMode)، يُستعمل
-    /// هذا الرقم مباشرة كمُدخل للتفعيل بدل فتح ActivationDialog الفعلية.</summary>
+    /// <summary>خاصية اختبارية: عند تعيينها في وضع الاختبار (حيث يمنع DialogHelper.ShowWindowDialog
+    /// فتح ActivationDialog فعلياً)، يُستعمل هذا الرقم مباشرة كمُدخل للتفعيل بدل فتح النافذة.</summary>
     public static string? TestActivationSerialOverride { get; set; }
 
     public MainViewModel(IUserService userService, IAlertService alertService, ISystemSettingsService settingsService, ILicenseService licenseService)
@@ -277,7 +277,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand]
     public void OpenActivation()
     {
-        if (DialogHelper.IsTestMode)
+        if (!DialogHelper.ShowWindowDialog(ShowActivationDialogCore))
         {
             if (!string.IsNullOrEmpty(TestActivationSerialOverride))
             {
@@ -288,9 +288,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
                     DialogHelper.ShowInfo(testMessage, TranslationHelper.GetString("TitleActivationDialog") ?? "تفعيل المنظومة");
                 }
             }
-            return;
         }
+    }
 
+    /// <summary>الجسم الفعلي لفتح نافذة التفعيل (بعد اجتياز بوابة وضع الاختبار)</summary>
+    private void ShowActivationDialogCore()
+    {
         var dialog = new Sources.Views.ActivationDialog(_licenseService);
         if (Application.Current?.MainWindow != null)
         {

@@ -82,6 +82,18 @@ namespace Sources.Helpers
             return result;
         }
 
+        /// <summary>
+        /// يعرض نافذة حوارية خارجية عبر الإجراء المُمرَّر. في وضع الاختبار (IsTestMode) لا يُنفَّذ
+        /// الإجراء إطلاقاً وتُعاد القيمة false؛ خلاف ذلك يُنفَّذ الإجراء وتُعاد القيمة true.
+        /// يوفّر هذا نقطة عزل وحيدة لفتح النوافذ الخارجية بدلاً من تفرّق فحص IsTestMode في كل موقع استدعاء.
+        /// </summary>
+        public static bool ShowWindowDialog(System.Action showWindow)
+        {
+            if (IsTestMode) return false;
+            showWindow();
+            return true;
+        }
+
         public static AlertDialog.AlertResult? ShowInfoWithExtraOptionResult { get; set; }
 
         public static AlertDialog.AlertResult ShowInfoWithExtraOption(string message, string extraButtonText, string? title = null)
