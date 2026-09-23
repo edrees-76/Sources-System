@@ -324,7 +324,11 @@ public class AppDbContext : DbContext
 
                 if (needsSave) SaveChanges();
             }
-            catch { /* تجاوز أي خطأ في التحقق */ }
+            catch (Exception ex)
+            {
+                /* تجاوز أي خطأ في التحقق */
+                global::Sources.Services.LoggerService.LogError("SeedData: failed to verify/upgrade the default admin password hash", ex);
+            }
         }
 
         // ─── مواقع افتراضية ───

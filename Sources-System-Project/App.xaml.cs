@@ -245,7 +245,10 @@ public partial class App : Application
             theme.SetBaseTheme(isDark ? BaseTheme.Dark : BaseTheme.Light);
             paletteHelper.SetTheme(theme);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            LoggerService.LogError("App.ApplyTheme: failed to set MaterialDesign base theme", ex);
+        }
 
         // تبديل قاموس الثيم المخصص
         try
@@ -266,7 +269,10 @@ public partial class App : Application
                 }
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            LoggerService.LogError("App.ApplyTheme: failed to swap custom theme dictionary", ex);
+        }
 
         // الحفاظ على لون التمييز المطبق حالياً
         if (app.Resources.Contains("PrimaryColor") && app.Resources["PrimaryColor"] is System.Windows.Media.Color activeColor)
@@ -279,7 +285,10 @@ public partial class App : Application
                 themeAfter.SetSecondaryColor(activeColor);
                 paletteHelper.SetTheme(themeAfter);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("App.ApplyTheme: failed to reapply accent color after theme change", ex);
+            }
         }
     }
 
@@ -315,7 +324,10 @@ public partial class App : Application
                 theme.SetSecondaryColor(primaryColor);
                 paletteHelper.SetTheme(theme);
             }
-            catch { }
+            catch (Exception innerEx)
+            {
+                LoggerService.LogError("App.ApplyAccentColor: failed to update MaterialDesign palette", innerEx);
+            }
 
             // 2. تحديث الموارد المركزية DynamicResource في Application.Current.Resources
             app.Resources["PrimaryColor"] = primaryColor;

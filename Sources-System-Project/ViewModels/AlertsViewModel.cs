@@ -155,8 +155,9 @@ public partial class AlertsViewModel : ObservableObject, IDisposable
             locs.Insert(0, string.Empty); // الكل
             AvailableLocations = new ObservableCollection<string>(locs);
         }
-        catch
+        catch (Exception ex)
         {
+            LoggerService.LogError("AlertsViewModel: failed to load locations", ex);
             AvailableLocations = new ObservableCollection<string>();
         }
     }

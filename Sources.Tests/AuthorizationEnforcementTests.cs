@@ -139,7 +139,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
         var user = new User { Username = "normal", Role = new Role { RoleName = "مشغل" } };
         var result = AuthorizationGuard.RequireAdmin(user);
         Assert.False(result.Allowed);
-        Assert.Contains("مقصورة على مدير النظام", result.Message);
+        Assert.Contains("مخصصة لمدير النظام فقط", result.Message);
     }
 
     [Fact]
@@ -171,7 +171,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
         userService.Login("normal_c", "UserPass123!");
         var (s2, m2) = userService.CreateUser(newUser, "Pass123!");
         Assert.False(s2);
-        Assert.Contains("مقصورة على مدير النظام", m2);
+        Assert.Contains("مخصصة لمدير النظام فقط", m2);
 
         // 3. Admin user
         var admin = CreateAdminUser("admin_c");
@@ -197,7 +197,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
         userService.Login("normal_up", "UserPass123!");
         var (s2, m2) = userService.UpdateUser(target);
         Assert.False(s2);
-        Assert.Contains("مقصورة على مدير النظام", m2);
+        Assert.Contains("مخصصة لمدير النظام فقط", m2);
 
         // 3. Admin user
         var admin = CreateAdminUser("admin_up");
@@ -224,7 +224,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
         userService.Login("normal_reset", "UserPass123!");
         var (s2, m2) = userService.ResetPassword(target.Id, "NewPass123!");
         Assert.False(s2);
-        Assert.Contains("مقصورة على مدير النظام", m2);
+        Assert.Contains("مخصصة لمدير النظام فقط", m2);
 
         // 3. Admin user
         var admin = CreateAdminUser("admin_reset_actor");
@@ -249,7 +249,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
         var (success, message) = userService.ResetPassword(adminUser.Id, "HackedPassword123!");
 
         Assert.False(success);
-        Assert.Contains("مقصورة على مدير النظام", message);
+        Assert.Contains("مخصصة لمدير النظام فقط", message);
 
         using var db = _fixture.CreateContext();
         var refreshedAdmin = db.Users.Find(adminUser.Id)!;
@@ -279,7 +279,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
         userService.Login("normal_unlock", "UserPass123!");
         var (s2, m2) = userService.UnlockAccount(locked.Id);
         Assert.False(s2);
-        Assert.Contains("مقصورة على مدير النظام", m2);
+        Assert.Contains("مخصصة لمدير النظام فقط", m2);
 
         // 3. Admin user
         var admin = CreateAdminUser("admin_unlock_actor");
@@ -305,7 +305,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
         userService.Login("normal_del", "UserPass123!");
         var (s2, m2) = userService.DeleteUser(toDelete.Id);
         Assert.False(s2);
-        Assert.Contains("مقصورة على مدير النظام", m2);
+        Assert.Contains("مخصصة لمدير النظام فقط", m2);
 
         // 3. Admin user
         var admin = CreateAdminUser("admin_del_actor");
@@ -338,7 +338,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
         userService.Login("normal_res", "UserPass123!");
         var (s2, m2) = userService.RestoreUser(toRestore.Id);
         Assert.False(s2);
-        Assert.Contains("مقصورة على مدير النظام", m2);
+        Assert.Contains("مخصصة لمدير النظام فقط", m2);
 
         // 3. Admin user
         var admin = CreateAdminUser("admin_res_actor");
@@ -364,7 +364,7 @@ public class AuthorizationEnforcementTests : IClassFixture<SqliteInMemoryFixture
         userService.Login("normal_frz", "UserPass123!");
         var (s2, m2) = userService.ToggleUserFreeze(toFreeze.Id);
         Assert.False(s2);
-        Assert.Contains("مقصورة على مدير النظام", m2);
+        Assert.Contains("مخصصة لمدير النظام فقط", m2);
 
         // 3. Admin user
         var admin = CreateAdminUser("admin_frz_actor");

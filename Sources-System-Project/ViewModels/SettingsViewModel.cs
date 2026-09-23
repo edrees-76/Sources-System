@@ -230,8 +230,9 @@ public partial class SettingsViewModel : ObservableObject
                 LastBackupInfo = TranslationHelper.GetString("NoBackupsYet") ?? "لا توجد نسخ احتياطية بعد";
             }
         }
-        catch
+        catch (Exception ex)
         {
+            LoggerService.LogError("SettingsViewModel: failed to read last backup info", ex);
             LastBackupInfo = TranslationHelper.GetString("NoBackupsYet") ?? "لا توجد نسخ احتياطية بعد";
         }
     }

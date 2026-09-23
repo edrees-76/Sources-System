@@ -36,8 +36,8 @@ public static class AuthorizationGuard
                 ?? "لا يمكن تنفيذ العملية: لا يوجد مستخدم مسجَّل الدخول.");
 
         if (!user.IsAdmin)
-            return (false, TranslationHelper.GetString("MsgErrOperationAdminOnly")
-                ?? "هذه العملية مقصورة على مدير النظام.");
+            return (false, TranslationHelper.GetString("MsgErrAdminOnly")
+                ?? "غير مصرح: هذه العملية مخصصة لمدير النظام فقط");
 
         return (true, string.Empty);
     }

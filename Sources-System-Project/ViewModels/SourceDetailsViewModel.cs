@@ -119,8 +119,9 @@ public partial class SourceDetailsViewModel : ObservableObject
                     HasImage = true;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                LoggerService.LogError("SourceDetailsViewModel: failed to resolve source image path", ex);
                 HasImage = false;
             }
         }

@@ -73,7 +73,7 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
         if (item.MeanNeutronEnergyMeV.HasValue && !double.IsFinite(item.MeanNeutronEnergyMeV.Value))
             return (false, TranslationHelper.GetString("MsgErrInvalidMeanNeutronEnergyFinite") ?? "قيمة متوسط طاقة النيوترونات غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.AmbientDoseConversionCoefficient.HasValue && !double.IsFinite(item.AmbientDoseConversionCoefficient.Value))
-            return (false, TranslationHelper.GetString("MsgErrInvalidAmbientDoseConversionFinite") ?? "قيمة معامل تحويل التدفق إلى الجرعة المحيطية غير صالحة (يجب أن تكون رقماً منتهياً)");
+            return (false, TranslationHelper.GetString("MsgErrInvalidAmbientDoseConversionFinite") ?? "قيمة معامل تحويل التدفق إلى المكافئ المحيطي للجرعة غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.PhotonToNeutronDoseRatio.HasValue && !double.IsFinite(item.PhotonToNeutronDoseRatio.Value))
             return (false, TranslationHelper.GetString("MsgErrInvalidPhotonToNeutronDoseRatioFinite") ?? "قيمة نسبة جرعة الفوتون إلى النيترون غير صالحة (يجب أن تكون رقماً منتهياً)");
 
@@ -128,7 +128,7 @@ public class NeutronSourceTypeService : INeutronSourceTypeService
         if (item.MeanNeutronEnergyMeV.HasValue && !double.IsFinite(item.MeanNeutronEnergyMeV.Value))
             return (false, TranslationHelper.GetString("MsgErrInvalidMeanNeutronEnergyFinite") ?? "قيمة متوسط طاقة النيوترونات غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.AmbientDoseConversionCoefficient.HasValue && !double.IsFinite(item.AmbientDoseConversionCoefficient.Value))
-            return (false, TranslationHelper.GetString("MsgErrInvalidAmbientDoseConversionFinite") ?? "قيمة معامل تحويل التدفق إلى الجرعة المحيطية غير صالحة (يجب أن تكون رقماً منتهياً)");
+            return (false, TranslationHelper.GetString("MsgErrInvalidAmbientDoseConversionFinite") ?? "قيمة معامل تحويل التدفق إلى المكافئ المحيطي للجرعة غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.PhotonToNeutronDoseRatio.HasValue && !double.IsFinite(item.PhotonToNeutronDoseRatio.Value))
             return (false, TranslationHelper.GetString("MsgErrInvalidPhotonToNeutronDoseRatioFinite") ?? "قيمة نسبة جرعة الفوتون إلى النيترون غير صالحة (يجب أن تكون رقماً منتهياً)");
 
