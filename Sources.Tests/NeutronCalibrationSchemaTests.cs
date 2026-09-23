@@ -210,4 +210,275 @@ VALUES ('{ns2Id}', 'NS-WITHOUT-CALIB', '{typeId}', '{locId}', 1200000.0, NULL, '
             }
         }
     }
+
+    private const string LegacyAmBeStandardReference = "ISO 8529-3:2023 Table 2 — يعتمد على حجم المصدر (صغير 393 / كبير 387)؛ غير محدد للنوع";
+
+    /// <summary>الجولة 197 (المجموعة C): الصف القديم "Am-241/Be" لا يُبطَل إذا كان لا يزال
+    /// مرتبطاً بمصدر نيتروني نشط، تفادياً لسجل "شبح" لا يظهر في القائمة النشطة (JOIN داخلي مع
+    /// النوع) ولا في سجل المحذوفات.</summary>
+    [Fact]
+    public void SeedData_DoesNotSoftDeleteLegacyAmBe_WhenLinkedToActiveNeutronSource()
+    {
+        var tempDbPath = Path.Combine(Path.GetTempPath(), "Sources_SeedLegacyActive_" + Guid.NewGuid().ToString("N") + ".db");
+        try
+        {
+            var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite($"Data Source={tempDbPath}").Options;
+            var legacyId = Guid.NewGuid();
+
+            using (var context = new AppDbContext(options))
+            {
+                context.Database.Migrate();
+                context.NeutronSourceTypes.Add(new NeutronSourceType
+                {
+                    Id = legacyId,
+                    Code = "Am-241/Be",
+                    NameEn = "Americium-241/Beryllium",
+                    NameAr = "أمريسيوم-241 / بيريليوم",
+                    HalfLife = 432.2,
+                    HalfLifeUnit = "years",
+                    StandardReference = LegacyAmBeStandardReference
+                });
+                context.NeutronSources.Add(new NeutronSource
+                {
+                    SourceCode = "NS-LEGACY-ACTIVE",
+                    NeutronSourceTypeId = legacyId,
+                    CalibratedEmissionRate = 1e6
+                });
+                context.SaveChanges();
+            }
+
+            using (var ctx = new AppDbContext(options))
+            {
+                ctx.InitializeDatabase();
+            }
+
+            using (var ctx = new AppDbContext(options))
+            {
+                var legacy = ctx.NeutronSourceTypes.IgnoreQueryFilters().First(t => t.Id == legacyId);
+                Assert.False(legacy.IsDeleted);
+            }
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (File.Exists(tempDbPath))
+            {
+                try { File.Delete(tempDbPath); } catch { }
+            }
+        }
+    }
+
+    /// <summary>الصف القديم لا يُبطَل أيضاً إذا كان مرتبطاً بمصدر نيتروني محذوف (وليس نشطاً فقط)،
+    /// لأن سجل المحذوفات يعتمد على IgnoreQueryFilters ويجب ألا يفقد أباه.</summary>
+    [Fact]
+    public void SeedData_DoesNotSoftDeleteLegacyAmBe_WhenLinkedToDeletedNeutronSource()
+    {
+        var tempDbPath = Path.Combine(Path.GetTempPath(), "Sources_SeedLegacyDeleted_" + Guid.NewGuid().ToString("N") + ".db");
+        try
+        {
+            var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite($"Data Source={tempDbPath}").Options;
+            var legacyId = Guid.NewGuid();
+
+            using (var context = new AppDbContext(options))
+            {
+                context.Database.Migrate();
+                context.NeutronSourceTypes.Add(new NeutronSourceType
+                {
+                    Id = legacyId,
+                    Code = "Am-241/Be",
+                    NameEn = "Americium-241/Beryllium",
+                    NameAr = "أمريسيوم-241 / بيريليوم",
+                    HalfLife = 432.2,
+                    HalfLifeUnit = "years",
+                    StandardReference = LegacyAmBeStandardReference
+                });
+                context.NeutronSources.Add(new NeutronSource
+                {
+                    SourceCode = "NS-LEGACY-DELETED",
+                    NeutronSourceTypeId = legacyId,
+                    CalibratedEmissionRate = 1e6,
+                    IsDeleted = true,
+                    DeletedAt = DateTime.Now
+                });
+                context.SaveChanges();
+            }
+
+            using (var ctx = new AppDbContext(options))
+            {
+                ctx.InitializeDatabase();
+            }
+
+            using (var ctx = new AppDbContext(options))
+            {
+                var legacy = ctx.NeutronSourceTypes.IgnoreQueryFilters().First(t => t.Id == legacyId);
+                Assert.False(legacy.IsDeleted);
+            }
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (File.Exists(tempDbPath))
+            {
+                try { File.Delete(tempDbPath); } catch { }
+            }
+        }
+    }
+
+    /// <summary>نوع "Am-241/Be" نشأه مستخدم (AddedBy محدد) لا يجب أن يُبطَل أبداً، حتى لو تطابق
+    /// الرمز مع الصف القديم.</summary>
+    [Fact]
+    public void SeedData_NeverTouchesUserCreatedActiveAmBe_WithAddedBySet()
+    {
+        var tempDbPath = Path.Combine(Path.GetTempPath(), "Sources_SeedUserAmBe_" + Guid.NewGuid().ToString("N") + ".db");
+        try
+        {
+            var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite($"Data Source={tempDbPath}").Options;
+            var userTypeId = Guid.NewGuid();
+            var fakeUserId = Guid.NewGuid();
+
+            using (var context = new AppDbContext(options))
+            {
+                context.Database.Migrate();
+                var role = new Role { Id = Guid.NewGuid(), RoleName = "مدير النظام", Permissions = "All" };
+                var user = new User { Id = fakeUserId, FullName = "مستخدم", Username = "u_ambe", RoleId = role.Id, Role = role, IsActive = true, IsEditor = true };
+                context.Roles.Add(role);
+                context.Users.Add(user);
+                context.NeutronSourceTypes.Add(new NeutronSourceType
+                {
+                    Id = userTypeId,
+                    Code = "Am-241/Be",
+                    NameEn = "User Created Am-Be",
+                    HalfLife = 432.2,
+                    HalfLifeUnit = "years",
+                    StandardReference = LegacyAmBeStandardReference, // even with matching text, AddedBy != null must protect it
+                    AddedBy = fakeUserId
+                });
+                context.SaveChanges();
+            }
+
+            using (var ctx = new AppDbContext(options))
+            {
+                ctx.InitializeDatabase();
+            }
+
+            using (var ctx = new AppDbContext(options))
+            {
+                var userType = ctx.NeutronSourceTypes.IgnoreQueryFilters().First(t => t.Id == userTypeId);
+                Assert.False(userType.IsDeleted);
+            }
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (File.Exists(tempDbPath))
+            {
+                try { File.Delete(tempDbPath); } catch { }
+            }
+        }
+    }
+
+    /// <summary>صف "Am-241/Be" بلا AddedBy لكن بنص StandardReference مختلف عن النص القديم بالضبط
+    /// لا يُطابق البصمة، فلا يُبطَل.</summary>
+    [Fact]
+    public void SeedData_NeverTouchesRowWithNullAddedBy_ButDifferentStandardReference()
+    {
+        var tempDbPath = Path.Combine(Path.GetTempPath(), "Sources_SeedDiffRef_" + Guid.NewGuid().ToString("N") + ".db");
+        try
+        {
+            var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite($"Data Source={tempDbPath}").Options;
+            var typeId = Guid.NewGuid();
+
+            using (var context = new AppDbContext(options))
+            {
+                context.Database.Migrate();
+                context.NeutronSourceTypes.Add(new NeutronSourceType
+                {
+                    Id = typeId,
+                    Code = "Am-241/Be",
+                    NameEn = "Different reference row",
+                    HalfLife = 432.2,
+                    HalfLifeUnit = "years",
+                    StandardReference = "مرجع مختلف تماماً عن النص القديم"
+                });
+                context.SaveChanges();
+            }
+
+            using (var ctx = new AppDbContext(options))
+            {
+                ctx.InitializeDatabase();
+            }
+
+            using (var ctx = new AppDbContext(options))
+            {
+                var type = ctx.NeutronSourceTypes.IgnoreQueryFilters().First(t => t.Id == typeId);
+                Assert.False(type.IsDeleted);
+            }
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (File.Exists(tempDbPath))
+            {
+                try { File.Delete(tempDbPath); } catch { }
+            }
+        }
+    }
+
+    /// <summary>تشغيل SeedData مرتين متتاليتين (يحاكي تشغيلَي بدء تشغيل) على قاعدة تحوي الصف القديم
+    /// بلا مصادر مرتبطة لا يغيّر شيئاً إضافياً بعد الإبطال الأول (مثالية العملية idempotent).</summary>
+    [Fact]
+    public void SeedData_RunningTwice_IsIdempotent_ForLegacyAmBeWithoutLinkedSources()
+    {
+        var tempDbPath = Path.Combine(Path.GetTempPath(), "Sources_SeedTwice_" + Guid.NewGuid().ToString("N") + ".db");
+        try
+        {
+            var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite($"Data Source={tempDbPath}").Options;
+            var legacyId = Guid.NewGuid();
+
+            using (var context = new AppDbContext(options))
+            {
+                context.Database.Migrate();
+                context.NeutronSourceTypes.Add(new NeutronSourceType
+                {
+                    Id = legacyId,
+                    Code = "Am-241/Be",
+                    NameEn = "Americium-241/Beryllium",
+                    HalfLife = 432.2,
+                    HalfLifeUnit = "years",
+                    StandardReference = LegacyAmBeStandardReference
+                });
+                context.SaveChanges();
+            }
+
+            using (var ctx = new AppDbContext(options)) { ctx.InitializeDatabase(); }
+
+            DateTime? deletedAtAfterFirstRun;
+            using (var ctx = new AppDbContext(options))
+            {
+                var legacy = ctx.NeutronSourceTypes.IgnoreQueryFilters().First(t => t.Id == legacyId);
+                Assert.True(legacy.IsDeleted);
+                deletedAtAfterFirstRun = legacy.DeletedAt;
+            }
+
+            // تشغيل ثانٍ يحاكي إعادة تشغيل التطبيق
+            using (var ctx = new AppDbContext(options)) { ctx.InitializeDatabase(); }
+
+            using (var ctx = new AppDbContext(options))
+            {
+                var legacy = ctx.NeutronSourceTypes.IgnoreQueryFilters().First(t => t.Id == legacyId);
+                Assert.True(legacy.IsDeleted);
+                Assert.Equal(deletedAtAfterFirstRun, legacy.DeletedAt); // لم يتغيّر DeletedAt في التشغيل الثاني
+                var allLegacyRows = ctx.NeutronSourceTypes.IgnoreQueryFilters().Where(t => t.Code == "Am-241/Be").ToList();
+                Assert.Single(allLegacyRows); // لا تكرار
+            }
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (File.Exists(tempDbPath))
+            {
+                try { File.Delete(tempDbPath); } catch { }
+            }
+        }
+    }
 }

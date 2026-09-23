@@ -229,12 +229,27 @@ public class AppDbContext : DbContext
         SaveChanges();
 
         // ─── إبطال الصف القديم "Am-241/Be" غير المحدد بعد استبداله بصفَي (صغير/كبير) — الجولة 124 ───
-        var legacyAmBe = NeutronSourceTypes.IgnoreQueryFilters().FirstOrDefault(nt => nt.Code == "Am-241/Be");
+        // الجولة 197: يُحدَّد الصف القديم حصراً ببصمة (Code == "Am-241/Be" AND AddedBy IS NULL AND
+        // StandardReference == النص المرجعي القديم بالضبط) لتجنّب لمس نوع أنشأه مستخدم بنفس الرمز.
+        // كذلك لا يُبطَل الصف إذا كان أي مصدر نيتروني (نشط أو محذوف) لا يزال يشير إليه، تجنباً لسجل
+        // "شبح" لا يظهر في القائمة النشطة ولا في سجل المحذوفات.
+        const string legacyAmBeStandardReference = "ISO 8529-3:2023 Table 2 — يعتمد على حجم المصدر (صغير 393 / كبير 387)؛ غير محدد للنوع";
+        var legacyAmBe = NeutronSourceTypes.IgnoreQueryFilters()
+            .FirstOrDefault(nt => nt.Code == "Am-241/Be" && nt.AddedBy == null && nt.StandardReference == legacyAmBeStandardReference);
         if (legacyAmBe != null && !legacyAmBe.IsDeleted)
         {
-            legacyAmBe.IsDeleted = true;
-            legacyAmBe.DeletedAt = DateTime.Now;
-            SaveChanges();
+            var legacyAmBeId = legacyAmBe.Id;
+            var hasLinkedNeutronSources = NeutronSources.IgnoreQueryFilters().Any(n => n.NeutronSourceTypeId == legacyAmBeId);
+            if (!hasLinkedNeutronSources)
+            {
+                legacyAmBe.IsDeleted = true;
+                legacyAmBe.DeletedAt = DateTime.Now;
+                SaveChanges();
+            }
+            else
+            {
+                global::Sources.Services.LoggerService.LogWarning("SeedData: legacy 'Am-241/Be' neutron source type was NOT soft-deleted because it is still referenced by one or more neutron sources (active or deleted).");
+            }
         }
 
         // ─── الصلاحيات (مُحدّثة بـ RBAC لتكون مدير ومستخدم فقط) ───

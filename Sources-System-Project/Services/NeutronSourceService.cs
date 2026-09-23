@@ -393,6 +393,23 @@ public class NeutronSourceService : INeutronSourceService
         if (item == null) return (false, TranslationHelper.GetString("MsgErrNeutronSourceNotFound") ?? "المصدر النيتروني غير موجود");
         if (!item.IsDeleted) return (false, TranslationHelper.GetString("MsgErrNeutronSourceNotDeleted") ?? "المصدر النيتروني غير محذوف أصلاً");
 
+        // فحص نوع المصدر النيتروني: يجب أن يكون النوع الأب نشطاً (غير محذوف) قبل الاسترجاع
+        var neutronType = db.NeutronSourceTypes.IgnoreQueryFilters().FirstOrDefault(t => t.Id == item.NeutronSourceTypeId);
+        if (neutronType != null && neutronType.IsDeleted)
+        {
+            return (false, string.Format(TranslationHelper.GetString("MsgErrNeutronSourceRestoreTypeDeleted") ?? "لا يمكن استرجاع المصدر النيتروني لأن نوعه \"{0}\" محذوف حالياً.", neutronType.Code));
+        }
+
+        // فحص الموقع: إذا كان للمصدر النيتروني موقع، تحقق هل الموقع محذوف
+        if (item.LocationId.HasValue)
+        {
+            var loc = db.Locations.IgnoreQueryFilters().FirstOrDefault(l => l.Id == item.LocationId.Value);
+            if (loc != null && loc.IsDeleted)
+            {
+                return (false, string.Format(TranslationHelper.GetString("MsgErrNeutronSourceRestoreLocationDeleted") ?? "لا يمكن استرجاع المصدر النيتروني لأن موقعه \"{0}\" محذوف حالياً. يرجى استرجاع الموقع أولاً من سجل المحذوفات ثم إعادة المحاولة.", loc.LocationName));
+            }
+        }
+
         var lowerCode = item.SourceCode.Trim().ToLower();
         if (db.NeutronSources.Any(n => !n.IsDeleted && n.Id != id && n.SourceCode.ToLower() == lowerCode))
             return (false, string.Format(TranslationHelper.GetString("MsgErrNeutronSourceRestoreCodeInUse") ?? "لا يمكن استرجاع هذا المصدر النيتروني: الكود ({0}) مستخدم حالياً لمصدر نيتروني نشط آخر. غيّر كود المصدر النشط أولاً ثم أعد محاولة الاسترجاع.", item.SourceCode));

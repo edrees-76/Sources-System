@@ -838,7 +838,9 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
 
         // Assert
         Assert.False(success);
-        Assert.Equal("لا يمكن حذف نظير مرتبط بمصادر", message);
+        // الجولة 197: الرسالة تغيّرت لتشمل المصادر المحذوفة أيضاً (مفتاح جديد
+        // MsgErrCannotDeleteRadioisotopeHasSourcesIncludingDeleted).
+        Assert.Equal(TranslationHelper.GetString("MsgErrCannotDeleteRadioisotopeHasSourcesIncludingDeleted") ?? "لا يمكن حذف هذا النظير لأنه لا يزال مرتبطاً بمصدر أو أكثر، بما في ذلك المحذوفة المحفوظة في سجل المحذوفات.", message);
         Assert.Empty(_fakeAuditService.LoggedEntries);
 
         using (var db = _fixture.CreateContext())
@@ -876,7 +878,7 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
 
         // Assert
         Assert.False(success);
-        Assert.Equal("لا يمكن حذف نظير مرتبط بمصادر", message);
+        Assert.Equal(TranslationHelper.GetString("MsgErrCannotDeleteRadioisotopeHasSourcesIncludingDeleted") ?? "لا يمكن حذف هذا النظير لأنه لا يزال مرتبطاً بمصدر أو أكثر، بما في ذلك المحذوفة المحفوظة في سجل المحذوفات.", message);
         Assert.Empty(_fakeAuditService.LoggedEntries);
 
         using (var db = _fixture.CreateContext())
@@ -884,6 +886,69 @@ public class RadioisotopeServiceTests : IClassFixture<SqliteInMemoryFixture>, ID
             var item = db.Radioisotopes.Find(isotopeB.Id);
             Assert.NotNull(item);
             Assert.False(item.IsDeleted);
+        }
+    }
+
+    /// <summary>الجولة 197 (قرار المعماري 2): حذف نظير لا يزال مرتبطاً بمصدر محذوف (soft-deleted)
+    /// وحيد النظير (بلا SourceIsotopes) يجب أن يُرفض أيضاً، تفادياً لسجل "شبح" إذا استُرجع النظير
+    /// لاحقاً بينما يبقى المصدر المرتبط به محذوفاً في سجل المحذوفات.</summary>
+    [Fact]
+    public void Delete_WhenUsedOnlyByDeletedSingleIsotopeSource_ReturnsFalse()
+    {
+        // Arrange
+        var isotope = TestDataBuilder.CreateRadioisotope("Ir-192", "Iridium-192");
+        var unit = TestDataBuilder.CreateActivityUnit();
+        var location = TestDataBuilder.CreateLocation();
+        var source = TestDataBuilder.CreateSource(isotope, unit, location, sourceCode: "SRC-R197-DEL-ISO");
+        source.IsDeleted = true;
+        source.DeletedAt = DateTime.Now;
+
+        using (var db = _fixture.CreateContext())
+        {
+            db.Radioisotopes.Add(isotope);
+            db.ActivityUnits.Add(unit);
+            db.Locations.Add(location);
+            db.Sources.Add(source);
+            db.SaveChanges();
+        }
+
+        // Act
+        var (success, message) = _sut.Delete(isotope.Id);
+
+        // Assert
+        Assert.False(success);
+        Assert.Equal(TranslationHelper.GetString("MsgErrCannotDeleteRadioisotopeHasSourcesIncludingDeleted") ?? "لا يمكن حذف هذا النظير لأنه لا يزال مرتبطاً بمصدر أو أكثر، بما في ذلك المحذوفة المحفوظة في سجل المحذوفات.", message);
+
+        using (var db = _fixture.CreateContext())
+        {
+            var item = db.Radioisotopes.Find(isotope.Id);
+            Assert.NotNull(item);
+            Assert.False(item.IsDeleted);
+        }
+    }
+
+    /// <summary>يتأكد أن نظيراً غير مستخدم إطلاقاً لا يزال قابلاً للحذف بعد التعديل.</summary>
+    [Fact]
+    public void Delete_UnusedRadioisotope_StillSucceeds()
+    {
+        // Arrange
+        var isotope = TestDataBuilder.CreateRadioisotope("Se-75", "Selenium-75");
+        using (var db = _fixture.CreateContext())
+        {
+            db.Radioisotopes.Add(isotope);
+            db.SaveChanges();
+        }
+
+        // Act
+        var (success, message) = _sut.Delete(isotope.Id);
+
+        // Assert
+        Assert.True(success);
+        using (var db = _fixture.CreateContext())
+        {
+            var raw = db.Radioisotopes.IgnoreQueryFilters().FirstOrDefault(r => r.Id == isotope.Id);
+            Assert.NotNull(raw);
+            Assert.True(raw!.IsDeleted);
         }
     }
 

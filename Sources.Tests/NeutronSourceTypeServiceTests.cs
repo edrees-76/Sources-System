@@ -277,13 +277,50 @@ public class NeutronSourceTypeServiceTests : IClassFixture<SqliteInMemoryFixture
 
         // Assert
         Assert.False(success);
-        Assert.Contains("مرتبط بمصادر", message);
+        // الجولة 197: الرسالة تغيّرت لتذكر عدد المصادر النيترونية المرتبطة (مفتاح جديد
+        // MsgErrCannotDeleteNeutronSourceTypeHasSourcesCount) بدلاً من الرسالة العامة السابقة.
+        Assert.Contains("مرتبطاً بـ 1 مصدر نيتروني", message);
 
         using (var db = _fixture.CreateContext())
         {
             var nType = db.NeutronSourceTypes.Find(typeId);
             Assert.NotNull(nType);
             Assert.False(nType!.IsDeleted);
+        }
+    }
+
+    /// <summary>الجولة 197 (قرار المعماري 1+3): حذف نوع مصدر نيتروني لا يزال مرتبطاً بمصادر
+    /// نيترونية محذوفة (soft-deleted) فقط يجب أن يُرفض أيضاً، تفادياً لسجل "شبح" لا يظهر في
+    /// القائمة النشطة ولا في سجل المحذوفات إذا استُرجع النوع لاحقاً.</summary>
+    [Fact]
+    public void Delete_TypeWithOnlyDeletedNeutronSources_ReturnsFailure_WithCount()
+    {
+        // Arrange
+        var typeId = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            var nType = new NeutronSourceType { Id = typeId, Code = "Am-241/B", NameEn = "Americium-Boron", HalfLife = 432.2 };
+            db.NeutronSourceTypes.Add(nType);
+            db.NeutronSources.Add(new NeutronSource { SourceCode = "NS-DEL-1", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, IsDeleted = true, DeletedAt = DateTime.Now });
+            db.SaveChanges();
+        }
+
+        // Act
+        var (success, message) = _sut.Delete(typeId);
+
+        // Assert
+        Assert.False(success);
+        Assert.Contains("مرتبطاً بـ 1 مصدر نيتروني", message);
+
+        using (var db = _fixture.CreateContext())
+        {
+            var nType = db.NeutronSourceTypes.Find(typeId);
+            Assert.NotNull(nType);
+            Assert.False(nType!.IsDeleted);
+
+            // المصدر المحذوف يبقى محذوفاً؛ الفحص لا يُستَرجعه
+            var neutronSource = db.NeutronSources.IgnoreQueryFilters().First(n => n.SourceCode == "NS-DEL-1");
+            Assert.True(neutronSource.IsDeleted);
         }
     }
 

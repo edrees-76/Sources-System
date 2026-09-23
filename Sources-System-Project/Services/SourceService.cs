@@ -427,13 +427,6 @@ public class SourceService : ISourceService
         if (source == null) return (false, TranslationHelper.GetString("MsgErrSourceNotFound") ?? "المصدر غير موجود");
         if (!source.IsDeleted) return (false, TranslationHelper.GetString("MsgErrSourceNotDeleted") ?? "المصدر غير محذوف أصلاً");
 
-        // التحقق من عدم وجود مصدر نشط آخر بنفس الكود
-        var lowerCode = source.SourceCode?.Trim().ToLower() ?? string.Empty;
-        if (db.Sources.Any(s => s.Id != id && s.SourceCode.ToLower() == lowerCode))
-        {
-            return (false, string.Format(TranslationHelper.GetString("MsgErrSourceRestoreCodeInUse") ?? "لا يمكن استرجاع هذا المصدر: الكود ({0}) مستخدم حالياً لمصدر نشط آخر. غيّر كود المصدر النشط أولاً ثم أعد محاولة الاسترجاع.", source.SourceCode));
-        }
-
         // فحص الموقع: إذا كان للمصدر موقع أصلي، تحقق هل الموقع محذوف
         if (source.LocationId.HasValue)
         {
@@ -442,6 +435,39 @@ public class SourceService : ISourceService
             {
                 return (false, string.Format(TranslationHelper.GetString("MsgErrSourceRestoreLocationDeleted") ?? "لا يمكن استرجاع المصدر لأن موقعه الأصلي \"{0}\" محذوف حالياً. يرجى استرجاع الموقع أولاً من سجل المحذوفات ثم إعادة المحاولة.", loc.LocationName));
             }
+        }
+
+        // فحص النظير: النظير الأساسي أو أي نظير مرتبط عبر SourceIsotopes يجب أن يكون نشطاً (غير محذوف)
+        // قبل الاسترجاع (الجولة 197)
+        var deletedIsotopeSymbols = new List<string>();
+        var primaryIsotope = db.Radioisotopes.IgnoreQueryFilters().FirstOrDefault(r => r.Id == source.RadioisotopeId);
+        if (primaryIsotope != null && primaryIsotope.IsDeleted)
+        {
+            deletedIsotopeSymbols.Add(primaryIsotope.Symbol);
+        }
+        var linkedIsotopeIds = db.SourceIsotopes.Where(si => si.SourceId == id).Select(si => si.RadioisotopeId).ToList();
+        if (linkedIsotopeIds.Count > 0)
+        {
+            var deletedLinked = db.Radioisotopes.IgnoreQueryFilters()
+                .Where(r => linkedIsotopeIds.Contains(r.Id) && r.IsDeleted)
+                .Select(r => r.Symbol)
+                .ToList();
+            foreach (var symbol in deletedLinked)
+            {
+                if (!deletedIsotopeSymbols.Contains(symbol)) deletedIsotopeSymbols.Add(symbol);
+            }
+        }
+        if (deletedIsotopeSymbols.Count > 0)
+        {
+            var symbolsText = string.Join("، ", deletedIsotopeSymbols);
+            return (false, string.Format(TranslationHelper.GetString("MsgErrSourceRestoreRadioisotopeDeleted") ?? "لا يمكن استرجاع المصدر لأن النظير \"{0}\" محذوف حالياً. يرجى استرجاعه أولاً من سجل المحذوفات ثم إعادة المحاولة.", symbolsText));
+        }
+
+        // التحقق من عدم وجود مصدر نشط آخر بنفس الكود
+        var lowerCode = source.SourceCode?.Trim().ToLower() ?? string.Empty;
+        if (db.Sources.Any(s => s.Id != id && s.SourceCode.ToLower() == lowerCode))
+        {
+            return (false, string.Format(TranslationHelper.GetString("MsgErrSourceRestoreCodeInUse") ?? "لا يمكن استرجاع هذا المصدر: الكود ({0}) مستخدم حالياً لمصدر نشط آخر. غيّر كود المصدر النشط أولاً ثم أعد محاولة الاسترجاع.", source.SourceCode));
         }
 
         source.IsDeleted = false;

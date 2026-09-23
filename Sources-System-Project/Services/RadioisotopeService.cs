@@ -189,10 +189,16 @@ public class RadioisotopeService : IRadioisotopeService
         if (!guard.Allowed) return (false, guard.Message);
 
         using var db = _dbFactory.CreateDbContext();
-        var item = db.Radioisotopes.Include(r => r.Sources).FirstOrDefault(r => r.Id == id);
+        var item = db.Radioisotopes.FirstOrDefault(r => r.Id == id);
         if (item == null) return (false, TranslationHelper.GetString("MsgErrRadioisotopeNotFound") ?? "النظير غير موجود");
-        if (item.Sources.Any() || db.SourceIsotopes.Any(si => si.RadioisotopeId == id))
-            return (false, TranslationHelper.GetString("MsgErrCannotDeleteRadioisotopeHasSources") ?? "لا يمكن حذف نظير مرتبط بمصادر");
+
+        // يشمل الفحص المصادر المرتبطة بالنظير كنظير أساسي (بما فيها المحذوفة) بالإضافة إلى روابط
+        // SourceIsotopes، لمنع بقاء "سجل شبح" لا يظهر في القائمة النشطة ولا في سجل المحذوفات
+        // إذا اسُترجع النظير لاحقاً (الجولة 197)
+        var hasDeletedIncluded = db.Sources.IgnoreQueryFilters().Any(s => s.RadioisotopeId == id)
+            || db.SourceIsotopes.Any(si => si.RadioisotopeId == id);
+        if (hasDeletedIncluded)
+            return (false, TranslationHelper.GetString("MsgErrCannotDeleteRadioisotopeHasSourcesIncludingDeleted") ?? "لا يمكن حذف هذا النظير لأنه لا يزال مرتبطاً بمصدر أو أكثر، بما في ذلك المحذوفة المحفوظة في سجل المحذوفات.");
 
         var oldValuesObj = new
         {

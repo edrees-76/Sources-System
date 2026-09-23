@@ -1344,6 +1344,8 @@
     <system:String x:Key="MsgSuccessNeutronSourceDeleted">Neutron source deleted</system:String>
     <system:String x:Key="MsgErrNeutronSourceNotDeleted">The neutron source is not deleted</system:String>
     <system:String x:Key="MsgErrNeutronSourceRestoreCodeInUse">This neutron source cannot be restored: the code ({0}) is currently used by another active neutron source. Change that active source's code first, then retry the restore.</system:String>
+    <system:String x:Key="MsgErrNeutronSourceRestoreTypeDeleted">Cannot restore the neutron source because its type "{0}" is currently deleted.</system:String>
+    <system:String x:Key="MsgErrNeutronSourceRestoreLocationDeleted">Cannot restore the neutron source because its location "{0}" is currently deleted. Please restore the location first from the deleted items log, then try again.</system:String>
     <system:String x:Key="MsgSuccessNeutronSourceRestored">Neutron source {0} restored successfully</system:String>
 
     <!-- Round 137: SourcesViewModel.cs validation/report message localization -->
@@ -1385,6 +1387,7 @@
     <system:String x:Key="MsgErrSourceNotDeleted">The source is not deleted</system:String>
     <system:String x:Key="MsgErrSourceRestoreCodeInUse">This source cannot be restored: the code ({0}) is currently used by another active source. Change that active source's code first, then retry the restore.</system:String>
     <system:String x:Key="MsgErrSourceRestoreLocationDeleted">Cannot restore the source because its original location "{0}" is currently deleted. Please restore the location first from the deleted items log, then try again.</system:String>
+    <system:String x:Key="MsgErrSourceRestoreRadioisotopeDeleted">Cannot restore the source because the radioisotope "{0}" is currently deleted. Please restore it first from the deleted items log, then try again.</system:String>
     <system:String x:Key="MsgSuccessSourceRestored">Source {0} restored to location {1} with status {2}</system:String>
 
     <!-- Round 132 (third sub-round of B5): UserService.cs validation/success message localization -->
@@ -1605,6 +1608,7 @@
     <system:String x:Key="MsgErrRadioisotopeNotFound">Radioisotope not found</system:String>
     <system:String x:Key="MsgSuccessRadioisotopeUpdated">Radioisotope updated</system:String>
     <system:String x:Key="MsgErrCannotDeleteRadioisotopeHasSources">Cannot delete an isotope linked to sources</system:String>
+    <system:String x:Key="MsgErrCannotDeleteRadioisotopeHasSourcesIncludingDeleted">Cannot delete this isotope: it is still referenced by one or more sources, including deleted ones kept in the deleted items log.</system:String>
     <system:String x:Key="MsgSuccessRadioisotopeDeleted">Radioisotope deleted</system:String>
     <system:String x:Key="MsgErrRadioisotopeNotDeleted">Radioisotope is not deleted</system:String>
     <system:String x:Key="MsgErrCannotRestoreRadioisotopeSymbolConflict">Cannot restore the isotope because another active isotope with the same symbol ({0}) exists</system:String>
@@ -1620,6 +1624,7 @@
     <system:String x:Key="MsgErrNeutronSourceTypeNotFound">Neutron source type not found</system:String>
     <system:String x:Key="MsgSuccessNeutronSourceTypeUpdated">Neutron source type updated</system:String>
     <system:String x:Key="MsgErrCannotDeleteNeutronSourceTypeHasSources">Cannot delete a neutron source type linked to neutron sources</system:String>
+    <system:String x:Key="MsgErrCannotDeleteNeutronSourceTypeHasSourcesCount">Cannot delete this neutron source type: it is still referenced by {0} neutron source(s), including deleted ones kept in the deleted items log.</system:String>
     <system:String x:Key="MsgSuccessNeutronSourceTypeDeleted">Neutron source type deleted</system:String>
     <system:String x:Key="MsgErrNeutronSourceTypeNotDeleted">Neutron source type is not deleted</system:String>
     <system:String x:Key="MsgErrCannotRestoreNeutronSourceTypeCodeConflict">Cannot restore the neutron source type because another active type with the same code ({0}) exists</system:String>

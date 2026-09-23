@@ -431,6 +431,112 @@ public class NeutronSourceServiceTests : IClassFixture<SqliteInMemoryFixture>, I
         Assert.True(stillDeleted.IsDeleted);
     }
 
+    /// <summary>الجولة 197 (المجموعة A): استرجاع مصدر نيتروني يُرفض إذا كان نوعه محذوفاً، لتفادي
+    /// سجل "شبح" لا يظهر في القائمة النشطة (JOIN داخلي مع النوع) ولا في سجل المحذوفات.</summary>
+    [Fact]
+    public void Restore_WhenNeutronSourceTypeIsDeleted_FailsWithClearMessage()
+    {
+        // Arrange
+        var typeId = Guid.NewGuid();
+        var nsId = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Cf-252", NameEn = "Cf-252", HalfLife = 2.645, IsDeleted = true, DeletedAt = DateTime.Now });
+            db.NeutronSources.Add(new NeutronSource { Id = nsId, SourceCode = "NS-R197-TYPE", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, IsDeleted = true, DeletedAt = DateTime.Now });
+            db.SaveChanges();
+        }
+
+        // Act
+        var (success, message) = _sut.Restore(nsId);
+
+        // Assert
+        Assert.False(success);
+        Assert.Equal(string.Format(TranslationHelper.GetString("MsgErrNeutronSourceRestoreTypeDeleted") ?? "لا يمكن استرجاع المصدر النيتروني لأن نوعه \"{0}\" محذوف حالياً.", "Cf-252"), message);
+
+        using var context = _fixture.CreateContext();
+        var stillDeleted = context.NeutronSources.IgnoreQueryFilters().First(n => n.Id == nsId);
+        Assert.True(stillDeleted.IsDeleted);
+    }
+
+    /// <summary>الجولة 197 (المجموعة A): استرجاع مصدر نيتروني يُرفض إذا كان موقعه محذوفاً.</summary>
+    [Fact]
+    public void Restore_WhenLocationIsDeleted_FailsWithClearMessage()
+    {
+        // Arrange
+        var typeId = Guid.NewGuid();
+        var locId = Guid.NewGuid();
+        var nsId = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Cf-252", NameEn = "Cf-252", HalfLife = 2.645 });
+            db.Locations.Add(new Location { Id = locId, LocationName = "مخزن قديم", IsDeleted = true, DeletedAt = DateTime.Now });
+            db.NeutronSources.Add(new NeutronSource { Id = nsId, SourceCode = "NS-R197-LOC", NeutronSourceTypeId = typeId, LocationId = locId, CalibratedEmissionRate = 1e6, IsDeleted = true, DeletedAt = DateTime.Now });
+            db.SaveChanges();
+        }
+
+        // Act
+        var (success, message) = _sut.Restore(nsId);
+
+        // Assert
+        Assert.False(success);
+        Assert.Equal(string.Format(TranslationHelper.GetString("MsgErrNeutronSourceRestoreLocationDeleted") ?? "لا يمكن استرجاع المصدر النيتروني لأن موقعه \"{0}\" محذوف حالياً. يرجى استرجاع الموقع أولاً من سجل المحذوفات ثم إعادة المحاولة.", "مخزن قديم"), message);
+
+        using var context = _fixture.CreateContext();
+        var stillDeleted = context.NeutronSources.IgnoreQueryFilters().First(n => n.Id == nsId);
+        Assert.True(stillDeleted.IsDeleted);
+    }
+
+    /// <summary>الجولة 197 (المجموعة A): الاسترجاع ينجح عندما يكون كل من النوع والموقع نشطين.</summary>
+    [Fact]
+    public void Restore_WhenTypeAndLocationAreActive_Succeeds()
+    {
+        // Arrange
+        var typeId = Guid.NewGuid();
+        var locId = Guid.NewGuid();
+        var nsId = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Cf-252", NameEn = "Cf-252", HalfLife = 2.645 });
+            db.Locations.Add(new Location { Id = locId, LocationName = "مخزن نشط" });
+            db.NeutronSources.Add(new NeutronSource { Id = nsId, SourceCode = "NS-R197-OK", NeutronSourceTypeId = typeId, LocationId = locId, CalibratedEmissionRate = 1e6, IsDeleted = true, DeletedAt = DateTime.Now });
+            db.SaveChanges();
+        }
+
+        // Act
+        var (success, message) = _sut.Restore(nsId);
+
+        // Assert
+        Assert.True(success);
+        using var context = _fixture.CreateContext();
+        var restored = context.NeutronSources.Find(nsId);
+        Assert.NotNull(restored);
+        Assert.False(restored!.IsDeleted);
+    }
+
+    /// <summary>الجولة 197 (المجموعة A): رسالة تعارض الكود الموجودة سابقاً تبقى كما هي حرفياً
+    /// عندما يكون النوع والموقع نشطين لكن الكود مستخدم لمصدر نيتروني نشط آخر.</summary>
+    [Fact]
+    public void Restore_WhenCodeInUse_AndParentsActive_StillReturnsExistingDuplicateCodeMessage()
+    {
+        // Arrange
+        var typeId = Guid.NewGuid();
+        var deletedId = Guid.NewGuid();
+        using (var db = _fixture.CreateContext())
+        {
+            db.NeutronSourceTypes.Add(new NeutronSourceType { Id = typeId, Code = "Cf-252", NameEn = "Cf-252", HalfLife = 2.645 });
+            db.NeutronSources.Add(new NeutronSource { Id = deletedId, SourceCode = "NS-R197-DUP", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 1e6, IsDeleted = true, DeletedAt = DateTime.Now });
+            db.NeutronSources.Add(new NeutronSource { SourceCode = "NS-R197-DUP", NeutronSourceTypeId = typeId, CalibratedEmissionRate = 2e6 });
+            db.SaveChanges();
+        }
+
+        // Act
+        var (success, message) = _sut.Restore(deletedId);
+
+        // Assert
+        Assert.False(success);
+        Assert.Equal(string.Format(TranslationHelper.GetString("MsgErrNeutronSourceRestoreCodeInUse") ?? "لا يمكن استرجاع هذا المصدر النيتروني: الكود ({0}) مستخدم حالياً لمصدر نيتروني نشط آخر. غيّر كود المصدر النشط أولاً ثم أعد محاولة الاسترجاع.", "NS-R197-DUP"), message);
+    }
+
     [Fact]
     public void Location_Delete_FailsWhenActiveNeutronSourceExistsInLocation()
     {
