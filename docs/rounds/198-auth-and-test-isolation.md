@@ -218,16 +218,30 @@ Commits, in order, one per group:
   `PasswordPromptDialog.xaml.cs`.
 - `R198-E` (d5cc16c): `AlertsViewModel.cs`, `LeakTestsViewModel.cs`, `LocationsViewModel.cs`, `MainViewModel.cs`,
   `RadioisotopesViewModel.cs`, `SourcesViewModel.cs`, `UsersViewModel.cs`, `MessengerIsolationTests.cs` (new).
-- `R198-F`: this file + `docs/session-summary.md` + `docs/release-readiness.md`.
+- `R198-F` (8e70241): this file + `docs/session-summary.md` + `docs/release-readiness.md`.
+- `R198-A-fix` (764cee9, lead review of PR #94, test-only, `UsersViewModelTests.cs` only): the 3 new
+  round-198 `UsersViewModel` tests now pass a private `new WeakReferenceMessenger()` instead of the shared
+  `.Default` (they were unregistered/uncleaned on the shared instance since `UsersViewModel` is not
+  `IDisposable`); the partial-save test now asserts the full formatted warning message (`Assert.Equal`
+  instead of `Assert.Contains`) plus `DialogHelper.LastMessage`.
+- `R198-F-fix` (this commit, docs only): corrects this file, `docs/session-summary.md`, and
+  `docs/release-readiness.md` with the actual CI result and the two post-review commits above.
 
 No STOP rule fired in any group. D4 real count: 5 (not 4 as the old backlog said). D5 real count: 7 ViewModels,
 7 registrations, 7 sends, 2 unregistrations (matches the lead's discovery exactly).
 
-Test results: `dotnet test Sources.Tests/Sources.Tests.csproj -c Debug` full run — **1342 passed, 0 failed,
-0 skipped** (baseline 1337; 6 new `[Fact]` methods confirmed via `git diff 36921cf HEAD -- Sources.Tests`;
-net +5 is reported as-is, unexplained beyond the 6 additions, rather than silently assumed to match).
+Test results: `dotnet test Sources.Tests/Sources.Tests.csproj -c Debug` full run after `R198-A-fix` —
+**1343 passed, 0 failed, 0 skipped** (baseline 1337 + 6 new `[Fact]` methods confirmed via
+`git diff 36921cf HEAD -- Sources.Tests`). One earlier local Debug run (before `R198-A-fix`) reported
+**1342** passed with no test added or removed between the two runs; not reproduced in later full runs
+(1343 consistently); cause not identified within this round's scope — recorded, not hidden.
 `dotnet build Sources.sln -c Debug` and `-c Release` both succeeded with the same 5 known `CS8604` warnings
 (2 in `LoginWindow.xaml.cs`, doubled by the `wpftmp` intermediate build, + 1 in `ViewInstantiationTests.cs`),
-zero new warnings introduced by this round.
+zero new warnings introduced by this round. CI Release "Build and Test" run `35932191878` on commit
+`764cee9`: **1341 passed, 0 failed, 0 skipped** (CI baseline 1335 + 6), with only the 3 known `CS8604`
+warnings (`LoginWindow.xaml.cs:104`, `:199`, `ViewInstantiationTests.cs:218`), none new.
 
-Deviations from the contract: none.
+Deviations from the contract: none within groups A–F themselves. Two post-review commits were added
+outside the original A–F set: `R198-A-fix` (764cee9, test isolation + assertion strengthening per lead
+review) and `R198-F-fix` (this commit, docs correction). CodeRabbit: not reviewed — PR #94 is still Draft
+and review requires a manual trigger.

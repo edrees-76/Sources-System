@@ -3196,17 +3196,30 @@ findings" و"Lead decisions" في أسفله هما المرجع الحاسم ع
 `NeutronSourceTypeServiceTests.cs` لرفض غير المحرِّر من Create/Update، 1 في
 `MessengerIsolationTests.cs` الجديد لعزل الوسيط). لا اختبار قائم عُدِّل نصه أو تأكيداته.
 
-**الانحرافات عن العقد:** لا شيء. كل المجموعات A–F نُفِّذت بالكامل بلا تفعيل لأي قاعدة توقف (STOP
-RULE)؛ D4 (خمسة مواضع) وD5 (سبعة ViewModels) لم يتجاوزا حدود قواعد التوقف المقرَّرة، وحجم دبلجة E
-الإنتاجية بقي أصغر من حد الـ300 سطر بكثير.
+**الانحرافات عن العقد:** لا انحراف في نطاق المجموعات A–F نفسها؛ كل المجموعات نُفِّذت بالكامل بلا
+تفعيل لأي قاعدة توقف (STOP RULE)، D4 (خمسة مواضع) وD5 (سبعة ViewModels) لم يتجاوزا حدود قواعد
+التوقف المقرَّرة، وحجم دبلجة E الإنتاجية بقي أصغر من حد الـ300 سطر بكثير. **لكن التزمت الجولة
+بتزيلين إضافيين خارج A–F الأصلية بعد مراجعة القائد لـPR #94:**
+1. **`R198-A-fix` (commit `764cee9`):** الاختبارات الثلاثة الجديدة في R198-A كانت تبني
+   `UsersViewModel` على `WeakReferenceMessenger.Default` المشترك بلا عزل (بعد أن أضافت R198-E
+   بارامتر `messenger`)؛ عُدِّلت لتمرير `new WeakReferenceMessenger()` خاصة بكل اختبار، واختبار
+   فشل إعادة تعيين كلمة المرور أصبح يتحقق من نص التحذير المُنسَّق كاملاً (`Assert.Equal` بدل
+   `Assert.Contains`) ومن أن `DialogHelper.LastMessage` يحمل النص نفسه.
+2. **`R198-F-fix` (هذا الالتزام):** تحديث هذا القسم وقسم الانحرافات بنتيجة CI الفعلية ووصف تزيل
+   `R198-A-fix`.
 
 **النتائج:** `dotnet build Sources.sln -c Debug` نجح، صفر تحذيرات جديدة (نفس عائلة `CS8604`
 المعروفة: موضعان في `LoginWindow.xaml.cs` + موضع في `ViewInstantiationTests.cs`، 5 إجمالاً بسبب
-ازدواج بناء `wpftmp`). `dotnet test Sources.Tests/Sources.Tests.csproj -c Debug` الكامل محلياً:
-خط الأساس قبل الجولة **1337 نجاح، 0 فشل، 0 تجاوز**؛ بعدها **1342 نجاح، 0 فشل، 0 تجاوز** (ستة
-اختبارات `[Fact]` جديدة مؤكَّدة بـ`git diff`؛ فرق العدد الصافي +5 لم يُفسَّر بدقة رياضية إضافية ضمن
-حدود هذه الجولة، ويُبلَّغ عنه صراحة بدل تجاهله). `dotnet build Sources.sln -c Release` نجح، نفس
-الخمسة تحذيرات المعروفة، صفر جديدة. لا ترحيل EF، لا تغيير مخطط. لم تُلمس الملفات المحظورة
-(`LoginWindow`/`LoginView`/`SplashWindow`، `PhraseFactoryResetConfirmation`/`RequiredResetPhrase`،
-`SystemResetService`، `AuthorizationGuard`، أي حارس حذف/استرجاع، منطق `UserService` الداخلي).
-CI Release: قيد الانتظار (pending).
+ازدواج بناء `wpftmp`). `dotnet test Sources.Tests/Sources.Tests.csproj -c Debug` الكامل محلياً
+(بعد `R198-A-fix`): خط الأساس قبل الجولة **1337 نجاح، 0 فشل، 0 تجاوز**؛ النتيجة النهائية **1343
+نجاح، 0 فشل، 0 تجاوز** (خط الأساس + 6 اختبارات `[Fact]` جديدة مؤكَّدة بـ`git diff`). **تنويه
+مُسجَّل بلا إخفاء:** تشغيل محلي واحد سابق (قبل `R198-A-fix`) أبلغ عن **1342** نجاحاً رغم عدم إضافة
+أو حذف أي اختبار بين التشغيلين؛ لم يتكرر الفرق في التشغيلات الكاملة اللاحقة (1343 ثابتة)، والسبب
+لم يُحدَّد ضمن نطاق هذه الجولة. `dotnet build Sources.sln -c Release` نجح، نفس الخمسة تحذيرات
+المعروفة، صفر جديدة. **CI Release «Build and Test» run `35932191878` على commit `764cee9`: 1341
+نجاح، 0 فشل، 0 تجاوز** (خط أساس CI **1335** + 6)؛ التحذيرات المسجَّلة في CI هي الثلاثة المعروفة
+فقط (`LoginWindow.xaml.cs:104`، `:199`، `ViewInstantiationTests.cs:218`)، لا شيء جديد. لا ترحيل
+EF، لا تغيير مخطط. لم تُلمس الملفات المحظورة (`LoginWindow`/`LoginView`/`SplashWindow`،
+`PhraseFactoryResetConfirmation`/`RequiredResetPhrase`، `SystemResetService`، `AuthorizationGuard`،
+أي حارس حذف/استرجاع، منطق `UserService` الداخلي). **متابعة CodeRabbit:** لم تُراجَع بعد — الـPR
+لا يزال Draft، والمراجعة تحتاج تفعيلاً يدوياً.
