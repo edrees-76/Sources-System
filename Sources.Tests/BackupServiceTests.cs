@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Data.Sqlite;
+using Sources.Data;
 using Sources.Helpers;
 using Sources.Services;
 using Sources.Tests.Fakes;
@@ -17,6 +18,7 @@ public class BackupServiceTests : IDisposable
     private readonly string _testRoot;
     private readonly string _dbPath;
     private readonly string _backupDir;
+    private readonly string _certsDir;
     private readonly BackupService _sut;
     private readonly FakeLicenseService _fakeLicenseService = new();
 
@@ -25,11 +27,15 @@ public class BackupServiceTests : IDisposable
         _testRoot = Path.Combine(Path.GetTempPath(), "Sources_BackupServiceTests_" + Guid.NewGuid().ToString("N"));
         _backupDir = Path.Combine(_testRoot, "Backups");
         _dbPath = Path.Combine(_testRoot, "TestSources.db");
+        _certsDir = Path.Combine(_testRoot, "Certificates");
 
         Directory.CreateDirectory(_testRoot);
         Directory.CreateDirectory(_backupDir);
 
-        _sut = new BackupService(_dbPath, _backupDir, licenseService: _fakeLicenseService);
+        // مجلد شهادات صريح ومؤقت: بدونه كان يُستخدم المجلد الافتراضي تحت DatabasePaths.AppDataDirectory
+        // الحقيقي (الجولة 199 — عزل بيانات الاختبار)، رغم أن التوجيه العام في TestModuleInitializer
+        // يعيد توجيهه أيضاً؛ هذا التمرير الصريح دفاع إضافي وتوضيح لنية الاختبار.
+        _sut = new BackupService(_dbPath, _backupDir, _certsDir, licenseService: _fakeLicenseService);
     }
 
     private void CreateValidSqliteDatabase(string path, string tableName = "Sources", string sampleData = "SRC-TEST-001", bool includeInitialSchemaMigration = true)
@@ -235,34 +241,37 @@ public class BackupServiceTests : IDisposable
     }
 
     [Fact]
-    public void CreateBackup_OnRealLocalAppDataDatabase_ProducesFullyValidBackup()
+    public void CreateBackup_OnProductionSchemaDatabase_ProducesFullyValidBackup()
     {
-        var appDataDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Sources");
-        var realDbPath = Path.Combine(appDataDir, "Sources.db");
-
-        if (File.Exists(realDbPath))
+        // قبل الإصلاح: كان هذا الاختبار يفتح قاعدة الإنتاج الحقيقية تحت %LOCALAPPDATA% مباشرة إن
+        // وُجدت (خرق عزل بيانات الاختبار، الجولة 199). الآن يُبنى مخطط الإنتاج الكامل عبر AppDbContext
+        // على المسار المُعاد توجيهه من TestModuleInitializer، فلا يمس أي مسار حقيقي، ويعمل الاختبار
+        // دوماً بدل الاعتماد المشروط على وجود قاعدة حقيقية على جهاز التشغيل.
+        using (var db = new AppDbContext())
         {
-            var realService = new BackupService(realDbPath, _backupDir);
-            var result = realService.CreateBackup();
-
-            Assert.True(result.Success, result.Message);
-            Assert.NotNull(result.BackupPath);
-            Assert.True(File.Exists(result.BackupPath));
-
-            var extractedDb = ExtractDbFromZip(result.BackupPath);
-            using var conn = new SqliteConnection($"Data Source={extractedDb}");
-            conn.Open();
-            using var cmd = conn.CreateCommand();
-
-            cmd.CommandText = "SELECT COUNT(*) FROM Sources;";
-            var sourceCount = Convert.ToInt32(cmd.ExecuteScalar());
-            Assert.True(sourceCount >= 0);
-
-            cmd.CommandText = "PRAGMA integrity_check;";
-            var integrity = cmd.ExecuteScalar()?.ToString();
-            Assert.Equal("ok", integrity?.ToLower());
+            db.InitializeDatabase();
         }
+
+        var prodCertsDir = Path.Combine(_testRoot, "Certificates_ProdSchema");
+        var service = new BackupService(DatabasePaths.DbPath, _backupDir, prodCertsDir, _fakeLicenseService);
+        var result = service.CreateBackup();
+
+        Assert.True(result.Success, result.Message);
+        Assert.NotNull(result.BackupPath);
+        Assert.True(File.Exists(result.BackupPath));
+
+        var extractedDb = ExtractDbFromZip(result.BackupPath);
+        using var conn = new SqliteConnection($"Data Source={extractedDb}");
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+
+        cmd.CommandText = "SELECT COUNT(*) FROM Sources;";
+        var sourceCount = Convert.ToInt32(cmd.ExecuteScalar());
+        Assert.True(sourceCount >= 0);
+
+        cmd.CommandText = "PRAGMA integrity_check;";
+        var integrity = cmd.ExecuteScalar()?.ToString();
+        Assert.Equal("ok", integrity?.ToLower());
     }
 
     [Fact]
@@ -576,7 +585,7 @@ public class BackupServiceTests : IDisposable
     {
         // Arrange
         var nonExistentDir = Path.Combine(_testRoot, "NonExistentBackupDir_" + Guid.NewGuid().ToString("N"));
-        var service = new BackupService(_dbPath, nonExistentDir);
+        var service = new BackupService(_dbPath, nonExistentDir, _certsDir);
         if (Directory.Exists(nonExistentDir)) Directory.Delete(nonExistentDir, true);
 
         // Act

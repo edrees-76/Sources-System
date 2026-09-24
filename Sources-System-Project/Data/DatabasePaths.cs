@@ -11,8 +11,14 @@ public static class DatabasePaths
 {
     public const string DatabaseFileName = "Sources.db";
 
+    /// <summary>
+    /// مسار جذر بديل لعزل بيانات الاختبار فقط؛ يضبطه TestModuleInitializer مرة واحدة قبل أي
+    /// استخدام (عبر InternalsVisibleTo لمجمّعة Sources.Tests). لا يغيّر المسار الافتراضي في الإنتاج.
+    /// </summary>
+    internal static string? AppDataDirectoryOverride { get; set; }
+
     /// <summary>مجلد بيانات البرنامج في LocalAppData — لا يحتاج صلاحيات مدير.</summary>
-    public static string AppDataDirectory => Path.Combine(
+    public static string AppDataDirectory => AppDataDirectoryOverride ?? Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "Sources");
 

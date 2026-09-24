@@ -43,6 +43,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- يسمح فقط لمجمّعة الاختبارات بالوصول إلى DatabasePaths.AppDataDirectoryOverride (عزل بيانات الاختبار، الجولة 199). -->
+    <InternalsVisibleTo Include="Sources.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="Resources\References\gamma_constants_index.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

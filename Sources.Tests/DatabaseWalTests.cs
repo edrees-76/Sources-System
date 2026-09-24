@@ -67,28 +67,29 @@ public class DatabaseWalTests : IDisposable
     }
 
     [Fact]
-    public void RealProductionDatabase_HasWalModeConfigured()
+    public void ProductionDatabaseConfiguration_HasWalModeConfigured()
     {
-        var appDataDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Sources");
-        var realDbPath = Path.Combine(appDataDir, "Sources.db");
+        // قبل الإصلاح: كان هذا الاختبار يفتح قاعدة الإنتاج الحقيقية تحت %LOCALAPPDATA% مباشرة إن
+        // وُجدت (خرق عزل بيانات الاختبار، الجولة 199). الآن يُستخدم AppDbContext الافتراضي، الذي يحمل
+        // إعدادات OnConfiguring الإنتاجية نفسها، على المسار المُعاد توجيهه من TestModuleInitializer،
+        // فلا يمس أي ملف حقيقي، ويعمل الاختبار دوماً بدل الاعتماد المشروط على وجود قاعدة حقيقية.
+        using var db = new AppDbContext();
+        db.InitializeDatabase();
 
-        if (File.Exists(realDbPath))
-        {
-            using var conn = new SqliteConnection($"Data Source={realDbPath}");
-            conn.Open();
-            using var cmd = conn.CreateCommand();
+        var conn = db.Database.GetDbConnection();
+        conn.Open();
+        using var cmd = conn.CreateCommand();
 
-            cmd.CommandText = "PRAGMA journal_mode;";
-            var journalMode = cmd.ExecuteScalar()?.ToString();
+        cmd.CommandText = "PRAGMA journal_mode;";
+        var journalMode = cmd.ExecuteScalar()?.ToString();
 
-            cmd.CommandText = "PRAGMA busy_timeout;";
-            var busyTimeout = Convert.ToInt32(cmd.ExecuteScalar());
+        cmd.CommandText = "PRAGMA busy_timeout;";
+        var busyTimeout = Convert.ToInt32(cmd.ExecuteScalar());
 
-            conn.Close();
+        conn.Close();
 
-            Assert.Equal("wal", journalMode?.ToLower());
-        }
+        Assert.Equal("wal", journalMode?.ToLower());
+        Assert.Equal(5000, busyTimeout);
     }
 
     [Fact]
