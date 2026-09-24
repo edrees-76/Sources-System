@@ -326,6 +326,9 @@ public partial class RadioisotopesViewModel : ObservableObject, IEditableViewMod
     [RelayCommand]
     private void CancelEdit() { IsEditing = false; ClearForm(); }
 
+    /// <summary>تنفيذ IEditableViewModel.CancelEditing (الجولة 199 — حارس الشفاء الذاتي).</summary>
+    public void CancelEditing() => CancelEditCommand.Execute(null);
+
     [RelayCommand]
     private void NextStep()
     {
