@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Windows;
+using CommunityToolkit.Mvvm.Messaging;
 using Moq;
 using Sources.Models;
 using Sources.Services;
@@ -41,17 +43,39 @@ public class EditingFormReentrancyTests
             // نافذة وهمية لا تُعرض إطلاقاً (لا Show ولا ShowDialog): تُحاكي "نافذة تحرير مفتوحة
             // فعلاً" دون حجب الاختبار. النوع يجب أن يطابق حقل _formWindow (UserFormWindow؟).
             var sentinelWindow = new UserFormWindow();
-            formField!.SetValue(view, sentinelWindow);
 
-            var openFormMethod = typeof(UsersView).GetMethod("OpenForm", BindingFlags.NonPublic | BindingFlags.Instance);
-            Assert.NotNull(openFormMethod);
+            try
+            {
+                formField!.SetValue(view, sentinelWindow);
 
-            // Act: محاولة فتح ثانية بينما _formWindow ليست null.
-            openFormMethod!.Invoke(view, new object[] { vm });
+                var openFormMethod = typeof(UsersView).GetMethod("OpenForm", BindingFlags.NonPublic | BindingFlags.Instance);
+                Assert.NotNull(openFormMethod);
 
-            // Assert: لم تُستبدل النافذة الوهمية (لم يُنشأ UserFormWindow حقيقي، ولم يُستدعَ ShowDialog).
-            var currentFormWindow = formField.GetValue(view);
-            Assert.Same(sentinelWindow, currentFormWindow);
+                // Act: محاولة فتح ثانية بينما _formWindow ليست null.
+                openFormMethod!.Invoke(view, new object[] { vm });
+
+                // Assert: لم تُستبدل النافذة الوهمية (لم يُنشأ UserFormWindow حقيقي، ولم يُستدعَ ShowDialog).
+                var currentFormWindow = formField.GetValue(view);
+                Assert.Same(sentinelWindow, currentFormWindow);
+            }
+            finally
+            {
+                // إغلاق إلزامي: خيط STA مشترك بين كل اختبارات WpfStaFixture.RunInSta في نفس
+                // تشغيلة الاختبارات. لو بقيت هذه النافذة الوهمية غير المُغلقة ضمن
+                // Application.Current.Windows، فأي اختبار لاحق (مثل
+                // UserFormWindowTests.UserFormWindow_ClosedViaNativeCloseButton_ResetsIsEditing_AndAllowsReopening)
+                // يلتقط أول UserFormWindow عبر Application.Current.Windows.OfType<UserFormWindow>()
+                // .FirstOrDefault() سيلتقط هذه النافذة الوهمية بدل نافذته الحقيقية المفتوحة عبر
+                // ShowDialog، فيُغلق الوهمية ظناً منه أنها الحقيقية، وتبقى ShowDialog الحقيقية
+                // معلَّقة إلى الأبد (تعليق متقطع بحسب ترتيب تشغيل الاختبارات). كذلك يُلغى تسجيل
+                // vm من WeakReferenceMessenger.Default لأن مُنشئ UsersViewModel يسجّل
+                // NavigateToSearchResultMessage (UsersViewModel.cs:130) ولم يكن هذا الاختبار
+                // يُلغيه سابقاً.
+                sentinelWindow.Close();
+                WeakReferenceMessenger.Default.UnregisterAll(vm);
+            }
+
+            Assert.DoesNotContain(sentinelWindow, Application.Current.Windows.OfType<UserFormWindow>());
         });
     }
 }
