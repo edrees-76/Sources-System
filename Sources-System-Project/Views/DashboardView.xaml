@@ -764,11 +764,17 @@
                                           Width="130" Height="32" FontSize="11" Padding="4"/>
 
                                 <!-- فلتر الحالة -->
-                                <ComboBox Grid.Column="6" ItemsSource="{Binding AvailableStatuses}" 
+                                <ComboBox Grid.Column="6" ItemsSource="{Binding AvailableStatuses}"
                                           SelectedItem="{Binding SelectedStatusFilter}"
                                           Style="{StaticResource FormComboBox}"
                                           materialDesign:HintAssist.Hint="{DynamicResource FilterStatus}"
-                                          Width="110" Height="32" FontSize="11" Padding="4"/>
+                                          Width="110" Height="32" FontSize="11" Padding="4">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Converter={StaticResource StatusToArabic}}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
 
                                 <!-- زر إعادة تعيين -->
                                 <Button Grid.Column="8" Command="{Binding ResetFiltersCommand}"

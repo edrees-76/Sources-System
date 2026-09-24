@@ -67,6 +67,7 @@ public class DeletedSourceRow
     public string DoseRateTooltip => Source.DoseRateTooltip;
     public Location? Location => Source.Location;
     public string ArabicStatus => Source.ArabicStatus;
+    public string StatusDisplay => Source.StatusDisplay;
     public DateTime? DeletedAt => Source.DeletedAt;
     public User? DeletedByUser => Source.DeletedByUser;
 }
@@ -85,6 +86,7 @@ public class NeutronSourceListRow
     public string CalibratedEmissionRateFormatted => NeutronSource.CalibratedEmissionRateFormatted;
     public double? RelativeExpandedUncertaintyPercent => NeutronSource.RelativeExpandedUncertaintyPercent;
     public string ArabicStatus => NeutronSource.ArabicStatus;
+    public string StatusDisplay => NeutronSource.StatusDisplay;
     public string StatusColor => NeutronSource.StatusColor;
     public DateTime? CalibrationDate => NeutronSource.CalibrationDate;
     public string CurrentEmissionRateDisplay { get; set; } = "-";

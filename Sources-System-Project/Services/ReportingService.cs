@@ -291,7 +291,7 @@ namespace Sources.Services
                     worksheet.Cell(row, 3).Value = source.DisplayIsotopes;
                     worksheet.Cell(row, 4).Value = source.CurrentActivityWithUnit;
                     worksheet.Cell(row, 5).Value = source.Location?.LocationName ?? "غير محدد";
-                    worksheet.Cell(row, 6).Value = source.ArabicStatus;
+                    worksheet.Cell(row, 6).Value = source.StatusDisplay;
                     worksheet.Cell(row, 7).Value = source.AddedByName;
                     row++;
                 }
@@ -393,7 +393,7 @@ namespace Sources.Services
                             table.Cell().Element(CellStyle).Text(source.DisplayIsotopes);
                             table.Cell().Element(CellStyle).Text(source.CurrentActivityWithUnit);
                             table.Cell().Element(CellStyle).Text(source.Location?.LocationName ?? "-");
-                            table.Cell().Element(CellStyle).Text(source.ArabicStatus);
+                            table.Cell().Element(CellStyle).Text(source.StatusDisplay);
                             table.Cell().Element(CellStyle).Text(source.AddedByName);
 
                             IContainer CellStyle(IContainer container)
@@ -575,7 +575,7 @@ namespace Sources.Services
                     worksheet.Cell(row, 3).Value = source.AlertWorstIsotope ?? source.DisplayIsotopes;
                     worksheet.Cell(row, 4).Value = source.AlertSeverityDisplay;
                     worksheet.Cell(row, 5).Value = source.CalibrationDate.ToString("yyyy/MM/dd");
-                    worksheet.Cell(row, 6).Value = source.ArabicStatus;
+                    worksheet.Cell(row, 6).Value = source.StatusDisplay;
                     worksheet.Cell(row, 7).Value = source.CurrentActivityWithUnit;
                     worksheet.Cell(row, 8).Value = source.AddedByName;
                     row++;
@@ -654,7 +654,7 @@ namespace Sources.Services
                                     table.Cell().Element(CellStyle).Text(s.AlertSeverityDisplay);
                                     table.Cell().Element(CellStyle).Text(s.CalibrationDate.ToString("yyyy/MM/dd"));
                                     table.Cell().Element(CellStyle).Text(s.CurrentActivityWithUnit);
-                                    table.Cell().Element(CellStyle).Text(s.ArabicStatus);
+                                    table.Cell().Element(CellStyle).Text(s.StatusDisplay);
                                     table.Cell().Element(CellStyle).Text(s.AddedByName);
 
                                     static IContainer CellStyle(IContainer container) => container.BorderBottom(1).BorderColor(Colors.Grey.Lighten3).PaddingVertical(4);
@@ -694,7 +694,7 @@ namespace Sources.Services
                     wsInventory.Cell(row, 3).Value = s.DisplayIsotopes;
                     wsInventory.Cell(row, 4).Value = s.CurrentActivityWithUnit;
                     wsInventory.Cell(row, 5).Value = s.Location?.LocationName ?? "غير محدد";
-                    wsInventory.Cell(row, 6).Value = s.ArabicStatus;
+                    wsInventory.Cell(row, 6).Value = s.StatusDisplay;
                     wsInventory.Cell(row, 7).Value = s.AddedByName;
                     row++;
                 }
@@ -745,7 +745,7 @@ namespace Sources.Services
                     wsLowAct.Cell(row, 3).Value = s.DisplayIsotopes;
                     wsLowAct.Cell(row, 4).Value = s.CurrentActivityWithUnit;
                     wsLowAct.Cell(row, 5).Value = s.Location?.LocationName ?? "غير محدد";
-                    wsLowAct.Cell(row, 6).Value = s.ArabicStatus;
+                    wsLowAct.Cell(row, 6).Value = s.StatusDisplay;
                     wsLowAct.Cell(row, 7).Value = s.AddedByName;
                     row++;
                 }
@@ -771,7 +771,7 @@ namespace Sources.Services
                     wsAlerts.Cell(row, 3).Value = s.AlertWorstIsotope ?? s.DisplayIsotopes;
                     wsAlerts.Cell(row, 4).Value = s.AlertSeverityDisplay;
                     wsAlerts.Cell(row, 5).Value = s.CalibrationDate.ToString("yyyy/MM/dd");
-                    wsAlerts.Cell(row, 6).Value = s.ArabicStatus;
+                    wsAlerts.Cell(row, 6).Value = s.StatusDisplay;
                     wsAlerts.Cell(row, 7).Value = s.CurrentActivityWithUnit;
                     wsAlerts.Cell(row, 8).Value = s.AddedByName;
                     row++;
@@ -1327,7 +1327,7 @@ namespace Sources.Services
                     ws.Cell(row, 3).Value = r.Source?.DisplayIsotopes ?? "-";
                     ws.Cell(row, 4).Value = r.Source?.Location?.LocationName ?? "-";
                     ws.Cell(row, 5).Value = r.TestDate.ToString("yyyy/MM/dd");
-                    ws.Cell(row, 6).Value = r.Source?.ArabicStatus ?? "-";
+                    ws.Cell(row, 6).Value = r.Source?.StatusDisplay ?? "-";
                     ws.Cell(row, 7).Value = r.Notes ?? "-";
 
                     for (int c = 1; c <= 7; c++)
@@ -1410,7 +1410,7 @@ namespace Sources.Services
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(r.Source?.DisplayIsotopes ?? "-");
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(r.Source?.Location?.LocationName ?? "-");
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(r.TestDate.ToString("yyyy/MM/dd"));
-                                        table.Cell().Element(c => CellStyle(c, bg)).Text(r.Source?.ArabicStatus ?? "-");
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(r.Source?.StatusDisplay ?? "-");
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(r.Notes ?? "-");
                                         i++;
                                     }
@@ -1466,7 +1466,7 @@ namespace Sources.Services
                         worksheet.Cell(row, 5).Value = "-";
                     }
                     worksheet.Cell(row, 6).Value = s.Location?.LocationName ?? "غير محدد";
-                    worksheet.Cell(row, 7).Value = s.ArabicStatus;
+                    worksheet.Cell(row, 7).Value = s.StatusDisplay;
                     worksheet.Cell(row, 8).Value = s.EmissionCalibrationDate.HasValue ? s.EmissionCalibrationDate.Value.ToString("yyyy-MM-dd") : GetNotRecordedText();
                     row++;
                 }
@@ -1542,7 +1542,7 @@ namespace Sources.Services
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(ScientificNotationParser.FormatScientific(s.CalibratedEmissionRate));
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(s.RelativeExpandedUncertaintyPercent.HasValue ? $"{s.RelativeExpandedUncertaintyPercent:N1}%" : "-");
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(s.Location?.LocationName ?? "-");
-                                        table.Cell().Element(c => CellStyle(c, bg)).Text(s.ArabicStatus);
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(s.StatusDisplay);
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(s.EmissionCalibrationDate.HasValue ? s.EmissionCalibrationDate.Value.ToString("yyyy/MM/dd") : GetNotRecordedText());
                                         i++;
                                     }

@@ -54,14 +54,8 @@ public partial class SourceDetailsViewModel : ObservableObject
     public string DisplaySourceCode => Source.DisplaySourceCode;
     public string Status => Source.Status;
     public string ArabicStatus => Source.ArabicStatus;
-    public string StatusColor => Source.Status switch
-    {
-        "InUse" or "Active" => "#3FAE7A", // أخضر تشغيلي (Success)
-        "Storage" => "#4F7FA3",           // أزرق تخزين (Info)
-        "Waste" => "#E0A93E",             // كهرماني نفايات (Warning)
-        "Transfer" => "#E0A93E",          // كهرماني نقل (Warning)
-        _ => "#1F5A66"
-    };
+    public string StatusDisplay => Source.StatusDisplay;
+    public string StatusColor => Sources.Helpers.StatusCatalog.GetColorHex(Source.Status);
 
     public string? ImagePath { get; }
     public bool HasImage { get; }

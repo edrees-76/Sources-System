@@ -47,7 +47,7 @@
                         <!-- شارة حالة المصدر -->
                         <StackPanel Orientation="Horizontal" Margin="0,6,0,0" VerticalAlignment="Center">
                             <Border Background="{Binding StatusColor, Converter={StaticResource HexToBrush}}" CornerRadius="6" Padding="10,3">
-                                <TextBlock Text="{Binding ArabicStatus}" FontSize="12" FontWeight="Bold" Foreground="White"/>
+                                <TextBlock Text="{Binding StatusDisplay}" FontSize="12" FontWeight="Bold" Foreground="White"/>
                             </Border>
                         </StackPanel>
                     </StackPanel>

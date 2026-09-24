@@ -49,42 +49,24 @@ public class BoolToValueConverter : IValueConverter
         => throw new NotImplementedException();
 }
 
-// ─── تحويل الحالة إلى لون ───
+// ─── تحويل الحالة إلى لون (موحَّد عبر StatusCatalog) ───
 public class StatusToColorConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return value?.ToString() switch
-        {
-            "InUse" or "Active" => new SolidColorBrush(Color.FromRgb(63, 174, 122)),       // أخضر تشغيلي
-            "Storage" => new SolidColorBrush(Color.FromRgb(79, 127, 163)),                 // أزرق تخزين
-            "Waste" => new SolidColorBrush(Color.FromRgb(224, 169, 62)),                   // كهرماني/نفايات
-            "Transfer" => new SolidColorBrush(Color.FromRgb(224, 169, 62)),                // كهرماني/نقل
-            _ => new SolidColorBrush(Color.FromRgb(158, 158, 158))
-        };
+        var hex = Sources.Helpers.StatusCatalog.GetColorHex(value?.ToString());
+        return new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
     }
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         => throw new NotImplementedException();
 }
 
-// ─── تحويل الحالة إلى نص عربي ───
+// ─── تحويل الحالة إلى نص معروض حسب اللغة الحالية (موحَّد عبر StatusCatalog) ───
 public class StatusToArabicConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        string? key = value?.ToString() switch
-        {
-            "InUse" or "Active" => "StatusInUse",
-            "Storage" => "StatusStorage",
-            "Waste" => "StatusWaste",
-            "Transfer" => "StatusTransfer",
-            _ => null
-        };
-
-        if (key != null && Application.Current.Resources.Contains(key))
-            return Application.Current.FindResource(key);
-
-        return value?.ToString() ?? "";
+        return Sources.Helpers.StatusCatalog.GetDisplayText(value?.ToString());
     }
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         => throw new NotImplementedException();
@@ -337,6 +319,31 @@ public class HexStringToBrushConverter : IValueConverter
             var hex = value?.ToString();
             if (string.IsNullOrWhiteSpace(hex)) return new SolidColorBrush(Colors.Transparent);
             var c = (Color)ColorConverter.ConvertFromString(hex);
+            return new SolidColorBrush(c);
+        }
+        catch
+        {
+            return new SolidColorBrush(Colors.Transparent);
+        }
+    }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}
+
+// ─── تحويل سلسلة Hex (#RRGGBB) إلى SolidColorBrush بشفافية ثابتة (تلوين خفيف للشارات) ───
+// ConverterParameter: نسبة الشفافية بالسادس عشري كبايت واحد (مثال "1A" = ~10%)، افتراضيًا "1A".
+public class HexToTintBrushConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        try
+        {
+            var hex = value?.ToString();
+            if (string.IsNullOrWhiteSpace(hex)) return new SolidColorBrush(Colors.Transparent);
+            var alphaHex = (parameter as string) ?? "1A";
+            var rgb = hex.TrimStart('#');
+            if (rgb.Length == 8) rgb = rgb.Substring(2); // تجاهل أي ألفا موجودة مسبقًا
+            var c = (Color)ColorConverter.ConvertFromString("#" + alphaHex + rgb);
             return new SolidColorBrush(c);
         }
         catch
