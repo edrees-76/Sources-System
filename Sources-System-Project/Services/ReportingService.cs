@@ -443,7 +443,7 @@ namespace Sources.Services
                     worksheet.Cell(row, 3).Value = req.DisplayBorrowerName;
                     worksheet.Cell(row, 4).Value = req.Purpose ?? "-";
                     worksheet.Cell(row, 5).Value = req.ExpectedReturnDate.ToString("yyyy/MM/dd");
-                    worksheet.Cell(row, 6).Value = req.ArabicStatus;
+                    worksheet.Cell(row, 6).Value = req.StatusDisplay;
                     worksheet.Cell(row, 7).Value = req.AddedByName;
                     worksheet.Cell(row, 8).Value = req.RequestDate.ToString("yyyy/MM/dd HH:mm");
                     row++;
@@ -529,7 +529,7 @@ namespace Sources.Services
                                          table.Cell().Element(CellStyle).Text(req.DisplayBorrowerName);
                                          table.Cell().Element(CellStyle).Text(req.Purpose ?? "-");
                                          table.Cell().Element(CellStyle).Text(req.ExpectedReturnDate.ToString("yyyy/MM/dd"));
-                                         table.Cell().Element(CellStyle).Text(req.ArabicStatus);
+                                         table.Cell().Element(CellStyle).Text(req.StatusDisplay);
                                          table.Cell().Element(CellStyle).Text(req.AddedByName);
                                          table.Cell().Element(CellStyle).Text(req.RequestDate.ToString("yyyy/MM/dd"));
 
@@ -719,7 +719,7 @@ namespace Sources.Services
                     wsBorrowing.Cell(row, 3).Value = req.DisplayBorrowerName;
                     wsBorrowing.Cell(row, 4).Value = req.Purpose ?? "-";
                     wsBorrowing.Cell(row, 5).Value = req.ExpectedReturnDate.ToString("yyyy/MM/dd");
-                    wsBorrowing.Cell(row, 6).Value = req.ArabicStatus;
+                    wsBorrowing.Cell(row, 6).Value = req.StatusDisplay;
                     wsBorrowing.Cell(row, 7).Value = req.AddedByName;
                     wsBorrowing.Cell(row, 8).Value = req.RequestDate.ToString("yyyy/MM/dd HH:mm");
                     row++;
@@ -854,7 +854,7 @@ namespace Sources.Services
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(req.DisplayBorrowerName);
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(req.Purpose ?? "-");
                                         table.Cell().Element(c => CellStyle(c, bg)).Text(req.ExpectedReturnDate.ToString("yyyy/MM/dd"));
-                                        table.Cell().Element(c => CellStyle(c, bg)).Text(req.ArabicStatus);
+                                        table.Cell().Element(c => CellStyle(c, bg)).Text(req.StatusDisplay);
                                         static IContainer CellStyle(IContainer c, string bg) => c.Background(bg).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(4).AlignCenter();
                                         i++;
                                     }

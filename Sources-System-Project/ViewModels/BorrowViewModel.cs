@@ -38,6 +38,8 @@ public class BorrowRequestRow
     public string Purpose => Request.Purpose;
     public string Status => Request.Status;
     public string ArabicStatus => Request.ArabicStatus;
+    public string StatusDisplay => Request.StatusDisplay;
+    public string StatusColor => Request.StatusColor;
     public string? Notes => Request.Notes;
     public string? AddedByName => Request.AddedByName;
 }
@@ -146,9 +148,16 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
     [ObservableProperty]
     private string _selectedStatusFilter = "الكل";
 
-    public ObservableCollection<string> StatusFilters { get; } = new()
+    /// <summary>الجولة 201: Value = نفس مفتاح SelectedStatusFilter الحالي (بلا تغيير في منطق الفلترة)؛ Display عبر الكتالوج/الموارد.</summary>
+    public sealed record StatusFilterOption(string Value, string Display);
+
+    public ObservableCollection<StatusFilterOption> StatusFilters { get; } = new()
     {
-        "الكل", "تم التسليم", "تم الإرجاع", "متأخر", "قريبة الإرجاع"
+        new StatusFilterOption("الكل", TranslationHelper.GetString("FilterAll") ?? "الكل"),
+        new StatusFilterOption("تم التسليم", BorrowStatusCatalog.GetDisplayText(BorrowStatusCatalog.Delivered)),
+        new StatusFilterOption("تم الإرجاع", BorrowStatusCatalog.GetDisplayText(BorrowStatusCatalog.Returned)),
+        new StatusFilterOption("متأخر", BorrowStatusCatalog.GetDisplayText(BorrowStatusCatalog.Overdue)),
+        new StatusFilterOption("قريبة الإرجاع", TranslationHelper.GetString("FilterDueSoon") ?? "قريبة الإرجاع"),
     };
 
     public BorrowViewModel(
@@ -228,9 +237,9 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
     private void UpdateStatistics(System.Collections.Generic.List<BorrowRequest> all)
     {
         TotalCount = all.Count;
-        ActiveCount = all.Count(r => r.Status == "Delivered" || r.Status == "Overdue");
-        BorrowedCount = all.Count(r => r.Status == "Delivered");
-        OverdueCount = all.Count(r => r.Status == "Overdue");
+        ActiveCount = all.Count(r => BorrowStatusCatalog.IsActiveBorrow(r.Status));
+        BorrowedCount = all.Count(r => r.Status == BorrowStatusCatalog.Delivered);
+        OverdueCount = all.Count(r => r.Status == BorrowStatusCatalog.Overdue);
         DueSoonCount = _borrowService.GetDueSoonCount(all);
     }
 
@@ -265,7 +274,7 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
         NewActualReturnDate = DateTime.Now;
         ReturnNotes = string.Empty;
 
-        if (request.Status == "Delivered" || request.Status == "Overdue" || request.Status == "Approved")
+        if (BorrowStatusCatalog.IsReturnable(request.Status))
         {
             LoadAvailableBorrowers(request.BorrowerUserId);
         }
@@ -566,17 +575,17 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
                 var thresholdDays = _borrowService.GetDueSoonDaysThreshold();
                 var today = DateTime.Today;
                 var maxDate = today.AddDays(thresholdDays + 1).Date;
-                filtered = filtered.Where(r => r.Status == "Delivered" 
-                    && r.ExpectedReturnDate.Date >= today 
+                filtered = filtered.Where(r => r.Status == BorrowStatusCatalog.Delivered
+                    && r.ExpectedReturnDate.Date >= today
                     && r.ExpectedReturnDate.Date < maxDate);
             }
             else
             {
                 string enStatus = SelectedStatusFilter switch
                 {
-                    "تم التسليم" => "Delivered",
-                    "تم الإرجاع" => "Returned",
-                    "متأخر" => "Overdue",
+                    "تم التسليم" => BorrowStatusCatalog.Delivered,
+                    "تم الإرجاع" => BorrowStatusCatalog.Returned,
+                    "متأخر" => BorrowStatusCatalog.Overdue,
                     _ => ""
                 };
                 if (!string.IsNullOrEmpty(enStatus))

@@ -40,6 +40,7 @@ public class ReportBorrowingRow
     public DateTime RequestDate => Request.RequestDate;
     public DateTime ExpectedReturnDate => Request.ExpectedReturnDate;
     public string ArabicStatus => Request.ArabicStatus;
+    public string StatusDisplay => Request.StatusDisplay;
 }
 
 public class ReportActivityRow

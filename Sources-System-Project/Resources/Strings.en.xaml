@@ -412,6 +412,14 @@
     <system:String x:Key="StatusDisplayStorage">In Storage</system:String>
     <system:String x:Key="StatusDisplayWaste">Waste</system:String>
     <system:String x:Key="StatusDisplayTransfer">In Transfer</system:String>
+    <!-- Round 201 — borrow-status display via BorrowStatusCatalog -->
+    <system:String x:Key="BorrowStatusDisplayPending">Pending</system:String>
+    <system:String x:Key="BorrowStatusDisplayApproved">Approved</system:String>
+    <system:String x:Key="BorrowStatusDisplayRejected">Rejected</system:String>
+    <system:String x:Key="BorrowStatusDisplayDelivered">Delivered</system:String>
+    <system:String x:Key="BorrowStatusDisplayReturned">Returned</system:String>
+    <system:String x:Key="BorrowStatusDisplayOverdue">Overdue</system:String>
+    <system:String x:Key="FilterDueSoon">Due Soon</system:String>
     <system:String x:Key="BtnReset">Reset</system:String>
     <system:String x:Key="ColSourceImage">Source Image</system:String>
     <system:String x:Key="ColSourceCode">Source Code</system:String>

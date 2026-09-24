@@ -684,18 +684,25 @@ public class BorrowRequest
     [NotMapped]
     public string AddedByName => AddedByUser?.FullName ?? "غير معروف";
 
-    /// <summary>الحالة بالعربية</summary>
+    /// <summary>الحالة بالعربية — عبر BorrowStatusCatalog (نفس النص الحالي حرفياً، بما فيها الرجوع للقيمة الخام).</summary>
     [NotMapped]
-    public string ArabicStatus => Status switch
-    {
-        "Pending" => "معلّق",
-        "Approved" => "تمت الموافقة",
-        "Rejected" => "مرفوض",
-        "Delivered" => "تم التسليم",
-        "Returned" => "تم الإرجاع",
-        "Overdue" => "متأخر",
-        _ => Status
-    };
+    public string ArabicStatus => Sources.Helpers.BorrowStatusCatalog.GetArabicText(Status);
+
+    /// <summary>النص المعروض حسب لغة الواجهة الحالية (الجولة 201) — يرجع للعربية إذا كان المفتاح غير موجود.</summary>
+    [NotMapped]
+    public string StatusDisplay => Sources.Helpers.BorrowStatusCatalog.GetDisplayText(Status);
+
+    /// <summary>لون حالة الاستعارة الموحَّد (الجولة 201).</summary>
+    [NotMapped]
+    public string StatusColor => Sources.Helpers.BorrowStatusCatalog.GetColorHex(Status);
+
+    /// <summary>قابل للإرجاع (Delivered/Overdue/Approved) — لإظهار لوحة الإرجاع في BorrowFormWindow.</summary>
+    [NotMapped]
+    public bool IsReturnableStatus => Sources.Helpers.BorrowStatusCatalog.IsReturnable(Status);
+
+    /// <summary>حالته "تم الإرجاع" — لإظهار لوحة معلومات الإرجاع في BorrowFormWindow.</summary>
+    [NotMapped]
+    public bool IsReturnedStatus => Status == Sources.Helpers.BorrowStatusCatalog.Returned;
 
     /// <summary>اسم المستعير للعرض (يدعم المستخدم المسجل أو الاسم الحر)</summary>
     [NotMapped]

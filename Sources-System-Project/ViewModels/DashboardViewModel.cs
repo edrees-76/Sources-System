@@ -1767,8 +1767,8 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
             _borrowService.CheckAndUpdateOverdue();
             var allRequests = _borrowService.GetAll();
 
-            int overdue = allRequests.Count(r => r.Status == "Overdue");
-            int active  = allRequests.Count(r => r.Status == "Delivered" || r.Status == "Overdue");
+            int overdue = allRequests.Count(r => r.Status == BorrowStatusCatalog.Overdue);
+            int active  = allRequests.Count(r => BorrowStatusCatalog.IsActiveBorrow(r.Status));
             int dueSoon = _borrowService.GetDueSoonCount(allRequests);
 
             BorrowSummary = new DashboardBorrowSummary

@@ -323,7 +323,7 @@
                                     <DataGridTextColumn Header="{DynamicResource ColBorrowerName}" Binding="{Binding DisplayBorrowerName}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColRequestDate}" Binding="{Binding RequestDate, StringFormat=d}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
                                     <DataGridTextColumn Header="{DynamicResource ColExpectedReturn}" Binding="{Binding ExpectedReturnDate, StringFormat=d}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
-                                    <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="Auto" MinWidth="95" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding StatusDisplay}" Width="Auto" MinWidth="95" ElementStyle="{StaticResource CenterAligned}"/>
                                 </DataGrid.Columns>
                             </DataGrid>
                             <Border Visibility="{Binding BorrowingData.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}"
@@ -530,7 +530,7 @@
                             <DataGridTextColumn Header="{DynamicResource ColBorrowerName}" Binding="{Binding DisplayBorrowerName}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColRequestDate}" Binding="{Binding RequestDate, StringFormat=d}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColExpectedReturn}" Binding="{Binding ExpectedReturnDate, StringFormat=d}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
-                            <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="Auto" MinWidth="95" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding StatusDisplay}" Width="Auto" MinWidth="95" ElementStyle="{StaticResource CenterAligned}"/>
                         </DataGrid.Columns>
                     </DataGrid>
                     <Border Visibility="{Binding BorrowingData.Count, Converter={StaticResource EqualityToVis}, ConverterParameter=0}"

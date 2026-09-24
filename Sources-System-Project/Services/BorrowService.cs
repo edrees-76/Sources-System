@@ -84,7 +84,7 @@ public class BorrowService : IBorrowService
             .Include(b => b.Source).ThenInclude(s => s!.SourceIsotopes).ThenInclude(si => si.ActivityUnit)
             .Include(b => b.BorrowerUser)
             .Include(b => b.AddedByUser)
-            .Where(b => b.Status == "Pending")
+            .Where(b => b.Status == BorrowStatusCatalog.Pending)
             .OrderByDescending(b => b.RequestDate)
             .ToList();
     }
@@ -92,7 +92,7 @@ public class BorrowService : IBorrowService
     public int GetPendingCount()
     {
         using var db = _dbFactory.CreateDbContext();
-        return db.BorrowRequests.Count(b => b.Status == "Pending");
+        return db.BorrowRequests.Count(b => b.Status == BorrowStatusCatalog.Pending);
     }
 
     public List<BorrowRequest> GetOverdue()
@@ -108,7 +108,7 @@ public class BorrowService : IBorrowService
             .Include(b => b.Source).ThenInclude(s => s!.SourceIsotopes).ThenInclude(si => si.ActivityUnit)
             .Include(b => b.BorrowerUser)
             .Include(b => b.AddedByUser)
-            .Where(b => b.Status == "Overdue")
+            .Where(b => b.Status == BorrowStatusCatalog.Overdue)
             .OrderByDescending(b => b.RequestDate)
             .ToList();
     }
@@ -144,11 +144,11 @@ public class BorrowService : IBorrowService
 
             // التحقق من عدم وجود استعارة نشطة لنفس المصدر
             var existingActive = db.BorrowRequests.Any(b => b.SourceId == request.SourceId &&
-                (b.Status == "Delivered" || b.Status == "Overdue"));
+                (b.Status == BorrowStatusCatalog.Delivered || b.Status == BorrowStatusCatalog.Overdue));
             if (existingActive) return (false, TranslationHelper.GetString("MsgErrActiveBorrowExists") ?? "يوجد استعارة نشطة لهذا المصدر بالفعل.");
 
             // استعارة فورية: الحالة مباشرة "تم التسليم"
-            request.Status = "Delivered";
+            request.Status = BorrowStatusCatalog.Delivered;
             request.RequestDate = DateTime.Now;
             request.ApprovalDate = DateTime.Now;
             request.DeliveryDate = DateTime.Now;
@@ -192,7 +192,7 @@ public class BorrowService : IBorrowService
             using var db = _dbFactory.CreateDbContext();
             var req = db.BorrowRequests.Include(b => b.Source).FirstOrDefault(b => b.Id == requestId);
             if (req == null) return (false, TranslationHelper.GetString("MsgErrBorrowRequestNotFound") ?? "الطلب غير موجود.");
-            if (req.Status != "Delivered" && req.Status != "Approved" && req.Status != "Overdue")
+            if (!BorrowStatusCatalog.IsReturnable(req.Status))
                 return (false, TranslationHelper.GetString("MsgErrReturnNotAllowedStatus") ?? "الحالة الحالية لا تسمح بالإرجاع.");
 
             req.Status = "Returned";
@@ -233,14 +233,14 @@ public class BorrowService : IBorrowService
             
             // Any request that is delivered or approved and passed expected return date
             var overdueReqs = db.BorrowRequests
-                .Where(b => (b.Status == "Delivered" || b.Status == "Approved") && b.ExpectedReturnDate < today)
+                .Where(b => (b.Status == BorrowStatusCatalog.Delivered || b.Status == BorrowStatusCatalog.Approved) && b.ExpectedReturnDate < today)
                 .ToList();
 
             if (!overdueReqs.Any()) return;
 
             foreach (var req in overdueReqs)
             {
-                req.Status = "Overdue";
+                req.Status = BorrowStatusCatalog.Overdue;
                 // System notification could be added here
             }
 
@@ -274,14 +274,14 @@ public class BorrowService : IBorrowService
 
         if (requests != null)
         {
-            return requests.Count(r => r.Status == "Delivered" 
+            return requests.Count(r => r.Status == BorrowStatusCatalog.Delivered 
                 && r.ExpectedReturnDate.Date >= today 
                 && r.ExpectedReturnDate.Date < maxDate);
         }
 
         using var db = _dbFactory.CreateDbContext();
         return db.BorrowRequests
-            .Count(r => r.Status == "Delivered" 
+            .Count(r => r.Status == BorrowStatusCatalog.Delivered 
                 && r.ExpectedReturnDate >= today 
                 && r.ExpectedReturnDate < maxDate);
     }
@@ -302,7 +302,7 @@ public class BorrowService : IBorrowService
             .Include(b => b.Source).ThenInclude(s => s!.SourceIsotopes).ThenInclude(si => si.Radioisotope)
             .Include(b => b.Source).ThenInclude(s => s!.SourceIsotopes).ThenInclude(si => si.ActivityUnit)
             .Include(b => b.BorrowerUser)
-            .Where(r => r.Status == "Delivered" 
+            .Where(r => r.Status == BorrowStatusCatalog.Delivered 
                 && r.ExpectedReturnDate >= today 
                 && r.ExpectedReturnDate < maxDate)
             .OrderBy(r => r.ExpectedReturnDate)

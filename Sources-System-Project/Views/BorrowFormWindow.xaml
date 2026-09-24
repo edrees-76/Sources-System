@@ -401,8 +401,8 @@
 
                         <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
                             <TextBlock Text="{DynamicResource RunLabelCurrentStatusPrefix}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                            <Border CornerRadius="6" Padding="10,3" Background="#1A4F7FA3">
-                                <TextBlock Text="{Binding SelectedRequest.ArabicStatus}" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource PrimaryBrush}"/>
+                            <Border CornerRadius="6" Padding="10,3" Background="{Binding SelectedRequest.StatusColor, Converter={StaticResource HexToTintBrush}}">
+                                <TextBlock Text="{Binding SelectedRequest.StatusDisplay}" FontWeight="Bold" FontSize="12" Foreground="{Binding SelectedRequest.StatusColor, Converter={StaticResource HexToBrush}}"/>
                             </Border>
                         </StackPanel>
                     </StackPanel>
@@ -416,13 +416,7 @@
                         <Style TargetType="Border">
                             <Setter Property="Visibility" Value="Collapsed"/>
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedRequest.Status}" Value="Delivered">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding SelectedRequest.Status}" Value="Overdue">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding SelectedRequest.Status}" Value="Approved">
+                                <DataTrigger Binding="{Binding SelectedRequest.IsReturnableStatus}" Value="True">
                                     <Setter Property="Visibility" Value="Visible"/>
                                 </DataTrigger>
                             </Style.Triggers>
@@ -467,7 +461,7 @@
                         <Style TargetType="Border">
                             <Setter Property="Visibility" Value="Collapsed"/>
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedRequest.Status}" Value="Returned">
+                                <DataTrigger Binding="{Binding SelectedRequest.IsReturnedStatus}" Value="True">
                                     <Setter Property="Visibility" Value="Visible"/>
                                 </DataTrigger>
                             </Style.Triggers>
