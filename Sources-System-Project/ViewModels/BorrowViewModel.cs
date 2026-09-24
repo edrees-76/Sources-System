@@ -52,6 +52,7 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
     private readonly IReportingService _reportingService;
     private readonly IDbContextFactory<AppDbContext>? _dbFactory;
     private readonly IMessenger _messenger;
+    private readonly TimeProvider _timeProvider;
 
     public void Dispose()
     {
@@ -110,14 +111,14 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
     private string _newPurpose = string.Empty;
 
     [ObservableProperty]
-    private DateTime _newExpectedReturnDate = DateTime.Now.AddDays(7);
+    private DateTime _newExpectedReturnDate;
 
     [ObservableProperty]
     private string? _newNotes = string.Empty;
 
     // ─── حقول وضع العرض والإرجاع (IsNew = false) ───
     [ObservableProperty]
-    private DateTime _newActualReturnDate = DateTime.Now;
+    private DateTime _newActualReturnDate;
 
     [ObservableProperty]
     private User? _selectedReturnedBy;
@@ -166,14 +167,18 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
         IUserService userService, 
         IReportingService reportingService,
         IDbContextFactory<AppDbContext>? dbFactory = null,
-        IMessenger? messenger = null)
+        IMessenger? messenger = null,
+        TimeProvider? timeProvider = null)
     {
         _messenger = messenger ?? WeakReferenceMessenger.Default;
+        _timeProvider = timeProvider ?? TimeProvider.System;
         _borrowService = borrowService;
         _sourceService = sourceService;
         _userService = userService;
         _reportingService = reportingService;
         _dbFactory = dbFactory ?? (App.ServiceProvider?.GetService(typeof(IDbContextFactory<AppDbContext>)) as IDbContextFactory<AppDbContext>);
+        NewExpectedReturnDate = _timeProvider.LocalNow().AddDays(7);
+        NewActualReturnDate = _timeProvider.LocalNow();
 
         // الاستماع لرسالة تحديث المصادر لتحديث قائمة المصادر المتاحة تلقائياً
         _messenger.Register<SourcesUpdatedMessage>(this, (r, m) =>
@@ -271,7 +276,7 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
         SelectedRequest = request;
         IsNew = false;
         CurrentStep = 1;
-        NewActualReturnDate = DateTime.Now;
+        NewActualReturnDate = _timeProvider.LocalNow();
         ReturnNotes = string.Empty;
 
         if (BorrowStatusCatalog.IsReturnable(request.Status))
@@ -315,10 +320,10 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
         SelectedSourceInfo = string.Empty;
         NewBorrowerName = string.Empty;
         NewPurpose = string.Empty;
-        NewExpectedReturnDate = DateTime.Now.AddDays(7);
+        NewExpectedReturnDate = _timeProvider.LocalNow().AddDays(7);
         NewNotes = string.Empty;
         ReturnNotes = string.Empty;
-        NewActualReturnDate = DateTime.Now;
+        NewActualReturnDate = _timeProvider.LocalNow();
         SelectedReturnedBy = null;
         SelectedRequest = null;
     }
@@ -419,13 +424,13 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
             return;
         }
 
-        if (NewExpectedReturnDate.Date < DateTime.Today)
+        if (NewExpectedReturnDate.Date < _timeProvider.LocalToday())
         {
             DialogHelper.ShowError(TranslationHelper.GetString("MsgErrExpectedReturnPast") ?? "تاريخ الإرجاع المتوقع لا يمكن أن يكون في الماضي.");
             return;
         }
 
-        if (NewExpectedReturnDate.Date > DateTime.Today.AddYears(2))
+        if (NewExpectedReturnDate.Date > _timeProvider.LocalToday().AddYears(2))
         {
             DialogHelper.ShowError(TranslationHelper.GetString("MsgErrExpectedReturnTooFar") ?? "تاريخ الإرجاع المتوقع بعيد جداً (الحد الأقصى هو سنتان من اليوم).");
             return;
@@ -481,7 +486,7 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
             return;
         }
 
-        if (NewActualReturnDate.Date > DateTime.Today)
+        if (NewActualReturnDate.Date > _timeProvider.LocalToday())
         {
             DialogHelper.ShowError(TranslationHelper.GetString("MsgErrActualReturnFuture") ?? "لا يمكن أن يكون تاريخ الإرجاع الفعلي في المستقبل.");
             return;
@@ -573,7 +578,7 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
             if (SelectedStatusFilter == "قريبة الإرجاع")
             {
                 var thresholdDays = _borrowService.GetDueSoonDaysThreshold();
-                var today = DateTime.Today;
+                var today = _timeProvider.LocalToday();
                 var maxDate = today.AddDays(thresholdDays + 1).Date;
                 filtered = filtered.Where(r => r.Status == BorrowStatusCatalog.Delivered
                     && r.ExpectedReturnDate.Date >= today

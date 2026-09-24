@@ -17,17 +17,20 @@ public class AlertService : IAlertService
     private readonly IDecayCalculationService _decayService;
     private readonly ISystemSettingsService _settingsService;
     private readonly ILicenseService _licenseService;
+    private readonly TimeProvider _timeProvider;
 
     public AlertService(
         IDbContextFactory<AppDbContext> dbFactory,
         IDecayCalculationService decayService,
         ISystemSettingsService settingsService,
-        ILicenseService licenseService)
+        ILicenseService licenseService,
+        TimeProvider? timeProvider = null)
     {
         _dbFactory = dbFactory;
         _decayService = decayService;
         _settingsService = settingsService;
         _licenseService = licenseService;
+        _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
     /// <summary>توليد التنبيهات عند فتح التطبيق أو الطلب</summary>
@@ -51,12 +54,12 @@ public class AlertService : IAlertService
             int.Parse(SystemSettingsDefaults.DefaultLeakTestWarningDaysThreshold));
         if (warningDays <= 0) warningDays = 30;
 
-        var today = DateTime.Today;
+        var today = _timeProvider.LocalToday();
 
         foreach (var source in activeSources)
         {
             // ─── 1. تنبيه انخفاض النشاط الإشعاعي (قانون التحلل: 5 إلى 6 أضعاف نصف العمر T½) ───
-            var (maxHalfLivesElapsed, worstIsotopeSymbol) = CalculateMaxHalfLivesElapsed(source);
+            var (maxHalfLivesElapsed, worstIsotopeSymbol) = CalculateMaxHalfLivesElapsed(source, _timeProvider);
 
             if (maxHalfLivesElapsed >= 6.0)
             {
@@ -201,10 +204,11 @@ public class AlertService : IAlertService
     /// <summary>
     /// دالة فيزيائية موحدة لحساب عدد فترات نصف العمر المنقضية وأسوأ نظير اضمحلالاً لمصدر معين
     /// </summary>
-    public static (double HalfLivesElapsed, string WorstIsotopeSymbol) CalculateMaxHalfLivesElapsed(Source source)
+    public static (double HalfLivesElapsed, string WorstIsotopeSymbol) CalculateMaxHalfLivesElapsed(Source source, TimeProvider? timeProvider = null)
     {
         double maxHalfLivesElapsed = -1;
         string worstIsotopeSymbol = string.Empty;
+        var tp = timeProvider ?? TimeProvider.System;
 
         if (source.HasDetailedIsotopes && source.SourceIsotopes != null && source.SourceIsotopes.Any(si => si.Radioisotope != null))
         {
@@ -217,7 +221,7 @@ public class AlertService : IAlertService
                 var halfLifeSec = ConvertToSeconds(isotope.HalfLife, isotope.HalfLifeUnit);
                 if (halfLifeSec <= 0) continue;
 
-                var elapsedSec = (DateTime.Now - calibDate).TotalSeconds;
+                var elapsedSec = (tp.LocalNow() - calibDate).TotalSeconds;
                 if (elapsedSec < 0) elapsedSec = 0;
 
                 var halfLives = elapsedSec / halfLifeSec;
@@ -234,7 +238,7 @@ public class AlertService : IAlertService
             var halfLifeSec = ConvertToSeconds(isotope.HalfLife, isotope.HalfLifeUnit);
             if (halfLifeSec > 0)
             {
-                var elapsedSec = (DateTime.Now - source.CalibrationDate).TotalSeconds;
+                var elapsedSec = (tp.LocalNow() - source.CalibrationDate).TotalSeconds;
                 if (elapsedSec < 0) elapsedSec = 0;
 
                 maxHalfLivesElapsed = elapsedSec / halfLifeSec;

@@ -14,6 +14,7 @@ public class UserService : IUserService
     private readonly IAuditService? _auditService;
     private readonly ILicenseService? _licenseService;
     private User? _currentUser;
+    private readonly TimeProvider _timeProvider;
 
     /// <summary>أقصى عدد محاولات فاشلة قبل قفل الحساب</summary>
     private const int MaxFailedAttempts = 5;
@@ -23,11 +24,12 @@ public class UserService : IUserService
     public User? CurrentUser => _currentUser;
     public bool IsLoggedIn => _currentUser != null;
 
-    public UserService(IDbContextFactory<AppDbContext> dbFactory, IAuditService? auditService = null, ILicenseService? licenseService = null)
+    public UserService(IDbContextFactory<AppDbContext> dbFactory, IAuditService? auditService = null, ILicenseService? licenseService = null, TimeProvider? timeProvider = null)
     {
         _dbFactory = dbFactory;
         _auditService = auditService;
         _licenseService = licenseService;
+        _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
     public (bool Success, string Message) Login(string username, string password)
@@ -47,9 +49,9 @@ public class UserService : IUserService
                 return (false, TranslationHelper.GetString("MsgErrAccountFrozen") ?? "تم تجميد الحساب يرجى مراجعة مدير النظام");
 
             // ─── التحقق من قفل الحساب ───
-            if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.Now)
+            if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > _timeProvider.LocalNow())
             {
-                var remaining = (user.LockoutEnd.Value - DateTime.Now).Minutes + 1;
+                var remaining = (user.LockoutEnd.Value - _timeProvider.LocalNow()).Minutes + 1;
                 LoggerService.LogInfo($"محاولة دخول لحساب مقفل: {username}");
                 return (false, string.Format(TranslationHelper.GetString("MsgErrAccountLocked") ?? "الحساب مقفل. حاول مرة أخرى بعد {0} دقيقة", remaining));
             }

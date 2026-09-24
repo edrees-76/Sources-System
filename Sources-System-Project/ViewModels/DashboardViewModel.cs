@@ -145,6 +145,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     private readonly IAlertService? _alertService;
     private readonly IGlobalSearchService _globalSearchService;
     private readonly INeutronSourceService? _neutronSourceService;
+    private readonly TimeProvider _timeProvider;
 
     // ─── البحث الموحّد في لوحة القيادة (Global Search) ───
     [ObservableProperty] private string _globalSearchQuery = string.Empty;
@@ -429,7 +430,8 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         ISystemSettingsService settingsService,
         IAlertService? alertService = null,
         IGlobalSearchService? globalSearchService = null,
-        INeutronSourceService? neutronSourceService = null)
+        INeutronSourceService? neutronSourceService = null,
+        TimeProvider? timeProvider = null)
     {
         _sourceService = sourceService;
         _isotopeService = isotopeService;
@@ -440,6 +442,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         _alertService = alertService ?? (App.ServiceProvider?.GetService(typeof(IAlertService)) as IAlertService);
         _globalSearchService = globalSearchService ?? (App.ServiceProvider?.GetService(typeof(IGlobalSearchService)) as IGlobalSearchService)!;
         _neutronSourceService = neutronSourceService ?? (App.ServiceProvider?.GetService(typeof(INeutronSourceService)) as INeutronSourceService);
+        _timeProvider = timeProvider ?? TimeProvider.System;
 
         InitDrawMarginFrames();
         InitFilterOptions();
@@ -1392,7 +1395,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
 
     public void UpdateClock()
     {
-        var now = DateTime.Now;
+        var now = _timeProvider.LocalNow();
         var culture = System.Threading.Thread.CurrentThread.CurrentUICulture;
         bool isArabic = culture.TwoLetterISOLanguageName.Equals("ar", StringComparison.OrdinalIgnoreCase);
 
@@ -1473,7 +1476,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
                     double currentBq = targetSource.CurrentActivityValue * curUnitConv;
                     double currentConverted = _decayService.ConvertFromBq(currentBq, chosenUnit);
 
-                    var currentPoint = new List<DateTimePoint> { new DateTimePoint(DateTime.Now, currentConverted) };
+                    var currentPoint = new List<DateTimePoint> { new DateTimePoint(_timeProvider.LocalNow(), currentConverted) };
 
                     var strokeColor = SKColor.Parse("#1F5A66"); // Petroleum Blue
                     var fillColor = SKColor.Parse("#1A1F5A66"); // 10% Alpha Fill
@@ -1555,10 +1558,10 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
                     DateTime startDate = sourcesToRender.Min(s =>
                     {
                         if (s.HasDetailedIsotopes && s.SourceIsotopes != null && s.SourceIsotopes.Any(si => si.Radioisotope != null))
-                            return s.SourceIsotopes.Where(si => si.Radioisotope != null).Min(si => si.CalibrationDate ?? (s.CalibrationDate != default ? s.CalibrationDate : DateTime.Today));
-                        return s.CalibrationDate != default ? s.CalibrationDate : DateTime.Today;
+                            return s.SourceIsotopes.Where(si => si.Radioisotope != null).Min(si => si.CalibrationDate ?? (s.CalibrationDate != default ? s.CalibrationDate : _timeProvider.LocalToday()));
+                        return s.CalibrationDate != default ? s.CalibrationDate : _timeProvider.LocalToday();
                     });
-                    if (startDate == default) startDate = DateTime.Today;
+                    if (startDate == default) startDate = _timeProvider.LocalToday();
 
                     // البحث عن أطول نصف عمر لاحتساب نهاية المنحنى (5 أنصاف أعمار في المستقبل)
                     double maxHalfLifeSeconds = 0;
@@ -1584,9 +1587,9 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
                     try
                     {
                         double secondsToAdd = maxHalfLifeSeconds * 5;
-                        double maxSecondsAllowed = (DateTime.MaxValue - DateTime.Now).TotalSeconds;
+                        double maxSecondsAllowed = (DateTime.MaxValue - _timeProvider.LocalNow()).TotalSeconds;
                         if (secondsToAdd > maxSecondsAllowed) secondsToAdd = maxSecondsAllowed - 86400;
-                        endDate = DateTime.Now.AddSeconds(secondsToAdd);
+                        endDate = _timeProvider.LocalNow().AddSeconds(secondsToAdd);
 
                         if ((endDate - startDate).TotalSeconds < secondsToAdd)
                         {

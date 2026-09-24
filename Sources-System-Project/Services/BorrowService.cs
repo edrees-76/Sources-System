@@ -15,19 +15,22 @@ public class BorrowService : IBorrowService
     private readonly IUserService _userService;
     private readonly ISystemSettingsService? _settingsService;
     private readonly ILicenseService _licenseService;
+    private readonly TimeProvider _timeProvider;
 
     public BorrowService(
         IDbContextFactory<AppDbContext> dbFactory,
         IAuditService auditService,
         IUserService userService,
         ILicenseService licenseService,
-        ISystemSettingsService? settingsService = null)
+        ISystemSettingsService? settingsService = null,
+        TimeProvider? timeProvider = null)
     {
         _dbFactory = dbFactory;
         _auditService = auditService;
         _userService = userService;
         _licenseService = licenseService;
         _settingsService = settingsService;
+        _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
     public List<BorrowRequest> GetAll()
@@ -229,7 +232,7 @@ public class BorrowService : IBorrowService
         try
         {
             using var db = _dbFactory.CreateDbContext();
-            var today = DateTime.Today;
+            var today = _timeProvider.LocalToday();
             
             // Any request that is delivered or approved and passed expected return date
             var overdueReqs = db.BorrowRequests
@@ -269,7 +272,7 @@ public class BorrowService : IBorrowService
     public int GetDueSoonCount(IEnumerable<BorrowRequest>? requests = null)
     {
         var thresholdDays = GetDueSoonDaysThreshold();
-        var today = DateTime.Today;
+        var today = _timeProvider.LocalToday();
         var maxDate = today.AddDays(thresholdDays + 1).Date;
 
         if (requests != null)
@@ -289,7 +292,7 @@ public class BorrowService : IBorrowService
     public List<BorrowRequest> GetDueSoonRequests()
     {
         var thresholdDays = GetDueSoonDaysThreshold();
-        var today = DateTime.Today;
+        var today = _timeProvider.LocalToday();
         var maxDate = today.AddDays(thresholdDays + 1).Date;
 
         using var db = _dbFactory.CreateDbContext();

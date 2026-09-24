@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Sources.Helpers;
+using Sources.Services;
 
 namespace Sources.Models;
 
@@ -773,7 +774,7 @@ public class User
     public string StatusDisplayName => IsActive ? "نشط" : "موقوف";
 
     [NotMapped]
-    public bool IsLocked => LockoutEnd.HasValue && LockoutEnd.Value > DateTime.Now;
+    public bool IsLocked => LockoutEnd.HasValue && LockoutEnd.Value > AppClock.Current.LocalNow();
 
     /// <summary>التحقق من صلاحية الوصول لقسم معين</summary>
     [NotMapped]
@@ -893,7 +894,7 @@ public class LeakTestRecord
     [ForeignKey(nameof(SourceId))]
     public Source? Source { get; set; }
 
-    public DateTime TestDate { get; set; } = DateTime.Today;
+    public DateTime TestDate { get; set; } = AppClock.Current.LocalToday();
 
     public DateTime NextDueDate { get; set; }
 
@@ -926,7 +927,7 @@ public class LeakTestRecord
     };
 
     [NotMapped]
-    public string StatusDisplay => (NextDueDate.Date < DateTime.Today) ? "متأخر" : "ساري";
+    public string StatusDisplay => (NextDueDate.Date < AppClock.Current.LocalToday()) ? "متأخر" : "ساري";
 }
 
 // ─── أنواع المصادر النيترونية المرجعية ───

@@ -104,6 +104,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     private readonly INeutronSourceTypeService _neutronSourceTypeService;
     private readonly INeutronDecayCalculationService _neutronDecayService;
     private readonly IMessenger _messenger;
+    private readonly TimeProvider _timeProvider;
 
     [ObservableProperty] private ObservableCollection<Source> _sources = new();
     [ObservableProperty] private ObservableCollection<Radioisotope> _radioisotopes = new();
@@ -166,7 +167,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     [ObservableProperty] private double _editInitialActivity;
     [ObservableProperty] private string _editInitialActivityText = string.Empty;
     [ObservableProperty] private Guid? _editInitialUnitId;
-    [ObservableProperty] private DateTime _editCalibrationDate = DateTime.Now;
+    [ObservableProperty] private DateTime _editCalibrationDate;
     [ObservableProperty] private Guid? _editCurrentUnitId;
     [ObservableProperty] private Guid? _editLocationId;
     [ObservableProperty] private string _editStatus = "InUse";
@@ -377,9 +378,11 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         INeutronSourceService? neutronSourceService = null,
         INeutronSourceTypeService? neutronSourceTypeService = null,
         INeutronDecayCalculationService? neutronDecayService = null,
-        IMessenger? messenger = null)
+        IMessenger? messenger = null,
+        TimeProvider? timeProvider = null)
     {
         _messenger = messenger ?? WeakReferenceMessenger.Default;
+        _timeProvider = timeProvider ?? TimeProvider.System;
         _sourceService = sourceService;
         _isotopeService = isotopeService;
         _locationService = locationService;
@@ -388,6 +391,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         _neutronSourceService = neutronSourceService ?? App.ServiceProvider?.GetService<INeutronSourceService>()!;
         _neutronSourceTypeService = neutronSourceTypeService ?? App.ServiceProvider?.GetService<INeutronSourceTypeService>()!;
         _neutronDecayService = neutronDecayService ?? new NeutronDecayCalculationService();
+        EditCalibrationDate = _timeProvider.LocalNow();
         _ = LoadDataAsync();
 
         _messenger.Register<NavigateToSearchResultMessage>(this, (r, m) =>
@@ -829,7 +833,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         EditInitialActivity = 0;
         EditInitialActivityText = string.Empty;
         EditInitialUnitId = ActivityUnits.FirstOrDefault()?.Id;
-        EditCalibrationDate = DateTime.Now;
+        EditCalibrationDate = _timeProvider.LocalNow();
         EditCurrentUnitId = ActivityUnits.FirstOrDefault()?.Id;
         EditLocationId = Locations.FirstOrDefault()?.Id;
         EditStatus = "InUse";
@@ -910,7 +914,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         EditEmissionRateText = target.CalibratedEmissionRate.ToString();
         EditRelativeUncertaintyPercent = target.RelativeExpandedUncertaintyPercent;
         EditRelativeUncertaintyText = target.RelativeExpandedUncertaintyPercent?.ToString() ?? "";
-        EditCalibrationDate = target.CalibrationDate ?? DateTime.Today;
+        EditCalibrationDate = target.CalibrationDate ?? _timeProvider.LocalToday();
         EditEmissionCalibrationDate = target.EmissionCalibrationDate;
         EditCalibrationReference = target.CalibrationReference ?? "";
         EditAnisotropyFactor = target.AnisotropyFactor;
@@ -1149,12 +1153,12 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                     ShowMessage(TranslationHelper.GetString("MsgErrCalibrationDateReq") ?? "الرجاء إدخال تاريخ المعايرة (Calibration Date).");
                     return;
                 }
-                if (EditCalibrationDate.Date > DateTime.Today)
+                if (EditCalibrationDate.Date > _timeProvider.LocalToday())
                 {
                     ShowMessage(TranslationHelper.GetString("MsgErrCalibrationDateFuture") ?? "لا يمكن أن يكون تاريخ المعايرة في المستقبل.");
                     return;
                 }
-                if (EditEmissionCalibrationDate.HasValue && EditEmissionCalibrationDate.Value.Date > DateTime.Today)
+                if (EditEmissionCalibrationDate.HasValue && EditEmissionCalibrationDate.Value.Date > _timeProvider.LocalToday())
                 {
                     ShowMessage(TranslationHelper.GetString("MsgErrEmissionCalibrationDateFuture") ?? "تاريخ معايرة الانبعاث لا يمكن أن يكون في المستقبل");
                     return;
@@ -1301,7 +1305,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                 ShowMessage(TranslationHelper.GetString("MsgErrCalibrationDateReq") ?? "الرجاء إدخال تاريخ المعايرة (Calibration Date).");
                 return;
             }
-            if (EditCalibrationDate.Date > DateTime.Today)
+            if (EditCalibrationDate.Date > _timeProvider.LocalToday())
             {
                 ShowMessage(TranslationHelper.GetString("MsgErrCalibrationDateFuture") ?? "لا يمكن أن يكون تاريخ المعايرة في المستقبل.");
                 return;

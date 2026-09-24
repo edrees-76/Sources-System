@@ -16,19 +16,22 @@ public class LeakTestService : ILeakTestService
     private readonly IUserService _userService;
     private readonly ISystemSettingsService _settingsService;
     private readonly ILicenseService _licenseService;
+    private readonly TimeProvider _timeProvider;
 
     public LeakTestService(
         IDbContextFactory<AppDbContext> dbFactory,
         IAuditService auditService,
         IUserService userService,
         ISystemSettingsService settingsService,
-        ILicenseService licenseService)
+        ILicenseService licenseService,
+        TimeProvider? timeProvider = null)
     {
         _dbFactory = dbFactory;
         _auditService = auditService;
         _userService = userService;
         _settingsService = settingsService;
         _licenseService = licenseService;
+        _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
     public DateTime CalculateNextDueDate(DateTime testDate, int? customIntervalMonths = null)
@@ -67,7 +70,7 @@ public class LeakTestService : ILeakTestService
         // تصفية الاستحقاق
         if (!string.IsNullOrWhiteSpace(dueStatusFilter) && dueStatusFilter != "All")
         {
-            var today = DateTime.Today;
+            var today = _timeProvider.LocalToday();
             int warningDays = _settingsService.GetSetting<int>(
                 SystemSettingsDefaults.LeakTestWarningDaysThresholdKey,
                 int.Parse(SystemSettingsDefaults.DefaultLeakTestWarningDaysThreshold));

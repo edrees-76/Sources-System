@@ -116,6 +116,9 @@ public partial class App : Application
         // Database
         services.AddDbContextFactory<Sources.Data.AppDbContext>();
 
+        // Clock (Round 202: TimeProvider seam)
+        services.AddSingleton(TimeProvider.System);
+
         // Views
         services.AddTransient<Sources.Views.SplashWindow>();
         services.AddTransient<Sources.Views.FirstRunWizardWindow>();
