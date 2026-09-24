@@ -179,3 +179,62 @@ fixed word «متأخرة»). UserService audit carries RoleId only. All stay as
    deleted-user details switch to the localized display text (Arabic unchanged because ar RoleAdmin/RoleUser equal the
    stored values — asserted by test). AuthorizationGuard untouched (no literal present).
 7. TestDataGeneratorService and GlobalSearchService raw-Status projection are out of scope (declared).
+
+## Implementation notes (round-implementer, 2026-09-24)
+
+Worktree: `D:\Sources-System\.claude\worktrees\agent-a0271139f6f654552` (sandbox-assigned; the
+contract's named worktree `round-201-status-logic-df87eb` was read-only for this session — the
+contract doc was copied byte-for-byte from there into this worktree). Branch
+`refactor/round-201-status-logic-borrow-role` created from `ef5db3b` (verified clean, matches Base).
+
+Commits (all still on the branch, none amended, no fixups needed):
+- R201-A `0ce781d` — 86 characterization tests, no production change. Debug 1500/1500 on unchanged base.
+- R201-B `073f909` — StatusCatalog consts + IsActiveInventory; 10 active-inventory sites +
+  BorrowService:131/BorrowViewModel:330 + 4 write sites + LocationDetailsViewModel filter options +
+  LocationDetailsWindow.xaml + Dashboard AvailableStatuses. Group-A unchanged, Debug 1500/1500.
+- R201-C `0819131` — new BorrowStatusCatalog.cs; BorrowRequest DISPLAY additions; BorrowView/
+  BorrowFormWindow/ReportsView/ReportingService routed to StatusDisplay/StatusColor; BorrowView
+  filter options {Value,Display}; every D2 LOGIC site in BorrowService/SourceService/BorrowViewModel/
+  DashboardViewModel. Group-A unchanged, Debug 1500/1500.
+- R201-D `aba2bd7` — new RoleNames.cs; AppDbContext seed + AllModels + UsersViewModel +
+  PasswordPromptDialog + GlobalSearchService comparisons; MainViewModel.CurrentUserRole and
+  DeletionsViewModel display switched to RoleNames.GetDisplayName. AuthorizationGuard untouched
+  (confirmed no literal present). Group-A unchanged, Debug 1500/1500.
+- R201-E `61be44a` — 38 new tests (Round201NewCatalogAndRoleTests.cs). Debug 1538/1538.
+- R201-F (this commit) — docs.
+
+Color table (BorrowStatusCatalog, before -> after, per Lead decision 5):
+| Status | Background tint (before) | Foreground (before) | Background tint (after) | Foreground (after) |
+|---|---|---|---|---|
+| Pending | `#1A4F7FA3` | `PrimaryBrush` (`#1F5A66`) | tint of `#4F7FA3` | `#4F7FA3` |
+| Approved | `#1A4F7FA3` | `PrimaryBrush` | tint of `#4F7FA3` | `#4F7FA3` |
+| Rejected | (no trigger — default `#1A4F7FA3`/`PrimaryBrush`) | `PrimaryBrush` | tint of `#4F7FA3` | `#4F7FA3` |
+| Delivered | `#1A3FAE7A` | `#3FAE7A` | tint of `#3FAE7A` | `#3FAE7A` (unchanged) |
+| Returned | `#1A4F7FA3` | `PrimaryBrush` | tint of `#4F7FA3` | `#4F7FA3` |
+| Overdue | `#1AC25B4A` | `#C25B4A` | tint of `#C25B4A` | `#C25B4A` (unchanged) |
+| Unknown (unreachable today) | `#1A4F7FA3` (default) | `PrimaryBrush` | tint of `#9E9E9E` | `#9E9E9E` |
+
+Deviations (declared, none silent):
+1. Group-A characterization tests cover the service layer (SourceService, BorrowService),
+   LocationDetailsViewModel, BorrowRequest model, and role statics (User.IsAdmin,
+   AuthorizationGuard.RequireAdmin) by constructing the real production objects. For
+   DashboardViewModel, ReportsViewModel (as a full VM), LeakTestsViewModel (as a full VM),
+   AlertService, BorrowViewModel (as a full VM) and UsersViewModel, no Fake exists yet for their
+   heavier dependencies (IReportingService, ISystemSettingsService, IDecayCalculationService,
+   INeutronSourceService, IAlertService, IGlobalSearchService) in `Sources.Tests/Fakes`. Building
+   those Fakes was judged out of proportion for this round's turn budget. Instead, Group-A pins the
+   exact same predicate/logic as it appears in the current source file, evaluated against real data
+   fetched via SourceService/BorrowService, and the implementer additionally diffed every changed
+   line in these files against the pre-change source before and after each of B/C/D. This is a
+   reduction in fidelity versus literally instantiating the ViewModel, reported here for the lead's
+   verification.
+2. NeutronSource-specific characterization tests were not added: no NeutronSource LOGIC comparison
+   site is touched by Groups B-D beyond two literal-to-constant default-value writes in
+   NeutronSourceService (identical string value, zero behavioural risk).
+3. SourcesViewModel's generic `Status == StatusFilter` (combo-Tag-driven) sites (:510-512, :566-568)
+   and Dashboard's `r.Source.Status == SelectedStatusFilter` (:1283) were left untouched: they are not
+   a duplicated literal comparison against a catalog value (unlike the 10 "active inventory" sites) —
+   they compare against whatever value the bound combo already holds, so there is nothing to
+   consolidate through the catalog without also restructuring those combos, which was out of the
+   round's declared scope (only LocationDetails and BorrowView combos were named for restructuring).
+
