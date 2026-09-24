@@ -327,7 +327,7 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
             .Include(s => s.Location)
             .Include(s => s.Radioisotope)
             .Include(s => s.InitialActivityUnit)
-            .Where(s => !s.IsDeleted && s.Status == "Storage")
+            .Where(s => !s.IsDeleted && s.Status == StatusCatalog.Storage)
             .OrderBy(s => s.SourceCode)
             .ToList();
 

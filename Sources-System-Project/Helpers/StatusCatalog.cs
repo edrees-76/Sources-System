@@ -34,6 +34,31 @@ public static class StatusCatalog
 
     private const string UnknownColorHex = "#9E9E9E";
 
+    // ─── الجولة 201 — القيم المخزَّنة الثابتة (مطابقة تماماً للقيم الحالية) لاستخدامها في مقارنات
+    // المنطق (LOGIC) بدل تكرار السلاسل النصية الحرفية عبر الملفات. لا تُستخدم Parse() في الاستعلامات
+    // المُترجَمة إلى EF (EF-translated) حفاظاً على نفس SQL المُولَّد — انظر StatusService الجولة 201. ───
+    public const string InUse = "InUse";
+    public const string Storage = "Storage";
+    public const string Waste = "Waste";
+    public const string Transfer = "Transfer";
+
+    /// <summary>يحوّل الكود إلى القيمة المخزَّنة المطابقة؛ يرمي فقط لكود غير معروف (Unknown ليس له قيمة مخزَّنة).</summary>
+    public static string ToStored(SourceStatusCode code) => code switch
+    {
+        SourceStatusCode.InUse => InUse,
+        SourceStatusCode.Storage => Storage,
+        SourceStatusCode.Waste => Waste,
+        SourceStatusCode.Transfer => Transfer,
+        _ => throw new ArgumentOutOfRangeException(nameof(code), code, "لا توجد قيمة مخزَّنة لكود غير معروف")
+    };
+
+    /// <summary>
+    /// قاعدة "المخزون النشط" (قيد الاستخدام أو في المخزن) — تجميع للمقارنة الحرفية الدقيقة الحالية
+    /// (Status == "InUse" || Status == "Storage")، حساسة لحالة الأحرف كما هي اليوم في كل المواقع
+    /// التي تستخدمها. لا تعتمد على Parse لتفادي أي التقاء زائف بين قيمتين غير معروفتين (Unknown).
+    /// </summary>
+    public static bool IsActiveInventory(string? stored) => stored == InUse || stored == Storage;
+
     private static readonly Dictionary<string, Entry> ByStored = BuildByStored();
 
     private static Dictionary<string, Entry> BuildByStored()

@@ -451,7 +451,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     {
         AvailableStatuses = new ObservableCollection<string>(new[]
         {
-            "", "InUse", "Storage", "Waste", "Transfer"
+            "", StatusCatalog.InUse, StatusCatalog.Storage, StatusCatalog.Waste, StatusCatalog.Transfer
         });
     }
 

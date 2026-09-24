@@ -163,7 +163,7 @@ public class NeutronSourceService : INeutronSourceService
         item.SerialNumber = item.SerialNumber?.Trim();
         item.Manufacturer = item.Manufacturer?.Trim();
         item.Model = item.Model?.Trim();
-        item.Status = string.IsNullOrWhiteSpace(item.Status) ? "Storage" : item.Status.Trim();
+        item.Status = string.IsNullOrWhiteSpace(item.Status) ? StatusCatalog.Storage : item.Status.Trim();
         var addedByUserId = _userService.CurrentUser?.Id;
         item.AddedBy = (addedByUserId.HasValue && db.Users.Any(u => u.Id == addedByUserId.Value))
             ? addedByUserId.Value
@@ -294,7 +294,7 @@ public class NeutronSourceService : INeutronSourceService
         existing.AnisotropyFactor = item.AnisotropyFactor;
         existing.ActivityValue = item.ActivityValue;
         existing.ActivityUnitId = item.ActivityUnitId;
-        existing.Status = string.IsNullOrWhiteSpace(item.Status) ? "Storage" : item.Status.Trim();
+        existing.Status = string.IsNullOrWhiteSpace(item.Status) ? StatusCatalog.Storage : item.Status.Trim();
         existing.Notes = item.Notes;
 
         db.SaveChanges();

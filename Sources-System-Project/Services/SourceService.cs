@@ -48,7 +48,7 @@ public class SourceService : ISourceService
 
         foreach (var source in sources)
         {
-            if (source.Status == "InUse" || source.Status == "Storage")
+            if (StatusCatalog.IsActiveInventory(source.Status))
             {
                 CalculateSourceCurrentActivityInMemory(source, isotopesDict, unitsDict);
             }
@@ -71,7 +71,7 @@ public class SourceService : ISourceService
             .Include(s => s.SourceIsotopes).ThenInclude(si => si.ActivityUnit)
             .FirstOrDefault(s => s.Id == id);
 
-        if (source != null && (source.Status == "InUse" || source.Status == "Storage"))
+        if (source != null && StatusCatalog.IsActiveInventory(source.Status))
         {
             var isotopesDict = db.Radioisotopes.AsNoTracking().ToDictionary(r => r.Id);
             var unitsDict = db.ActivityUnits.AsNoTracking().ToDictionary(u => u.Id);
@@ -589,7 +589,7 @@ public class SourceService : ISourceService
     {
         var sources = GetAllSources();
         return sources
-            .Where(s => s.Status == "InUse" || s.Status == "Storage")
+            .Where(s => StatusCatalog.IsActiveInventory(s.Status))
             .Where(s =>
             {
                 if (s.InitialActivityValue <= 0) return false;

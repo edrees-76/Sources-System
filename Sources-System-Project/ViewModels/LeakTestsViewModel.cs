@@ -92,7 +92,7 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
     {
         var sources = await Task.Run(() => _sourceService.GetAllSources());
         var sealedOnes = sources
-            .Where(s => s.IsSealed && (s.Status == "InUse" || s.Status == "Storage"))
+            .Where(s => s.IsSealed && StatusCatalog.IsActiveInventory(s.Status))
             .OrderBy(s => s.SourceCode)
             .ToList();
 

@@ -128,7 +128,7 @@ public class BorrowService : IBorrowService
             // التحقق من أن المصدر موجود ومتاح (في المخزن فقط)
             var source = db.Sources.Find(request.SourceId);
             if (source == null) return (false, TranslationHelper.GetString("MsgErrBorrowSourceNotFound") ?? "المصدر غير موجود.");
-            if (source.Status != "Storage") return (false, TranslationHelper.GetString("MsgErrSourceNotAvailableForBorrow") ?? "المصدر غير متاح للاستعارة حالياً. يجب أن يكون في المخزن.");
+            if (source.Status != StatusCatalog.Storage) return (false, TranslationHelper.GetString("MsgErrSourceNotAvailableForBorrow") ?? "المصدر غير متاح للاستعارة حالياً. يجب أن يكون في المخزن.");
 
             // التحقق من نتيجة آخر فحص تسرب للمصدر
             var latestLeakTest = db.LeakTestRecords
@@ -159,7 +159,7 @@ public class BorrowService : IBorrowService
             
             // نحن هنا نفترض أن المشغل الحالي قد تم تعيينه في View Model أو نتركه كمُنفّذ
             // تحديث حالة المصدر إلى "قيد الاستخدام"
-            source.Status = "InUse";
+            source.Status = StatusCatalog.InUse;
             
             db.BorrowRequests.Add(request);
             db.SaveChanges();
@@ -208,7 +208,7 @@ public class BorrowService : IBorrowService
 
             if (req.Source != null)
             {
-                req.Source.Status = "Storage";
+                req.Source.Status = StatusCatalog.Storage;
             }
 
             db.SaveChanges();
