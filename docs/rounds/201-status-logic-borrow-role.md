@@ -303,3 +303,18 @@ Deviations (declared, none silent):
    directly (not through a full dialog/window) since `ValidateAdminPassword` is `static` and takes
    `IUserService?` — there is no WPF dialog to instantiate for this specific check.
 
+
+## Lead review addendum (2026-09-24, head 044554b)
+
+- Lead diff review of B/C/D: every LOGIC swap is an identical-value const or a `==`/`||` set helper over the same
+  consts (no `Parse()`/collection in EF queries); AuthorizationGuard/UserService/Login*/Splash/SystemResetService,
+  audit text, schema, stored and seed values untouched. Group A: 7 tests re-implemented the predicate (listed above as
+  "not evidence") and several sites were unpinned -> CHANGES REQUESTED -> `R201-A-fix` (31 tests on real production code).
+- change-verifier: PASS. Independently re-ran `Round201CharacterizationSiteTests` on 0ce781d (31/31) and on 044554b (31/31);
+  `Round201CharacterizationTests.cs` byte-identical 0ce781d..head; no pre-round test file changed; Debug 1569/0/0;
+  TestDataIsolationSentinelTests 6/6; only the 3 known CS8604.
+- CI run 36019150242 on 044554b: success, Build and Test 1567/0/0, only the 3 known CS8604. CodeRabbit: not run (Draft).
+- Residual (accepted): SourcesViewModel neutron-tab filter/search not separately pinned — that code (`n.Status == StatusFilter`,
+  raw substring search) was not modified by this round. BorrowFormWindow visibility triggers are XAML-only; covered by
+  set-equivalence review + R201-E tests of `IsReturnableStatus`/`IsReturnedStatus`.
+- Fixups (declared deviations): R201-A-fix, R201-C-fix, R201-F-fix, R201-A-fix2, R201-F-fix2 (this addendum + CI results).
