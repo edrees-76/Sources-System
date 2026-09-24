@@ -161,11 +161,8 @@ public class RadioisotopeFormWindowTests
                     RadioisotopeFormWindow? capturedFormWindow = null;
                     Dispatcher.CurrentDispatcher.BeginInvoke(new System.Action(() =>
                     {
-                        capturedFormWindow = Application.Current.Windows
-                            .OfType<RadioisotopeFormWindow>()
-                            .FirstOrDefault();
+                        capturedFormWindow = Fixtures.FormWindowLookup.FindOpenFormOwnedBy<RadioisotopeFormWindow>(window);
 
-                        Assert.NotNull(capturedFormWindow);
                         Assert.True(vm.IsEditing);
                         Assert.Equal(vm, capturedFormWindow!.DataContext);
                         Assert.Equal(Visibility.Visible, dataGrid!.Visibility);
@@ -225,11 +222,8 @@ public class RadioisotopeFormWindowTests
                     // CancelEditCommand)، بنفس أسلوب الجدولة عبر Dispatcher.BeginInvoke.
                     Dispatcher.CurrentDispatcher.BeginInvoke(new System.Action(() =>
                     {
-                        var formWindow = Application.Current.Windows
-                            .OfType<RadioisotopeFormWindow>()
-                            .FirstOrDefault();
+                        var formWindow = Fixtures.FormWindowLookup.FindOpenFormOwnedBy<RadioisotopeFormWindow>(window);
 
-                        Assert.NotNull(formWindow);
                         Assert.True(vm.IsEditing);
 
                         // محاكاة إغلاق عبر ✕ / Alt+F4: استدعاء Close() مباشرة على النافذة،
@@ -250,11 +244,8 @@ public class RadioisotopeFormWindowTests
                     RadioisotopeFormWindow? secondFormWindow = null;
                     Dispatcher.CurrentDispatcher.BeginInvoke(new System.Action(() =>
                     {
-                        secondFormWindow = Application.Current.Windows
-                            .OfType<RadioisotopeFormWindow>()
-                            .FirstOrDefault();
+                        secondFormWindow = Fixtures.FormWindowLookup.FindOpenFormOwnedBy<RadioisotopeFormWindow>(window);
 
-                        Assert.NotNull(secondFormWindow);
                         Assert.True(vm.IsEditing);
 
                         vm.CancelEditCommand.Execute(null);

@@ -133,9 +133,7 @@ public class LocationsFormWindowTests
                     Visibility dataGridVisibilityDuringCallback = Visibility.Collapsed;
                     Dispatcher.CurrentDispatcher.BeginInvoke(new System.Action(() =>
                     {
-                        capturedFormWindow = Application.Current.Windows
-                            .OfType<LocationFormWindow>()
-                            .FirstOrDefault();
+                        capturedFormWindow = Fixtures.FormWindowLookup.FindOpenFormOwnedBy<LocationFormWindow>(window);
                         wasEditingDuringCallback = vm.IsEditing;
                         capturedDataContext = capturedFormWindow?.DataContext;
                         dataGridVisibilityDuringCallback = dataGrid!.Visibility;
@@ -201,9 +199,7 @@ public class LocationsFormWindowTests
                     bool wasEditingDuringFirstCallback = false;
                     Dispatcher.CurrentDispatcher.BeginInvoke(new System.Action(() =>
                     {
-                        formWindowDuringCallback = Application.Current.Windows
-                            .OfType<LocationFormWindow>()
-                            .FirstOrDefault();
+                        formWindowDuringCallback = Fixtures.FormWindowLookup.FindOpenFormOwnedBy<LocationFormWindow>(window);
                         wasEditingDuringFirstCallback = vm.IsEditing;
 
                         // محاكاة إغلاق عبر ✕ / Alt+F4: استدعاء Close() مباشرة على النافذة،
@@ -229,9 +225,7 @@ public class LocationsFormWindowTests
                     bool wasEditingDuringSecondCallback = false;
                     Dispatcher.CurrentDispatcher.BeginInvoke(new System.Action(() =>
                     {
-                        secondFormWindow = Application.Current.Windows
-                            .OfType<LocationFormWindow>()
-                            .FirstOrDefault();
+                        secondFormWindow = Fixtures.FormWindowLookup.FindOpenFormOwnedBy<LocationFormWindow>(window);
                         wasEditingDuringSecondCallback = vm.IsEditing;
 
                         vm.CancelEditCommand.Execute(null);

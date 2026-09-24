@@ -128,11 +128,8 @@ public class UserFormWindowTests
                     UserFormWindow? capturedFormWindow = null;
                     Dispatcher.CurrentDispatcher.BeginInvoke(new System.Action(() =>
                     {
-                        capturedFormWindow = Application.Current.Windows
-                            .OfType<UserFormWindow>()
-                            .FirstOrDefault();
+                        capturedFormWindow = Fixtures.FormWindowLookup.FindOpenFormOwnedBy<UserFormWindow>(window);
 
-                        Assert.NotNull(capturedFormWindow);
                         Assert.True(vm.IsEditing);
                         Assert.Equal(vm, capturedFormWindow!.DataContext);
                         Assert.Equal(Visibility.Visible, dataGrid!.Visibility);
@@ -192,11 +189,8 @@ public class UserFormWindowTests
                     // CancelEditCommand)، بنفس أسلوب الجدولة عبر Dispatcher.BeginInvoke.
                     Dispatcher.CurrentDispatcher.BeginInvoke(new System.Action(() =>
                     {
-                        var formWindow = Application.Current.Windows
-                            .OfType<UserFormWindow>()
-                            .FirstOrDefault();
+                        var formWindow = Fixtures.FormWindowLookup.FindOpenFormOwnedBy<UserFormWindow>(window);
 
-                        Assert.NotNull(formWindow);
                         Assert.True(vm.IsEditing);
 
                         // محاكاة إغلاق عبر ✕ / Alt+F4: استدعاء Close() مباشرة على النافذة،
@@ -217,11 +211,8 @@ public class UserFormWindowTests
                     UserFormWindow? secondFormWindow = null;
                     Dispatcher.CurrentDispatcher.BeginInvoke(new System.Action(() =>
                     {
-                        secondFormWindow = Application.Current.Windows
-                            .OfType<UserFormWindow>()
-                            .FirstOrDefault();
+                        secondFormWindow = Fixtures.FormWindowLookup.FindOpenFormOwnedBy<UserFormWindow>(window);
 
-                        Assert.NotNull(secondFormWindow);
                         Assert.True(vm.IsEditing);
 
                         vm.CancelEditCommand.Execute(null);
