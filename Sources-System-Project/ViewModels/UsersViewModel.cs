@@ -184,7 +184,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
     {
         TotalUsersCount = Users.Count;
         ActiveUsersCount = Users.Count(u => u.IsActive);
-        AdminUsersCount = Users.Count(u => u.Role?.RoleName == "مدير النظام");
+        AdminUsersCount = Users.Count(u => u.Role?.RoleName == RoleNames.Admin);
         LockedUsersCount = Users.Count(u => u.LockoutEnd.HasValue && u.LockoutEnd.Value > DateTime.Now);
     }
 
@@ -195,7 +195,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
         {
             var count = Users.Count(u => u.RoleId == role.Id);
             var sections = new List<string>();
-            if (role.RoleName == "مدير النظام")
+            if (role.RoleName == RoleNames.Admin)
             {
                 sections.Add(TranslationHelper.GetString("TextAllSystemSectionsFullAccess") ?? "كافة أقسام المنظومة (صلاحيات كاملة)");
             }
@@ -208,7 +208,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
             {
                 Role = role,
                 UsersCount = count,
-                Description = role.Description ?? (role.RoleName == "مدير النظام" ? (TranslationHelper.GetString("TextAdminRoleFullDescription") ?? "صلاحيات إدارية كاملة للتحكم في كافة موارد النظام والمستخدمين") : (TranslationHelper.GetString("TextOperationalRoleDescription") ?? "صلاحيات تشغيلية واستعراض للبيانات والأقسام المسموح بها")),
+                Description = role.Description ?? (role.RoleName == RoleNames.Admin ? (TranslationHelper.GetString("TextAdminRoleFullDescription") ?? "صلاحيات إدارية كاملة للتحكم في كافة موارد النظام والمستخدمين") : (TranslationHelper.GetString("TextOperationalRoleDescription") ?? "صلاحيات تشغيلية واستعراض للبيانات والأقسام المسموح بها")),
                 GrantedSections = sections
             });
         }
@@ -749,7 +749,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
     private string PackPermissions()
     {
         var selectedRole = Roles.FirstOrDefault(r => r.Id == EditRoleId);
-        if (selectedRole?.RoleName == "مدير النظام") return "All";
+        if (selectedRole?.RoleName == RoleNames.Admin) return "All";
 
         var perms = new List<string>();
         if (PermRadioisotopes) perms.Add("Radioisotopes");
@@ -818,7 +818,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
     private void UpdatePermissionsVisibility()
     {
         var selectedRole = Roles.FirstOrDefault(r => r.Id == EditRoleId);
-        IsPermissionsSectionVisible = selectedRole?.RoleName != "مدير النظام";
+        IsPermissionsSectionVisible = selectedRole?.RoleName != RoleNames.Admin;
     }
 
     private void ShowMsg(string m) { Message = m; HasMessage = true; }

@@ -88,7 +88,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         IsLoggedIn = true;
         CurrentUserName = _userService.CurrentUser?.FullName ?? "";
-        CurrentUserRole = _userService.CurrentUser?.Role?.RoleName ?? "";
+        CurrentUserRole = _userService.CurrentUser?.Role != null ? RoleNames.GetDisplayName(_userService.CurrentUser.Role.RoleName) : "";
 
         // تطبيق تفضيلات المظهر الخاصة بالمستخدم
         var username = _userService.CurrentUser?.Username;

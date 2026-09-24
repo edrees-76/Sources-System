@@ -42,7 +42,7 @@ namespace Sources.Views
                 return (false, TranslationHelper.GetString("MsgErrNoCurrentUser") ?? "لا يوجد مستخدم مسجل حالياً في الجلسة");
             }
 
-            bool isAdmin = currentUser.IsAdmin || (currentUser.Role?.RoleName == "مدير النظام");
+            bool isAdmin = currentUser.IsAdmin || (currentUser.Role?.RoleName == Sources.Helpers.RoleNames.Admin);
             if (!isAdmin)
             {
                 return (false, TranslationHelper.GetString("MsgErrAdminOnly") ?? "غير مصرح: هذه العملية مخصصة لمدير النظام فقط");

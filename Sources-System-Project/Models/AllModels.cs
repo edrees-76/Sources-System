@@ -777,7 +777,7 @@ public class User
 
     /// <summary>التحقق من صلاحية الوصول لقسم معين</summary>
     [NotMapped]
-    public bool IsAdmin => Role?.RoleName == "مدير النظام";
+    public bool IsAdmin => Role?.RoleName == Sources.Helpers.RoleNames.Admin;
 
     public bool HasSectionPermission(string section)
     {
@@ -810,7 +810,7 @@ public class Role
     public string? Permissions { get; set; }
 
     [NotMapped]
-    public string DisplayName => Sources.Helpers.TranslationHelper.GetString(RoleName == "مدير النظام" ? "RoleAdmin" : "RoleUser") ?? (RoleName == "مدير النظام" ? "مدير النظام" : "مستخدم عادي");
+    public string DisplayName => Sources.Helpers.RoleNames.GetDisplayName(RoleName);
 
     // Navigation
     public ICollection<User> Users { get; set; } = new List<User>();

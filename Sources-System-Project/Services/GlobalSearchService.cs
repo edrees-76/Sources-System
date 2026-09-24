@@ -202,8 +202,8 @@ public class GlobalSearchService : IGlobalSearchService
 
         var items = matched.Take(5).Select(u =>
         {
-            var roleStr = u.RoleName == "مدير النظام" 
-                ? (TranslationHelper.GetString("RoleAdmin") ?? "مدير النظام") 
+            var roleStr = u.RoleName == RoleNames.Admin
+                ? (TranslationHelper.GetString("RoleAdmin") ?? RoleNames.Admin) 
                 : (TranslationHelper.GetString("RoleUser") ?? "مستخدم عادي");
 
             var subParts = new List<string> { $"@{u.Username}" };

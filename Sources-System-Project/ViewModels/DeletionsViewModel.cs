@@ -422,7 +422,7 @@ namespace Sources.ViewModels
             string info = TranslationHelper.GetFormat("MsgUserDeletedDetailsFormat",
                 user.FullName,
                 user.Username,
-                user.Role?.RoleName ?? "-",
+                user.Role != null ? RoleNames.GetDisplayName(user.Role.RoleName) : "-",
                 user.Email ?? "-",
                 user.CreatedAt.ToString("yyyy/MM/dd"),
                 row.DeletedAtFormatted,
