@@ -69,10 +69,11 @@ public partial class AlertsViewModel : ObservableObject, IDisposable
     private readonly IAlertService _alertService;
     private readonly ILocationService _locationService;
     private readonly ISourceService? _sourceService;
+    private readonly IMessenger _messenger;
 
     public void Dispose()
     {
-        WeakReferenceMessenger.Default.UnregisterAll(this);
+        _messenger.UnregisterAll(this);
     }
 
     [ObservableProperty] private ObservableCollection<AlertRow> _alerts = new();
@@ -117,8 +118,9 @@ public partial class AlertsViewModel : ObservableObject, IDisposable
 
     private List<AlertRow> _allAlertRows = new();
 
-    public AlertsViewModel(IAlertService alertService, ILocationService locationService, ISourceService? sourceService = null)
+    public AlertsViewModel(IAlertService alertService, ILocationService locationService, ISourceService? sourceService = null, IMessenger? messenger = null)
     {
+        _messenger = messenger ?? WeakReferenceMessenger.Default;
         _alertService = alertService;
         _locationService = locationService;
         _sourceService = sourceService;
@@ -126,7 +128,7 @@ public partial class AlertsViewModel : ObservableObject, IDisposable
         AvailableSeverities = new ObservableCollection<string>(new[] { "All", "Critical", "Warning" });
 
         // الاستماع لأي تحديث في المصادر لإعادة تحميل التنبيهات
-        WeakReferenceMessenger.Default.Register<SourcesUpdatedMessage>(this, (r, m) =>
+        _messenger.Register<SourcesUpdatedMessage>(this, (r, m) =>
         {
             RunOnUI(LoadData);
         });

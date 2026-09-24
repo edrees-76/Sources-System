@@ -112,25 +112,15 @@ namespace Sources.Views
                 return CustomPromptResult.Value;
             }
 
-            if (DialogHelper.IsTestMode || Application.Current?.Dispatcher == null)
+            if (Application.Current?.Dispatcher == null)
             {
                 return true;
             }
 
             bool granted = false;
-            if (Application.Current.Dispatcher.CheckAccess())
+            if (!DialogHelper.ShowWindowDialog(() =>
             {
-                var dialog = new PasswordPromptDialog(title, prompt);
-                if (Application.Current.MainWindow != null && Application.Current.MainWindow != dialog)
-                {
-                    dialog.Owner = Application.Current.MainWindow;
-                }
-                dialog.ShowDialog();
-                granted = dialog.Result;
-            }
-            else
-            {
-                Application.Current.Dispatcher.Invoke(() =>
+                if (Application.Current.Dispatcher.CheckAccess())
                 {
                     var dialog = new PasswordPromptDialog(title, prompt);
                     if (Application.Current.MainWindow != null && Application.Current.MainWindow != dialog)
@@ -139,7 +129,23 @@ namespace Sources.Views
                     }
                     dialog.ShowDialog();
                     granted = dialog.Result;
-                });
+                }
+                else
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        var dialog = new PasswordPromptDialog(title, prompt);
+                        if (Application.Current.MainWindow != null && Application.Current.MainWindow != dialog)
+                        {
+                            dialog.Owner = Application.Current.MainWindow;
+                        }
+                        dialog.ShowDialog();
+                        granted = dialog.Result;
+                    });
+                }
+            }))
+            {
+                return true;
             }
 
             return granted;

@@ -101,6 +101,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
     private readonly INeutronSourceService _neutronSourceService;
     private readonly INeutronSourceTypeService _neutronSourceTypeService;
     private readonly INeutronDecayCalculationService _neutronDecayService;
+    private readonly IMessenger _messenger;
 
     [ObservableProperty] private ObservableCollection<Source> _sources = new();
     [ObservableProperty] private ObservableCollection<Radioisotope> _radioisotopes = new();
@@ -373,8 +374,10 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         IDecayCalculationService? decayService = null,
         INeutronSourceService? neutronSourceService = null,
         INeutronSourceTypeService? neutronSourceTypeService = null,
-        INeutronDecayCalculationService? neutronDecayService = null)
+        INeutronDecayCalculationService? neutronDecayService = null,
+        IMessenger? messenger = null)
     {
+        _messenger = messenger ?? WeakReferenceMessenger.Default;
         _sourceService = sourceService;
         _isotopeService = isotopeService;
         _locationService = locationService;
@@ -385,7 +388,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         _neutronDecayService = neutronDecayService ?? new NeutronDecayCalculationService();
         _ = LoadDataAsync();
 
-        WeakReferenceMessenger.Default.Register<NavigateToSearchResultMessage>(this, (r, m) =>
+        _messenger.Register<NavigateToSearchResultMessage>(this, (r, m) =>
         {
             if (m.Category == SearchCategory.Sources)
             {
@@ -993,7 +996,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
             Message = result.Message;
             HasMessage = true;
             await LoadNeutronDataAsync();
-            WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
+            _messenger.Send(new SourcesUpdatedMessage());
         }
     }
 
@@ -1277,7 +1280,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
                     }
 
                     await LoadNeutronDataAsync();
-                    WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
+                    _messenger.Send(new SourcesUpdatedMessage());
                 }
                 else
                 {
@@ -1479,7 +1482,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
 
         try
         {
-            WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
+            _messenger.Send(new SourcesUpdatedMessage());
         }
         catch (Exception ex)
         {
@@ -1554,7 +1557,7 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
 
             try
             {
-                WeakReferenceMessenger.Default.Send(new SourcesUpdatedMessage());
+                _messenger.Send(new SourcesUpdatedMessage());
             }
             catch (Exception ex)
             {

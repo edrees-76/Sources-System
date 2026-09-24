@@ -65,14 +65,18 @@ public static class SourceNavigationHelper
             return;
         }
 
-        if (DialogHelper.IsTestMode) return;
+        DialogHelper.ShowWindowDialog(() => OpenSourceDetailsCore(source));
+    }
 
+    /// <summary>الجسم الفعلي لفتح نافذة تفاصيل المصدر (بعد اجتياز بوابة وضع الاختبار)</summary>
+    private static void OpenSourceDetailsCore(Source source)
+    {
         var app = Application.Current;
         if (app == null) return;
 
         if (app.Dispatcher != null && !app.Dispatcher.CheckAccess())
         {
-            app.Dispatcher.BeginInvoke(() => OpenSourceDetails(source));
+            app.Dispatcher.BeginInvoke(() => OpenSourceDetailsCore(source));
             return;
         }
 
@@ -119,14 +123,18 @@ public static class SourceNavigationHelper
             return;
         }
 
-        if (DialogHelper.IsTestMode) return;
+        DialogHelper.ShowWindowDialog(() => OpenNeutronSourceDetailsCore(source));
+    }
 
+    /// <summary>الجسم الفعلي لفتح نافذة تفاصيل المصدر النيتروني (بعد اجتياز بوابة وضع الاختبار)</summary>
+    private static void OpenNeutronSourceDetailsCore(NeutronSource source)
+    {
         var app = Application.Current;
         if (app == null) return;
 
         if (app.Dispatcher != null && !app.Dispatcher.CheckAccess())
         {
-            app.Dispatcher.BeginInvoke(() => OpenNeutronSourceDetails(source));
+            app.Dispatcher.BeginInvoke(() => OpenNeutronSourceDetailsCore(source));
             return;
         }
 

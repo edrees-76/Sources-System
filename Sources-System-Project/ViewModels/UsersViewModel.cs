@@ -35,6 +35,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
 {
     private readonly IUserService _userService;
     private readonly IReportingService _reportingService;
+    private readonly IMessenger _messenger;
 
     // ─── إدارة التبويبات ───
     [ObservableProperty] private string _selectedTab = "UsersManagement"; // UsersManagement, AuditLog, RolesPermissions
@@ -119,13 +120,14 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
 
     private readonly List<string> _customOrUnrecognizedPermissions = new();
 
-    public UsersViewModel(IUserService userService, IReportingService reportingService)
+    public UsersViewModel(IUserService userService, IReportingService reportingService, IMessenger? messenger = null)
     {
+        _messenger = messenger ?? WeakReferenceMessenger.Default;
         _userService = userService;
         _reportingService = reportingService;
         LoadData();
 
-        CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Register<Sources.Messages.NavigateToSearchResultMessage>(this, (r, m) =>
+        _messenger.Register<Sources.Messages.NavigateToSearchResultMessage>(this, (r, m) =>
         {
             if (m.Category == SearchCategory.Users)
             {
@@ -687,18 +689,28 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
                 Permissions = perms
             };
             var r = _userService.UpdateUser(user);
-            if (!string.IsNullOrWhiteSpace(EditPassword))
-                _userService.ResetPassword(_editingId!.Value, EditPassword);
-            ShowMsg(r.Message);
-            if (r.Success)
+            if (!r.Success)
             {
-                IsEditing = false;
-                LoadData();
-            }
-            else
-            {
+                ShowMsg(r.Message);
                 DialogHelper.ShowError(r.Message);
+                return;
             }
+            if (!string.IsNullOrWhiteSpace(EditPassword))
+            {
+                var resetResult = _userService.ResetPassword(_editingId!.Value, EditPassword);
+                if (!resetResult.Success)
+                {
+                    var msg = string.Format(TranslationHelper.GetString("MsgWarnUserSavedPasswordNotChanged") ?? "تم حفظ بيانات المستخدم، لكن لم تُغيَّر كلمة المرور: {0}", resetResult.Message);
+                    ShowMsg(msg);
+                    DialogHelper.ShowWarning(msg);
+                    IsEditing = false;
+                    LoadData();
+                    return;
+                }
+            }
+            ShowMsg(r.Message);
+            IsEditing = false;
+            LoadData();
         }
     }
 

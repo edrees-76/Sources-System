@@ -75,6 +75,7 @@ public partial class LocationsViewModel : ObservableObject, IEditableViewModel
     private readonly ILocationService _service;
     private readonly IReportingService? _reportingService;
     private readonly INeutronSourceService? _neutronSourceService;
+    private readonly IMessenger _messenger;
 
     [ObservableProperty] private ObservableCollection<LocationRow> _locations = new();
     [ObservableProperty] private LocationRow? _selected;
@@ -97,16 +98,18 @@ public partial class LocationsViewModel : ObservableObject, IEditableViewModel
     [ObservableProperty] private bool _hasLinkedSources;
 
     public LocationsViewModel(
-        ILocationService service, 
+        ILocationService service,
         IReportingService? reportingService = null,
-        INeutronSourceService? neutronSourceService = null)
+        INeutronSourceService? neutronSourceService = null,
+        IMessenger? messenger = null)
     {
+        _messenger = messenger ?? WeakReferenceMessenger.Default;
         _service = service;
         _reportingService = reportingService ?? (App.ServiceProvider?.GetService(typeof(IReportingService)) as IReportingService);
         _neutronSourceService = neutronSourceService ?? (App.ServiceProvider?.GetService(typeof(INeutronSourceService)) as INeutronSourceService);
         LoadData();
 
-        CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Register<Sources.Messages.NavigateToSearchResultMessage>(this, (r, m) =>
+        _messenger.Register<Sources.Messages.NavigateToSearchResultMessage>(this, (r, m) =>
         {
             if (m.Category == SearchCategory.Locations)
             {
@@ -257,14 +260,18 @@ public partial class LocationsViewModel : ObservableObject, IEditableViewModel
             return;
         }
 
-        if (DialogHelper.IsTestMode) return;
+        DialogHelper.ShowWindowDialog(() => OpenLocationDetailsWindowCore(target, sources));
+    }
 
+    /// <summary>الجسم الفعلي لفتح نافذة تفاصيل الموقع (بعد اجتياز بوابة وضع الاختبار)</summary>
+    private void OpenLocationDetailsWindowCore(Location target, IEnumerable<Source> sources)
+    {
         var app = System.Windows.Application.Current;
         if (app == null) return;
 
         if (app.Dispatcher != null && !app.Dispatcher.CheckAccess())
         {
-            app.Dispatcher.BeginInvoke(() => OpenLocationDetailsWindow(target, sources));
+            app.Dispatcher.BeginInvoke(() => OpenLocationDetailsWindowCore(target, sources));
             return;
         }
 

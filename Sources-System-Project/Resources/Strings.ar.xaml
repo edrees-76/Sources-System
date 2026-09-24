@@ -1607,7 +1607,6 @@
     <system:String x:Key="MsgSuccessRadioisotopeCreated">تم إضافة النظير بنجاح</system:String>
     <system:String x:Key="MsgErrRadioisotopeNotFound">النظير غير موجود</system:String>
     <system:String x:Key="MsgSuccessRadioisotopeUpdated">تم تحديث النظير</system:String>
-    <system:String x:Key="MsgErrCannotDeleteRadioisotopeHasSources">لا يمكن حذف نظير مرتبط بمصادر</system:String>
     <system:String x:Key="MsgErrCannotDeleteRadioisotopeHasSourcesIncludingDeleted">لا يمكن حذف هذا النظير لأنه لا يزال مرتبطاً بمصدر أو أكثر، بما في ذلك المحذوفة المحفوظة في سجل المحذوفات.</system:String>
     <system:String x:Key="MsgSuccessRadioisotopeDeleted">تم حذف النظير</system:String>
     <system:String x:Key="MsgErrRadioisotopeNotDeleted">النظير غير محذوف أصلاً</system:String>
@@ -1623,7 +1622,6 @@
     <system:String x:Key="MsgSuccessNeutronSourceTypeCreated">تم إضافة نوع المصدر النيتروني بنجاح</system:String>
     <system:String x:Key="MsgErrNeutronSourceTypeNotFound">نوع المصدر غير موجود</system:String>
     <system:String x:Key="MsgSuccessNeutronSourceTypeUpdated">تم تحديث نوع المصدر النيتروني</system:String>
-    <system:String x:Key="MsgErrCannotDeleteNeutronSourceTypeHasSources">لا يمكن حذف نوع مصدر نيتروني مرتبط بمصادر نيترونية</system:String>
     <system:String x:Key="MsgErrCannotDeleteNeutronSourceTypeHasSourcesCount">لا يمكن حذف نوع المصدر النيتروني لأنه لا يزال مرتبطاً بـ {0} مصدر نيتروني، بما في ذلك المحذوفة المحفوظة في سجل المحذوفات.</system:String>
     <system:String x:Key="MsgSuccessNeutronSourceTypeDeleted">تم حذف نوع المصدر النيتروني</system:String>
     <system:String x:Key="MsgErrNeutronSourceTypeNotDeleted">نوع المصدر غير محذوف أصلاً</system:String>
@@ -1688,6 +1686,7 @@
     <system:String x:Key="FieldNameExpectedReturnDate">تاريخ الإرجاع المتوقع</system:String>
     <system:String x:Key="MsgErrCannotFreezeOwnAccount">لا يمكنك تجميد حسابك الحالي</system:String>
     <system:String x:Key="MsgConfirmDeleteUser">هل أنت متأكد من حذف هذا المستخدم؟</system:String>
+    <system:String x:Key="MsgWarnUserSavedPasswordNotChanged">تم حفظ بيانات المستخدم، لكن لم تُغيَّر كلمة المرور: {0}</system:String>
     <system:String x:Key="TitleConfirmDelete">تأكيد الحذف</system:String>
 
     <!-- الجولة 156: ترجمة Dashboard/LeakTests/Settings/SourceDetails/Borrow (ب5 — الدفعة 2، موسَّعة) -->
