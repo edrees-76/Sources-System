@@ -460,7 +460,7 @@ public class Round201CharacterizationSiteTests : IClassFixture<ConcurrentSqliteF
     [InlineData("Pending", false)]
     [InlineData("Rejected", false)]
     [InlineData("Returned", false)]
-    public async System.Threading.Tasks.Task BorrowViewModel_Edit_LoadsAvailableBorrowers_OnlyWhenReturnable(string status, bool expectReturnable)
+    public void BorrowViewModel_Edit_LoadsAvailableBorrowers_OnlyWhenReturnable(string status, bool expectReturnable)
     {
         var src = CreateAndSaveSource($"SRC-BVM-EDIT-{status}", "Storage");
         BorrowRequest req;
