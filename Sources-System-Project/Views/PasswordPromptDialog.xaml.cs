@@ -11,11 +11,6 @@ namespace Sources.Views
     {
         public bool Result { get; private set; } = false;
 
-        /// <summary>
-        /// خاصية مخصصة للاختبارات الآلية للتحكم بنتيجة النافذة دون إظهار واجهة المستخدم
-        /// </summary>
-        public static bool? CustomPromptResult { get; set; }
-
         public PasswordPromptDialog(string? title = null, string? prompt = null)
         {
             InitializeComponent();
@@ -107,19 +102,21 @@ namespace Sources.Views
         /// </summary>
         public static bool RequestAdminAccess(string? title = null, string? prompt = null)
         {
-            if (CustomPromptResult.HasValue)
+            // بوابة وضع الاختبار (DialogHelper.IsTestMode) تُفحص أولاً داخل ShowAdminPrompt، قبل أي
+            // لمس لـ Application.Current، حتى لا يعتمد سلوك الاختبارات على ترتيب تشغيلها (بعضها لا
+            // يُنشئ Application.Current إطلاقاً). في الإنتاج، إن كان Dispatcher غير متاح (لا تطبيق
+            // WPF فعلي، مثلاً أثناء الإقلاع/الإغلاق) يُرفض الطلب افتراضياً بدل منحه (الجولة 199 —
+            // الفشل المغلق بدل الفشل المفتوح).
+            return DialogHelper.ShowAdminPrompt(() =>
             {
-                return CustomPromptResult.Value;
-            }
+                if (Application.Current?.Dispatcher == null)
+                {
+                    LoggerService.LogWarning(
+                        "RequestAdminAccess: Application.Current أو Dispatcher غير متاح — تم رفض الطلب افتراضياً.");
+                    return false;
+                }
 
-            if (Application.Current?.Dispatcher == null)
-            {
-                return true;
-            }
-
-            bool granted = false;
-            if (!DialogHelper.ShowWindowDialog(() =>
-            {
+                bool granted = false;
                 if (Application.Current.Dispatcher.CheckAccess())
                 {
                     var dialog = new PasswordPromptDialog(title, prompt);
@@ -143,12 +140,9 @@ namespace Sources.Views
                         granted = dialog.Result;
                     });
                 }
-            }))
-            {
-                return true;
-            }
 
-            return granted;
+                return granted;
+            });
         }
 
         /// <summary>

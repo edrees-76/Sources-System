@@ -1,4 +1,6 @@
+using Sources.Services;
 using Sources.Views;
+using System;
 using System.Windows;
 
 namespace Sources.Helpers
@@ -9,6 +11,54 @@ namespace Sources.Helpers
         public static bool? ShowConfirmationResult { get; set; }
         public static string? LastMessage { get; set; }
         public static string? LastTitle { get; set; }
+
+        /// <summary>
+        /// نتيجة اختبارية صريحة لطلب صلاحية مدير النظام (المكان الوحيد المسموح له بمعرفة وضع
+        /// الاختبار لهذا الطلب تحديداً). لا منح تلقائي: القيمة الافتراضية null تعني رفضاً
+        /// (الجولة 199 — الفشل المغلق).
+        /// </summary>
+        public static bool? TestAdminPromptResult { get; set; }
+
+        /// <summary>
+        /// نقطة العزل الوحيدة لعرض نافذة تأكيد صلاحية مدير النظام. في وضع الاختبار لا يُنفَّذ
+        /// الحوار الحقيقي إطلاقاً، وتُعاد TestAdminPromptResult أو false افتراضياً (رفض، لا منح
+        /// تلقائي). في الإنتاج يُنفَّذ الحوار ضمن try/catch: أي استثناء يُسجَّل تحذيراً عبر
+        /// LoggerService ويُعرض خطأ عام، وتُرفض الصلاحية بدل رميه أو منحها ضمناً (الجولة 199 —
+        /// الفشل المغلق بدل الفشل المفتوح).
+        /// </summary>
+        public static bool ShowAdminPrompt(Func<bool> showDialogAndGetResult)
+        {
+            if (IsTestMode)
+            {
+                return TestAdminPromptResult ?? false;
+            }
+
+            return ExecuteAdminPromptWithFailClosedHandling(showDialogAndGetResult);
+        }
+
+        /// <summary>
+        /// منطق الفشل المغلق نفسه (try/catch + تسجيل + رسالة عامة) معزول في تابع داخلي مستقل عن
+        /// IsTestMode، حتى يمكن اختبار مسار الاستثناء دون إطفاء IsTestMode مؤقتاً — إطفاؤه كان
+        /// سيسمح لهذا التابع باستدعاء ShowError الحقيقية، التي قد تفتح نافذة حوار فعلية وتحجب
+        /// الاختبار إلى الأبد إن كان Application.Current معرَّفاً بالفعل من اختبار STA سابق في نفس
+        /// العملية (لا يوجد أي اختبار حالي يُطفئ IsTestMode لهذا السبب بالضبط). عبر InternalsVisibleTo
+        /// لمجمّعة Sources.Tests (الجولة 199)، يبقى IsTestMode مفعّلاً أثناء الاختبار فتظل ShowError
+        /// آمنة (تُسجّل LastMessage فقط ولا تعرض نافذة حقيقية).
+        /// </summary>
+        internal static bool ExecuteAdminPromptWithFailClosedHandling(Func<bool> showDialogAndGetResult)
+        {
+            try
+            {
+                return showDialogAndGetResult();
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogWarning(
+                    $"RequestAdminAccess: استثناء غير متوقع أثناء عرض نافذة تأكيد صلاحية مدير النظام — تم الرفض افتراضياً: {ex}");
+                ShowError(TranslationHelper.GetString("MsgErrAdminPromptFailed") ?? "تعذّر التحقق من هوية مدير النظام، تم رفض الطلب");
+                return false;
+            }
+        }
 
         public static void ShowInfo(string message, string? title = null, string? imagePath = null)
         {
