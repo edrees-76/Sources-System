@@ -173,6 +173,7 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
         }
     }
     public string StatusArabic => NeutronSource.ArabicStatus;
+    public string StatusDisplay => NeutronSource.StatusDisplay;
     public string StatusColor => NeutronSource.StatusColor;
     public string Notes => !string.IsNullOrWhiteSpace(NeutronSource.Notes) ? NeutronSource.Notes : "-";
     public string CreatedAtFormatted => NeutronSource.CreatedAt.ToString("yyyy/MM/dd HH:mm");

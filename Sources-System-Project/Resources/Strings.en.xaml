@@ -408,6 +408,10 @@
     <system:String x:Key="StatusStorage">In Storage</system:String>
     <system:String x:Key="StatusWaste">Waste</system:String>
     <system:String x:Key="StatusTransfer">In Transfer</system:String>
+    <system:String x:Key="StatusDisplayInUse">In Use</system:String>
+    <system:String x:Key="StatusDisplayStorage">In Storage</system:String>
+    <system:String x:Key="StatusDisplayWaste">Waste</system:String>
+    <system:String x:Key="StatusDisplayTransfer">In Transfer</system:String>
     <system:String x:Key="BtnReset">Reset</system:String>
     <system:String x:Key="ColSourceImage">Source Image</system:String>
     <system:String x:Key="ColSourceCode">Source Code</system:String>

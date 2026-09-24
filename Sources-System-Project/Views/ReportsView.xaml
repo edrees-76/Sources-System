@@ -693,7 +693,7 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTextColumn Header="{DynamicResource ColCalibration}" Binding="{Binding CalibrationDate, StringFormat=d}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
-                            <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding StatusDisplay}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColCurrentActivity}" Binding="{Binding CurrentActivityWithUnit}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTemplateColumn Header="{DynamicResource ColDoseRate}" Width="Auto" MinWidth="110">
                                 <DataGridTemplateColumn.CellTemplate>
@@ -751,7 +751,7 @@
                             <DataGridTextColumn Header="{DynamicResource ColIsotope}" Binding="{Binding DisplayIsotopes}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColFailedTestDate}" Binding="{Binding FailedTestDate, StringFormat=d}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
-                            <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="Auto" MinWidth="95" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding StatusDisplay}" Width="Auto" MinWidth="95" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColTestNotes}" Binding="{Binding TestNotes}" Width="*" MinWidth="150" ElementStyle="{StaticResource CenterAligned}"/>
                         </DataGrid.Columns>
                     </DataGrid>
@@ -774,7 +774,7 @@
                             <DataGridTextColumn Header="{DynamicResource ColEmissionRate}" Binding="{Binding CalibratedEmissionRateFormatted}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColUncertainty}" Binding="{Binding RelativeUncertainty}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterAligned}"/>
-                            <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding ArabicStatus}" Width="Auto" MinWidth="95" ElementStyle="{StaticResource CenterAligned}"/>
+                            <DataGridTextColumn Header="{DynamicResource ColStatus}" Binding="{Binding StatusDisplay}" Width="Auto" MinWidth="95" ElementStyle="{StaticResource CenterAligned}"/>
                             <DataGridTextColumn Header="{DynamicResource ColCalibrationDate}" Binding="{Binding CalibrationDate, StringFormat=d}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
                         </DataGrid.Columns>
                     </DataGrid>

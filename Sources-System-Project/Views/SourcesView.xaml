@@ -550,80 +550,18 @@
                                                                    VerticalAlignment="Center"/>
                                                     </StackPanel>
 
-                                                    <!-- ── عمود 7: شارة الحالة اللونية ── -->
+                                                    <!-- ── عمود 7: شارة الحالة اللونية (موحَّدة عبر StatusCatalog) ── -->
                                                     <Border Grid.Column="7"
                                                             CornerRadius="12"
                                                             Padding="10,4"
                                                             VerticalAlignment="Center"
-                                                            HorizontalAlignment="Center">
-                                                        <Border.Style>
-                                                            <Style TargetType="Border">
-                                                                <!-- افتراضي: معلومات/رمادي -->
-                                                                <Setter Property="Background" Value="#1A4F7FA3"/>
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding Status}" Value="Active">
-                                                                        <Setter Property="Background" Value="#1A3FAE7A"/>
-                                                                    </DataTrigger>
-                                                                    <DataTrigger Binding="{Binding Status}" Value="InUse">
-                                                                        <Setter Property="Background" Value="#1A3FAE7A"/>
-                                                                    </DataTrigger>
-                                                                    <DataTrigger Binding="{Binding Status}" Value="Storage">
-                                                                        <Setter Property="Background" Value="#1A4F7FA3"/>
-                                                                    </DataTrigger>
-                                                                    <DataTrigger Binding="{Binding Status}" Value="Waste">
-                                                                        <Setter Property="Background" Value="#1AE0A93E"/>
-                                                                    </DataTrigger>
-                                                                    <DataTrigger Binding="{Binding Status}" Value="Transfer">
-                                                                        <Setter Property="Background" Value="#1AE0A93E"/>
-                                                                    </DataTrigger>
-                                                                    <DataTrigger Binding="{Binding Status}" Value="Decayed">
-                                                                        <Setter Property="Background" Value="#1AC25B4A"/>
-                                                                    </DataTrigger>
-                                                                    <DataTrigger Binding="{Binding Status}" Value="Disposed">
-                                                                        <Setter Property="Background" Value="#1AC25B4A"/>
-                                                                    </DataTrigger>
-                                                                    <DataTrigger Binding="{Binding Status}" Value="Lost">
-                                                                        <Setter Property="Background" Value="#1AC25B4A"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </Border.Style>
-                                                        <TextBlock Text="{Binding SimpleArabicStatus}"
+                                                            HorizontalAlignment="Center"
+                                                            Background="{Binding StatusColor, Converter={StaticResource HexToTintBrush}}">
+                                                        <TextBlock Text="{Binding StatusDisplay}"
                                                                    FontSize="12" FontWeight="SemiBold"
                                                                    FontFamily="Segoe UI"
-                                                                   HorizontalAlignment="Center">
-                                                            <TextBlock.Style>
-                                                                <Style TargetType="TextBlock">
-                                                                    <Setter Property="Foreground" Value="{StaticResource InfoBrush}"/>
-                                                                    <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding Status}" Value="Active">
-                                                                            <Setter Property="Foreground" Value="{StaticResource SuccessBrush}"/>
-                                                                        </DataTrigger>
-                                                                        <DataTrigger Binding="{Binding Status}" Value="InUse">
-                                                                            <Setter Property="Foreground" Value="{StaticResource SuccessBrush}"/>
-                                                                        </DataTrigger>
-                                                                        <DataTrigger Binding="{Binding Status}" Value="Storage">
-                                                                            <Setter Property="Foreground" Value="{StaticResource InfoBrush}"/>
-                                                                        </DataTrigger>
-                                                                        <DataTrigger Binding="{Binding Status}" Value="Waste">
-                                                                            <Setter Property="Foreground" Value="{StaticResource WarningBrush}"/>
-                                                                        </DataTrigger>
-                                                                        <DataTrigger Binding="{Binding Status}" Value="Transfer">
-                                                                            <Setter Property="Foreground" Value="{StaticResource WarningBrush}"/>
-                                                                        </DataTrigger>
-                                                                        <DataTrigger Binding="{Binding Status}" Value="Decayed">
-                                                                            <Setter Property="Foreground" Value="{StaticResource DangerBrush}"/>
-                                                                        </DataTrigger>
-                                                                        <DataTrigger Binding="{Binding Status}" Value="Disposed">
-                                                                            <Setter Property="Foreground" Value="{StaticResource DangerBrush}"/>
-                                                                        </DataTrigger>
-                                                                        <DataTrigger Binding="{Binding Status}" Value="Lost">
-                                                                            <Setter Property="Foreground" Value="{StaticResource DangerBrush}"/>
-                                                                        </DataTrigger>
-                                                                    </Style.Triggers>
-                                                                </Style>
-                                                            </TextBlock.Style>
-                                                        </TextBlock>
+                                                                   HorizontalAlignment="Center"
+                                                                   Foreground="{Binding StatusColor, Converter={StaticResource HexToBrush}}"/>
                                                     </Border>
 
                                                     <!-- ── عمود 8: أزرار الإجراءات ── -->
@@ -857,7 +795,7 @@
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <Border Background="{Binding StatusColor, Converter={StaticResource HexToBrush}}" CornerRadius="6" Padding="8,3" HorizontalAlignment="Center">
-                                                    <TextBlock Text="{Binding ArabicStatus}" FontSize="11" FontWeight="Bold" Foreground="White"/>
+                                                    <TextBlock Text="{Binding StatusDisplay}" FontSize="11" FontWeight="Bold" Foreground="White"/>
                                                 </Border>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
@@ -1034,7 +972,7 @@
                                     <DataGridTextColumn Header="{DynamicResource ColLocation}" Binding="{Binding Location.LocationName, TargetNullValue='—'}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterAligned}"/>
 
                                     <!-- الحالة قبل الحذف -->
-                                    <DataGridTextColumn Header="{DynamicResource ColLastStatus}" Binding="{Binding ArabicStatus}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource ColLastStatus}" Binding="{Binding StatusDisplay}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterAligned}"/>
 
                                     <!-- تاريخ الحذف -->
                                     <DataGridTextColumn Header="{DynamicResource ColDeletedAt}" Binding="{Binding DeletedAt, StringFormat='yyyy-MM-dd HH:mm', TargetNullValue='—'}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource CenterAligned}"/>

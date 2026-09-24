@@ -476,9 +476,7 @@ public class SourceService : ISourceService
         db.SaveChanges();
 
         var locationName = source.Location?.LocationName ?? (TranslationHelper.GetString("TextUnspecified") ?? "غير محدد");
-        // ملاحظة: source.ArabicStatus خاصية [NotMapped] تُرجع نصاً عربياً دائماً بغض النظر عن لغة الواجهة النشطة — قيد معماري موثّق يبقى خارج نطاق هذه الجولة.
-        var statusDisplay = source.ArabicStatus;
-        var msg = string.Format(TranslationHelper.GetString("MsgSuccessSourceRestored") ?? "تم استرجاع المصدر {0} إلى موقع {1} بحالة {2}", source.SourceCode, locationName, statusDisplay);
+        var msg = string.Format(TranslationHelper.GetString("MsgSuccessSourceRestored") ?? "تم استرجاع المصدر {0} إلى موقع {1} بحالة {2}", source.SourceCode, locationName, source.StatusDisplay);
 
         var newValuesObj = new
         {
@@ -491,7 +489,7 @@ public class SourceService : ISourceService
         };
         string newValuesJson = System.Text.Json.JsonSerializer.Serialize(newValuesObj);
 
-        _auditService.LogWithChanges("Restore", "Sources", id, $"استرجاع مصدر: {source.SourceCode} إلى موقع {locationName} (الحالة: {statusDisplay})", null, newValuesJson);
+        _auditService.LogWithChanges("Restore", "Sources", id, $"استرجاع مصدر: {source.SourceCode} إلى موقع {locationName} (الحالة: {source.ArabicStatus})", null, newValuesJson);
         return (true, msg);
     }
 

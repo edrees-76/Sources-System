@@ -77,6 +77,7 @@ public class ReportLowActivityAlertRow
     public string AlertSeverityDisplay => Source.AlertSeverityDisplay;
     public DateTime CalibrationDate => Source.CalibrationDate;
     public string ArabicStatus => Source.ArabicStatus;
+    public string StatusDisplay => Source.StatusDisplay;
     public string CurrentActivityWithUnit => Source.CurrentActivityWithUnit;
     public string DisplayDoseRate => Source.DisplayDoseRate;
     public string DoseRateTooltip => Source.DoseRateTooltip;
@@ -92,6 +93,7 @@ public class ReportFailedLeakTestRow
     public Location? Location => Source.Location;
     public DateTime FailedTestDate => LeakTestRecord.TestDate;
     public string ArabicStatus => Source.ArabicStatus;
+    public string StatusDisplay => Source.StatusDisplay;
     public string Status => Source.Status;
     public string? TestNotes => LeakTestRecord.Notes;
     public string DisplayDoseRate => Source.DisplayDoseRate;
@@ -114,6 +116,7 @@ public class ReportNeutronInventoryRow
     public Location? Location => Source.Location;
     public string Status => Source.Status;
     public string ArabicStatus => Source.ArabicStatus;
+    public string StatusDisplay => Source.StatusDisplay;
     public DateTime? CalibrationDate => Source.CalibrationDate;
 }
 

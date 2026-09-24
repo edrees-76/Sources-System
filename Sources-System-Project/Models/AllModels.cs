@@ -320,24 +320,15 @@ public class Source
     public string CurrentActivityWithUnit => $"{CurrentActivityDisplay} {CurrentActivityUnit?.UnitSymbol ?? ""}".Trim();
 
     [NotMapped]
-    public string ArabicStatus => Status switch
-    {
-        "InUse" => "قيد الاستخدام",
-        "Storage" => "مخزن",
-        "Waste" => "نفايات",
-        "Transfer" => "قيد النقل",
-        _ => Status
-    };
+    public string ArabicStatus => StatusCatalog.GetArabicText(Status);
 
+    /// <summary>النص المعروض حسب لغة الواجهة الحالية (يرجع للعربية إذا كان المفتاح غير موجود).</summary>
     [NotMapped]
-    public string SimpleArabicStatus => Status switch
-    {
-        "InUse" => "قيد الاستخدام",
-        "Storage" => "مخزن",
-        "Waste" => "نفايات",
-        "Transfer" => "قيد النقل",
-        _ => Status
-    };
+    public string StatusDisplay => StatusCatalog.GetDisplayText(Status);
+
+    /// <summary>لون الحالة الموحَّد من الكتالوج.</summary>
+    [NotMapped]
+    public string StatusColor => StatusCatalog.GetColorHex(Status);
 
     [NotMapped]
     public string? AlertSeverity { get; set; } // "Critical" or "Warning"
@@ -1086,24 +1077,15 @@ public class NeutronSource
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     [NotMapped]
-    public string ArabicStatus => Status switch
-    {
-        "InUse" => "قيد الاستخدام",
-        "Storage" => "مخزن",
-        "Waste" => "نفايات",
-        "Transfer" => "قيد النقل",
-        _ => Status
-    };
+    public string ArabicStatus => StatusCatalog.GetArabicText(Status);
 
+    /// <summary>النص المعروض حسب لغة الواجهة الحالية (يرجع للعربية إذا كان المفتاح غير موجود).</summary>
     [NotMapped]
-    public string StatusColor => Status switch
-    {
-        "InUse" => "#10B981",
-        "Storage" => "#0284C7",
-        "Waste" => "#EF4444",
-        "Transfer" => "#F59E0B",
-        _ => "#6B7280"
-    };
+    public string StatusDisplay => StatusCatalog.GetDisplayText(Status);
+
+    /// <summary>لون الحالة الموحَّد من الكتالوج.</summary>
+    [NotMapped]
+    public string StatusColor => StatusCatalog.GetColorHex(Status);
 
     [NotMapped]
     public string DisplaySourceCode => IsDeleted

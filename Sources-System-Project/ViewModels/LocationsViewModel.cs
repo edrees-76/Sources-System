@@ -46,6 +46,7 @@ public class LocationSourceRow
     public string DisplayDoseRate => Source.DisplayDoseRate;
     public string DoseRateTooltip => Source.DoseRateTooltip;
     public string ArabicStatus => Source.ArabicStatus;
+    public string StatusDisplay => Source.StatusDisplay;
     public DateTime CalibrationDate => Source.CalibrationDate;
     public string? SerialNumber => Source.SerialNumber;
     public string? Manufacturer => Source.Manufacturer;
@@ -65,6 +66,7 @@ public class LocationNeutronSourceRow
     public string CalibratedEmissionRateFormatted => NeutronSource.CalibratedEmissionRateFormatted;
     public string UncertaintyFormatted => NeutronSource.RelativeExpandedUncertaintyPercent.HasValue ? $"{NeutronSource.RelativeExpandedUncertaintyPercent.Value:N1}%" : "-";
     public string ArabicStatus => NeutronSource.ArabicStatus;
+    public string StatusDisplay => NeutronSource.StatusDisplay;
     public string StatusColor => NeutronSource.StatusColor;
     public string CalibrationDateFormatted => NeutronSource.CalibrationDate?.ToString("yyyy-MM-dd") ?? "-";
     public string SerialNumber => !string.IsNullOrWhiteSpace(NeutronSource.SerialNumber) ? NeutronSource.SerialNumber : "-";

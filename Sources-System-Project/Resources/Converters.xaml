@@ -19,6 +19,7 @@
     <converters:IndexConverter x:Key="IndexConverter"/>
     <converters:SeverityToColorConverter x:Key="SeverityToColor"/>
     <converters:HexStringToBrushConverter x:Key="HexToBrush"/>
+    <converters:HexToTintBrushConverter x:Key="HexToTintBrush"/>
     <converters:RowIndexConverter x:Key="RowIndexConverter"/>
     <converters:LocationTypeToDisplayConverter x:Key="LocationTypeToDisplay"/>
     <converters:StringToResourceConverter x:Key="StringToResource"/>
