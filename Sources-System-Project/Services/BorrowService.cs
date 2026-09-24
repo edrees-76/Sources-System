@@ -195,7 +195,7 @@ public class BorrowService : IBorrowService
             if (!BorrowStatusCatalog.IsReturnable(req.Status))
                 return (false, TranslationHelper.GetString("MsgErrReturnNotAllowedStatus") ?? "الحالة الحالية لا تسمح بالإرجاع.");
 
-            req.Status = "Returned";
+            req.Status = BorrowStatusCatalog.Returned;
             req.ActualReturnDate = actualReturnDate;
             req.ReturnedByUserId = returnedByUserId;
             if (!string.IsNullOrWhiteSpace(notes))

@@ -36,7 +36,7 @@ public static class StatusCatalog
 
     // ─── الجولة 201 — القيم المخزَّنة الثابتة (مطابقة تماماً للقيم الحالية) لاستخدامها في مقارنات
     // المنطق (LOGIC) بدل تكرار السلاسل النصية الحرفية عبر الملفات. لا تُستخدم Parse() في الاستعلامات
-    // المُترجَمة إلى EF (EF-translated) حفاظاً على نفس SQL المُولَّد — انظر StatusService الجولة 201. ───
+    // المُترجَمة إلى EF (EF-translated) حفاظاً على نفس SQL المُولَّد — انظر BorrowService/AlertService. ───
     public const string InUse = "InUse";
     public const string Storage = "Storage";
     public const string Waste = "Waste";
