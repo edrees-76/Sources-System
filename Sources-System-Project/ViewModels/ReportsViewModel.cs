@@ -40,6 +40,7 @@ public class ReportBorrowingRow
     public DateTime RequestDate => Request.RequestDate;
     public DateTime ExpectedReturnDate => Request.ExpectedReturnDate;
     public string ArabicStatus => Request.ArabicStatus;
+    public string StatusDisplay => Request.StatusDisplay;
 }
 
 public class ReportActivityRow
@@ -179,7 +180,7 @@ public partial class ReportsViewModel : ObservableObject
                     borrows.Select((b, index) => new ReportBorrowingRow { RowNumber = index + 1, Request = b }));
                 break;
             case "ActivityReport":
-                var activeSources = allSources.Where(s => s.Status == "InUse" || s.Status == "Storage").OrderBy(s => s.SourceCode).ToList();
+                var activeSources = allSources.Where(s => StatusCatalog.IsActiveInventory(s.Status)).OrderBy(s => s.SourceCode).ToList();
                 ActivityData = new ObservableCollection<ReportActivityRow>(
                     activeSources.Select((s, index) => new ReportActivityRow { RowNumber = index + 1, Source = s }));
                 break;
@@ -208,7 +209,7 @@ public partial class ReportsViewModel : ObservableObject
                 BorrowingData = new ObservableCollection<ReportBorrowingRow>(
                     (_borrowService.GetAll() ?? new List<BorrowRequest>()).Select((b, index) => new ReportBorrowingRow { RowNumber = index + 1, Request = b }));
                 ActivityData = new ObservableCollection<ReportActivityRow>(
-                    allSources.Where(s => s.Status == "InUse" || s.Status == "Storage").OrderBy(s => s.SourceCode).Select((s, index) => new ReportActivityRow { RowNumber = index + 1, Source = s }));
+                    allSources.Where(s => StatusCatalog.IsActiveInventory(s.Status)).OrderBy(s => s.SourceCode).Select((s, index) => new ReportActivityRow { RowNumber = index + 1, Source = s }));
                 LowActivityData = new ObservableCollection<ReportLowActivityRow>(
                     (_sourceService.GetLowActivitySources(LowActivityThreshold) ?? new List<Source>()).Select((s, index) => new ReportLowActivityRow { RowNumber = index + 1, Source = s }));
                 LowActivityAlertData = new ObservableCollection<ReportLowActivityAlertRow>(
@@ -295,7 +296,7 @@ public partial class ReportsViewModel : ObservableObject
     private static List<Source> GetLowActivityAlertSources(List<Source> allSources)
     {
         return allSources
-            .Where(s => s.Status == "InUse" || s.Status == "Storage")
+            .Where(s => StatusCatalog.IsActiveInventory(s.Status))
             .Select(s =>
             {
                 var (maxHalfLives, worstIsotope) = CalculateMaxHalfLivesElapsed(s);

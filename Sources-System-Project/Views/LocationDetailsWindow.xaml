@@ -173,7 +173,8 @@
                             </Grid.ColumnDefinitions>
                             <materialDesign:PackIcon Grid.Column="0" Kind="FilterOutline" Width="18" Height="18" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
                             <ComboBox Grid.Column="1" ItemsSource="{Binding StatusFilterOptions}"
-                                      SelectedItem="{Binding SelectedStatusFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      SelectedValuePath="Value" DisplayMemberPath="Display"
+                                      SelectedValue="{Binding SelectedStatusFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                       Style="{StaticResource MaterialDesignComboBox}"
                                       materialDesign:HintAssist.Hint="{DynamicResource FilterStatus}"
                                       FontSize="13" VerticalAlignment="Center" BorderThickness="0"/>

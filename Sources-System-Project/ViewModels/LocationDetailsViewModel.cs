@@ -66,13 +66,20 @@ public partial class LocationDetailsViewModel : ObservableObject
     [ObservableProperty]
     private int _filteredNeutronSourcesCount;
 
-    public List<string> StatusFilterOptions { get; } = new()
+    /// <summary>
+    /// الجولة 201: القيمة (Value) هي نفسها المفتاح العربي المستخدم اليوم في SelectedStatusFilter
+    /// (بلا أي تغيير في منطق التصفية)؛ النص المعروض (Display) يأتي عبر StatusCatalog فيظهر بالإنجليزية
+    /// في الواجهة الإنجليزية. القيم مُولَّدة من الكتالوج فتبقى مطابقة حرفياً للقائمة الثابتة السابقة.
+    /// </summary>
+    public sealed record StatusFilterOption(string Value, string Display);
+
+    public List<StatusFilterOption> StatusFilterOptions { get; } = new()
     {
-        "الكل",
-        "قيد الاستخدام",
-        "مخزن",
-        "نفايات",
-        "قيد النقل"
+        new StatusFilterOption("الكل", TranslationHelper.GetString("FilterAll") ?? "الكل"),
+        new StatusFilterOption(StatusCatalog.GetArabicText(StatusCatalog.InUse), StatusCatalog.GetDisplayText(StatusCatalog.InUse)),
+        new StatusFilterOption(StatusCatalog.GetArabicText(StatusCatalog.Storage), StatusCatalog.GetDisplayText(StatusCatalog.Storage)),
+        new StatusFilterOption(StatusCatalog.GetArabicText(StatusCatalog.Waste), StatusCatalog.GetDisplayText(StatusCatalog.Waste)),
+        new StatusFilterOption(StatusCatalog.GetArabicText(StatusCatalog.Transfer), StatusCatalog.GetDisplayText(StatusCatalog.Transfer)),
     };
 
     public LocationDetailsViewModel(
@@ -129,10 +136,10 @@ public partial class LocationDetailsViewModel : ObservableObject
 
         return filter.Trim() switch
         {
-            "قيد الاستخدام" or "InUse" => "InUse",
-            "مخزن" or "في المخزن" or "Storage" => "Storage",
-            "نفايات" or "Waste" => "Waste",
-            "قيد النقل" or "نقل" or "Transfer" => "Transfer",
+            "قيد الاستخدام" or "InUse" => StatusCatalog.InUse,
+            "مخزن" or "في المخزن" or "Storage" => StatusCatalog.Storage,
+            "نفايات" or "Waste" => StatusCatalog.Waste,
+            "قيد النقل" or "نقل" or "Transfer" => StatusCatalog.Transfer,
             _ => filter.Trim()
         };
     }

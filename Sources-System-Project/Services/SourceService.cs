@@ -48,7 +48,7 @@ public class SourceService : ISourceService
 
         foreach (var source in sources)
         {
-            if (source.Status == "InUse" || source.Status == "Storage")
+            if (StatusCatalog.IsActiveInventory(source.Status))
             {
                 CalculateSourceCurrentActivityInMemory(source, isotopesDict, unitsDict);
             }
@@ -71,7 +71,7 @@ public class SourceService : ISourceService
             .Include(s => s.SourceIsotopes).ThenInclude(si => si.ActivityUnit)
             .FirstOrDefault(s => s.Id == id);
 
-        if (source != null && (source.Status == "InUse" || source.Status == "Storage"))
+        if (source != null && StatusCatalog.IsActiveInventory(source.Status))
         {
             var isotopesDict = db.Radioisotopes.AsNoTracking().ToDictionary(r => r.Id);
             var unitsDict = db.ActivityUnits.AsNoTracking().ToDictionary(u => u.Id);
@@ -230,7 +230,7 @@ public class SourceService : ISourceService
             return (false, string.Format(TranslationHelper.GetString("MsgErrSourceCodeUsedByDeleted") ?? "كود المصدر ({0}) مستخدم لمصدر محذوف. لا يمكن إعادة استخدام كود المصدر حفاظاً على سجل التدقيق، ويمكنك استرجاع المصدر من قسم المحذوفات.", trimmedCode));
 
         // منع تعديل الموقع أو الحالة لمصدر قيد الاستعارة النشطة
-        bool hasActiveBorrow = db.BorrowRequests.Any(b => b.SourceId == source.Id && (b.Status == "Delivered" || b.Status == "Overdue"));
+        bool hasActiveBorrow = db.BorrowRequests.Any(b => b.SourceId == source.Id && (b.Status == BorrowStatusCatalog.Delivered || b.Status == BorrowStatusCatalog.Overdue));
         if (hasActiveBorrow && (existing.LocationId != source.LocationId || existing.Status != source.Status))
         {
             return (false, TranslationHelper.GetString("MsgErrCannotEditActiveBorrowSource") ?? "لا يمكن تعديل الموقع أو الحالة لمصدر قيد الاستعارة النشطة حالياً");
@@ -336,16 +336,16 @@ public class SourceService : ISourceService
         if (source == null) return (false, TranslationHelper.GetString("MsgErrSourceNotFound") ?? "المصدر غير موجود");
 
         var pendingOrActiveBorrow = db.BorrowRequests.FirstOrDefault(b => b.SourceId == id &&
-            (b.Status == "Pending" || b.Status == "Approved" || b.Status == "Delivered" || b.Status == "Overdue"));
+            (b.Status == BorrowStatusCatalog.Pending || b.Status == BorrowStatusCatalog.Approved || b.Status == BorrowStatusCatalog.Delivered || b.Status == BorrowStatusCatalog.Overdue));
 
         if (pendingOrActiveBorrow != null)
         {
             string statusMsg = pendingOrActiveBorrow.Status switch
             {
-                "Pending" => TranslationHelper.GetString("MsgReasonPendingBorrow") ?? "لوجود طلب استعارة معلّق عليه (قيد الانتظار)",
-                "Approved" => TranslationHelper.GetString("MsgReasonApprovedBorrow") ?? "لوجود طلب استعارة معتمد عليه",
-                "Delivered" => TranslationHelper.GetString("MsgReasonActiveBorrow") ?? "لوجود استعارة نشطة عليه",
-                "Overdue" => TranslationHelper.GetString("MsgReasonActiveBorrow") ?? "لوجود استعارة نشطة عليه",
+                BorrowStatusCatalog.Pending => TranslationHelper.GetString("MsgReasonPendingBorrow") ?? "لوجود طلب استعارة معلّق عليه (قيد الانتظار)",
+                BorrowStatusCatalog.Approved => TranslationHelper.GetString("MsgReasonApprovedBorrow") ?? "لوجود طلب استعارة معتمد عليه",
+                BorrowStatusCatalog.Delivered => TranslationHelper.GetString("MsgReasonActiveBorrow") ?? "لوجود استعارة نشطة عليه",
+                BorrowStatusCatalog.Overdue => TranslationHelper.GetString("MsgReasonActiveBorrow") ?? "لوجود استعارة نشطة عليه",
                 _ => TranslationHelper.GetString("MsgReasonIncompleteBorrow") ?? "لوجود طلب استعارة غير مكتمل عليه"
             };
             return (false, string.Format(TranslationHelper.GetString("MsgErrCannotDeleteSourceReason") ?? "لا يمكن حذف المصدر {0}", statusMsg));
@@ -589,7 +589,7 @@ public class SourceService : ISourceService
     {
         var sources = GetAllSources();
         return sources
-            .Where(s => s.Status == "InUse" || s.Status == "Storage")
+            .Where(s => StatusCatalog.IsActiveInventory(s.Status))
             .Where(s =>
             {
                 if (s.InitialActivityValue <= 0) return false;
@@ -604,6 +604,6 @@ public class SourceService : ISourceService
     public bool HasActiveBorrow(Guid sourceId)
     {
         using var db = _dbFactory.CreateDbContext();
-        return db.BorrowRequests.Any(b => b.SourceId == sourceId && (b.Status == "Delivered" || b.Status == "Overdue"));
+        return db.BorrowRequests.Any(b => b.SourceId == sourceId && (b.Status == BorrowStatusCatalog.Delivered || b.Status == BorrowStatusCatalog.Overdue));
     }
 }

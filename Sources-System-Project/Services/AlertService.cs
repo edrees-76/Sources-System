@@ -43,7 +43,7 @@ public class AlertService : IAlertService
             .Include(s => s.Location)
             .Include(s => s.SourceIsotopes)
                 .ThenInclude(si => si.Radioisotope)
-            .Where(s => s.Status == "InUse" || s.Status == "Storage")
+            .Where(s => s.Status == StatusCatalog.InUse || s.Status == StatusCatalog.Storage)
             .ToList();
 
         int warningDays = _settingsService.GetSetting<int>(

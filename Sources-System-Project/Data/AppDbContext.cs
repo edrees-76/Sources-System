@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Sources.Helpers;
 using Sources.Models;
 using System;
 using System.Linq;
@@ -256,25 +257,25 @@ public class AppDbContext : DbContext
         var existingRoles = Roles.ToList();
 
         // 1. صيانة دور المدير
-        var adminRole2 = existingRoles.FirstOrDefault(r => r.RoleName == "مدير النظام");
+        var adminRole2 = existingRoles.FirstOrDefault(r => r.RoleName == RoleNames.Admin);
         if (adminRole2 == null)
         {
-            adminRole2 = new Role { RoleName = "مدير النظام", Description = "صلاحيات كاملة لإدارة النظام", Permissions = "All" };
+            adminRole2 = new Role { RoleName = RoleNames.Admin, Description = "صلاحيات كاملة لإدارة النظام", Permissions = "All" };
             Roles.Add(adminRole2);
             SaveChanges();
         }
 
         // 2. صيانة دور المستخدم العادي
-        var userRole = existingRoles.FirstOrDefault(r => r.RoleName == "مستخدم");
+        var userRole = existingRoles.FirstOrDefault(r => r.RoleName == RoleNames.User);
         if (userRole == null)
         {
-            userRole = new Role { RoleName = "مستخدم", Description = "مستخدم عادي في المنظومة", Permissions = "" };
+            userRole = new Role { RoleName = RoleNames.User, Description = "مستخدم عادي في المنظومة", Permissions = "" };
             Roles.Add(userRole);
             SaveChanges();
         }
 
         // 3. مسح الأدوار القديمة وتخصيص مستخدميها لدور "مستخدم"
-        var rolesToDelete = Roles.Where(r => r.RoleName != "مدير النظام" && r.RoleName != "مستخدم").ToList();
+        var rolesToDelete = Roles.Where(r => r.RoleName != RoleNames.Admin && r.RoleName != RoleNames.User).ToList();
         if (rolesToDelete.Any())
         {
             foreach (var role in rolesToDelete)
@@ -288,7 +289,7 @@ public class AppDbContext : DbContext
 
         // ─── مستخدم مدير النظام ───
         var adminUser = Users.FirstOrDefault(u => u.Username == "admin");
-        var adminRole = Roles.FirstOrDefault(r => r.RoleName == "مدير النظام") ?? Roles.First();
+        var adminRole = Roles.FirstOrDefault(r => r.RoleName == RoleNames.Admin) ?? Roles.First();
 
         if (adminUser == null)
         {

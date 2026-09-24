@@ -169,7 +169,9 @@
 
                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="{DynamicResource FilterByStatus}" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondary}" Margin="0,0,8,0"/>
-                            <ComboBox ItemsSource="{Binding StatusFilters}" SelectedItem="{Binding SelectedStatusFilter}" 
+                            <ComboBox ItemsSource="{Binding StatusFilters}"
+                                      SelectedValuePath="Value" DisplayMemberPath="Display"
+                                      SelectedValue="{Binding SelectedStatusFilter}"
                                       Width="160" Style="{StaticResource FormComboBox}">
                                 <b:Interaction.Triggers>
                                     <b:EventTrigger EventName="SelectionChanged">
@@ -259,41 +261,10 @@
                             <DataGridTemplateColumn Header="{DynamicResource ColStatusAction}" Width="Auto" MinWidth="110">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Border CornerRadius="8" Padding="10,4" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                            <Border.Style>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="Background" Value="#1A4F7FA3"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding Status}" Value="Delivered">
-                                                            <Setter Property="Background" Value="#1A3FAE7A"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Status}" Value="Returned">
-                                                            <Setter Property="Background" Value="#1A4F7FA3"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Status}" Value="Overdue">
-                                                            <Setter Property="Background" Value="#1AC25B4A"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
-                                            <TextBlock Text="{Binding ArabicStatus}" FontSize="11.5" FontWeight="SemiBold" HorizontalAlignment="Center">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding Status}" Value="Delivered">
-                                                                <Setter Property="Foreground" Value="#3FAE7A"/>
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding Status}" Value="Returned">
-                                                                <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding Status}" Value="Overdue">
-                                                                <Setter Property="Foreground" Value="#C25B4A"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
+                                        <Border CornerRadius="8" Padding="10,4" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                Background="{Binding StatusColor, Converter={StaticResource HexToTintBrush}}">
+                                            <TextBlock Text="{Binding StatusDisplay}" FontSize="11.5" FontWeight="SemiBold" HorizontalAlignment="Center"
+                                                       Foreground="{Binding StatusColor, Converter={StaticResource HexToBrush}}"/>
                                         </Border>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>

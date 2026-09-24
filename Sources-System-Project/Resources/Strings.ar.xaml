@@ -409,6 +409,15 @@
     <system:String x:Key="StatusDisplayStorage">مخزن</system:String>
     <system:String x:Key="StatusDisplayWaste">نفايات</system:String>
     <system:String x:Key="StatusDisplayTransfer">قيد النقل</system:String>
+    <!-- الجولة 201 — عرض حالة الاستعارة عبر BorrowStatusCatalog (نص عربي مطابق تماماً لـ BorrowRequest.ArabicStatus الحالي) -->
+    <system:String x:Key="BorrowStatusDisplayPending">معلّق</system:String>
+    <system:String x:Key="BorrowStatusDisplayApproved">تمت الموافقة</system:String>
+    <system:String x:Key="BorrowStatusDisplayRejected">مرفوض</system:String>
+    <system:String x:Key="BorrowStatusDisplayDelivered">تم التسليم</system:String>
+    <system:String x:Key="BorrowStatusDisplayReturned">تم الإرجاع</system:String>
+    <system:String x:Key="BorrowStatusDisplayOverdue">متأخر</system:String>
+    <!-- مفتاح جديد لأن نص DueSoon الحالي ("موعد الإرجاع قريباً") يختلف عن نص خيار الفلتر ("قريبة الإرجاع") -->
+    <system:String x:Key="FilterDueSoon">قريبة الإرجاع</system:String>
     <system:String x:Key="BtnReset">تعيين</system:String>
     <system:String x:Key="ColSourceImage">صورة المصدر</system:String>
     <system:String x:Key="ColSourceCode">كود المصدر</system:String>
