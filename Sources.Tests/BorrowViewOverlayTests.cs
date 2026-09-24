@@ -122,11 +122,8 @@ public class BorrowViewOverlayTests
                     BorrowFormWindow? capturedFormWindow = null;
                     Dispatcher.CurrentDispatcher.BeginInvoke(new System.Action(() =>
                     {
-                        capturedFormWindow = Application.Current.Windows
-                            .OfType<BorrowFormWindow>()
-                            .FirstOrDefault();
+                        capturedFormWindow = Fixtures.FormWindowLookup.FindOpenFormOwnedBy<BorrowFormWindow>(window);
 
-                        Assert.NotNull(capturedFormWindow);
                         Assert.True(vm.IsEditing);
                         Assert.Equal(Visibility.Visible, dataGrid!.Visibility);
 
@@ -186,11 +183,8 @@ public class BorrowViewOverlayTests
                     // بنفس أسلوب الجدولة عبر Dispatcher.BeginInvoke المستخدم في الاختبار الآخر.
                     Dispatcher.CurrentDispatcher.BeginInvoke(new System.Action(() =>
                     {
-                        var formWindow = Application.Current.Windows
-                            .OfType<BorrowFormWindow>()
-                            .FirstOrDefault();
+                        var formWindow = Fixtures.FormWindowLookup.FindOpenFormOwnedBy<BorrowFormWindow>(window);
 
-                        Assert.NotNull(formWindow);
                         Assert.True(vm.IsEditing);
 
                         // محاكاة إغلاق عبر ✕ / Alt+F4: استدعاء Close() مباشرة على النافذة،
@@ -211,11 +205,8 @@ public class BorrowViewOverlayTests
                     BorrowFormWindow? secondFormWindow = null;
                     Dispatcher.CurrentDispatcher.BeginInvoke(new System.Action(() =>
                     {
-                        secondFormWindow = Application.Current.Windows
-                            .OfType<BorrowFormWindow>()
-                            .FirstOrDefault();
+                        secondFormWindow = Fixtures.FormWindowLookup.FindOpenFormOwnedBy<BorrowFormWindow>(window);
 
-                        Assert.NotNull(secondFormWindow);
                         Assert.True(vm.IsEditing);
 
                         vm.CancelEditCommand.Execute(null);

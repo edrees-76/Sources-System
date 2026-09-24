@@ -353,6 +353,9 @@ public partial class LocationsViewModel : ObservableObject, IEditableViewModel
     }
 
     [RelayCommand] private void CancelEdit() { IsEditing = false; ClearForm(); }
+
+    /// <summary>تنفيذ IEditableViewModel.CancelEditing (الجولة 199 — حارس الشفاء الذاتي).</summary>
+    public void CancelEditing() => CancelEditCommand.Execute(null);
     [RelayCommand] private void CloseMessage() { HasMessage = false; Message = string.Empty; }
     private void ClearForm() { EditName = EditType = EditBuilding = EditRoom = EditPerson = string.Empty; }
     private void ShowMsg(string m) { Message = m; HasMessage = true; }

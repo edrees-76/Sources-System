@@ -318,8 +318,23 @@ public partial class MainViewModel : ObservableObject, IDisposable
         // التحقق من حالة التحرير في المنظور الحالي
         if (CurrentView is IEditableViewModel editable && editable.IsEditing)
         {
-            DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrSavePending") ?? "يرجى حفظ التغييرات أو إلغاؤها قبل الانتقال إلى قسم آخر.", TranslationHelper.GetString("TitlePendingChanges") ?? "تنبيه: نافذة مفتوحة");
-            return;
+            // حارس الشفاء الذاتي (الجولة 199): كل الشاشات الخمس القابلة للتحرير حالياً مِودال
+            // (لا شاشة inline)، فإن كان IsEditing عالقاً true بلا نافذة فعلية مفتوحة
+            // (EditingFormTracker.IsFormOpen يعيد false)، فهذا عطل سابق (استثناء أثناء الفتح،
+            // أو IsEditing ضُبط قبل اكتمال تحميل الشاشة) وليس تعديلاً حقيقياً بانتظار الحفظ؛
+            // يُعاد ضبطه بلا حفظ وتُسمح المتابعة بدل حجب التنقل إلى الأبد. أما إن كانت النافذة
+            // مفتوحة فعلاً فالحجب يبقى كما هو تماماً.
+            if (!EditingFormTracker.IsFormOpen(editable))
+            {
+                LoggerService.LogWarning(
+                    $"MainViewModel.NavigateTo: IsEditing كان عالقاً true بلا نافذة تحرير مفتوحة على {CurrentViewName} — تمت إعادة الضبط بلا حفظ والسماح بالتنقل إلى {viewName}.");
+                editable.CancelEditing();
+            }
+            else
+            {
+                DialogHelper.ShowWarning(TranslationHelper.GetString("MsgErrSavePending") ?? "يرجى حفظ التغييرات أو إلغاؤها قبل الانتقال إلى قسم آخر.", TranslationHelper.GetString("TitlePendingChanges") ?? "تنبيه: نافذة مفتوحة");
+                return;
+            }
         }
 
         // حماية شاشة المحذوفات الإدارية بطلب كلمة مرور مدير النظام
@@ -387,11 +402,21 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         if (CurrentView is IEditableViewModel editable && editable.IsEditing)
         {
-            DialogHelper.ShowWarning(
-                TranslationHelper.GetString("MsgErrSavePending") ?? "يرجى حفظ التغييرات أو إلغاؤها قبل الانتقال إلى قسم آخر.",
-                TranslationHelper.GetString("TitlePendingChanges") ?? "تنبيه: نافذة مفتوحة"
-            );
-            return;
+            // حارس الشفاء الذاتي (الجولة 199): انظر التعليق المطابق في NavigateTo.
+            if (!EditingFormTracker.IsFormOpen(editable))
+            {
+                LoggerService.LogWarning(
+                    $"MainViewModel.Logout: IsEditing كان عالقاً true بلا نافذة تحرير مفتوحة على {CurrentViewName} — تمت إعادة الضبط بلا حفظ والسماح بتسجيل الخروج.");
+                editable.CancelEditing();
+            }
+            else
+            {
+                DialogHelper.ShowWarning(
+                    TranslationHelper.GetString("MsgErrSavePending") ?? "يرجى حفظ التغييرات أو إلغاؤها قبل الانتقال إلى قسم آخر.",
+                    TranslationHelper.GetString("TitlePendingChanges") ?? "تنبيه: نافذة مفتوحة"
+                );
+                return;
+            }
         }
 
         if (DialogHelper.ShowConfirmation(TranslationHelper.GetString("MsgConfirmLogout") ?? "هل أنت متأكد أنك تريد تسجيل الخروج؟", TranslationHelper.GetString("TitleLogout") ?? "تأكيد الخروج"))

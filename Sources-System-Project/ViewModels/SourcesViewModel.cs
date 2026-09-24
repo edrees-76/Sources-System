@@ -1579,6 +1579,9 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         ClearForm();
     }
 
+    /// <summary>تنفيذ IEditableViewModel.CancelEditing (الجولة 199 — حارس الشفاء الذاتي).</summary>
+    public void CancelEditing() => CancelEditCommand.Execute(null);
+
 
     // ─── أوامر النظائر المتعددة ───
     [RelayCommand]

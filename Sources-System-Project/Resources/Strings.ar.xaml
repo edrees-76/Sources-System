@@ -228,6 +228,8 @@
     <system:String x:Key="BadgeVerified">تم التحقق</system:String>
     <system:String x:Key="MsgErrIncorrectPhrase">جملة التأكيد غير متطابقة، يرجى كتابتها بدقة</system:String>
     <system:String x:Key="MsgErrIncorrectAdminPassword">كلمة المرور غير صحيحة</system:String>
+    <system:String x:Key="MsgErrAdminPromptFailed">تعذّر التحقق من هوية مدير النظام، تم رفض الطلب</system:String>
+    <system:String x:Key="MsgErrFormOpenFailed">تعذّر فتح نافذة التحرير، تم إلغاء العملية</system:String>
     <system:String x:Key="MsgErrNoCurrentUserLoggedIn">لا يوجد مستخدم مسجل حالياً</system:String>
     <system:String x:Key="MsgErrCompletePreviousStages">يرجى إكمال المرحلتين السابقتين أولاً</system:String>
     <system:String x:Key="MsgErrResetServiceUnavailable">خدمة إعادة ضبط المنظومة غير متوفرة</system:String>

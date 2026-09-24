@@ -174,9 +174,8 @@ public class SourceFormWindowTests : IDisposable
                     SourceFormWindow? captured = null;
                     Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
                     {
-                        captured = Application.Current.Windows.OfType<SourceFormWindow>().FirstOrDefault();
+                        captured = Fixtures.FormWindowLookup.FindOpenFormOwnedBy<SourceFormWindow>(window);
 
-                        Assert.NotNull(captured);
                         Assert.True(vm.IsEditing);
                         Assert.False(vm.IsNeutronForm); // مصدر عادي
                         Assert.True(vm.IsNew);
@@ -221,10 +220,9 @@ public class SourceFormWindowTests : IDisposable
                     SourceFormWindow? captured = null;
                     Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
                     {
-                        captured = Application.Current.Windows.OfType<SourceFormWindow>().FirstOrDefault();
+                        captured = Fixtures.FormWindowLookup.FindOpenFormOwnedBy<SourceFormWindow>(window);
 
                         // نفس النافذة تخدم المصدر النيتروني، عبر مفتاح التبديل الداخلي.
-                        Assert.NotNull(captured);
                         Assert.True(vm.IsEditing);
                         Assert.True(vm.IsNeutronForm); // مصدر نيتروني
                         Assert.Equal(vm, captured!.DataContext);
@@ -269,8 +267,7 @@ public class SourceFormWindowTests : IDisposable
 
                     Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
                     {
-                        var formWindow = Application.Current.Windows.OfType<SourceFormWindow>().FirstOrDefault();
-                        Assert.NotNull(formWindow);
+                        var formWindow = Fixtures.FormWindowLookup.FindOpenFormOwnedBy<SourceFormWindow>(window);
                         Assert.True(vm.IsEditing);
 
                         // التقدّم إلى الخطوة المطلوبة عبر أمر التنقل الحقيقي للمعالج.
@@ -555,8 +552,7 @@ public class SourceFormWindowTests : IDisposable
                     // الخطوة 1: فتح النافذة، التقدّم للخطوة 3، ثم الإغلاق عبر ✕.
                     Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
                     {
-                        var formWindow = Application.Current.Windows.OfType<SourceFormWindow>().FirstOrDefault();
-                        Assert.NotNull(formWindow);
+                        var formWindow = Fixtures.FormWindowLookup.FindOpenFormOwnedBy<SourceFormWindow>(window);
 
                         vm.NextStepCommand.Execute(null);
                         vm.NextStepCommand.Execute(null);
@@ -573,9 +569,8 @@ public class SourceFormWindowTests : IDisposable
                     SourceFormWindow? second = null;
                     Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
                     {
-                        second = Application.Current.Windows.OfType<SourceFormWindow>().FirstOrDefault();
+                        second = Fixtures.FormWindowLookup.FindOpenFormOwnedBy<SourceFormWindow>(window);
 
-                        Assert.NotNull(second);
                         Assert.True(vm.IsEditing);
                         Assert.Equal(1, vm.CurrentStep);
 

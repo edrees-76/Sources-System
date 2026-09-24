@@ -290,6 +290,9 @@ public sealed partial class BorrowViewModel : ObservableObject, IEditableViewMod
         CurrentStep = 1;
     }
 
+    /// <summary>تنفيذ IEditableViewModel.CancelEditing (الجولة 199 — حارس الشفاء الذاتي).</summary>
+    public void CancelEditing() => CancelEditCommand.Execute(null);
+
     [RelayCommand]
     private void CancelEdit()
     {

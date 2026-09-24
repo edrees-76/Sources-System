@@ -25,7 +25,7 @@ namespace Sources.Tests
             _fixture = fixture;
             _fixture.ResetDatabase();
             DialogHelper.ShowConfirmationResult = null;
-            PasswordPromptDialog.CustomPromptResult = null;
+            DialogHelper.TestAdminPromptResult = null;
         }
 
         public void Dispose()
@@ -34,7 +34,7 @@ namespace Sources.Tests
             DialogHelper.ShowConfirmationResult = null;
             DialogHelper.LastMessage = null;
             DialogHelper.LastTitle = null;
-            PasswordPromptDialog.CustomPromptResult = null;
+            DialogHelper.TestAdminPromptResult = null;
         }
 
         /// <summary>
@@ -150,14 +150,22 @@ namespace Sources.Tests
         }
 
         [Fact]
-        public void RequestAdminAccess_HonorsCustomPromptResult()
+        public void RequestAdminAccess_HonorsExplicitTestSeamResult()
         {
             // Test true override
-            PasswordPromptDialog.CustomPromptResult = true;
+            DialogHelper.TestAdminPromptResult = true;
             Assert.True(PasswordPromptDialog.RequestAdminAccess());
 
             // Test false override
-            PasswordPromptDialog.CustomPromptResult = false;
+            DialogHelper.TestAdminPromptResult = false;
+            Assert.False(PasswordPromptDialog.RequestAdminAccess());
+        }
+
+        [Fact]
+        public void RequestAdminAccess_TestModeWithNoExplicitResult_IsDeniedByDefault()
+        {
+            // الجولة 199: الفشل المغلق — عدم تحديد نتيجة صريحة في وضع الاختبار يعني رفضاً، لا منحاً.
+            DialogHelper.TestAdminPromptResult = null;
             Assert.False(PasswordPromptDialog.RequestAdminAccess());
         }
 
@@ -496,7 +504,7 @@ namespace Sources.Tests
 
             var vm = new MainViewModel(mockUserService.Object, mockAlertService.Object, mockSettingsService.Object, new FakeLicenseService());
 
-            PasswordPromptDialog.CustomPromptResult = true;
+            DialogHelper.TestAdminPromptResult = true;
 
             // Act
             vm.NavigateTo("Deletions");
@@ -527,7 +535,7 @@ namespace Sources.Tests
             Assert.Equal("Dashboard", vm.CurrentViewName);
 
             // Act: Reject password prompt
-            PasswordPromptDialog.CustomPromptResult = false;
+            DialogHelper.TestAdminPromptResult = false;
             vm.NavigateTo("Deletions");
 
             // Assert: View should remain "Dashboard"

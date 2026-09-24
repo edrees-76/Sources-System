@@ -180,11 +180,8 @@ public class SourcesViewNeutronOverlayTests
                     NeutronSourceTypesWindow? capturedWindow = null;
                     Dispatcher.CurrentDispatcher.BeginInvoke(new System.Action(() =>
                     {
-                        capturedWindow = Application.Current.Windows
-                            .OfType<NeutronSourceTypesWindow>()
-                            .FirstOrDefault();
+                        capturedWindow = Fixtures.FormWindowLookup.FindOpenFormOwnedBy<NeutronSourceTypesWindow>(window);
 
-                        Assert.NotNull(capturedWindow);
                         Assert.True(vm.IsManagingNeutronTypes);
                         Assert.Equal(Visibility.Visible, sourceCardsPanel!.Visibility);
 
@@ -245,11 +242,8 @@ public class SourcesViewNeutronOverlayTests
                     // بنفس أسلوب الجدولة عبر Dispatcher.BeginInvoke المستخدم في الاختبار الآخر.
                     Dispatcher.CurrentDispatcher.BeginInvoke(new System.Action(() =>
                     {
-                        var typesWindow = Application.Current.Windows
-                            .OfType<NeutronSourceTypesWindow>()
-                            .FirstOrDefault();
+                        var typesWindow = Fixtures.FormWindowLookup.FindOpenFormOwnedBy<NeutronSourceTypesWindow>(window);
 
-                        Assert.NotNull(typesWindow);
                         Assert.True(vm.IsManagingNeutronTypes);
 
                         // محاكاة إغلاق عبر ✕ / Alt+F4: استدعاء Close() مباشرة على النافذة،
@@ -270,11 +264,8 @@ public class SourcesViewNeutronOverlayTests
                     NeutronSourceTypesWindow? secondWindow = null;
                     Dispatcher.CurrentDispatcher.BeginInvoke(new System.Action(() =>
                     {
-                        secondWindow = Application.Current.Windows
-                            .OfType<NeutronSourceTypesWindow>()
-                            .FirstOrDefault();
+                        secondWindow = Fixtures.FormWindowLookup.FindOpenFormOwnedBy<NeutronSourceTypesWindow>(window);
 
-                        Assert.NotNull(secondWindow);
                         Assert.True(vm.IsManagingNeutronTypes);
 
                         vm.NeutronTypesManagementViewModel!.CloseCommand.Execute(null);

@@ -327,13 +327,14 @@ public class ViewInstantiationTests
     // مباشرة عبر App.ServiceProvider (خاصية ذات setter خاص لا تدعم الحقن في الاختبارات، على خلاف
     // ما هو متاح في هذا المشروع لاختبارات أخرى). لا يوجد نمط قائم في مشروع الاختبارات لحقن
     // App.ServiceProvider لهذا الحوار تحديداً، لذا نتحقق من مسار التأكيد (Confirm) عبر خُطّاف
-    // الاختبار الرسمي PasswordPromptDialog.CustomPromptResult مع RequestAdminAccess() تماماً كما هو
-    // مستخدم في DeletionsAndAdminPromptTests.cs (RequestAdminAccess_HonorsCustomPromptResult) بدل
+    // الاختبار الرسمي DialogHelper.TestAdminPromptResult مع RequestAdminAccess() (المكان الوحيد
+    // المسموح له بمعرفة وضع الاختبار، الجولة 199) تماماً كما هو مستخدم في
+    // DeletionsAndAdminPromptTests.cs (RequestAdminAccess_HonorsExplicitTestSeamResult) بدل
     // استدعاء ConfirmButton_Click مباشرة.
     [Fact]
-    public void PasswordPromptDialog_RequestAdminAccess_ConfirmPath_HonorsCustomPromptResultTrue()
+    public void PasswordPromptDialog_RequestAdminAccess_ConfirmPath_HonorsExplicitTestSeamResultTrue()
     {
-        Sources.Views.PasswordPromptDialog.CustomPromptResult = true;
+        Sources.Helpers.DialogHelper.TestAdminPromptResult = true;
         try
         {
             var granted = Sources.Views.PasswordPromptDialog.RequestAdminAccess("عنوان اختبار", "نص تنبيه اختبار");
@@ -341,7 +342,7 @@ public class ViewInstantiationTests
         }
         finally
         {
-            Sources.Views.PasswordPromptDialog.CustomPromptResult = null;
+            Sources.Helpers.DialogHelper.TestAdminPromptResult = null;
         }
     }
 

@@ -1,6 +1,8 @@
+using System;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using Sources.Helpers;
 using Sources.ViewModels;
 
 namespace Sources.Views;
@@ -20,7 +22,23 @@ public partial class RadioisotopesView : UserControl
     {
         if (DataContext is INotifyPropertyChanged notifier)
         {
+            // منع الاشتراك المزدوج إن أُطلق Loaded أكثر من مرة (الجولة 199 — B1(b)).
+            notifier.PropertyChanged -= DataContext_PropertyChanged;
             notifier.PropertyChanged += DataContext_PropertyChanged;
+        }
+
+        // تأجيل لا إعادة ضبط (الجولة 199 — B1(b)): نفس نمط DashboardViewModel.QuickAddSource
+        // (Sources)؛ إن IsEditing=true قبل اكتمال التحميل والاشتراك، تُفتح النافذة بعده مباشرة
+        // عبر BeginInvoke بدل إعادة ضبط IsEditing.
+        if (DataContext is RadioisotopesViewModel vm && vm.IsEditing && _formWindow == null)
+        {
+            Dispatcher.BeginInvoke(() =>
+            {
+                if (DataContext is RadioisotopesViewModel currentVm && currentVm.IsEditing && _formWindow == null)
+                {
+                    OpenForm(currentVm);
+                }
+            });
         }
     }
 
@@ -39,15 +57,7 @@ public partial class RadioisotopesView : UserControl
 
         if (vm.IsEditing)
         {
-            if (_formWindow != null) return; // منع فتح نافذة ثانية عند إعادة الدخول
-
-            _formWindow = new RadioisotopeFormWindow
-            {
-                DataContext = DataContext,
-                Owner = Window.GetWindow(this)
-            };
-            _formWindow.Closed += FormWindow_Closed;
-            _formWindow.ShowDialog();
+            OpenForm(vm);
         }
         else
         {
@@ -61,8 +71,45 @@ public partial class RadioisotopesView : UserControl
         }
     }
 
-    private void FormWindow_Closed(object? sender, System.EventArgs e)
+    /// <summary>
+    /// يفتح نافذة التحرير ضمن try/catch (الجولة 199 — B1(a)): أي استثناء أثناء الإنشاء/تعيين
+    /// Owner/ShowDialog يُلتقط بدل أن يتسرّب من داخل معالج IsEditing تاركاً IsEditing عالقاً
+    /// true بلا نافذة فعلية.
+    /// </summary>
+    private void OpenForm(RadioisotopesViewModel vm)
     {
+        if (_formWindow != null) return; // منع فتح نافذة ثانية عند إعادة الدخول
+
+        try
+        {
+            _formWindow = new RadioisotopeFormWindow
+            {
+                DataContext = vm,
+                Owner = Window.GetWindow(this)
+            };
+            _formWindow.Closed += FormWindow_Closed;
+            EditingFormTracker.MarkOpen(vm);
+            _formWindow.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            if (_formWindow != null)
+            {
+                _formWindow.Closed -= FormWindow_Closed;
+                _formWindow = null;
+            }
+            EditingFormTracker.MarkClosed(vm);
+            EditingFormTracker.HandleOpenFailure(nameof(RadioisotopesView), ex, vm.CancelEditCommand);
+        }
+    }
+
+    private void FormWindow_Closed(object? sender, EventArgs e)
+    {
+        if (sender is Window closedWindow && closedWindow.DataContext is RadioisotopesViewModel vm)
+        {
+            EditingFormTracker.MarkClosed(vm);
+        }
+
         if (_formWindow != null)
         {
             _formWindow.Closed -= FormWindow_Closed;

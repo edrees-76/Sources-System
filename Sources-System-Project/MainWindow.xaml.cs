@@ -131,12 +131,24 @@ public partial class MainWindow : Window
             // التحقق من وجود تعديلات غير محفوظة في الشاشة النشطة حالياً
             if (viewModel.CurrentView is IEditableViewModel editable && editable.IsEditing)
             {
-                DialogHelper.ShowWarning(
-                    TranslationHelper.GetString("MsgErrSavePending") ?? "يرجى حفظ التغييرات أو إلغاؤها قبل الانتقال إلى قسم آخر.",
-                    TranslationHelper.GetString("TitlePendingChanges") ?? "تنبيه: نافذة مفتوحة"
-                );
-                e.Cancel = true;
-                return;
+                // حارس الشفاء الذاتي (الجولة 199): انظر التعليق المطابق في
+                // MainViewModel.NavigateTo/Logout. إغلاق النافذة الرئيسية يجب ألا يُحجب إلى
+                // الأبد بسبب IsEditing عالق بلا نافذة تحرير فعلية.
+                if (!EditingFormTracker.IsFormOpen(editable))
+                {
+                    LoggerService.LogWarning(
+                        "MainWindow.OnClosing: IsEditing كان عالقاً true بلا نافذة تحرير مفتوحة — تمت إعادة الضبط بلا حفظ والسماح بالإغلاق.");
+                    editable.CancelEditing();
+                }
+                else
+                {
+                    DialogHelper.ShowWarning(
+                        TranslationHelper.GetString("MsgErrSavePending") ?? "يرجى حفظ التغييرات أو إلغاؤها قبل الانتقال إلى قسم آخر.",
+                        TranslationHelper.GetString("TitlePendingChanges") ?? "تنبيه: نافذة مفتوحة"
+                    );
+                    e.Cancel = true;
+                    return;
+                }
             }
 
             bool confirmed = DialogHelper.ShowConfirmation(

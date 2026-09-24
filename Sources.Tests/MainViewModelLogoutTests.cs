@@ -39,7 +39,7 @@ public class MainViewModelLogoutTests : IDisposable
     }
 
     [Fact]
-    public void Logout_WhenCurrentViewIsEditing_ShowsWarningAndDoesNotLogout()
+    public void Logout_WhenCurrentViewIsEditing_AndFormIsOpen_ShowsWarningAndDoesNotLogout()
     {
         Fixtures.WpfStaFixture.RunInSta(() =>
         {
@@ -49,15 +49,50 @@ public class MainViewModelLogoutTests : IDisposable
 
             var mockEditable = new MockEditableView(isEditing: true);
             vm.CurrentView = mockEditable;
+            // الجولة 199 — حارس الشفاء الذاتي: يبقى الحجب كما هو فقط عندما تكون نافذة التحرير
+            // مفتوحة فعلاً (EditingFormTracker.IsFormOpen يعيد true).
+            EditingFormTracker.MarkOpen(mockEditable);
+
+            try
+            {
+                // Act
+                vm.LogoutCommand.Execute(null);
+
+                // Assert: التحقق من ظهور رسالة التعديلات المعلقة وعدم تسجيل الخروج
+                Assert.Equal(TranslationHelper.GetString("TitlePendingChanges"), DialogHelper.LastTitle);
+                Assert.Equal(TranslationHelper.GetString("MsgErrSavePending"), DialogHelper.LastMessage);
+                Assert.True(vm.IsLoggedIn);
+                _mockUserService.Verify(u => u.Logout(), Times.Never);
+            }
+            finally
+            {
+                EditingFormTracker.MarkClosed(mockEditable);
+            }
+        });
+    }
+
+    [Fact]
+    public void Logout_WhenCurrentViewIsEditing_ButNoFormIsOpen_ResetsWithoutSaving_AndProceeds()
+    {
+        Fixtures.WpfStaFixture.RunInSta(() =>
+        {
+            // Arrange: الجولة 199 — حارس الشفاء الذاتي. IsEditing عالق true بلا نافذة تحرير
+            // فعلية مفتوحة (لم يُستدعَ EditingFormTracker.MarkOpen) يجب ألا يحجب تسجيل الخروج.
+            DialogHelper.ShowConfirmationResult = true;
+            using var vm = CreateViewModel();
+            Assert.True(vm.IsLoggedIn);
+
+            var mockEditable = new MockEditableView(isEditing: true);
+            vm.CurrentView = mockEditable;
 
             // Act
             vm.LogoutCommand.Execute(null);
 
-            // Assert: التحقق من ظهور رسالة التعديلات المعلقة وعدم تسجيل الخروج
-            Assert.Equal(TranslationHelper.GetString("TitlePendingChanges"), DialogHelper.LastTitle);
-            Assert.Equal(TranslationHelper.GetString("MsgErrSavePending"), DialogHelper.LastMessage);
-            Assert.True(vm.IsLoggedIn);
-            _mockUserService.Verify(u => u.Logout(), Times.Never);
+            // Assert: أُعيد ضبط IsEditing بلا حفظ، واستمرت عملية تسجيل الخروج
+            Assert.False(mockEditable.IsEditing);
+            _mockUserService.Verify(u => u.Logout(), Times.Once);
+
+            DialogHelper.ShowConfirmationResult = null;
         });
     }
 
@@ -88,7 +123,7 @@ public class MainViewModelLogoutTests : IDisposable
     [InlineData("Borrowing")]
     [InlineData("Users")]
     [InlineData("Radioisotopes")]
-    public void Logout_WithAnyActiveEditableViewModelInEditingState_BlocksLogout(string screenName)
+    public void Logout_WithAnyActiveEditableViewModelInEditingState_AndFormOpen_BlocksLogout(string screenName)
     {
         Fixtures.WpfStaFixture.RunInSta(() =>
         {
@@ -96,14 +131,24 @@ public class MainViewModelLogoutTests : IDisposable
             using var vm = CreateViewModel();
             var mockView = new MockNamedEditableView(screenName, isEditing: true);
             vm.CurrentView = mockView;
+            // الجولة 199 — حارس الشفاء الذاتي: يبقى الحجب كما هو فقط عندما تكون نافذة التحرير
+            // مفتوحة فعلاً.
+            EditingFormTracker.MarkOpen(mockView);
 
-            // Act
-            vm.LogoutCommand.Execute(null);
+            try
+            {
+                // Act
+                vm.LogoutCommand.Execute(null);
 
-            // Assert
-            Assert.Equal(TranslationHelper.GetString("TitlePendingChanges"), DialogHelper.LastTitle);
-            Assert.Equal(TranslationHelper.GetString("MsgErrSavePending"), DialogHelper.LastMessage);
-            Assert.True(vm.IsLoggedIn);
+                // Assert
+                Assert.Equal(TranslationHelper.GetString("TitlePendingChanges"), DialogHelper.LastTitle);
+                Assert.Equal(TranslationHelper.GetString("MsgErrSavePending"), DialogHelper.LastMessage);
+                Assert.True(vm.IsLoggedIn);
+            }
+            finally
+            {
+                EditingFormTracker.MarkClosed(mockView);
+            }
         });
     }
 
@@ -171,6 +216,52 @@ public class MainViewModelLogoutTests : IDisposable
         });
     }
 
+    [Fact]
+    public void NavigateTo_WhenCurrentViewIsEditing_AndFormIsOpen_ShowsWarningAndBlocksNavigation()
+    {
+        Fixtures.WpfStaFixture.RunInSta(() =>
+        {
+            using var vm = CreateViewModel();
+            var mockEditable = new MockEditableView(isEditing: true);
+            vm.CurrentView = mockEditable;
+            vm.CurrentViewName = "Sources";
+            EditingFormTracker.MarkOpen(mockEditable);
+
+            try
+            {
+                vm.NavigateToCommand.Execute("Locations");
+
+                Assert.Equal(TranslationHelper.GetString("TitlePendingChanges"), DialogHelper.LastTitle);
+                Assert.Equal(TranslationHelper.GetString("MsgErrSavePending"), DialogHelper.LastMessage);
+                Assert.Equal("Sources", vm.CurrentViewName);
+                Assert.Same(mockEditable, vm.CurrentView);
+            }
+            finally
+            {
+                EditingFormTracker.MarkClosed(mockEditable);
+            }
+        });
+    }
+
+    [Fact]
+    public void NavigateTo_WhenCurrentViewIsEditing_ButNoFormIsOpen_ResetsWithoutSaving_AndProceeds()
+    {
+        Fixtures.WpfStaFixture.RunInSta(() =>
+        {
+            using var vm = CreateViewModel();
+            var mockEditable = new MockEditableView(isEditing: true);
+            vm.CurrentView = mockEditable;
+            vm.CurrentViewName = "Sources";
+
+            // الجولة 199 — حارس الشفاء الذاتي: بلا EditingFormTracker.MarkOpen، أي IsEditing
+            // عالق يُعاد ضبطه بلا حفظ وتُسمح المتابعة (لا حجب إلى الأبد).
+            vm.NavigateToCommand.Execute("Locations");
+
+            Assert.False(mockEditable.IsEditing);
+            Assert.Equal("Locations", vm.CurrentViewName);
+        });
+    }
+
     public void Dispose()
     {
         DialogHelper.LastTitle = null;
@@ -186,12 +277,16 @@ public class MainViewModelLogoutTests : IDisposable
         {
             IsEditing = isEditing;
         }
+
+        public void CancelEditing() => IsEditing = false;
     }
 
     private sealed partial class MockNamedEditableView : ObservableObject, IEditableViewModel
     {
         public string ScreenName { get; }
         public bool IsEditing { get; set; }
+
+        public void CancelEditing() => IsEditing = false;
 
         public MockNamedEditableView(string screenName, bool isEditing)
         {
