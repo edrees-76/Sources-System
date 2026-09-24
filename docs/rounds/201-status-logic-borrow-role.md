@@ -201,7 +201,59 @@ Commits (all still on the branch, none amended, no fixups needed):
   DeletionsViewModel display switched to RoleNames.GetDisplayName. AuthorizationGuard untouched
   (confirmed no literal present). Group-A unchanged, Debug 1500/1500.
 - R201-E `61be44a` — 38 new tests (Round201NewCatalogAndRoleTests.cs). Debug 1538/1538.
-- R201-F (this commit) — docs.
+- R201-F `2dd09f5` — docs (session-summary, release-readiness, this file's first Implementation notes).
+
+### Lead review of PR #97 (CHANGES REQUESTED) and fix commits
+
+The lead reviewed the diff and found that 7 tests in `Round201CharacterizationTests.cs` re-implement
+the current predicate/switch inside the test body instead of calling the production code that Groups
+B-D change, so they would pass regardless of what B-D did:
+`LeakTests_SealedActiveList_ReplicatesCurrentPredicate_IsSealed_And_InUseOrStorage`,
+`AlertService_ActiveSourcesQuery_ReplicatesCurrentEfPredicate`,
+`ReportsViewModel_ActivityReport_ReplicatesCurrentPredicate`,
+`BorrowViewModel_KpiCounts_ReplicateCurrentPredicates`,
+`BorrowViewModel_CanReturn_ReplicatesCurrentPredicate`,
+`UsersViewModel_AdminUsersCount_ReplicatesCurrentPredicate`,
+`UsersViewModel_PermissionsAllShortCircuit_ReplicatesCurrentPredicate`. **These 7 are declared "not
+evidence" for the CORE RULE** — left in the file unmodified (per the lead's explicit instruction not
+to edit `Round201CharacterizationTests.cs`), but they must not be relied on to prove B-D preserved
+behaviour at those specific sites. The lead also identified sites not pinned at all: the
+`SourcesViewModel` status filter (sources + neutron tabs) and search on status text (sources/neutron/
+deleted tabs); `DashboardViewModel` status filter results, low-activity card counts, low-activity
+table rows, and the borrow-summary counts; `ReportsViewModel` GeneralReport activity rows and
+low-activity-alert rows; `BorrowViewModel`'s real available-to-borrow source list (:330) and KPI
+counts through the VM itself; `UsersViewModel` role summaries and `IsPermissionsSectionVisible`;
+`PasswordPromptDialog`'s public logical admin check.
+
+- **R201-A-fix `919d4a3`** — new `Sources.Tests/Round201CharacterizationSiteTests.cs` (31 tests) drives
+  the real production code (real `ViewModel`/`Service` instances, public commands/properties: `LoadDataCommand`,
+  `SearchCommand`, `EditCommand`, `SaveCommand`, `EditRoleId` setter, `GenerateAlerts()`,
+  `PasswordPromptDialog.ValidateAdminPassword`) for every site listed above. Introduced
+  `ConcurrentSqliteFixture` (local to this file only, not a change to the shared
+  `Fixtures/SqliteInMemoryFixture.cs`): `SourcesViewModel`/`DashboardViewModel`/`BorrowViewModel`/
+  `LeakTestsViewModel` internally offload their DB reads onto `Task.Run` background threads; opening
+  more than one `AppDbContext` concurrently on the single shared `SqliteConnection` object used by
+  `SqliteInMemoryFixture` throws SQLite "unable to delete/modify user-function due to active
+  statements" the moment two such background reads overlap (which happens routinely once a VM's own
+  constructor fire-and-forgets an initial load and the test then awaits a second explicit call).
+  `ConcurrentSqliteFixture` uses a named in-memory database opened with `Mode=Memory;Cache=Shared` so
+  every `AppDbContext` gets its own `SqliteConnection` object (opened/closed by EF per unit of work)
+  while all of them see the same data; a single anchor connection is kept open for the fixture's
+  lifetime so the shared-cache database is not torn down between calls. `SourcesViewModel.LoadDataAsync`
+  also calls the static `App.CreateDbContext()` for `ActivityUnits`, so the constructor follows the
+  existing `SourcesViewModelTests.cs` pattern of pointing `App.ServiceProvider` (via reflection) at a
+  minimal DI container that resolves `IDbContextFactory<AppDbContext>` to the fixture's factory.
+  **Proof run:** the identical file (after replacing `RoleNames.Admin`/`RoleNames.User` with their
+  literal stored strings so it compiles pre-R201-D) was copied into a detached worktree at `0ce781d`
+  (unmodified base + Group A only) and run there: **31/31 passed**. The same file at HEAD: **31/31
+  passed**. No test that passed on the base failed on HEAD, so the STOP RULE was not triggered. Debug
+  full suite after this commit: **1569/1569** (1538 + 31). The temporary worktree was removed
+  afterwards (`git worktree remove`, file deleted first, no `--force` needed).
+- **R201-C-fix `88687c4`** — `BorrowService.cs:198` (`req.Status = "Returned"`, missed in the original
+  R201-C pass) now uses `BorrowStatusCatalog.Returned` (identical value); corrected a `StatusCatalog.cs`
+  comment that referenced a nonexistent "StatusService الجولة 201".
+- **R201-F-fix** — this update to the Implementation notes, plus the corresponding count updates in
+  `docs/session-summary.md` and `docs/release-readiness.md`.
 
 Color table (BorrowStatusCatalog, before -> after, per Lead decision 5):
 | Status | Background tint (before) | Foreground (before) | Background tint (after) | Foreground (after) |
@@ -215,19 +267,21 @@ Color table (BorrowStatusCatalog, before -> after, per Lead decision 5):
 | Unknown (unreachable today) | `#1A4F7FA3` (default) | `PrimaryBrush` | tint of `#9E9E9E` | `#9E9E9E` |
 
 Deviations (declared, none silent):
-1. Group-A characterization tests cover the service layer (SourceService, BorrowService),
-   LocationDetailsViewModel, BorrowRequest model, and role statics (User.IsAdmin,
-   AuthorizationGuard.RequireAdmin) by constructing the real production objects. For
-   DashboardViewModel, ReportsViewModel (as a full VM), LeakTestsViewModel (as a full VM),
-   AlertService, BorrowViewModel (as a full VM) and UsersViewModel, no Fake exists yet for their
-   heavier dependencies (IReportingService, ISystemSettingsService, IDecayCalculationService,
-   INeutronSourceService, IAlertService, IGlobalSearchService) in `Sources.Tests/Fakes`. Building
-   those Fakes was judged out of proportion for this round's turn budget. Instead, Group-A pins the
-   exact same predicate/logic as it appears in the current source file, evaluated against real data
-   fetched via SourceService/BorrowService, and the implementer additionally diffed every changed
-   line in these files against the pre-change source before and after each of B/C/D. This is a
-   reduction in fidelity versus literally instantiating the ViewModel, reported here for the lead's
-   verification.
+1. **Superseded by R201-A-fix.** The original Group-A characterization used predicate-replication for
+   DashboardViewModel/ReportsViewModel/LeakTestsViewModel/AlertService/BorrowViewModel/UsersViewModel
+   instead of driving the real ViewModel/Service. `Round201CharacterizationSiteTests.cs` (R201-A-fix)
+   now drives the real production code for all of those sites via `ConcurrentSqliteFixture` (see above).
+   The 7 tautological tests named above remain in `Round201CharacterizationTests.cs` unedited (per the
+   lead's explicit instruction) but are documented as **not evidence** for the CORE RULE; the
+   corresponding real-code coverage lives in `Round201CharacterizationSiteTests.cs` instead
+   (`DashboardViewModel_LowActivityCardAndTable_OnlyCountActiveInventoryStatuses` /
+   `DashboardViewModel_BorrowSummaryCard_UsesRealBorrowServiceCounts` /
+   `AlertService_GenerateAlerts_OnlyConsidersActiveInventoryStatuses` /
+   `ReportsViewModel_GeneralReport_ActivityRows_OnlyActiveInventoryStatuses` /
+   `BorrowViewModel_KpiCounts_ViaRealLoadDataAsync` /
+   `BorrowViewModel_Edit_LoadsAvailableBorrowers_OnlyWhenReturnable` /
+   `UsersViewModel_RoleSummaries_And_AdminUsersCount_ViaRealConstructorLoad` /
+   `UsersViewModel_Save_NewAdminUser_PacksPermissionsAsAll_ViaRealSaveCommand`).
 2. NeutronSource-specific characterization tests were not added: no NeutronSource LOGIC comparison
    site is touched by Groups B-D beyond two literal-to-constant default-value writes in
    NeutronSourceService (identical string value, zero behavioural risk).
@@ -237,4 +291,15 @@ Deviations (declared, none silent):
    they compare against whatever value the bound combo already holds, so there is nothing to
    consolidate through the catalog without also restructuring those combos, which was out of the
    round's declared scope (only LocationDetails and BorrowView combos were named for restructuring).
+   `Round201CharacterizationSiteTests.cs` does pin the current `SourcesViewModel` filter/search
+   results themselves (sources/neutron/deleted tabs) even though the underlying comparison is
+   untouched by B-D, so a future regression there would still be caught.
+4. `Round201CharacterizationSiteTests.cs` introduces `ConcurrentSqliteFixture`, a fixture local to that
+   one file (not a modification of the shared `Fixtures/SqliteInMemoryFixture.cs` used by the rest of
+   the suite), because the VMs it drives use internal `Task.Run` and are incompatible with a single
+   shared `SqliteConnection` object under concurrent access. This is additive test infrastructure, not
+   a change to existing test behaviour.
+5. One `PasswordPromptDialog_ValidateAdminPassword` scenario is asserted via `FakeUserService`
+   directly (not through a full dialog/window) since `ValidateAdminPassword` is `static` and takes
+   `IUserService?` — there is no WPF dialog to instantiate for this specific check.
 
