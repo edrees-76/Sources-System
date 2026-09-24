@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Sources.Data;
 using Sources.Messages;
@@ -27,6 +28,12 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
     private readonly BorrowService _borrowService;
     private readonly IMessenger _messenger = new WeakReferenceMessenger();
 
+    // الجولة 202 (المجموعة E): ساعة ثابتة صناعية بدل الاعتماد على DateTime.Now/Today الحقيقي
+    // لإزالة سباق القراءتين المنفصلتين القريب من منتصف الليل أو نهاية الشهر.
+    private readonly FakeTimeProvider _fakeClock = new(new DateTimeOffset(2026, 6, 15, 10, 0, 0, TimeSpan.Zero));
+    private DateTime FixedToday => _fakeClock.LocalToday();
+    private DateTime FixedNow => _fakeClock.LocalNow();
+
     public BorrowViewModelAndDueSoonTests()
     {
         _fixture = new SqliteInMemoryFixture();
@@ -35,7 +42,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         _fakeAuditService = new FakeAuditService();
         _fakeUserService = new FakeUserService();
         _settingsService = new SystemSettingsService(_fixture.ContextFactory, _fakeLicenseService);
-        _borrowService = new BorrowService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService, _fakeLicenseService, _settingsService);
+        _borrowService = new BorrowService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService, _fakeLicenseService, _settingsService, _fakeClock);
     }
 
     public void Dispose()
@@ -58,10 +65,10 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         db.Locations.Add(loc);
         db.SaveChanges();
 
-        var src1 = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-MATCH-1", 50.0, DateTime.Now.AddMonths(-2), "InUse");
-        var src2 = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-MATCH-2", 50.0, DateTime.Now.AddMonths(-2), "InUse");
-        var src3 = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-MATCH-3", 50.0, DateTime.Now.AddMonths(-2), "InUse");
-        var src4 = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-MATCH-4", 50.0, DateTime.Now.AddMonths(-2), "Storage");
+        var src1 = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-MATCH-1", 50.0, FixedNow.AddMonths(-2), "InUse");
+        var src2 = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-MATCH-2", 50.0, FixedNow.AddMonths(-2), "InUse");
+        var src3 = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-MATCH-3", 50.0, FixedNow.AddMonths(-2), "InUse");
+        var src4 = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-MATCH-4", 50.0, FixedNow.AddMonths(-2), "Storage");
         db.Sources.AddRange(src1, src2, src3, src4);
         db.SaveChanges();
 
@@ -73,8 +80,8 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
             BorrowerName = "مستعير 1",
             Purpose = "تجربة 1",
             Status = "Delivered",
-            RequestDate = DateTime.Today.AddDays(-3),
-            ExpectedReturnDate = DateTime.Today
+            RequestDate = FixedToday.AddDays(-3),
+            ExpectedReturnDate = FixedToday
         };
 
         // 2. طلب مستحق بعد 4 أيام (Delivered)
@@ -85,8 +92,8 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
             BorrowerName = "مستعير 2",
             Purpose = "تجربة 2",
             Status = "Delivered",
-            RequestDate = DateTime.Today.AddDays(-2),
-            ExpectedReturnDate = DateTime.Today.AddDays(4)
+            RequestDate = FixedToday.AddDays(-2),
+            ExpectedReturnDate = FixedToday.AddDays(4)
         };
 
         // 3. طلب متأخر (Overdue)
@@ -97,8 +104,8 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
             BorrowerName = "مستعير 3",
             Purpose = "تجربة 3",
             Status = "Delivered", // سيتحول إلى Overdue بواسطة CheckAndUpdateOverdue
-            RequestDate = DateTime.Today.AddDays(-10),
-            ExpectedReturnDate = DateTime.Today.AddDays(-2)
+            RequestDate = FixedToday.AddDays(-10),
+            ExpectedReturnDate = FixedToday.AddDays(-2)
         };
 
         // 4. طلب تم إرجاعه (Returned)
@@ -109,9 +116,9 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
             BorrowerName = "مستعير 4",
             Purpose = "تجربة 4",
             Status = "Returned",
-            RequestDate = DateTime.Today.AddDays(-15),
-            ExpectedReturnDate = DateTime.Today.AddDays(-5),
-            ActualReturnDate = DateTime.Today.AddDays(-5)
+            RequestDate = FixedToday.AddDays(-15),
+            ExpectedReturnDate = FixedToday.AddDays(-5),
+            ActualReturnDate = FixedToday.AddDays(-5)
         };
 
         db.BorrowRequests.AddRange(reqDueToday, reqDueIn4Days, reqOverdue, reqReturned);
@@ -151,7 +158,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         var mockReportingService = new Mock<IReportingService>();
         var mockBorrowService = new Mock<IBorrowService>();
 
-        using var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, messenger: _messenger);
+        using var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, messenger: _messenger, timeProvider: _fakeClock);
 
         var testSource = new Source { Id = Guid.NewGuid(), SourceCode = "SRC-VAL-1" };
         vm.SelectedSourceForNew = testSource;
@@ -159,12 +166,12 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         vm.NewPurpose = "فحص عينات";
 
         // Case 1: Expected return date in the past
-        vm.NewExpectedReturnDate = DateTime.Today.AddDays(-1);
+        vm.NewExpectedReturnDate = FixedToday.AddDays(-1);
         vm.SubmitCommand.Execute(null);
         mockBorrowService.Verify(b => b.CreateRequest(It.IsAny<BorrowRequest>()), Times.Never);
 
         // Case 2: Expected return date too far in the future (> 2 years)
-        vm.NewExpectedReturnDate = DateTime.Today.AddYears(2).AddDays(5);
+        vm.NewExpectedReturnDate = FixedToday.AddYears(2).AddDays(5);
         vm.SubmitCommand.Execute(null);
         mockBorrowService.Verify(b => b.CreateRequest(It.IsAny<BorrowRequest>()), Times.Never);
     }
@@ -178,13 +185,13 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         var mockReportingService = new Mock<IReportingService>();
         var mockBorrowService = new Mock<IBorrowService>();
 
-        using var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, messenger: _messenger);
+        using var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, messenger: _messenger, timeProvider: _fakeClock);
 
         var request = new BorrowRequest
         {
             Id = Guid.NewGuid(),
-            RequestDate = DateTime.Today.AddDays(-5),
-            ExpectedReturnDate = DateTime.Today.AddDays(2),
+            RequestDate = FixedToday.AddDays(-5),
+            ExpectedReturnDate = FixedToday.AddDays(2),
             Status = "Delivered"
         };
         var returnerUser = new User { Id = Guid.NewGuid(), FullName = "علي المستلم" };
@@ -193,18 +200,18 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
 
         // Case 1: Null returned by user
         vm.SelectedReturnedBy = null;
-        vm.NewActualReturnDate = DateTime.Today;
+        vm.NewActualReturnDate = FixedToday;
         vm.MarkReturnedCommand.Execute(null);
         mockBorrowService.Verify(b => b.MarkReturned(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<DateTime>(), It.IsAny<string>()), Times.Never);
 
         // Case 2: Actual return date before request date
         vm.SelectedReturnedBy = returnerUser;
-        vm.NewActualReturnDate = DateTime.Today.AddDays(-6);
+        vm.NewActualReturnDate = FixedToday.AddDays(-6);
         vm.MarkReturnedCommand.Execute(null);
         mockBorrowService.Verify(b => b.MarkReturned(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<DateTime>(), It.IsAny<string>()), Times.Never);
 
         // Case 3: Actual return date in the future
-        vm.NewActualReturnDate = DateTime.Today.AddDays(1);
+        vm.NewActualReturnDate = FixedToday.AddDays(1);
         vm.MarkReturnedCommand.Execute(null);
         mockBorrowService.Verify(b => b.MarkReturned(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<DateTime>(), It.IsAny<string>()), Times.Never);
     }
@@ -272,7 +279,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
 
         mockBorrowService.Setup(b => b.GetAll()).Returns(testRequests);
 
-        using var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, messenger: _messenger);
+        using var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, messenger: _messenger, timeProvider: _fakeClock);
         await vm.LoadDataAsync();
 
         // Assert: Initial load
@@ -312,7 +319,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
 
         mockBorrowService.Setup(b => b.GetAll()).Returns(testRequests);
 
-        using var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, messenger: _messenger);
+        using var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, messenger: _messenger, timeProvider: _fakeClock);
         await vm.LoadDataAsync();
 
         int initialGetAllCalls = mockBorrowService.Invocations.Count(i => i.Method.Name == nameof(IBorrowService.GetAll));
@@ -353,27 +360,27 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
                 Id = Guid.NewGuid(), 
                 BorrowerName = "مستعير قريب", 
                 Status = "Delivered", 
-                ExpectedReturnDate = DateTime.Today.AddDays(3) 
+                ExpectedReturnDate = FixedToday.AddDays(3) 
             },
             new BorrowRequest 
             { 
                 Id = Guid.NewGuid(), 
                 BorrowerName = "مستعير بعيد", 
                 Status = "Delivered", 
-                ExpectedReturnDate = DateTime.Today.AddDays(20) 
+                ExpectedReturnDate = FixedToday.AddDays(20) 
             },
             new BorrowRequest 
             { 
                 Id = Guid.NewGuid(), 
                 BorrowerName = "مستعير متأخر", 
                 Status = "Overdue", 
-                ExpectedReturnDate = DateTime.Today.AddDays(-2) 
+                ExpectedReturnDate = FixedToday.AddDays(-2) 
             }
         };
 
         mockBorrowService.Setup(b => b.GetAll()).Returns(testRequests);
 
-        using var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, messenger: _messenger);
+        using var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, messenger: _messenger, timeProvider: _fakeClock);
         await vm.LoadDataAsync();
 
         // Act: Filter by "قريبة الإرجاع"
@@ -404,7 +411,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         mockBorrowService.Setup(b => b.CreateRequest(It.IsAny<BorrowRequest>()))
             .Returns((true, "نجاح"));
 
-        using var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, messenger: _messenger);
+        using var vm = new BorrowViewModel(mockBorrowService.Object, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, messenger: _messenger, timeProvider: _fakeClock);
 
         vm.AvailableBorrowers.Add(registeredUser);
         vm.AvailableBorrowers.Add(currentUser);
@@ -431,7 +438,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         vm.SelectedSourceForNew = testSource;
         vm.NewBorrowerName = "جهة خارجية غير مسجلة";
         vm.NewPurpose = "فحص عينات خارجي";
-        vm.NewExpectedReturnDate = DateTime.Today.AddDays(5);
+        vm.NewExpectedReturnDate = FixedToday.AddDays(5);
         BorrowRequest? capturedReq2 = null;
         mockBorrowService.Setup(b => b.CreateRequest(It.IsAny<BorrowRequest>()))
             .Callback<BorrowRequest>(r => capturedReq2 = r)
@@ -462,12 +469,12 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         db.Locations.Add(loc);
 
         // إضافة مصادر بأسماء غير مرتبة
-        var srcZ = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-Z999", 10.0, DateTime.Now, "Storage");
-        var srcA = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-A001", 10.0, DateTime.Now, "Storage");
-        var srcM = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-M500", 10.0, DateTime.Now, "Storage");
-        var srcEdr = TestDataBuilder.CreateSource(iso, unit, loc, "edr-1976", 10.0, DateTime.Now, "Storage");
-        var srcInUse = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-INUSE", 10.0, DateTime.Now, "InUse");
-        var srcDeleted = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-DELETED", 10.0, DateTime.Now, "Storage");
+        var srcZ = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-Z999", 10.0, FixedNow, "Storage");
+        var srcA = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-A001", 10.0, FixedNow, "Storage");
+        var srcM = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-M500", 10.0, FixedNow, "Storage");
+        var srcEdr = TestDataBuilder.CreateSource(iso, unit, loc, "edr-1976", 10.0, FixedNow, "Storage");
+        var srcInUse = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-INUSE", 10.0, FixedNow, "InUse");
+        var srcDeleted = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-DELETED", 10.0, FixedNow, "Storage");
         srcDeleted.IsDeleted = true;
 
         db.Sources.AddRange(srcZ, srcA, srcM, srcEdr, srcInUse, srcDeleted);
@@ -477,7 +484,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         var mockUserService = new Mock<IUserService>();
         var mockReportingService = new Mock<IReportingService>();
 
-        using var vm = new BorrowViewModel(_borrowService, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, _fixture.ContextFactory, messenger: _messenger);
+        using var vm = new BorrowViewModel(_borrowService, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, _fixture.ContextFactory, messenger: _messenger, timeProvider: _fakeClock);
 
         // Act
         vm.LoadAvailableSources();
@@ -504,7 +511,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         db.ActivityUnits.Add(unit);
         db.Locations.Add(loc);
 
-        var edrSource = TestDataBuilder.CreateSource(iso, unit, loc, "edr-1976", 25.0, DateTime.Now, "Storage");
+        var edrSource = TestDataBuilder.CreateSource(iso, unit, loc, "edr-1976", 25.0, FixedNow, "Storage");
         edrSource.IsDeleted = false;
         edrSource.IsSealed = true;
         db.Sources.Add(edrSource);
@@ -514,7 +521,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         var mockUserService = new Mock<IUserService>();
         var mockReportingService = new Mock<IReportingService>();
 
-        using var vm = new BorrowViewModel(_borrowService, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, _fixture.ContextFactory, messenger: _messenger);
+        using var vm = new BorrowViewModel(_borrowService, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, _fixture.ContextFactory, messenger: _messenger, timeProvider: _fakeClock);
 
         // Act
         vm.LoadAvailableSources();
@@ -540,13 +547,13 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         var mockUserService = new Mock<IUserService>();
         var mockReportingService = new Mock<IReportingService>();
 
-        using var vm = new BorrowViewModel(_borrowService, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, _fixture.ContextFactory, messenger: _messenger);
+        using var vm = new BorrowViewModel(_borrowService, mockSourceService.Object, mockUserService.Object, mockReportingService.Object, _fixture.ContextFactory, messenger: _messenger, timeProvider: _fakeClock);
 
         vm.LoadAvailableSources();
         Assert.Empty(vm.AvailableSources);
 
         // إضافة مصدر في قاعدة البيانات
-        var newSource = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-NEW-STORAGE", 5.0, DateTime.Now, "Storage");
+        var newSource = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-NEW-STORAGE", 5.0, FixedNow, "Storage");
         db.Sources.Add(newSource);
         db.SaveChanges();
 
@@ -572,7 +579,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         db.SaveChanges();
 
         // 100 MBq of Cs-137 -> DoseRate = 100 * 0.0772 = 7.72 µSv/h @ 1m
-        var source = TestDataBuilder.CreateSource(cs137, mbqUnit, loc, "SRC-BORROW-TEST", 100.0, DateTime.Today.AddDays(-10), "InUse");
+        var source = TestDataBuilder.CreateSource(cs137, mbqUnit, loc, "SRC-BORROW-TEST", 100.0, FixedToday.AddDays(-10), "InUse");
         db.Sources.Add(source);
         db.SaveChanges();
 
@@ -582,8 +589,8 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
             SourceId = source.Id,
             BorrowerName = "د. أحمد علي",
             Purpose = "أبحاث علمية",
-            RequestDate = DateTime.Today.AddDays(-5),
-            ExpectedReturnDate = DateTime.Today.AddDays(5),
+            RequestDate = FixedToday.AddDays(-5),
+            ExpectedReturnDate = FixedToday.AddDays(5),
             Status = "Delivered"
         };
         db.BorrowRequests.Add(borrowReq);
@@ -631,13 +638,13 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         db.SaveChanges();
 
         // 1. مصدر صالح بدون فحص تسرب (مخزن)
-        var srcValid1 = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-VALID-NO-TEST", 50.0, DateTime.Today, "Storage");
+        var srcValid1 = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-VALID-NO-TEST", 50.0, FixedToday, "Storage");
         // 2. مصدر صالح بآخر فحص ناجح (مخزن)
-        var srcValid2 = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-VALID-PASSED", 50.0, DateTime.Today, "Storage");
+        var srcValid2 = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-VALID-PASSED", 50.0, FixedToday, "Storage");
         // 3. مصدر فاشل بآخر فحص راسب (مخزن)
-        var srcFailed = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-FAILED-LEAK", 50.0, DateTime.Today, "Storage");
+        var srcFailed = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-FAILED-LEAK", 50.0, FixedToday, "Storage");
         // 4. مصدر كان فاشلاً سابقاً ولكن أحدث فحص له ناجح (مخزن)
-        var srcRecovered = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-RECOVERED", 50.0, DateTime.Today, "Storage");
+        var srcRecovered = TestDataBuilder.CreateSource(iso, unit, loc, "SRC-RECOVERED", 50.0, FixedToday, "Storage");
 
         db.Sources.AddRange(srcValid1, srcValid2, srcFailed, srcRecovered);
         db.SaveChanges();
@@ -646,30 +653,30 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
         var testPass = new LeakTestRecord
         {
             SourceId = srcValid2.Id,
-            TestDate = DateTime.Today.AddDays(-5),
+            TestDate = FixedToday.AddDays(-5),
             Result = "Pass",
-            NextDueDate = DateTime.Today.AddMonths(6)
+            NextDueDate = FixedToday.AddMonths(6)
         };
         var testFail = new LeakTestRecord
         {
             SourceId = srcFailed.Id,
-            TestDate = DateTime.Today.AddDays(-2),
+            TestDate = FixedToday.AddDays(-2),
             Result = "Fail",
-            NextDueDate = DateTime.Today.AddMonths(6)
+            NextDueDate = FixedToday.AddMonths(6)
         };
         var oldTestFail = new LeakTestRecord
         {
             SourceId = srcRecovered.Id,
-            TestDate = DateTime.Today.AddDays(-20),
+            TestDate = FixedToday.AddDays(-20),
             Result = "Fail",
-            NextDueDate = DateTime.Today.AddMonths(6)
+            NextDueDate = FixedToday.AddMonths(6)
         };
         var newTestPass = new LeakTestRecord
         {
             SourceId = srcRecovered.Id,
-            TestDate = DateTime.Today.AddDays(-1),
+            TestDate = FixedToday.AddDays(-1),
             Result = "Pass",
-            NextDueDate = DateTime.Today.AddMonths(6)
+            NextDueDate = FixedToday.AddMonths(6)
         };
 
         db.LeakTestRecords.AddRange(testPass, testFail, oldTestFail, newTestPass);
@@ -684,7 +691,7 @@ public class BorrowViewModelAndDueSoonTests : IDisposable
             _fakeUserService,
             mockReportingService.Object,
             _fixture.ContextFactory,
-            messenger: _messenger);
+            messenger: _messenger, timeProvider: _fakeClock);
 
         // Act
         vm.LoadAvailableSources();

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Sources.Data;
 using Sources.Messages;
@@ -24,6 +25,12 @@ public class LeakTestServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
     private readonly ISystemSettingsService _settingsService;
     private readonly LeakTestService _leakTestService;
 
+    // الجولة 202 (المجموعة E): ساعة ثابتة صناعية بدل الاعتماد على DateTime.Now/Today الحقيقي
+    // لإزالة سباق القراءتين المنفصلتين القريب من منتصف الليل أو نهاية الشهر.
+    private readonly FakeTimeProvider _fakeClock = new(new DateTimeOffset(2026, 6, 15, 10, 0, 0, TimeSpan.Zero));
+    private DateTime FixedToday => _fakeClock.LocalToday();
+    private DateTime FixedNow => _fakeClock.LocalNow();
+
     private Radioisotope _testIsotope = null!;
     private ActivityUnit _testUnit = null!;
     private Location _testLocation = null!;
@@ -44,7 +51,8 @@ public class LeakTestServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
             _mockAuditService.Object,
             _mockUserService.Object,
             _settingsService,
-            _fakeLicenseService);
+            _fakeLicenseService,
+            _fakeClock);
 
         SeedData();
     }
@@ -111,8 +119,8 @@ public class LeakTestServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
         var record = new LeakTestRecord
         {
             SourceId = _testSource.Id,
-            TestDate = DateTime.Today,
-            NextDueDate = DateTime.Today.AddMonths(6),
+            TestDate = FixedToday,
+            NextDueDate = FixedToday.AddMonths(6),
             Result = "Pass",
             MeasuredActivityBq = 0.05,
             InspectorName = "د. سعيد",
@@ -191,7 +199,7 @@ public class LeakTestServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
         var record = new LeakTestRecord
         {
             SourceId = Guid.NewGuid(), // Non-existent source
-            TestDate = DateTime.Today,
+            TestDate = FixedToday,
             Result = "Pass"
         };
 
@@ -213,8 +221,8 @@ public class LeakTestServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
         var record = new LeakTestRecord
         {
             SourceId = _testSource.Id,
-            TestDate = DateTime.Today.AddDays(-10),
-            NextDueDate = DateTime.Today.AddMonths(6),
+            TestDate = FixedToday.AddDays(-10),
+            NextDueDate = FixedToday.AddMonths(6),
             Result = "Pass",
             Notes = "أولي"
         };
@@ -250,8 +258,8 @@ public class LeakTestServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
         var record = new LeakTestRecord
         {
             SourceId = _testSource.Id,
-            TestDate = DateTime.Today,
-            NextDueDate = DateTime.Today.AddMonths(6),
+            TestDate = FixedToday,
+            NextDueDate = FixedToday.AddMonths(6),
             Result = "Pass"
         };
         _leakTestService.AddRecord(record);
@@ -277,8 +285,8 @@ public class LeakTestServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
     public void GetAllRecords_FilterByResult_ReturnsOnlyMatchingResults()
     {
         // Arrange
-        var recPass = new LeakTestRecord { SourceId = _testSource.Id, TestDate = DateTime.Today, NextDueDate = DateTime.Today.AddMonths(6), Result = "Pass" };
-        var recFail = new LeakTestRecord { SourceId = _testSource.Id, TestDate = DateTime.Today, NextDueDate = DateTime.Today.AddMonths(6), Result = "Fail" };
+        var recPass = new LeakTestRecord { SourceId = _testSource.Id, TestDate = FixedToday, NextDueDate = FixedToday.AddMonths(6), Result = "Pass" };
+        var recFail = new LeakTestRecord { SourceId = _testSource.Id, TestDate = FixedToday, NextDueDate = FixedToday.AddMonths(6), Result = "Fail" };
         _leakTestService.AddRecord(recPass);
         _leakTestService.AddRecord(recFail);
 
@@ -298,8 +306,8 @@ public class LeakTestServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
     public void GetAllRecords_FilterByDueStatus_Overdue_ReturnsOnlyOverdue()
     {
         // Arrange
-        var recOverdue = new LeakTestRecord { SourceId = _testSource.Id, TestDate = DateTime.Today.AddMonths(-7), NextDueDate = DateTime.Today.AddDays(-10), Result = "Pass" };
-        var recValid = new LeakTestRecord { SourceId = _testSource.Id, TestDate = DateTime.Today, NextDueDate = DateTime.Today.AddMonths(6), Result = "Pass" };
+        var recOverdue = new LeakTestRecord { SourceId = _testSource.Id, TestDate = FixedToday.AddMonths(-7), NextDueDate = FixedToday.AddDays(-10), Result = "Pass" };
+        var recValid = new LeakTestRecord { SourceId = _testSource.Id, TestDate = FixedToday, NextDueDate = FixedToday.AddMonths(6), Result = "Pass" };
         _leakTestService.AddRecord(recOverdue);
         _leakTestService.AddRecord(recValid);
 
@@ -316,8 +324,8 @@ public class LeakTestServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
     {
         // Arrange
         // Warning threshold is 30 days
-        var recDueSoon = new LeakTestRecord { SourceId = _testSource.Id, TestDate = DateTime.Today.AddMonths(-5), NextDueDate = DateTime.Today.AddDays(15), Result = "Pass" };
-        var recFarFuture = new LeakTestRecord { SourceId = _testSource.Id, TestDate = DateTime.Today, NextDueDate = DateTime.Today.AddMonths(6), Result = "Pass" };
+        var recDueSoon = new LeakTestRecord { SourceId = _testSource.Id, TestDate = FixedToday.AddMonths(-5), NextDueDate = FixedToday.AddDays(15), Result = "Pass" };
+        var recFarFuture = new LeakTestRecord { SourceId = _testSource.Id, TestDate = FixedToday, NextDueDate = FixedToday.AddMonths(6), Result = "Pass" };
         _leakTestService.AddRecord(recDueSoon);
         _leakTestService.AddRecord(recFarFuture);
 
@@ -333,8 +341,8 @@ public class LeakTestServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
     public void GetAllRecords_SearchText_MatchesSourceCodeOrInspectorOrCert()
     {
         // Arrange
-        var rec1 = new LeakTestRecord { SourceId = _testSource.Id, TestDate = DateTime.Today, NextDueDate = DateTime.Today.AddMonths(6), Result = "Pass", InspectorName = "Dr. Sameh", CertificateNumber = "CERT-999" };
-        var rec2 = new LeakTestRecord { SourceId = _testSource.Id, TestDate = DateTime.Today, NextDueDate = DateTime.Today.AddMonths(6), Result = "Pass", InspectorName = "Dr. Hani", CertificateNumber = "CERT-111" };
+        var rec1 = new LeakTestRecord { SourceId = _testSource.Id, TestDate = FixedToday, NextDueDate = FixedToday.AddMonths(6), Result = "Pass", InspectorName = "Dr. Sameh", CertificateNumber = "CERT-999" };
+        var rec2 = new LeakTestRecord { SourceId = _testSource.Id, TestDate = FixedToday, NextDueDate = FixedToday.AddMonths(6), Result = "Pass", InspectorName = "Dr. Hani", CertificateNumber = "CERT-111" };
         _leakTestService.AddRecord(rec1);
         _leakTestService.AddRecord(rec2);
 
@@ -354,8 +362,8 @@ public class LeakTestServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
     public void GetLatestRecordBySourceId_ReturnsMostRecentTest()
     {
         // Arrange
-        var older = new LeakTestRecord { SourceId = _testSource.Id, TestDate = DateTime.Today.AddMonths(-6), NextDueDate = DateTime.Today, Result = "Pass" };
-        var newer = new LeakTestRecord { SourceId = _testSource.Id, TestDate = DateTime.Today, NextDueDate = DateTime.Today.AddMonths(6), Result = "Pass" };
+        var older = new LeakTestRecord { SourceId = _testSource.Id, TestDate = FixedToday.AddMonths(-6), NextDueDate = FixedToday, Result = "Pass" };
+        var newer = new LeakTestRecord { SourceId = _testSource.Id, TestDate = FixedToday, NextDueDate = FixedToday.AddMonths(6), Result = "Pass" };
         _leakTestService.AddRecord(older);
         _leakTestService.AddRecord(newer);
 
@@ -405,7 +413,7 @@ public class LeakTestServiceTests : IClassFixture<SqliteInMemoryFixture>, IDispo
             var record = new LeakTestRecord
             {
                 SourceId = _testSource.Id,
-                TestDate = DateTime.Today,
+                TestDate = FixedToday,
                 Result = "Pass"
             };
             var addResult = _leakTestService.AddRecord(record);
