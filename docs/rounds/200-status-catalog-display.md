@@ -177,3 +177,13 @@ Deviations: see the declared deviations list in session-summary.md §الجول�
 §الجولة 200 (StatusToArabic Storage text change, "Active" legacy value now Unknown instead of InUse,
 SourceDetailsViewModel unknown color #1F5A66 -> #9E9E9E, SourceService restore message/audit variable
 split, and the sandbox worktree-path substitution noted above).
+
+## Lead review addendum (2026-09-24)
+
+- change-verifier: PASS WITH NOTES (Debug 1414/0/0 re-run independently; TestDataIsolation 6/6; no LOGIC/audit/schema
+  change; badge tints and foregrounds byte-equal to the old ones for the four stored values).
+- Fixups (declared deviations): `R200-C-fix` removes the new xUnit1026 warnings (per-theory `TheoryData`, same 24 cases);
+  `R200-D-fix` corrects the docs (the implementer's warning count was wrong, and the CI result was missing) and discloses
+  that the legacy values Decayed/Disposed/Lost (never written, D1) lose their Danger tint (#1AC25B4A) in the sources-list
+  badge and now show as Unknown (gray #9E9E9E, raw text), as does Active.
+- CI run 35983345202 on 72f8f78: success, 1412/0/0, 3 known CS8604 + the xUnit1026 warnings removed by R200-C-fix.
