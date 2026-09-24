@@ -405,6 +405,10 @@
     <system:String x:Key="StatusStorage">في المخزن</system:String>
     <system:String x:Key="StatusWaste">نفايات</system:String>
     <system:String x:Key="StatusTransfer">قيد النقل</system:String>
+    <system:String x:Key="StatusDisplayInUse">قيد الاستخدام</system:String>
+    <system:String x:Key="StatusDisplayStorage">مخزن</system:String>
+    <system:String x:Key="StatusDisplayWaste">نفايات</system:String>
+    <system:String x:Key="StatusDisplayTransfer">قيد النقل</system:String>
     <system:String x:Key="BtnReset">تعيين</system:String>
     <system:String x:Key="ColSourceImage">صورة المصدر</system:String>
     <system:String x:Key="ColSourceCode">كود المصدر</system:String>
