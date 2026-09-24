@@ -329,20 +329,43 @@ no STOP was required.
 no explicit lower pin was requested — this was the latest version resolved by NuGet at the time of
 the round and it builds/tests clean against `net8.0-windows`).
 
-### Group B coverage (30 new tests, `Round202TimeHandlingCharacterizationTests.cs`)
+### Group B coverage (41 tests total, `Round202TimeHandlingCharacterizationTests.cs`: 30 landed in
+R202-B + 11 added in R202-B-fix after lead diff review of PR #98)
 
-- Minute-resolution decay: SRC-0106-like Tc-99m and SRC-0029-like F-18 cases pinned to the exact
-  contract literals (9.238773496698382E-011 mCi and 1.3265170327085314E-038 mCi respectively,
-  computed independently from tick-exact elapsed seconds, relative tolerance < 1e-9).
-- Long-lived nuclide (Cs-137) decay, neutron emission decay (`NeutronDecayCalculationService`), and
-  `AlertService.CalculateMaxHalfLivesElapsed` — each parametrised over the four contracted fixed
-  clocks (23:30 local, 00:30 local next day, 2026-09-30 23:30 local, 2026-10-01 00:30 local).
+- Minute-resolution decay: SRC-0106-like Tc-99m and SRC-0029-like F-18 cases pinned at **five**
+  points each (R202-B-fix, superseding the single 20:53 point from R202-B) — the original 20:53
+  instant plus all four contracted fixed clocks (23:30 local, 00:30 local next day, 2026-09-30
+  23:30 local, 2026-10-01 00:30 local) — with one independently pre-computed literal expected value
+  per point (tick-exact elapsed seconds, formula in the test's leading comment), relative tolerance
+  < 1e-9.
+- Long-lived nuclide (Cs-137) decay and neutron emission decay (`NeutronDecayCalculationService`):
+  reworked in R202-B-fix from a relative `AddYears(-n)` calibration + runtime-recomputed expected
+  value (flagged by the lead as re-implemented production logic) to a **fixed absolute calibration
+  timestamp** (`2021-09-24 12:00:00` / `2023-09-24 12:00:00`) and **one literal expected value per
+  fixed clock**, pre-computed independently the same tick-exact way as Tc-99m/F-18.
+- `AlertService.CalculateMaxHalfLivesElapsed` — unchanged from R202-B (categorical assertion only,
+  literal `6.0` half-lives target, not a recomputed activity value) — over the four fixed clocks.
+- **New in R202-B-fix:** `AlertService.GenerateAlerts()` (the real alert-generation method, not just
+  the half-lives helper) called with three Co-60 sources calibrated at exactly 4.9/5.2/6.3 half-lives,
+  at 23:30 and 00:30 local; asserts the **exact count** of low-activity alerts per severity (0 for
+  4.9, exactly 1 Warning for 5.2, exactly 1 Critical for 6.3, exactly 2 total).
 - Leak-test due/overdue filtering (`LeakTestService.GetAllRecords`) and `LeakTestRecord.StatusDisplay`
-  via `AppClock.Override` — same four fixed clocks.
-- Borrow overdue/due-soon (`BorrowService.CheckAndUpdateOverdue`/`GetDueSoonCount`) — same four
-  fixed clocks.
+  via `AppClock.Override` — same four fixed clocks (unchanged from R202-B).
+- Borrow overdue/due-soon: **reworked in R202-B-fix** into an exact-boundary test — four `Delivered`
+  requests per fixed clock at `today-1` (must become Overdue), `today` (must stay Delivered, not
+  Overdue), `today+threshold` (`GetDueSoonDaysThreshold()` default = 7, must stay Delivered and be
+  counted due-soon), `today+threshold+1` (must stay Delivered, NOT counted); asserts all four exact
+  statuses and the exact due-soon count (2). The 00:30-local clock is the one where a UTC-vs-local
+  "today" mistake (UTC date = previous day) would flip the yesterday/today boundary.
+  (Section 8 note.)
 - Lockout expiry (`UserService.Login`) with explicit `LockoutEnd` — same four fixed clocks, both the
-  "still locked" and "just expired" boundary.
+  "still locked" and "just expired" boundary (unchanged from R202-B).
+- **New in R202-B-fix:** `UsersViewModel.LockedUsersCount`/`ActivitiesTodayCount` with the fake clock
+  injected at 00:30 local — two users (`LockoutEnd` = now+1 min / now-1 min) and two audit rows
+  (today 00:10 local / yesterday 23:50 local); asserts exact counts (1 locked, 1 activity today).
+  `UsersViewModel` does not implement `IDisposable`, so — matching the existing pattern in
+  `UsersViewModelTests.cs` — a fresh `WeakReferenceMessenger()` instance (not `.Default`) is passed
+  to isolate the test instead of a `Dispose()` call.
 - **Root-cause note (STOP-and-report, resolved before committing B):** the first draft of
   `CreateFakeClock` built the UTC instant as `new DateTimeOffset(localDateTime, TimeSpan.FromHours(2))`
   and passed it to `FakeTimeProvider.SetUtcNow`. Measured experimentally (isolated probe project):
@@ -353,12 +376,20 @@ the round and it builds/tests clean against `net8.0-windows`).
   (`localDateTime.AddHours(-2)`) to `SetUtcNow`. Confirmed independently in the probe (deleted,
   never committed) before touching the real test file — this was a test-harness bug, not a
   production defect, so no expectation was altered to work around it.
-- Dashboard counts: not exercised through a full `DashboardViewModel` construction (it pulls a large
-  DI graph via `App.ServiceProvider` for several optional services). Coverage taken instead through
-  the same static half-lives helper `DashboardViewModel`/`AlertService` both call internally
-  (`AlertService.CalculateMaxHalfLivesElapsed`), which is the actual seamed computation feeding the
-  dashboard's low-activity counts. Full-VM dashboard-counts coverage is a documented deviation
-  (see Deviations below).
+- Dashboard counts: **investigated further in R202-B-fix.**
+  `DashboardViewModel.UpdateLowActivityAlertCard` (feeding `LowActivityCriticalCount`/
+  `LowActivityWarningCount`) calls the static `AlertService.CalculateMaxHalfLivesElapsed(source)`
+  **without** passing a `TimeProvider` argument — so it always reads the real system clock
+  regardless of the ViewModel's own injected `_timeProvider`. This call site was correctly excluded
+  from the contracted 65 sites (it is a method call, not a direct `DateTime.Now`/`Today` literal),
+  but it means the dashboard's own low-activity counters cannot be pinned deterministically via a
+  fake clock without a production code change — and production is frozen since R202-A (this fix
+  touches tests only). The seamed helper that DOES cover the identical computation deterministically,
+  and is exercised directly above, is `AlertService.CalculateMaxHalfLivesElapsed(source, timeProvider)`
+  (section 3) and `AlertService.GenerateAlerts()` (section 3-b, new in R202-B-fix), which is what
+  actually feeds the real alerts screen the dashboard counts describe. No `DashboardViewModel`
+  low-activity-counter test was added; this is a documented, investigated deviation, not a gap left
+  unexamined.
 
 ### Group E — D5 determinism table
 
@@ -387,9 +418,16 @@ behaviour deterministic instead of accidentally depending on floating-point roun
    `static` methods that cannot read an instance field — see "Unplanned but required compile-time
    extension" above. No behaviour change; external callers keep the default system clock.
 2. Group B does not construct a full `DashboardViewModel` for the "dashboard counts" characterization
-   item; it covers the same underlying seamed computation (`AlertService.CalculateMaxHalfLivesElapsed`)
-   that feeds the dashboard's low-activity counters instead. See "Group B coverage" above.
+   item; investigated in R202-B-fix and found genuinely infeasible without a production change
+   (`DashboardViewModel.UpdateLowActivityAlertCard` calls the static half-lives helper without
+   passing a `TimeProvider`, so it always reads the real clock). Covered instead via the identical
+   seamed computation (`AlertService.CalculateMaxHalfLivesElapsed(source, timeProvider)` and
+   `AlertService.GenerateAlerts()`). See "Group B coverage" above.
 3. `AlertServiceTests` exact-half-life-boundary test data received a 1-second epsilon nudge (test data,
    not assertions) — see "Finding recorded" above.
-4. No `R202-<letter>-fix` commits were needed; all four commits (A, B, E, F) landed clean on the first
-   attempt after the fixes described above were applied before each commit.
+4. `R202-B-fix` (one commit, test file only) was required after the lead's PR #98 diff review flagged
+   that the original Cs-137/neutron tests re-implemented the production decay formula at runtime to
+   compute their own expected value (forbidden), and that Tc-99m/F-18/Borrow/low-activity-alert-count/
+   UsersViewModel-count coverage needed to be more exact and/or extended to all four fixed clocks. See
+   "Group B coverage" above for the full list of what changed. `R202-A`, `R202-E`, `R202-F` landed
+   clean on the first attempt; only `R202-B` required this one follow-up fix commit.
