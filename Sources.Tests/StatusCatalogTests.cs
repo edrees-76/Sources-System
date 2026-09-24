@@ -40,31 +40,60 @@ public class StatusCatalogTests
         return dict;
     }
 
-    public static IEnumerable<object[]> KnownStatuses => new List<object[]>
+    // كل حالة مخزَّنة: (القيمة المخزَّنة، الكود، النص العربي، النص الإنجليزي، اللون).
+    private static readonly (string Stored, SourceStatusCode Code, string Arabic, string English, string Color)[] KnownStatuses =
     {
-        new object[] { "InUse", SourceStatusCode.InUse, "قيد الاستخدام", "In Use", "#3FAE7A" },
-        new object[] { "Storage", SourceStatusCode.Storage, "مخزن", "In Storage", "#4F7FA3" },
-        new object[] { "Waste", SourceStatusCode.Waste, "نفايات", "Waste", "#E0A93E" },
-        new object[] { "Transfer", SourceStatusCode.Transfer, "قيد النقل", "In Transfer", "#E0A93E" },
+        ("InUse", SourceStatusCode.InUse, "قيد الاستخدام", "In Use", "#3FAE7A"),
+        ("Storage", SourceStatusCode.Storage, "مخزن", "In Storage", "#4F7FA3"),
+        ("Waste", SourceStatusCode.Waste, "نفايات", "Waste", "#E0A93E"),
+        ("Transfer", SourceStatusCode.Transfer, "قيد النقل", "In Transfer", "#E0A93E"),
     };
 
+    public static TheoryData<string, SourceStatusCode> KnownCodes()
+    {
+        var data = new TheoryData<string, SourceStatusCode>();
+        foreach (var s in KnownStatuses) data.Add(s.Stored, s.Code);
+        return data;
+    }
+
+    public static TheoryData<string, string> KnownArabic()
+    {
+        var data = new TheoryData<string, string>();
+        foreach (var s in KnownStatuses) data.Add(s.Stored, s.Arabic);
+        return data;
+    }
+
+    public static TheoryData<string, string> KnownEnglish()
+    {
+        var data = new TheoryData<string, string>();
+        foreach (var s in KnownStatuses) data.Add(s.Stored, s.English);
+        return data;
+    }
+
+    public static TheoryData<string, string> KnownColors()
+    {
+        var data = new TheoryData<string, string>();
+        foreach (var s in KnownStatuses) data.Add(s.Stored, s.Color);
+        return data;
+    }
+
     [Theory]
-    [MemberData(nameof(KnownStatuses))]
-    public void Parse_KnownStoredValue_ReturnsExpectedCode(string stored, SourceStatusCode expectedCode, string _, string __, string ___)
+    [MemberData(nameof(KnownCodes))]
+    public void Parse_KnownStoredValue_ReturnsExpectedCode(string stored, SourceStatusCode expectedCode)
     {
         Assert.Equal(expectedCode, StatusCatalog.Parse(stored));
     }
 
     [Theory]
-    [MemberData(nameof(KnownStatuses))]
-    public void GetArabicText_KnownStoredValue_ReturnsExactArabic(string stored, SourceStatusCode _, string expectedArabic, string __, string ___)
+    [MemberData(nameof(KnownArabic))]
+    public void GetArabicText_KnownStoredValue_ReturnsExactArabic(string stored, string expectedArabic)
     {
         Assert.Equal(expectedArabic, StatusCatalog.GetArabicText(stored));
     }
 
     [Theory]
-    [MemberData(nameof(KnownStatuses))]
-    public void GetDisplayText_WithEnglishLookup_ReturnsEnglishText(string stored, SourceStatusCode _, string __, string expectedEnglish, string ___)
+    [MemberData(nameof(KnownEnglish))]
+    public void GetDisplayText_WithEnglishLookup_ReturnsEnglishText(string stored, string expectedEnglish)
     {
         var enResources = LoadResourceDictionary("Strings.en.xaml");
         string? Lookup(string key) => enResources.TryGetValue(key, out var v) ? v : null;
@@ -73,8 +102,8 @@ public class StatusCatalogTests
     }
 
     [Theory]
-    [MemberData(nameof(KnownStatuses))]
-    public void GetDisplayText_WithArabicLookup_ReturnsExactArabic(string stored, SourceStatusCode _, string expectedArabic, string __, string ___)
+    [MemberData(nameof(KnownArabic))]
+    public void GetDisplayText_WithArabicLookup_ReturnsExactArabic(string stored, string expectedArabic)
     {
         var arResources = LoadResourceDictionary("Strings.ar.xaml");
         string? Lookup(string key) => arResources.TryGetValue(key, out var v) ? v : null;
@@ -83,15 +112,15 @@ public class StatusCatalogTests
     }
 
     [Theory]
-    [MemberData(nameof(KnownStatuses))]
-    public void GetDisplayText_WhenLookupReturnsNull_FallsBackToExactArabic(string stored, SourceStatusCode _, string expectedArabic, string __, string ___)
+    [MemberData(nameof(KnownArabic))]
+    public void GetDisplayText_WhenLookupReturnsNull_FallsBackToExactArabic(string stored, string expectedArabic)
     {
         Assert.Equal(expectedArabic, StatusCatalog.GetDisplayText(stored, _ => null));
     }
 
     [Theory]
-    [MemberData(nameof(KnownStatuses))]
-    public void GetColorHex_KnownStoredValue_ReturnsExpectedColor(string stored, SourceStatusCode _, string __, string ___, string expectedColor)
+    [MemberData(nameof(KnownColors))]
+    public void GetColorHex_KnownStoredValue_ReturnsExpectedColor(string stored, string expectedColor)
     {
         Assert.Equal(expectedColor, StatusCatalog.GetColorHex(stored));
     }
