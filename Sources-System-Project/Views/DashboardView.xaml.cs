@@ -25,6 +25,10 @@ public partial class DashboardView : UserControl
                 TxtDashboardGlobalSearch?.SelectAll();
             }));
         });
+
+        Unloaded += (_, _) =>
+            WeakReferenceMessenger.Default
+                .Unregister<FocusDashboardSearchMessage>(this);
     }
 
     /// <summary>

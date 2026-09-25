@@ -1,9 +1,13 @@
 # منظومة مصادر — لوحة جاهزية النشر
 
 **آخر تحديث:** 25 سبتمبر 2026
-**حالة المستودع:** آخر جولة مدموجة على `main` هي الجولة 204 (إصلاح تسرب النصوص العربية وموضع رمز % ومنع انقلاب BiDi، commit `c9b6a29`، PR #100، مدموجة 2026-09-25). الجولات 186–204 مدموجة جميعها فعلياً على `main`.
+**حالة المستودع:** آخر جولة مدموجة على `main` هي الجولة 205 (توحيد معاملات التحويل الزمني وإزالة الازدواج في حسابات الاضمحلال، commit `c096e78`، PR #101، مدموجة 2026-09-25). الجولات 186–205 مدموجة جميعها فعلياً على `main`.
 
-**الجولة 205 (توحيد معاملات التحويل الزمني وإزالة الازدواج في حسابات الاضمحلال — قيد المراجعة):** الأساس `main` عند `c9b6a29` (الجولة 204، PR #100 مدموجة). فرع `claude/round-205-decay-unit-unification`.
+**الجولة 206 (إدارة عمر الشاشات وتنظيف الموارد IDisposable — قيد المراجعة):** الأساس `main` عند `c096e78` (الجولة 205، PR #101 مدموجة). فرع `claude/round-206-idisposable-cleanup`.
+نطاق الجولة: (1) R206-A: إصلاح دورة حياة التنقل في `MainViewModel.cs` باستدعاء `(CurrentView as IDisposable)?.Dispose()` عند التبديل في `NavigateTo` وتسجيل الخروج `ForceLogout` والتخلص النهائي `Dispose` لضمان إيقاف المؤقتات النشطة تلقائياً وفك الارتباطات (F1, F5, F6)، (2) R206-B: تحصين `SettingsViewModel` بتنفيذ `IDisposable` وفك اشتراك `_autoBackupService.BackupCompleted` (F2)، وتحصين الـ ViewModels الخمسة التي تستخدم الوسيط (`LeakTestsViewModel`, `SourcesViewModel`, `UsersViewModel`, `LocationsViewModel`, `RadioisotopesViewModel`) بتنفيذ `IDisposable` واستدعاء `_messenger.UnregisterAll(this)` (F3)، وتحصين `DashboardView.xaml.cs` بإلغاء تسجيل `FocusDashboardSearchMessage` عند حدث `Unloaded` (F4)، (3) R206-C: التوثيق.
+النتائج: `dotnet test Sources.sln -c Debug` الكامل: **1638 نجاح، 0 فشل، 0 تجاوز** (خط الأساس 1627 + 11 اختباراً جديداً مؤكدة: 4 في R206-A، 7 في R206-B). `TestDataIsolationSentinelTests`: 6/6 نجاح. صفر تحذيرات جديدة.
+
+**الجولة 205 (توحيد معاملات التحويل الزمني وإزالة الازدواج في حسابات الاضمحلال — مدموجة):** الأساس `main` عند `c9b6a29` (الجولة 204، PR #100 مدموجة). فرع `claude/round-205-decay-unit-unification`. PR #101 مدموج على `main` بـ commit `c096e78`.
 نطاق الجولة: (1) R205-A: توحيد معامل تحويل السنة في `DecayCalculationService.cs` إلى الثابت المعياري `DaysPerYear = 365.2422` (السنة الاستوائية المتوسطة) واستبدال 365.25 به ليتطابق تماماً مع `NeutronDecayCalculationService.cs:13` (F1 و F2)، (2) R205-B: إزالة ازدواج معاملات وحدات النشاط الإشعاعي بحذف `switch` الداخلي في `ConvertFromBq` و `ConvertToBq` وقراءة المعاملات مباشرة من جدول `ActivityUnits` عبر `IDbContextFactory<AppDbContext>` مع توفير قاموس احتياطي وحظر الوحدات المجهولة صراحة برمي `ArgumentException` (F3)، (3) R205-A-fix: تحديث نقاط Cs-137 في `Round202TimeHandlingCharacterizationTests.cs` لتطابق الثابت العلمي الموحد، (4) تأكيد تأجيل F4 (قوائم `ActivityCalculatorViewModel` تجميلية ولا تؤثر على الحساب)، (5) R205-C: التوثيق.
 النتائج: `dotnet test Sources.sln -c Debug` الكامل: **1627 نجاح، 0 فشل، 0 تجاوز** (خط الأساس 1622 + 5 اختبارات جديدة مؤكدة). `TestDataIsolationSentinelTests`: 6/6 نجاح. صفر تحذيرات جديدة.
 

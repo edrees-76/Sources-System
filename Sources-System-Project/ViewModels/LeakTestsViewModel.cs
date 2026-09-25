@@ -14,7 +14,7 @@ using Sources.Services;
 
 namespace Sources.ViewModels;
 
-public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUpdatedMessage>
+public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUpdatedMessage>, IDisposable
 {
     private readonly ILeakTestService _leakTestService;
     private readonly ISourceService _sourceService;
@@ -477,5 +477,10 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
     private void ViewSourceDetails(object? parameter)
     {
         SourceNavigationHelper.OpenSourceDetails(parameter);
+    }
+
+    public void Dispose()
+    {
+        _messenger.UnregisterAll(this);
     }
 }

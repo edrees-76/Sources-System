@@ -12,7 +12,7 @@ using System.Collections.ObjectModel;
 
 namespace Sources.ViewModels;
 
-public partial class RadioisotopesViewModel : ObservableObject, IEditableViewModel
+public partial class RadioisotopesViewModel : ObservableObject, IEditableViewModel, IDisposable
 {
     private readonly IRadioisotopeService _service;
     private readonly IIsotopeLibraryService _libraryService;
@@ -395,4 +395,12 @@ public partial class RadioisotopesViewModel : ObservableObject, IEditableViewMod
     }
 
     private bool CanEdit() => Selected != null;
+
+    public void Dispose()
+    {
+        _msgCts?.Cancel();
+        _msgCts?.Dispose();
+        _msgCts = null;
+        _messenger.UnregisterAll(this);
+    }
 }

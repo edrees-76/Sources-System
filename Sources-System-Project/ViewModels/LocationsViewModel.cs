@@ -72,7 +72,7 @@ public class LocationNeutronSourceRow
     public string SerialNumber => !string.IsNullOrWhiteSpace(NeutronSource.SerialNumber) ? NeutronSource.SerialNumber : "-";
 }
 
-public partial class LocationsViewModel : ObservableObject, IEditableViewModel
+public partial class LocationsViewModel : ObservableObject, IEditableViewModel, IDisposable
 {
     private readonly ILocationService _service;
     private readonly IReportingService? _reportingService;
@@ -361,4 +361,9 @@ public partial class LocationsViewModel : ObservableObject, IEditableViewModel
     [RelayCommand] private void CloseMessage() { HasMessage = false; Message = string.Empty; }
     private void ClearForm() { EditName = EditType = EditBuilding = EditRoom = EditPerson = string.Empty; }
     private void ShowMsg(string m) { Message = m; HasMessage = true; }
+
+    public void Dispose()
+    {
+        _messenger.UnregisterAll(this);
+    }
 }
