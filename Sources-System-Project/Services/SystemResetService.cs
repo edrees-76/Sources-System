@@ -15,23 +15,42 @@ public class SystemResetService : ISystemResetService
     private readonly IBackupService _backupService;
     private readonly ISystemSettingsService? _settingsService;
     private readonly ISourceCertificateService? _certificateService;
+    private readonly IUserService? _userService;
+    private readonly ILicenseService? _licenseService;
 
     public SystemResetService(
         IDbContextFactory<AppDbContext> dbFactory,
         IBackupService backupService,
         ISystemSettingsService? settingsService = null,
-        ISourceCertificateService? certificateService = null)
+        ISourceCertificateService? certificateService = null,
+        IUserService? userService = null,
+        ILicenseService? licenseService = null)
     {
         _dbFactory = dbFactory;
         _backupService = backupService;
         _settingsService = settingsService;
         _certificateService = certificateService;
+        _userService = userService;
+        _licenseService = licenseService;
     }
 
     public async Task<(bool Success, string Message, string? BackupPath)> ResetSystemAsync(string executedByUsername)
     {
-        // 1. أخذ نسخة احتياطية كاملة إجبارية قبل أي تعديل
-        var backupResult = _backupService.CreateBackup();
+        // 0. التحقق من تفعيل المنظومة وصلاحية مدير النظام قبل أي إجراء
+        if (_licenseService != null)
+        {
+            var activation = AuthorizationGuard.RequireActivated(_licenseService);
+            if (!activation.Allowed)
+                return (false, activation.Message, null);
+        }
+
+        var currentUser = _userService?.CurrentUser;
+        var adminGuard = AuthorizationGuard.RequireAdmin(currentUser);
+        if (!adminGuard.Allowed)
+            return (false, adminGuard.Message, null);
+
+        // 1. أخذ نسخة احتياطية كاملة إجبارية دائمة قبل أي تعديل
+        var backupResult = _backupService.CreatePreResetBackup();
         if (!backupResult.Success || string.IsNullOrEmpty(backupResult.BackupPath))
         {
             return (false, $"{TranslationHelper.GetString("MsgErrForcedBackupFailedPrefix") ?? "فشل إنشاء النسخة الاحتياطية الإجبارية"}: {backupResult.Message}", null);
@@ -77,16 +96,19 @@ public class SystemResetService : ISystemResetService
                 await db.SaveChangesAsync();
 
                 // 4. تسجيل عملية التصفير في AuditLog بعد حذف السجلات القديمة (ليكون أول سجل)
-                var executingUser = db.Users.FirstOrDefault(u => u.Username == executedByUsername);
+                var currentUsername = currentUser?.Username ?? executedByUsername;
+                var currentUserId = (currentUser != null && db.Users.Any(u => u.Id == currentUser.Id))
+                    ? currentUser.Id
+                    : db.Users.FirstOrDefault(u => u.Username == currentUsername)?.Id;
                 var resetLog = new AuditLog
                 {
                     Id = Guid.NewGuid(),
-                    UserId = executingUser?.Id,
+                    UserId = currentUserId,
                     ActionDate = DateTime.Now,
                     Action = "SystemReset",
                     TableName = "System",
                     RecordId = Guid.Empty,
-                    Details = $"إعادة ضبط المنظومة للوضع الافتراضي (Factory Reset) شاملاً المصادر المشعة والنيترونية وفحوصات التسرب والشهادات والسجلات المحذوفة بواسطة {executedByUsername}. تم حفظ نسخة احتياطية في: {Path.GetFileName(backupResult.BackupPath)}"
+                    Details = $"إعادة ضبط المنظومة للوضع الافتراضي (Factory Reset) شاملاً المصادر المشعة والنيترونية وفحوصات التسرب والشهادات والسجلات المحذوفة بواسطة {currentUsername}. تم حفظ نسخة احتياطية في: {Path.GetFileName(backupResult.BackupPath)}"
                 };
                 db.AuditLogs.Add(resetLog);
 

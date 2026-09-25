@@ -21,6 +21,8 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
     private readonly Mock<IBackupService> _mockBackupService;
     private readonly Mock<ISystemSettingsService> _mockSettingsService;
     private readonly Mock<ISourceCertificateService> _mockCertificateService;
+    private readonly Mock<IUserService> _mockUserService;
+    private readonly User _defaultAdminUser;
     private readonly SystemResetService _sut;
     private readonly FakeLicenseService _fakeLicenseService = new();
     private string? _tempCertFolder;
@@ -33,15 +35,25 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
         _mockBackupService = new Mock<IBackupService>();
         _mockBackupService.Setup(b => b.CreateBackup())
             .Returns((true, "Backup created", "C:\\Backups\\pre_reset_backup.db"));
+        _mockBackupService.Setup(b => b.CreatePreResetBackup())
+            .Returns((true, "Backup created", "C:\\Backups\\pre_reset_backup.db"));
 
         _mockSettingsService = new Mock<ISystemSettingsService>();
         _mockCertificateService = new Mock<ISourceCertificateService>();
+        _mockUserService = new Mock<IUserService>();
+
+        var adminRole = new Role { Id = Guid.NewGuid(), RoleName = "مدير النظام" };
+        _defaultAdminUser = new User { Id = Guid.NewGuid(), Username = "admin", Role = adminRole, RoleId = adminRole.Id };
+        _mockUserService.Setup(u => u.CurrentUser).Returns(_defaultAdminUser);
+        _fakeLicenseService.IsActivated = true;
 
         _sut = new SystemResetService(
             _fixture.ContextFactory,
             _mockBackupService.Object,
             _mockSettingsService.Object,
-            _mockCertificateService.Object);
+            _mockCertificateService.Object,
+            _mockUserService.Object,
+            _fakeLicenseService);
     }
 
     public void Dispose()
@@ -58,7 +70,8 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
     {
         // Arrange: Populate core reference data and transactional data including new tables and soft-deleted items
         var role = new Role { Id = Guid.NewGuid(), RoleName = "مدير النظام" };
-        var user = new User { Id = Guid.NewGuid(), Username = "admin", RoleId = role.Id, PasswordHash = "hash" };
+        var user = new User { Id = Guid.NewGuid(), Username = "admin", RoleId = role.Id, Role = role, PasswordHash = "hash" };
+        _mockUserService.Setup(u => u.CurrentUser).Returns(user);
         var iso = TestDataBuilder.CreateRadioisotope("Cs-137", "Cesium-137", 30.08, "years", 661.7);
         var unit = TestDataBuilder.CreateActivityUnit("Bq", "Bq", 1.0);
         var loc = TestDataBuilder.CreateLocation(name: "موقع الاختبار");
@@ -298,7 +311,9 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
             _fixture.ContextFactory,
             _mockBackupService.Object,
             _mockSettingsService.Object,
-            realCertService);
+            realCertService,
+            _mockUserService.Object,
+            _fakeLicenseService);
 
         var certRecord = new SourceCertificate
         {
@@ -346,7 +361,9 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
             _fixture.ContextFactory,
             _mockBackupService.Object,
             _mockSettingsService.Object,
-            failingCertService.Object);
+            failingCertService.Object,
+            _mockUserService.Object,
+            _fakeLicenseService);
 
         var loc = TestDataBuilder.CreateLocation(name: "موقع الاختبار");
         using (var db = _fixture.CreateContext())
@@ -372,6 +389,8 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
     {
         // Arrange
         _mockBackupService.Setup(b => b.CreateBackup())
+            .Returns((false, "Disk error: No space left", null));
+        _mockBackupService.Setup(b => b.CreatePreResetBackup())
             .Returns((false, "Disk error: No space left", null));
 
         var loc = TestDataBuilder.CreateLocation(name: "موقع لا يجب أن يُحذف");
@@ -469,6 +488,8 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
             var mockBackupFail = new Mock<IBackupService>();
             mockBackupFail.Setup(b => b.CreateBackup())
                 .Returns((false, "Simulated backup disk full", null));
+            mockBackupFail.Setup(b => b.CreatePreResetBackup())
+                .Returns((false, "Simulated backup disk full", null));
 
             var auditMock = new Mock<IAuditService>();
             var realCertService = new SourceCertificateService(_fixture.ContextFactory, auditMock.Object, _fakeLicenseService, tempFolder);
@@ -477,7 +498,9 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
                 _fixture.ContextFactory,
                 mockBackupFail.Object,
                 _mockSettingsService.Object,
-                realCertService);
+                realCertService,
+                _mockUserService.Object,
+                _fakeLicenseService);
 
             var certRecord = new SourceCertificate
             {
@@ -518,6 +541,94 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
         finally
         {
             try { Directory.Delete(tempFolder, recursive: true); } catch { }
+        }
+    }
+
+    [Fact]
+    public async Task ResetSystemAsync_NonAdminUser_RefusesReset_TakesNoBackup_DeletesNothing()
+    {
+        // Arrange: Logged-in user is an operator, not an admin
+        var operatorRole = new Role { Id = Guid.NewGuid(), RoleName = "مشغل" };
+        var operatorUser = new User { Id = Guid.NewGuid(), Username = "operator", Role = operatorRole, RoleId = operatorRole.Id };
+        _mockUserService.Setup(u => u.CurrentUser).Returns(operatorUser);
+
+        var loc = TestDataBuilder.CreateLocation(name: "موقع محمي من التصفير");
+        using (var db = _fixture.CreateContext())
+        {
+            db.Locations.Add(loc);
+            db.SaveChanges();
+        }
+
+        // Act
+        var result = await _sut.ResetSystemAsync("operator");
+
+        // Assert: Refused with admin-only error, no backup attempted, no data deleted
+        Assert.False(result.Success);
+        Assert.Contains("مدير النظام", result.Message);
+        Assert.Null(result.BackupPath);
+        _mockBackupService.Verify(b => b.CreateBackup(), Times.Never);
+        _mockBackupService.Verify(b => b.CreatePreResetBackup(), Times.Never);
+
+        using (var db = _fixture.CreateContext())
+        {
+            Assert.Single(db.Locations.ToList());
+        }
+    }
+
+    [Fact]
+    public async Task ResetSystemAsync_NoLoggedInUser_RefusesReset_TakesNoBackup_DeletesNothing()
+    {
+        // Arrange: No user logged in
+        _mockUserService.Setup(u => u.CurrentUser).Returns((User?)null);
+
+        var loc = TestDataBuilder.CreateLocation(name: "موقع محمي");
+        using (var db = _fixture.CreateContext())
+        {
+            db.Locations.Add(loc);
+            db.SaveChanges();
+        }
+
+        // Act
+        var result = await _sut.ResetSystemAsync("anonymous");
+
+        // Assert: Refused, no backup, no data deleted
+        Assert.False(result.Success);
+        Assert.Null(result.BackupPath);
+        _mockBackupService.Verify(b => b.CreateBackup(), Times.Never);
+        _mockBackupService.Verify(b => b.CreatePreResetBackup(), Times.Never);
+
+        using (var db = _fixture.CreateContext())
+        {
+            Assert.Single(db.Locations.ToList());
+        }
+    }
+
+    [Fact]
+    public async Task ResetSystemAsync_TrialModeUnactivated_RefusesReset_TakesNoBackup_DeletesNothing()
+    {
+        // Arrange: License is unactivated
+        _fakeLicenseService.IsActivated = false;
+
+        var loc = TestDataBuilder.CreateLocation(name: "موقع محمي تجريبياً");
+        using (var db = _fixture.CreateContext())
+        {
+            db.Locations.Add(loc);
+            db.SaveChanges();
+        }
+
+        // Act
+        var result = await _sut.ResetSystemAsync("admin");
+
+        // Assert: Refused with trial mode error, no backup, no data deleted
+        Assert.False(result.Success);
+        Assert.Contains("تجريبية", result.Message);
+        Assert.Null(result.BackupPath);
+        _mockBackupService.Verify(b => b.CreateBackup(), Times.Never);
+        _mockBackupService.Verify(b => b.CreatePreResetBackup(), Times.Never);
+
+        using (var db = _fixture.CreateContext())
+        {
+            Assert.Single(db.Locations.ToList());
         }
     }
 }

@@ -43,8 +43,19 @@ public class BackupService : IBackupService
         return CreateBackup(_backupDir);
     }
 
+    /// <summary>إنشاء نسخة احتياطية إجبارية دائمة قبل إعادة ضبط المنظومة (لا تخضع للحذف التلقائي)</summary>
+    public (bool Success, string Message, string? BackupPath) CreatePreResetBackup()
+    {
+        return CreateBackup(_backupDir, isPermanent: true);
+    }
+
     /// <summary>إنشاء نسخة احتياطية بصيغة ZIP تحتوي على DB ومجلد Certificates</summary>
     public (bool Success, string Message, string? BackupPath) CreateBackup(string customPath)
+    {
+        return CreateBackup(customPath, isPermanent: false);
+    }
+
+    public (bool Success, string Message, string? BackupPath) CreateBackup(string customPath, bool isPermanent)
     {
         string? tempDbFile = null;
         try
@@ -61,7 +72,8 @@ public class BackupService : IBackupService
                 Directory.CreateDirectory(targetDir);
 
             var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-            var zipFile = Path.Combine(targetDir, $"SOURCES_backup_{timestamp}.zip");
+            var prefix = isPermanent ? "SOURCES_pre_reset_" : "SOURCES_backup_";
+            var zipFile = Path.Combine(targetDir, $"{prefix}{timestamp}.zip");
 
             if (File.Exists(zipFile))
             {
@@ -116,8 +128,11 @@ public class BackupService : IBackupService
                 try { File.Delete(tempDbFile); } catch { }
             }
 
-            // حذف النسخ الأقدم من 30 يوماً
-            CleanOldBackups(30, targetDir);
+            if (!isPermanent)
+            {
+                // حذف النسخ الأقدم من 30 يوماً
+                CleanOldBackups(30, targetDir);
+            }
 
             LoggerService.LogInfo($"تم إنشاء نسخة احتياطية كاملة (ZIP): {zipFile}");
             return (true, $"{TranslationHelper.GetString("MsgSuccessBackupCreated") ?? "تم إنشاء النسخة الاحتياطية بنجاح"}\n\u2066{zipFile}\u2069", zipFile);
@@ -395,7 +410,8 @@ public class BackupService : IBackupService
 
         var files = Directory.GetFiles(_backupDir, "*.*")
             .Where(f => (f.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".db", StringComparison.OrdinalIgnoreCase))
-                        && Path.GetFileName(f).Contains("_backup_", StringComparison.OrdinalIgnoreCase))
+                        && (Path.GetFileName(f).Contains("_backup_", StringComparison.OrdinalIgnoreCase)
+                            || Path.GetFileName(f).Contains("_pre_reset_", StringComparison.OrdinalIgnoreCase)))
             .Select(f => new FileInfo(f))
             .OrderByDescending(f => f.CreationTime)
             .Select(f => new BackupInfo

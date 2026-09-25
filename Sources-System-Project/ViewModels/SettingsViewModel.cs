@@ -85,7 +85,7 @@ public partial class SettingsViewModel : ObservableObject
 
     // ─── تبويب الوضع الافتراضي (Factory Reset) ───
     public bool IsAdmin => _userService?.CurrentUser?.IsAdmin == true;
-    public string RequiredResetPhrase => "إعادة ضبط المنظومة";
+    public string RequiredResetPhrase => TranslationHelper.GetString("PhraseFactoryResetConfirmation") ?? "إعادة ضبط المنظومة";
 
 #if DEBUG
     public bool IsDebugMode => true;
