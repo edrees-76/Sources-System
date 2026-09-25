@@ -1148,9 +1148,10 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBox Grid.Column="0" Text="{Binding ResetPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                         IsEnabled="{Binding IsStage2Passed, Converter={StaticResource InverseBoolConverter}}"
-                                         Style="{StaticResource FormTextBox}" Margin="0,0,12,0"/>
+                                <PasswordBox Grid.Column="0"
+                                             materialDesign:PasswordBoxAssist.Password="{Binding ResetPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             IsEnabled="{Binding IsStage2Passed, Converter={StaticResource InverseBoolConverter}}"
+                                             Style="{StaticResource FormPasswordBox}" Margin="0,0,12,0"/>
                                 <Button Grid.Column="1" Content="{DynamicResource BtnVerifyPassword}"
                                         Style="{StaticResource PrimaryButton}"
                                         Command="{Binding VerifyResetPasswordCommand}"

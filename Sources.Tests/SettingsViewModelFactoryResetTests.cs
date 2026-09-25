@@ -162,4 +162,22 @@ public class SettingsViewModelFactoryResetTests : IDisposable
         // Assert
         Assert.False(vm.IsStage2Passed);
     }
+
+    [Fact]
+    public void SettingsView_FactoryResetStage2_BindsPasswordBoxNotTextBox()
+    {
+        // Assert: Read the SettingsView.xaml markup directly to ensure the stage-2 reset password field
+        // is declared as a PasswordBox with PasswordBoxAssist.Password bound to ResetPassword, and not a TextBox.
+        var xamlPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(AppContext.BaseDirectory, "../../../../Sources-System-Project/Views/SettingsView.xaml"));
+        if (!System.IO.File.Exists(xamlPath))
+        {
+            xamlPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "Sources-System-Project", "Views", "SettingsView.xaml"));
+        }
+        Assert.True(System.IO.File.Exists(xamlPath), $"SettingsView.xaml not found at {xamlPath}");
+        var xamlContent = System.IO.File.ReadAllText(xamlPath);
+
+        // Stage 2 password binding must be a PasswordBox with PasswordBoxAssist.Password binding to ResetPassword
+        Assert.Contains("materialDesign:PasswordBoxAssist.Password=\"{Binding ResetPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}\"", xamlContent);
+        Assert.DoesNotContain("TextBox Grid.Column=\"0\" Text=\"{Binding ResetPassword", xamlContent);
+    }
 }
