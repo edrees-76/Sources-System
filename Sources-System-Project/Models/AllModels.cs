@@ -58,7 +58,7 @@ public class Radioisotope
     public User? AddedByUser { get; set; }
 
     [NotMapped]
-    public string AddedByName => AddedByUser?.FullName ?? "غير معروف";
+    public string AddedByName => AddedByUser?.FullName ?? TranslationHelper.GetString("LabelUnknown") ?? "غير معروف";
 
     [NotMapped]
     public string DisplayNotes
@@ -267,7 +267,7 @@ public class Source
     public User? AddedByUser { get; set; }
 
     [NotMapped]
-    public string AddedByName => AddedByUser?.FullName ?? "غير معروف";
+    public string AddedByName => AddedByUser?.FullName ?? TranslationHelper.GetString("LabelUnknown") ?? "غير معروف";
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
@@ -343,8 +343,8 @@ public class Source
     [NotMapped]
     public string AlertSeverityDisplay => AlertSeverity switch
     {
-        "Critical" => "حرج",
-        "Warning" => "تحذير",
+        "Critical" => TranslationHelper.GetString("LabelSeverityCritical") ?? TranslationHelper.GetString("LabelCritical") ?? "حرج",
+        "Warning" => TranslationHelper.GetString("LabelSeverityWarning") ?? TranslationHelper.GetString("LabelWarning") ?? "تحذير",
         _ => AlertSeverity ?? "-"
     };
 
@@ -529,39 +529,42 @@ public class DoseRateResult
     {
         get
         {
-            if (Contributions.Count == 0) return "لا توجد بيانات للنظائر";
+            if (Contributions.Count == 0) return TranslationHelper.GetString("MsgTooltipNoIsotopeData") ?? "لا توجد بيانات للنظائر";
             var lines = new List<string>();
-            lines.Add("معدل الجرعة التقديري عند 1 متر في الهواء:");
+            lines.Add(TranslationHelper.GetString("MsgTooltipDoseRateHeader") ?? "معدل الجرعة التقديري عند 1 متر في الهواء:");
             if (HasContributingIsotopes)
             {
-                lines.Add($"• الإجمالي: {TotalDoseRateMicroSvPerHour:0.####} µSv/h ({TotalDoseRatemRPerHour:0.####} mR/h | {TotalDoseRatemremPerHour:0.####} mrem/h)");
+                string totalLabel = TranslationHelper.GetString("LabelTotal") ?? "الإجمالي";
+                lines.Add($"• {totalLabel}: {TotalDoseRateMicroSvPerHour:0.####} µSv/h ({TotalDoseRatemRPerHour:0.####} mR/h | {TotalDoseRatemremPerHour:0.####} mrem/h)");
             }
             else if (IsAllNonGamma)
             {
-                lines.Add("• غير مؤثر عند 1 متر (أشعة ألفا/بيتا فقط ممتصة بغلاف المصدر والهواء)");
+                lines.Add(TranslationHelper.GetString("MsgTooltipNonGamma") ?? "• غير مؤثر عند 1 متر (أشعة ألفا/بيتا فقط ممتصة بغلاف المصدر والهواء)");
             }
             else if (HasMissingData)
             {
-                lines.Add("• بيانات ثابت غاما غير مسجلة للنظير");
+                lines.Add(TranslationHelper.GetString("MsgTooltipMissingGamma") ?? "• بيانات ثابت غاما غير مسجلة للنظير");
             }
 
             if (Contributions.Count > 1 || (Contributions.Count == 1 && HasContributingIsotopes))
             {
-                lines.Add("تفصيل النظائر:");
+                lines.Add(TranslationHelper.GetString("MsgTooltipIsotopeBreakdown") ?? "تفصيل النظائر:");
                 foreach (var c in Contributions)
                 {
-                    string sym = c.Isotope?.Symbol ?? "نظير";
+                    string sym = c.Isotope?.Symbol ?? TranslationHelper.GetString("LabelIsotope") ?? TranslationHelper.GetString("LabelIsotopeSymbol") ?? "نظير";
                     if (c.Status == DoseRateContributionStatus.Contributing)
                     {
                         lines.Add($"  - {sym}: {c.ContributionMicroSvPerHour:0.####} µSv/h (Γ = {c.GammaConstant:0.####})");
                     }
                     else if (c.Status == DoseRateContributionStatus.NonGammaEmitter)
                     {
-                        lines.Add($"  - {sym}: غير مساهم عند 1م (أشعة {c.Isotope?.RadiationType ?? "ألفا/بيتا"} فقط)");
+                        string radType = c.Isotope?.RadiationType ?? TranslationHelper.GetString("LabelAlphaBeta") ?? "ألفا/بيتا";
+                        string format = TranslationHelper.GetString("MsgTooltipNonContributing") ?? "غير مساهم عند 1م (أشعة {0} فقط)";
+                        lines.Add($"  - {sym}: {string.Format(format, radType)}");
                     }
                     else if (c.Status == DoseRateContributionStatus.MissingGammaConstant)
                     {
-                        lines.Add($"  - {sym}: بيانات ثابت غاما غير مسجلة");
+                        lines.Add($"  - {sym}: {TranslationHelper.GetString("MsgTooltipMissingGammaShort") ?? "بيانات ثابت غاما غير مسجلة"}");
                     }
                 }
             }
@@ -601,7 +604,7 @@ public class Location
     public User? AddedByUser { get; set; }
 
     [NotMapped]
-    public string AddedByName => AddedByUser?.FullName ?? "غير معروف";
+    public string AddedByName => AddedByUser?.FullName ?? TranslationHelper.GetString("LabelUnknown") ?? "غير معروف";
 
     /// <summary>عدد المصادر المرتبطة حالياً بهذا الموقع</summary>
     [NotMapped]
@@ -683,7 +686,7 @@ public class BorrowRequest
     public User? AddedByUser { get; set; }
 
     [NotMapped]
-    public string AddedByName => AddedByUser?.FullName ?? "غير معروف";
+    public string AddedByName => AddedByUser?.FullName ?? TranslationHelper.GetString("LabelUnknown") ?? "غير معروف";
 
     /// <summary>الحالة بالعربية — عبر BorrowStatusCatalog (نفس النص الحالي حرفياً، بما فيها الرجوع للقيمة الخام).</summary>
     [NotMapped]
@@ -771,7 +774,9 @@ public class User
 
     // ─── خصائص محسوبة ───
     [NotMapped]
-    public string StatusDisplayName => IsActive ? "نشط" : "موقوف";
+    public string StatusDisplayName => IsActive
+        ? (TranslationHelper.GetString("LabelActive") ?? "نشط")
+        : (TranslationHelper.GetString("LabelInactive") ?? "موقوف");
 
     [NotMapped]
     public bool IsLocked => LockoutEnd.HasValue && LockoutEnd.Value > AppClock.Current.LocalNow();
@@ -927,7 +932,9 @@ public class LeakTestRecord
     };
 
     [NotMapped]
-    public string StatusDisplay => (NextDueDate.Date < AppClock.Current.LocalToday()) ? "متأخر" : "ساري";
+    public string StatusDisplay => (NextDueDate.Date < AppClock.Current.LocalToday())
+        ? (TranslationHelper.GetString("DueStatusOverdue") ?? TranslationHelper.GetString("LabelOverdue") ?? "متأخر")
+        : (TranslationHelper.GetString("LabelCurrent") ?? TranslationHelper.GetString("DueStatusValid") ?? "ساري");
 }
 
 // ─── أنواع المصادر النيترونية المرجعية ───
@@ -994,7 +1001,7 @@ public class NeutronSourceType
     public User? AddedByUser { get; set; }
 
     [NotMapped]
-    public string AddedByName => AddedByUser?.FullName ?? "غير معروف";
+    public string AddedByName => AddedByUser?.FullName ?? TranslationHelper.GetString("LabelUnknown") ?? "غير معروف";
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
@@ -1080,7 +1087,7 @@ public class NeutronSource
     public User? AddedByUser { get; set; }
 
     [NotMapped]
-    public string AddedByName => AddedByUser?.FullName ?? "غير معروف";
+    public string AddedByName => AddedByUser?.FullName ?? TranslationHelper.GetString("LabelUnknown") ?? "غير معروف";
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 

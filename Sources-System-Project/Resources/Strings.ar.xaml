@@ -2001,6 +2001,21 @@
     <system:String x:Key="TextPermissionDeltaSeparator" xml:space="preserve"> ، </system:String>
     <system:String x:Key="TextPermissionListSeparator" xml:space="preserve">، </system:String>
     <system:String x:Key="TextDeletedSuffix">(محذوف)</system:String>
+
+    <!-- Round 207: توطين نصوص AllModels.cs وواجهة المستخدم -->
+    <system:String x:Key="MsgTooltipNoIsotopeData">لا توجد بيانات للنظائر</system:String>
+    <system:String x:Key="MsgTooltipDoseRateHeader">معدل الجرعة التقديري عند 1 متر في الهواء:</system:String>
+    <system:String x:Key="MsgTooltipNonGamma">• غير مؤثر عند 1 متر (أشعة ألفا/بيتا فقط ممتصة بغلاف المصدر والهواء)</system:String>
+    <system:String x:Key="MsgTooltipMissingGamma">• بيانات ثابت غاما غير مسجلة للنظير</system:String>
+    <system:String x:Key="MsgTooltipIsotopeBreakdown">تفصيل النظائر:</system:String>
+    <system:String x:Key="MsgTooltipNonContributing">غير مساهم عند 1م (أشعة {0} فقط)</system:String>
+    <system:String x:Key="MsgTooltipMissingGammaShort">بيانات ثابت غاما غير مسجلة</system:String>
+    <system:String x:Key="LabelAlphaBeta">ألفا/بيتا</system:String>
+    <system:String x:Key="LabelTotal">الإجمالي</system:String>
+    <system:String x:Key="LabelUnknown">غير معروف</system:String>
+    <system:String x:Key="LabelActive">نشط</system:String>
+    <system:String x:Key="LabelInactive">موقوف</system:String>
+    <system:String x:Key="LabelCurrent">ساري</system:String>
 </ResourceDictionary>
 
 
