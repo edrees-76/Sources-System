@@ -2015,6 +2015,9 @@
     <system:String x:Key="LabelActive">Active</system:String>
     <system:String x:Key="LabelInactive">Inactive</system:String>
     <system:String x:Key="LabelCurrent">Valid</system:String>
+    <system:String x:Key="BrandAppTitle">Sources</system:String>
+    <system:String x:Key="HintInspectorName">e.g. Dr. Ahmed Ali</system:String>
+    <system:String x:Key="HintLeakTestNotes">Any notes about the wipe test procedure...</system:String>
 </ResourceDictionary>
 
 

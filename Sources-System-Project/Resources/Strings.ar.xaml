@@ -2016,6 +2016,9 @@
     <system:String x:Key="LabelActive">نشط</system:String>
     <system:String x:Key="LabelInactive">موقوف</system:String>
     <system:String x:Key="LabelCurrent">ساري</system:String>
+    <system:String x:Key="BrandAppTitle">مصادر</system:String>
+    <system:String x:Key="HintInspectorName">د. أحمد علي</system:String>
+    <system:String x:Key="HintLeakTestNotes">أي ملاحظات حول إجراءات المسح والمسحة القطنية...</system:String>
 </ResourceDictionary>
 
 
