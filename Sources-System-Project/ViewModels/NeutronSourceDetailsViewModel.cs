@@ -160,7 +160,7 @@ public partial class NeutronSourceDetailsViewModel : ObservableObject
         ? NeutronSource.AnisotropyFactor.Value.ToString("F3") 
         : (TranslationHelper.GetString("TextNotMeasured") ?? "غير مقاس");
 
-    public string UncertaintyFormatted => NeutronSource.RelativeExpandedUncertaintyPercent.HasValue ? $"{NeutronSource.RelativeExpandedUncertaintyPercent.Value:N1}%" : "-";
+    public string UncertaintyFormatted => NeutronSource.RelativeExpandedUncertaintyPercent.HasValue ? $"{NeutronSource.RelativeExpandedUncertaintyPercent.Value:N1}\u200e%" : "-";
     public string LocationDisplay => NeutronSource.Location?.LocationName ?? (TranslationHelper.GetString("TextUnspecified") ?? "غير محدد");
     public string LocationDetails
     {

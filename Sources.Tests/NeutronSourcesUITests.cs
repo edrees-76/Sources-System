@@ -1199,6 +1199,51 @@ public class NeutronSourcesUITests : IDisposable
         Assert.True(success);
         Assert.Equal(3e4, result);
     }
+
+    [Fact]
+    public void HeaderUncertaintyPercent_ContainsLrmInArabic_AndDisplaysCorrectOrderInBothLanguages()
+    {
+        Fixtures.WpfStaFixture.RunInSta(() =>
+        {
+            // 1. In Arabic UI: contains LRM before % to prevent BiDi flip
+            var arabicHeader = TranslationHelper.GetString("HeaderUncertaintyPercent");
+            Assert.NotNull(arabicHeader);
+            Assert.Equal("عدم اليقين\u200e %", arabicHeader);
+            Assert.Contains("\u200e", arabicHeader);
+
+            // 2. In English UI
+            var dicts = System.Windows.Application.Current.Resources.MergedDictionaries;
+            var arabicDictIndex = -1;
+            for (int i = 0; i < dicts.Count; i++)
+            {
+                var src = dicts[i].Source?.OriginalString;
+                if (src != null && src.Contains("Strings.ar.xaml"))
+                {
+                    arabicDictIndex = i;
+                    break;
+                }
+            }
+            Assert.True(arabicDictIndex >= 0);
+
+            try
+            {
+                dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.en.xaml", UriKind.Absolute)
+                };
+
+                var englishHeader = TranslationHelper.GetString("HeaderUncertaintyPercent");
+                Assert.Equal("Uncertainty %", englishHeader);
+            }
+            finally
+            {
+                dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.ar.xaml", UriKind.Absolute)
+                };
+            }
+        });
+    }
 }
 
 

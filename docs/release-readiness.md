@@ -1,9 +1,13 @@
 # منظومة مصادر — لوحة جاهزية النشر
 
 **آخر تحديث:** 25 سبتمبر 2026
-**حالة المستودع:** آخر جولة مدموجة على `main` هي الجولة 202 (فاصل الوقت `TimeProvider` واختبارات تثبيت الاضمحلال، commit `257cbb7`، PR #98، مدموجة 2026-09-24). الجولات 186–202 مدموجة جميعها فعلياً على `main`.
+**حالة المستودع:** آخر جولة مدموجة على `main` هي الجولة 203 (تحصين إعادة ضبط المنظومة من المصنع، commit `6a722b6`، PR #99، مدموجة 2026-09-25). الجولات 186–203 مدموجة جميعها فعلياً على `main`.
 
-**الجولة 203 (تحصين إعادة ضبط المنظومة من المصنع — قيد المراجعة):** الأساس `main` عند `257cbb7` (الجولة 202، PR #98 مدموجة). فرع `claude/round-203-factory-reset-hardening-63013d`.
+**الجولة 204 (إصلاح تسرب النصوص العربية وموضع رمز % ومنع انقلاب BiDi — قيد المراجعة):** الأساس `main` عند `6a722b6` (الجولة 203، PR #99 مدموجة). فرع `claude/round-204-ui-text-fixes`.
+نطاق الجولة: (1) R204-A: استبدال النص العربي الصلب `"N/A (بيانات غير مسجلة)"` في `AllModels.cs:523` بـ `TranslationHelper.GetString("MsgDoseRateNotRecorded")` وإضافة المفتاح `MsgDoseRateNotRecorded` في قواميس الموارد لمنع تسرب العربية للواجهة الإنجليزية (F1)، (2) R204-B: إصلاح موضع رمز `%` بإدراج علامة LRM (`\u200e`) في `SourcesView.xaml:780` و3 ViewModels (`ReportsViewModel`، `NeutronSourceDetailsViewModel`، `DeletionsViewModel`) لتثبيت الرمز يمين الرقم ومنع ظهوره قبله في RTL (F2)، (3) R204-C: تصحيح رأس عمود عدم اليقين `HeaderUncertaintyPercent` في `Strings.ar.xaml:1329` بعلامة LRM لمنع انقلاب BiDi (F3)، (4) إغلاق تلقائي لبند F4 (زر إعادة التشغيل غير موجود أصلاً في واجهة تغيير اللغة)، (5) R204-D: التوثيق.
+النتائج: `dotnet test Sources.sln -c Debug` الكامل: **1622 نجاح، 0 فشل، 0 تجاوز** (خط الأساس 1617 + 5 اختبارات جديدة مؤكدة). `TestDataIsolationSentinelTests`: 6/6 نجاح. صفر تحذيرات جديدة.
+
+**الجولة 203 (تحصين إعادة ضبط المنظومة من المصنع — مدموجة):** الأساس `main` عند `257cbb7` (الجولة 202، PR #98 مدموجة). فرع `claude/round-203-factory-reset-hardening-63013d`. PR #99 مدموج على `main` بـ commit `6a722b6`.
 نطاق الجولة: (1) R203-A: قناع كلمة مرور المدير عبر `PasswordBox` بنمط `PasswordBoxAssist` في المرحلة 2 من `SettingsView.xaml`، (2) R203-B: إنفاذ صلاحيات `RequireActivated` ثم `RequireAdmin` في طبقة الخدمة `SystemResetService` قبل أخذ النسخة أو حذف البيانات، وتوثيق هوية الجلسة في سجل التدقيق، (3) R203-C: توحيد عبارة التأكيد `RequiredResetPhrase` عبر مورد `PhraseFactoryResetConfirmation` والقرار النهائي بأن العبارة تُكتب بالعربية دائماً في كلا الواجهتين، (4) R203-D: إضافة `CreatePreResetBackup` ببادئة `SOURCES_pre_reset_` لحماية النسخة الوقائية قبل التصفير من الحذف الدوري (30 يوماً) وإتاحة استعادتها، (5) R203-E: التوثيق وإغلاق مراجعة `PhraseFactoryResetConfirmation`.
 النتائج: `dotnet test Sources.Tests/Sources.Tests.csproj -c Debug` الكامل: **1617 نجاح، 0 فشل، 0 تجاوز** (خط الأساس 1610 + 7 اختبارات جديدة مؤكدة). `TestDataIsolationSentinelTests`: 6/6 نجاح. صفر تحذيرات جديدة.
 

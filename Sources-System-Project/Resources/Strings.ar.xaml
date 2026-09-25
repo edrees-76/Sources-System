@@ -1326,7 +1326,7 @@
     <system:String x:Key="HeaderEmissionRate">معدل الانبعاث المُعاير (n/s)</system:String>
     <system:String x:Key="HeaderCurrentEmissionRate">معدل الانبعاث الحالي</system:String>
     <system:String x:Key="HeaderCurrentActivity">النشاط الحالي</system:String>
-    <system:String x:Key="HeaderUncertaintyPercent">عدم اليقين %</system:String>
+    <system:String x:Key="HeaderUncertaintyPercent">عدم اليقين&#x200e; %</system:String>
     <system:String x:Key="MsgNoNeutronSourcesRecorded">لا توجد مصادر نيترونية مسجلة</system:String>
     <system:String x:Key="MsgNoNeutronSourcesHint">يمكنك البدء بإضافة مصدر نيتروني جديد من زر الإضافة أعلاه.</system:String>
     <system:String x:Key="MsgNoSearchNeutronSource">لم يتم العثور على مصادر نيترونية تطابق معايير البحث.</system:String>
@@ -1743,6 +1743,7 @@
     <system:String x:Key="MsgDoseRateNonGammaOnly">غير مؤثر عند هذه المسافة (أشعة ألفا/بيتا فقط ممتصة بغلاف المصدر والهواء)</system:String>
     <system:String x:Key="MsgDoseRateMissingGammaConstant">بيانات ثابت غاما غير مسجلة للنظير</system:String>
     <system:String x:Key="MsgDoseRateNoContributionAt1m">لا توجد مساهمة إشعاعية غاما عند 1 متر</system:String>
+    <system:String x:Key="MsgDoseRateNotRecorded">N/A (بيانات غير مسجلة)</system:String>
     <system:String x:Key="LabelDoseRateContributing">مساهم</system:String>
     <system:String x:Key="LabelDoseRateNonContributingFormat">غير مساهم ({0})</system:String>
     <system:String x:Key="LabelDoseRateMissingGammaConstant">بيانات Γ غير مسجلة</system:String>

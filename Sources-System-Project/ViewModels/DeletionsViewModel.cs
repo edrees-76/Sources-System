@@ -390,7 +390,7 @@ namespace Sources.ViewModels
                 ns.NeutronSourceType?.NameAr ?? ns.NeutronSourceType?.NameEn ?? "-",
                 ns.SerialNumber ?? "-",
                 ns.CalibratedEmissionRateFormatted,
-                ns.RelativeExpandedUncertaintyPercent.HasValue ? $"{ns.RelativeExpandedUncertaintyPercent:N1}%" : "-",
+                ns.RelativeExpandedUncertaintyPercent.HasValue ? $"{ns.RelativeExpandedUncertaintyPercent:N1}\u200e%" : "-",
                 ns.Location?.LocationName ?? "-",
                 ns.CalibrationDate.HasValue ? ns.CalibrationDate.Value.ToString("yyyy/MM/dd") : string.Empty,
                 row.DeletedAtFormatted,
