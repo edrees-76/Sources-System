@@ -2000,6 +2000,24 @@
     <system:String x:Key="TextPermissionDeltaSeparator" xml:space="preserve">, </system:String>
     <system:String x:Key="TextPermissionListSeparator" xml:space="preserve">, </system:String>
     <system:String x:Key="TextDeletedSuffix">(Deleted)</system:String>
+
+    <!-- Round 207: AllModels.cs and UI localization -->
+    <system:String x:Key="MsgTooltipNoIsotopeData">No isotope data available</system:String>
+    <system:String x:Key="MsgTooltipDoseRateHeader">Estimated dose rate at 1 meter in air:</system:String>
+    <system:String x:Key="MsgTooltipNonGamma">• Insignificant at 1 meter (alpha/beta rays absorbed by source encapsulation and air)</system:String>
+    <system:String x:Key="MsgTooltipMissingGamma">• Specific gamma constant not recorded for isotope</system:String>
+    <system:String x:Key="MsgTooltipIsotopeBreakdown">Isotope breakdown:</system:String>
+    <system:String x:Key="MsgTooltipNonContributing">Non-contributing at 1m ({0} rays only)</system:String>
+    <system:String x:Key="MsgTooltipMissingGammaShort">Gamma constant data not recorded</system:String>
+    <system:String x:Key="LabelAlphaBeta">Alpha/Beta</system:String>
+    <system:String x:Key="LabelTotal">Total</system:String>
+    <system:String x:Key="LabelUnknown">Unknown</system:String>
+    <system:String x:Key="LabelActive">Active</system:String>
+    <system:String x:Key="LabelInactive">Inactive</system:String>
+    <system:String x:Key="LabelCurrent">Valid</system:String>
+    <system:String x:Key="BrandAppTitle">Sources</system:String>
+    <system:String x:Key="HintInspectorName">e.g. Dr. Ahmed Ali</system:String>
+    <system:String x:Key="HintLeakTestNotes">Any notes about the wipe test procedure...</system:String>
 </ResourceDictionary>
 
 

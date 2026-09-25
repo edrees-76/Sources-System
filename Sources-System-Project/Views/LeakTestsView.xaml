@@ -448,7 +448,7 @@
                                     <TextBlock Text="{DynamicResource FieldInspectorName}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
                                     <TextBox Text="{Binding FormInspectorName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              Style="{StaticResource FormTextBox}"
-                                             materialDesign:HintAssist.Hint="د. أحمد علي"/>
+                                             materialDesign:HintAssist.Hint="{DynamicResource HintInspectorName}"/>
                                 </StackPanel>
 
                                 <!-- رقم شهادة الفحص -->
@@ -466,7 +466,7 @@
                                 <TextBox Text="{Binding FormNotes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          Style="{StaticResource FormTextBox}"
                                          AcceptsReturn="True" MinLines="2" MaxLines="3" TextWrapping="Wrap"
-                                         materialDesign:HintAssist.Hint="أي ملاحظات حول إجراءات المسح والمسحة القطنية..."/>
+                                         materialDesign:HintAssist.Hint="{DynamicResource HintLeakTestNotes}"/>
                             </StackPanel>
                         </StackPanel>
                     </ScrollViewer>

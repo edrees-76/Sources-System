@@ -369,7 +369,7 @@
     <system:String x:Key="ColSymbol">الرمز</system:String>
     <system:String x:Key="ColRadiationType">نوع الإشعاع</system:String>
     <system:String x:Key="ColHalfLife">نصف العمر</system:String>
-    <system:String x:Key="ColEnergyKeV">الطاقة (keV)</system:String>
+    <system:String x:Key="ColEnergyKeV">الطاقة&#x200e; (keV)</system:String>
     <system:String x:Key="ColYield">الاحتمالية</system:String>
     <system:String x:Key="CtxEdit">تعديل</system:String>
     <system:String x:Key="CtxDelete">حذف</system:String>
@@ -1159,8 +1159,8 @@
 
     <!-- حساب معدل الجرعة الإشعاعية عند 1 متر -->
     <system:String x:Key="FieldGammaConstant">ثابت غاما النوعي (Γ)</system:String>
-    <system:String x:Key="ColGammaConstant">ثابت غاما (Γ)</system:String>
-    <system:String x:Key="ColDoseRate">معدل الجرعة (1م)</system:String>
+    <system:String x:Key="ColGammaConstant">ثابت غاما&#x200e; (Γ)</system:String>
+    <system:String x:Key="ColDoseRate">معدل الجرعة&#x200e; (1م)</system:String>
     <system:String x:Key="MsgErrGammaConstantPositive">يجب أن تكون قيمة ثابت غاما رقماً موجباً أكبر من الصفر</system:String>
     <system:String x:Key="DoseRateEstimatedTitle">معدل الجرعة التقديري عند 1 متر</system:String>
     <system:String x:Key="LabelTotalDoseRate">القيمة الإجمالية</system:String>
@@ -1323,7 +1323,7 @@
     <system:String x:Key="BtnManageNeutronTypes">الأنواع المرجعية</system:String>
     <system:String x:Key="HintSearchNeutronSource">بحث بكود المصدر، النوع، الرقم التسلسلي، الموقع...</system:String>
     <system:String x:Key="HeaderRefType">النوع المرجعي</system:String>
-    <system:String x:Key="HeaderEmissionRate">معدل الانبعاث المُعاير (n/s)</system:String>
+    <system:String x:Key="HeaderEmissionRate">معدل الانبعاث المُعاير&#x200e; (n/s)</system:String>
     <system:String x:Key="HeaderCurrentEmissionRate">معدل الانبعاث الحالي</system:String>
     <system:String x:Key="HeaderCurrentActivity">النشاط الحالي</system:String>
     <system:String x:Key="HeaderUncertaintyPercent">عدم اليقين&#x200e; %</system:String>
@@ -1522,7 +1522,7 @@
     <system:String x:Key="ColReactionType">نوع التفاعل</system:String>
     <system:String x:Key="ColTargetMaterial">مادة الهدف</system:String>
     <system:String x:Key="ColHalfLifeUnit">الوحدة</system:String>
-    <system:String x:Key="ColAverageEnergyMev">متوسط الطاقة (MeV)</system:String>
+    <system:String x:Key="ColAverageEnergyMev">متوسط الطاقة&#x200e; (MeV)</system:String>
     <system:String x:Key="TitleEditNeutronType">تعديل بيانات النوع المرجعي</system:String>
     <system:String x:Key="TitleAddNeutronType">إضافة نوع نيتروني مرجعي جديد</system:String>
     <system:String x:Key="HintTypeCodeReq">كود النوع (مثل Cf-252, Am-241/Be) *</system:String>
@@ -2001,6 +2001,24 @@
     <system:String x:Key="TextPermissionDeltaSeparator" xml:space="preserve"> ، </system:String>
     <system:String x:Key="TextPermissionListSeparator" xml:space="preserve">، </system:String>
     <system:String x:Key="TextDeletedSuffix">(محذوف)</system:String>
+
+    <!-- Round 207: توطين نصوص AllModels.cs وواجهة المستخدم -->
+    <system:String x:Key="MsgTooltipNoIsotopeData">لا توجد بيانات للنظائر</system:String>
+    <system:String x:Key="MsgTooltipDoseRateHeader">معدل الجرعة التقديري عند 1 متر في الهواء:</system:String>
+    <system:String x:Key="MsgTooltipNonGamma">• غير مؤثر عند 1 متر (أشعة ألفا/بيتا فقط ممتصة بغلاف المصدر والهواء)</system:String>
+    <system:String x:Key="MsgTooltipMissingGamma">• بيانات ثابت غاما غير مسجلة للنظير</system:String>
+    <system:String x:Key="MsgTooltipIsotopeBreakdown">تفصيل النظائر:</system:String>
+    <system:String x:Key="MsgTooltipNonContributing">غير مساهم عند 1م (أشعة {0} فقط)</system:String>
+    <system:String x:Key="MsgTooltipMissingGammaShort">بيانات ثابت غاما غير مسجلة</system:String>
+    <system:String x:Key="LabelAlphaBeta">ألفا/بيتا</system:String>
+    <system:String x:Key="LabelTotal">الإجمالي</system:String>
+    <system:String x:Key="LabelUnknown">غير معروف</system:String>
+    <system:String x:Key="LabelActive">نشط</system:String>
+    <system:String x:Key="LabelInactive">موقوف</system:String>
+    <system:String x:Key="LabelCurrent">ساري</system:String>
+    <system:String x:Key="BrandAppTitle">مصادر</system:String>
+    <system:String x:Key="HintInspectorName">د. أحمد علي</system:String>
+    <system:String x:Key="HintLeakTestNotes">أي ملاحظات حول إجراءات المسح والمسحة القطنية...</system:String>
 </ResourceDictionary>
 
 
