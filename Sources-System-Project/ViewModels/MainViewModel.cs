@@ -351,6 +351,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
 
         CurrentViewName = viewName;
+        (CurrentView as IDisposable)?.Dispose();
         CurrentView = viewName switch
         {
             "Dashboard" => App.ServiceProvider?.GetService(typeof(DashboardViewModel)) as ObservableObject,
@@ -434,6 +435,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     public void ForceLogout()
     {
+        (CurrentView as IDisposable)?.Dispose();
+        CurrentView = null;
         StopInactivityTimer();
         StopAlertCheckTimer();
         _userService.Logout();
@@ -536,5 +539,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _alertTimer?.Stop();
         _inactivityTimer?.Stop();
         _messenger.UnregisterAll(this);
+        (CurrentView as IDisposable)?.Dispose();
+        CurrentView = null;
     }
 }
