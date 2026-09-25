@@ -93,7 +93,7 @@ public class NeutronSourceListRow
     public string CurrentActivityDisplay { get; set; } = "-";
 }
 
-public partial class SourcesViewModel : ObservableObject, IEditableViewModel
+public partial class SourcesViewModel : ObservableObject, IEditableViewModel, IDisposable
 {
     private readonly ISourceService _sourceService;
     private readonly IRadioisotopeService _isotopeService;
@@ -1774,6 +1774,11 @@ public partial class SourcesViewModel : ObservableObject, IEditableViewModel
         if (Math.Abs(value) >= 1000) return $"{value:N2} {unitSymbol}";
         if (Math.Abs(value) >= 1) return $"{value:N4} {unitSymbol}";
         return $"{value:E3} {unitSymbol}";
+    }
+
+    public void Dispose()
+    {
+        _messenger.UnregisterAll(this);
     }
 }
 

@@ -13,7 +13,7 @@ using System.Windows;
 
 namespace Sources.ViewModels;
 
-public partial class SettingsViewModel : ObservableObject
+public partial class SettingsViewModel : ObservableObject, IDisposable
 {
     private readonly IBackupService _backupService;
     private readonly ISystemSettingsService _settingsService;
@@ -23,6 +23,7 @@ public partial class SettingsViewModel : ObservableObject
     private readonly IDbContextFactory<AppDbContext>? _dbFactory;
     private readonly IDecayCalculationService? _decayService;
     private readonly IAlertService? _alertService;
+    private EventHandler? _backupCompletedHandler;
 
     // ─── التحكم في التبويبات ───
     [ObservableProperty] private string _selectedTab = "General";
@@ -155,10 +156,11 @@ public partial class SettingsViewModel : ObservableObject
         // الاشتراك في حدث اكتمال النسخ الاحتياطي التلقائي لتحديث الواجهة فوراً
         if (_autoBackupService != null)
         {
-            _autoBackupService.BackupCompleted += (s, e) =>
+            _backupCompletedHandler = (s, e) =>
             {
                 Application.Current?.Dispatcher.InvokeAsync(UpdateLastBackupInfo);
             };
+            _autoBackupService.BackupCompleted += _backupCompletedHandler;
         }
     }
 
@@ -657,6 +659,14 @@ public partial class SettingsViewModel : ObservableObject
         var username = _userService?.CurrentUser?.Username;
         SettingsHelper.SetUserAccentColor(username, hexColor);
         App.ApplyAccentColor(hexColor);
+    }
+
+    public void Dispose()
+    {
+        if (_autoBackupService != null && _backupCompletedHandler != null)
+        {
+            _autoBackupService.BackupCompleted -= _backupCompletedHandler;
+        }
     }
 }
 

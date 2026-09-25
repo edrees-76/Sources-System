@@ -31,7 +31,7 @@ public class RoleSummaryItem
     public List<string> GrantedSections { get; set; } = new();
 }
 
-public partial class UsersViewModel : ObservableObject, IEditableViewModel
+public partial class UsersViewModel : ObservableObject, IEditableViewModel, IDisposable
 {
     private readonly IUserService _userService;
     private readonly IReportingService _reportingService;
@@ -824,4 +824,9 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
     }
 
     private void ShowMsg(string m) { Message = m; HasMessage = true; }
+
+    public void Dispose()
+    {
+        _messenger.UnregisterAll(this);
+    }
 }
