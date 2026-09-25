@@ -93,7 +93,7 @@ public class DecayCalculationServiceTests
         string halfLifeUnit = "years";
         var calibrationDate = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         
-        var halfLifeSeconds = halfLife * 365.25 * 86400.0;
+        var halfLifeSeconds = _decayService.ConvertTimeToSeconds(halfLife, halfLifeUnit);
         var calculationDate = calibrationDate.AddSeconds(halfLifeSeconds);
 
         // Act
@@ -225,7 +225,7 @@ public class DecayCalculationServiceTests
         double halfLife = 30.17;
         string unit = "years";
 
-        var expectedSeconds = 2.0 * halfLife * 365.25 * 86400.0;
+        var expectedSeconds = 2.0 * halfLife * DecayCalculationService.SecondsPerYear;
 
         // Act
         var actualSeconds = _decayService.CalculateTimeToActivity(initialActivity, targetActivity, halfLife, unit);
@@ -243,7 +243,7 @@ public class DecayCalculationServiceTests
         double halfLife = 30.08;
         string unit = "years";
 
-        var expectedSeconds = halfLife * 365.25 * 86400.0;
+        var expectedSeconds = halfLife * DecayCalculationService.SecondsPerYear;
 
         // Act
         var actualSeconds = _decayService.CalculateTimeToActivity(initialBq, targetBq, halfLife, unit);
@@ -360,11 +360,38 @@ public class DecayCalculationServiceTests
     }
 
     [Fact]
-    public void ConvertUnits_UnknownSymbol_ReturnsOriginalValueAsFallback()
+    public void ConvertUnits_UnknownSymbol_ThrowsArgumentException()
+    {
+        // Act & Assert: رمي استثناء عند طلب وحدة غير مسجلة في قاعدة البيانات أو النظام
+        var ex1 = Assert.Throws<ArgumentException>(() => _decayService.ConvertToBq(50.0, "UNKNOWN_UNIT"));
+        var ex2 = Assert.Throws<ArgumentException>(() => _decayService.ConvertFromBq(50.0, "UNKNOWN_UNIT"));
+
+        Assert.Contains("UNKNOWN_UNIT", ex1.Message);
+        Assert.Contains("UNKNOWN_UNIT", ex2.Message);
+    }
+
+    [Fact]
+    public void ConvertUnits_NullOrWhitespaceSymbol_ThrowsArgumentException()
     {
         // Act & Assert
-        Assert.Equal(50.0, _decayService.ConvertToBq(50.0, "UNKNOWN_UNIT"));
-        Assert.Equal(50.0, _decayService.ConvertFromBq(50.0, "UNKNOWN_UNIT"));
+        Assert.Throws<ArgumentException>(() => _decayService.ConvertToBq(50.0, ""));
+        Assert.Throws<ArgumentException>(() => _decayService.ConvertFromBq(50.0, "   "));
+    }
+
+    [Fact]
+    public void ConvertUnits_MBqAndCi_ProduceExactExpectedValues()
+    {
+        // Arrange & Act
+        var mbqToBq = _decayService.ConvertToBq(1.0, "MBq");
+        var ciToBq = _decayService.ConvertToBq(1.0, "Ci");
+        var bqToMbq = _decayService.ConvertFromBq(1e6, "MBq");
+        var bqToCi = _decayService.ConvertFromBq(3.7e10, "Ci");
+
+        // Assert: 1 MBq = 1e6 Bq, 1 Ci = 3.7e10 Bq
+        Assert.Equal(1e6, mbqToBq, precision: 6);
+        Assert.Equal(3.7e10, ciToBq, precision: 4);
+        Assert.Equal(1.0, bqToMbq, precision: 6);
+        Assert.Equal(1.0, bqToCi, precision: 6);
     }
 
     #endregion
@@ -488,9 +515,9 @@ public class DecayCalculationServiceTests
     [InlineData(1.0, "day", 86400.0)]
     [InlineData(1.0, "mo", 30.0 * 86400.0)]
     [InlineData(1.0, "months", 30.0 * 86400.0)]
-    [InlineData(1.0, "y", 365.25 * 86400.0)]
-    [InlineData(1.0, "years", 365.25 * 86400.0)]
-    [InlineData(1.0, "yr", 365.25 * 86400.0)]
+    [InlineData(1.0, "y", 365.2422 * 86400.0)]
+    [InlineData(1.0, "years", 365.2422 * 86400.0)]
+    [InlineData(1.0, "yr", 365.2422 * 86400.0)]
     public void ConvertTimeToSeconds_SupportedUnits_ConvertCorrectly(double value, string unit, double expectedSeconds)
     {
         // Act
@@ -498,6 +525,19 @@ public class DecayCalculationServiceTests
 
         // Assert
         Assert.Equal(expectedSeconds, seconds, precision: 4);
+    }
+
+    [Fact]
+    public void ConvertTimeToSeconds_OneYear_MatchesTropicalYearAndNeutronDecayService()
+    {
+        // Act
+        var decayYearSec = _decayService.ConvertTimeToSeconds(1.0, "years");
+        var neutronYearSec = NeutronDecayCalculationService.SecondsPerYear;
+
+        // Assert: 365.2422 * 86400 = 31556926.08 ثانية
+        Assert.Equal(365.2422 * 86400.0, decayYearSec, precision: 4);
+        Assert.Equal(decayYearSec, neutronYearSec, precision: 4);
+        Assert.Equal(DecayCalculationService.DaysPerYear, NeutronDecayCalculationService.DaysPerYear);
     }
 
     #endregion
@@ -540,3 +580,47 @@ public class DecayCalculationServiceTests
 
     #endregion
 }
+
+/// <summary>
+/// اختبارات تكاملية للتحقق من قراءة معاملات تحويل النشاط من قاعدة البيانات الفعلية (ActivityUnits)
+/// </summary>
+public class DecayCalculationServiceDatabaseIntegrationTests : IClassFixture<Fixtures.SqliteInMemoryFixture>
+{
+    private readonly Fixtures.SqliteInMemoryFixture _fixture;
+
+    public DecayCalculationServiceDatabaseIntegrationTests(Fixtures.SqliteInMemoryFixture fixture)
+    {
+        _fixture = fixture;
+    }
+
+    [Fact]
+    public void Convert_WithDbContextFactory_ReadsFactorsDirectlyFromDatabase()
+    {
+        // Arrange: خدمة مزودة بـ IDbContextFactory متصلة بقاعدة البيانات المزرعة
+        var serviceWithDb = new DecayCalculationService(_fixture.ContextFactory);
+
+        // Act: تحويلات النشاط بالوحدات المعيارية
+        var mbqToBq = serviceWithDb.ConvertToBq(2.5, "MBq");
+        var ciToBq = serviceWithDb.ConvertToBq(1.0, "Ci");
+        var bqToMbq = serviceWithDb.ConvertFromBq(2.5e6, "MBq");
+        var bqToCi = serviceWithDb.ConvertFromBq(3.7e10, "Ci");
+
+        // Assert: التأكد من مطابقة المعاملات المسجلة في جدول ActivityUnits
+        Assert.Equal(2.5e6, mbqToBq, precision: 6);
+        Assert.Equal(3.7e10, ciToBq, precision: 4);
+        Assert.Equal(2.5, bqToMbq, precision: 6);
+        Assert.Equal(1.0, bqToCi, precision: 6);
+    }
+
+    [Fact]
+    public void Convert_WithDbContextFactory_UnknownUnit_ThrowsArgumentException()
+    {
+        // Arrange
+        var serviceWithDb = new DecayCalculationService(_fixture.ContextFactory);
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => serviceWithDb.ConvertToBq(1.0, "NON_EXISTENT_UNIT"));
+        Assert.Throws<ArgumentException>(() => serviceWithDb.ConvertFromBq(1.0, "NON_EXISTENT_UNIT"));
+    }
+}
+

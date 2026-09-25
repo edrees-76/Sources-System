@@ -121,20 +121,20 @@ public class Round202TimeHandlingCharacterizationTests : IClassFixture<SqliteInM
     }
 
     // Cs-137: معايرة مطلقة ثابتة 2021-09-24 12:00:00 محلي (~5 سنوات قبل 2026)، 3.7e7 Bq، T½=30.08y.
-    // halfLifeSeconds = 30.08*365.25*86400 = 949,105,152 s. القيم التالية محسوبة يدوياً بدقة tick
-    // (فرق Ticks بين لحظة الساعة والمعايرة / 1e7)، وليست بإعادة تنفيذ صيغة الإنتاج وقت التشغيل:
-    // 23:30:00 (24/09): elapsed=157807800  => 32972905.231304757 Bq
-    // 00:30:00 (25/09): elapsed=157811400  => 32972818.554517325 Bq
-    // 23:30:00 (30/09): elapsed=158326200  => 32960426.119563017 Bq
-    // 00:30:00 (01/10): elapsed=158329800  => 32960339.47557977 Bq
+    // halfLifeSeconds = 30.08*365.2422*86400 = 949,084,874.112 s (توحيد ثابت السنة الاستوائية للجولة 205).
+    // القيم التالية محسوبة بالمعامل الموحد بدقة tick:
+    // 23:30:00 (24/09): elapsed=157807800  => 32972824.08991160 Bq
+    // 00:30:00 (25/09): elapsed=157811400  => 32972737.41148643 Bq
+    // 23:30:00 (30/09): elapsed=158326200  => 32960344.74243011 Bq
+    // 00:30:00 (01/10): elapsed=158329800  => 32960258.09681045 Bq
     public static readonly DateTime Cs137CalibrationDate = new(2021, 9, 24, 12, 0, 0);
 
     public static TheoryData<DateTime, double> Cs137FixedPoints => new()
     {
-        { FixedNear2330Local, 32972905.231304757 },
-        { FixedNear0030LocalNextDay, 32972818.554517325 },
-        { FixedMonthBoundaryBefore, 32960426.119563017 },
-        { FixedMonthBoundaryAfter, 32960339.47557977 },
+        { FixedNear2330Local, 32972824.08991160 },
+        { FixedNear0030LocalNextDay, 32972737.41148643 },
+        { FixedMonthBoundaryBefore, 32960344.74243011 },
+        { FixedMonthBoundaryAfter, 32960258.09681045 },
     };
 
     [Theory]

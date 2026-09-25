@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using Sources.Data;
 using Sources.Models;
 
 namespace Sources.Services;
@@ -11,11 +13,25 @@ namespace Sources.Services;
 /// </summary>
 public class DecayCalculationService : IDecayCalculationService
 {
-    private readonly TimeProvider _timeProvider;
+    // الثابت المعتمد لطول السنة بالأيام (السنة الاستوائية المتوسطة 365.2422 يوماً - مطابق لـ NeutronDecayCalculationService)
+    public const double DaysPerYear = 365.2422;
+    public const double SecondsPerDay = 86400.0;
+    public const double SecondsPerYear = DaysPerYear * SecondsPerDay;
 
-    public DecayCalculationService(TimeProvider? timeProvider = null)
+    private readonly TimeProvider _timeProvider;
+    private readonly IDbContextFactory<AppDbContext>? _dbFactory;
+    private Dictionary<string, double>? _cachedUnitConversions;
+    private readonly object _cacheLock = new();
+
+    public DecayCalculationService(IDbContextFactory<AppDbContext>? dbFactory = null, TimeProvider? timeProvider = null)
     {
+        _dbFactory = dbFactory;
         _timeProvider = timeProvider ?? TimeProvider.System;
+    }
+
+    public DecayCalculationService(TimeProvider timeProvider)
+        : this(null, timeProvider)
+    {
     }
 
     /// <summary>
@@ -73,18 +89,8 @@ public class DecayCalculationService : IDecayCalculationService
     /// </summary>
     public double ConvertFromBq(double activityBq, string unitSymbol)
     {
-        return unitSymbol switch
-        {
-            "Bq" => activityBq,
-            "kBq" => activityBq / 1e3,
-            "MBq" => activityBq / 1e6,
-            "GBq" => activityBq / 1e9,
-            "TBq" => activityBq / 1e12,
-            "Ci" => activityBq / 3.7e10,
-            "mCi" => activityBq / 3.7e7,
-            "µCi" or "uCi" => activityBq / 3.7e4,
-            _ => activityBq
-        };
+        var factor = GetConversionFactor(unitSymbol);
+        return ConvertFromBq(activityBq, factor);
     }
 
     /// <summary>
@@ -100,18 +106,76 @@ public class DecayCalculationService : IDecayCalculationService
     /// </summary>
     public double ConvertToBq(double activityValue, string unitSymbol)
     {
-        return unitSymbol switch
+        var factor = GetConversionFactor(unitSymbol);
+        return ConvertToBq(activityValue, factor);
+    }
+
+    private double GetConversionFactor(string unitSymbol)
+    {
+        if (string.IsNullOrWhiteSpace(unitSymbol))
+            throw new ArgumentException("Unit symbol cannot be null or empty.", nameof(unitSymbol));
+
+        EnsureUnitConversionsLoaded();
+
+        if (_cachedUnitConversions != null && _cachedUnitConversions.TryGetValue(unitSymbol, out var factor))
         {
-            "Bq" => activityValue,
-            "kBq" => activityValue * 1e3,
-            "MBq" => activityValue * 1e6,
-            "GBq" => activityValue * 1e9,
-            "TBq" => activityValue * 1e12,
-            "Ci" => activityValue * 3.7e10,
-            "mCi" => activityValue * 3.7e7,
-            "µCi" or "uCi" => activityValue * 3.7e4,
-            _ => activityValue
-        };
+            return factor;
+        }
+
+        throw new ArgumentException($"Unknown unit: {unitSymbol}");
+    }
+
+    private void EnsureUnitConversionsLoaded()
+    {
+        if (_cachedUnitConversions != null) return;
+
+        lock (_cacheLock)
+        {
+            if (_cachedUnitConversions != null) return;
+
+            var dict = new Dictionary<string, double>(StringComparer.Ordinal);
+
+            if (_dbFactory != null)
+            {
+                try
+                {
+                    using var db = _dbFactory.CreateDbContext();
+                    var units = db.ActivityUnits.ToList();
+                    foreach (var u in units)
+                    {
+                        if (!string.IsNullOrEmpty(u.UnitSymbol))
+                        {
+                            dict[u.UnitSymbol] = u.ConversionToBq;
+                        }
+                    }
+                }
+                catch
+                {
+                    // Fallback to seeded standards if DB is temporarily unavailable
+                }
+            }
+
+            if (dict.Count == 0)
+            {
+                // Fallback for standalone/pure unit testing without DB factory or before seed
+                dict["Bq"] = 1.0;
+                dict["kBq"] = 1e3;
+                dict["MBq"] = 1e6;
+                dict["GBq"] = 1e9;
+                dict["TBq"] = 1e12;
+                dict["Ci"] = 3.7e10;
+                dict["mCi"] = 3.7e7;
+                dict["µCi"] = 3.7e4;
+            }
+
+            // Support "uCi" as an accepted alias for "µCi"
+            if (dict.TryGetValue("µCi", out var uCiFactor) && !dict.ContainsKey("uCi"))
+            {
+                dict["uCi"] = uCiFactor;
+            }
+
+            _cachedUnitConversions = dict;
+        }
     }
 
     /// <summary>
@@ -442,10 +506,10 @@ public class DecayCalculationService : IDecayCalculationService
             "seconds" or "second" or "s" => value,
             "minutes" or "minute" or "min" or "m" => value * 60,
             "hours" or "hour" or "h" => value * 3600,
-            "days" or "day" or "d" => value * 86400,
-            "months" or "month" or "mo" => value * 30 * 86400, // 30 يوماً
-            "years" or "year" or "yr" or "y" => value * 365.25 * 86400, // 365.25 يوماً
-            _ => value * 365.25 * 86400 // افتراضي: سنوات
+            "days" or "day" or "d" => value * SecondsPerDay,
+            "months" or "month" or "mo" => value * 30 * SecondsPerDay, // 30 يوماً
+            "years" or "year" or "yr" or "y" => value * SecondsPerYear, // 365.2422 يوماً
+            _ => value * SecondsPerYear // افتراضي: سنوات
         };
     }
 }
