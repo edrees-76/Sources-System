@@ -180,4 +180,82 @@ public class SettingsViewModelFactoryResetTests : IDisposable
         Assert.Contains("materialDesign:PasswordBoxAssist.Password=\"{Binding ResetPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}\"", xamlContent);
         Assert.DoesNotContain("TextBox Grid.Column=\"0\" Text=\"{Binding ResetPassword", xamlContent);
     }
+
+    [Fact]
+    public void RequiredResetPhrase_EqualsPhraseFactoryResetConfirmationResource_InArabicAndEnglishUi()
+    {
+        Sources.Tests.Fixtures.WpfStaFixture.RunInSta(() =>
+        {
+            var dicts = System.Windows.Application.Current.Resources.MergedDictionaries;
+            int dictIndex = -1;
+            for (int i = 0; i < dicts.Count; i++)
+            {
+                if (dicts[i].Source != null && dicts[i].Source.OriginalString.Contains("Strings."))
+                {
+                    dictIndex = i;
+                    break;
+                }
+            }
+            Assert.True(dictIndex >= 0, "Strings dictionary must be loaded.");
+
+            var vm = new SettingsViewModel(
+                _mockBackupService.Object,
+                _mockSettingsService.Object,
+                null,
+                _mockUserService.Object,
+                _mockResetService.Object);
+
+            // 1. In Arabic UI
+            dicts[dictIndex] = new System.Windows.ResourceDictionary
+            {
+                Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.ar.xaml", UriKind.Absolute)
+            };
+
+            var arabicResource = TranslationHelper.GetString("PhraseFactoryResetConfirmation");
+            Assert.Equal("إعادة ضبط المنظومة", arabicResource);
+            Assert.Equal(arabicResource, vm.RequiredResetPhrase);
+
+            // Typing Arabic phrase passes in Arabic UI
+            vm.ResetPhrase = "إعادة ضبط المنظومة";
+            vm.VerifyResetPhraseCommand.Execute(null);
+            Assert.True(vm.IsStage1Passed);
+
+            // Typing wrong text fails in Arabic UI
+            vm.ResetPhrase = "Wrong Phrase";
+            vm.VerifyResetPhraseCommand.Execute(null);
+            Assert.False(vm.IsStage1Passed);
+
+            // 2. In English UI
+            try
+            {
+                dicts[dictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.en.xaml", UriKind.Absolute)
+                };
+
+                var englishResource = TranslationHelper.GetString("PhraseFactoryResetConfirmation");
+                // Per contract: The resource stays Arabic in BOTH dictionaries ("إعادة ضبط المنظومة")
+                Assert.Equal("إعادة ضبط المنظومة", englishResource);
+                Assert.Equal(englishResource, vm.RequiredResetPhrase);
+
+                // Typing Arabic phrase passes in English UI
+                vm.ResetPhrase = "إعادة ضبط المنظومة";
+                vm.VerifyResetPhraseCommand.Execute(null);
+                Assert.True(vm.IsStage1Passed);
+
+                // Typing English or any other text fails in English UI
+                vm.ResetPhrase = "Factory Reset";
+                vm.VerifyResetPhraseCommand.Execute(null);
+                Assert.False(vm.IsStage1Passed);
+            }
+            finally
+            {
+                // Restore Arabic dictionary
+                dicts[dictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.ar.xaml", UriKind.Absolute)
+                };
+            }
+        });
+    }
 }
