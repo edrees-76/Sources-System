@@ -113,7 +113,7 @@ public class ReportNeutronInventoryRow
     public string TypeName => Source.NeutronSourceType?.NameAr ?? Source.NeutronSourceType?.NameEn ?? "-";
     public double EmissionRate => Source.CalibratedEmissionRate;
     public string CalibratedEmissionRateFormatted => Source.CalibratedEmissionRateFormatted;
-    public string RelativeUncertainty => Source.RelativeExpandedUncertaintyPercent.HasValue ? $"{Source.RelativeExpandedUncertaintyPercent:N1}%" : "-";
+    public string RelativeUncertainty => Source.RelativeExpandedUncertaintyPercent.HasValue ? $"{Source.RelativeExpandedUncertaintyPercent:N1}\u200e%" : "-";
     public Location? Location => Source.Location;
     public string Status => Source.Status;
     public string ArabicStatus => Source.ArabicStatus;

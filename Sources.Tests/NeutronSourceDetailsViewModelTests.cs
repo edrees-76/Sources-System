@@ -108,4 +108,40 @@ public class NeutronSourceDetailsViewModelTests
         // Assert: division by zero must never happen — safe fallback to Bq
         Assert.Equal("987.0000 Bq", display);
     }
+
+    [Theory]
+    [InlineData(1.9, "1.9\u200e%")]
+    [InlineData(2.5, "2.5\u200e%")]
+    public void UncertaintyFormatted_ContainsLrmBeforePercent_PreventingBidiFlip(double percent, string expected)
+    {
+        var source = new NeutronSource
+        {
+            Id = Guid.NewGuid(),
+            SourceCode = "NS-UNC",
+            RelativeExpandedUncertaintyPercent = percent
+        };
+
+        var vm = new NeutronSourceDetailsViewModel(source);
+
+        Assert.Equal(expected, vm.UncertaintyFormatted);
+        // Specifically assert that '%' is preceded by LRM (U+200E) and NOT inverted to "%1.9"
+        Assert.EndsWith("\u200e%", vm.UncertaintyFormatted);
+        Assert.False(vm.UncertaintyFormatted.StartsWith("%"));
+    }
+
+    [Fact]
+    public void ReportNeutronInventoryRow_RelativeUncertainty_ContainsLrmBeforePercent()
+    {
+        var source = new NeutronSource
+        {
+            Id = Guid.NewGuid(),
+            SourceCode = "NS-UNC",
+            RelativeExpandedUncertaintyPercent = 1.9
+        };
+
+        var row = new ReportNeutronInventoryRow { Source = source };
+        Assert.Equal("1.9\u200e%", row.RelativeUncertainty);
+        Assert.EndsWith("\u200e%", row.RelativeUncertainty);
+        Assert.False(row.RelativeUncertainty.StartsWith("%"));
+    }
 }

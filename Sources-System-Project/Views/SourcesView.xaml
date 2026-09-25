@@ -777,7 +777,7 @@
                                     </DataGridTemplateColumn>
 
                                     <!-- نسبة عدم اليقين -->
-                                    <DataGridTextColumn Header="{DynamicResource HeaderUncertaintyPercent}" Binding="{Binding RelativeExpandedUncertaintyPercent, StringFormat={}{0:N1}%, TargetNullValue='—'}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterAligned}"/>
+                                    <DataGridTextColumn Header="{DynamicResource HeaderUncertaintyPercent}" Binding="{Binding RelativeExpandedUncertaintyPercent, StringFormat={}{0:N1}&#x200e;%, TargetNullValue='—'}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterAligned}"/>
 
                                     <!-- النشاط الحالي -->
                                     <DataGridTemplateColumn Header="{DynamicResource HeaderCurrentActivity}" Width="Auto" MinWidth="140">
