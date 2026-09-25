@@ -11,6 +11,11 @@ namespace Sources.Services;
 /// </summary>
 public class DecayCalculationService : IDecayCalculationService
 {
+    // الثابت المعتمد لطول السنة بالأيام (السنة الاستوائية المتوسطة 365.2422 يوماً - مطابق لـ NeutronDecayCalculationService)
+    public const double DaysPerYear = 365.2422;
+    public const double SecondsPerDay = 86400.0;
+    public const double SecondsPerYear = DaysPerYear * SecondsPerDay;
+
     private readonly TimeProvider _timeProvider;
 
     public DecayCalculationService(TimeProvider? timeProvider = null)
@@ -442,10 +447,10 @@ public class DecayCalculationService : IDecayCalculationService
             "seconds" or "second" or "s" => value,
             "minutes" or "minute" or "min" or "m" => value * 60,
             "hours" or "hour" or "h" => value * 3600,
-            "days" or "day" or "d" => value * 86400,
-            "months" or "month" or "mo" => value * 30 * 86400, // 30 يوماً
-            "years" or "year" or "yr" or "y" => value * 365.25 * 86400, // 365.25 يوماً
-            _ => value * 365.25 * 86400 // افتراضي: سنوات
+            "days" or "day" or "d" => value * SecondsPerDay,
+            "months" or "month" or "mo" => value * 30 * SecondsPerDay, // 30 يوماً
+            "years" or "year" or "yr" or "y" => value * SecondsPerYear, // 365.2422 يوماً
+            _ => value * SecondsPerYear // افتراضي: سنوات
         };
     }
 }

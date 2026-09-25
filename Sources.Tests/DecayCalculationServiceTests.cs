@@ -93,7 +93,7 @@ public class DecayCalculationServiceTests
         string halfLifeUnit = "years";
         var calibrationDate = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         
-        var halfLifeSeconds = halfLife * 365.25 * 86400.0;
+        var halfLifeSeconds = _decayService.ConvertTimeToSeconds(halfLife, halfLifeUnit);
         var calculationDate = calibrationDate.AddSeconds(halfLifeSeconds);
 
         // Act
@@ -225,7 +225,7 @@ public class DecayCalculationServiceTests
         double halfLife = 30.17;
         string unit = "years";
 
-        var expectedSeconds = 2.0 * halfLife * 365.25 * 86400.0;
+        var expectedSeconds = 2.0 * halfLife * DecayCalculationService.SecondsPerYear;
 
         // Act
         var actualSeconds = _decayService.CalculateTimeToActivity(initialActivity, targetActivity, halfLife, unit);
@@ -243,7 +243,7 @@ public class DecayCalculationServiceTests
         double halfLife = 30.08;
         string unit = "years";
 
-        var expectedSeconds = halfLife * 365.25 * 86400.0;
+        var expectedSeconds = halfLife * DecayCalculationService.SecondsPerYear;
 
         // Act
         var actualSeconds = _decayService.CalculateTimeToActivity(initialBq, targetBq, halfLife, unit);
@@ -488,9 +488,9 @@ public class DecayCalculationServiceTests
     [InlineData(1.0, "day", 86400.0)]
     [InlineData(1.0, "mo", 30.0 * 86400.0)]
     [InlineData(1.0, "months", 30.0 * 86400.0)]
-    [InlineData(1.0, "y", 365.25 * 86400.0)]
-    [InlineData(1.0, "years", 365.25 * 86400.0)]
-    [InlineData(1.0, "yr", 365.25 * 86400.0)]
+    [InlineData(1.0, "y", 365.2422 * 86400.0)]
+    [InlineData(1.0, "years", 365.2422 * 86400.0)]
+    [InlineData(1.0, "yr", 365.2422 * 86400.0)]
     public void ConvertTimeToSeconds_SupportedUnits_ConvertCorrectly(double value, string unit, double expectedSeconds)
     {
         // Act
@@ -498,6 +498,19 @@ public class DecayCalculationServiceTests
 
         // Assert
         Assert.Equal(expectedSeconds, seconds, precision: 4);
+    }
+
+    [Fact]
+    public void ConvertTimeToSeconds_OneYear_MatchesTropicalYearAndNeutronDecayService()
+    {
+        // Act
+        var decayYearSec = _decayService.ConvertTimeToSeconds(1.0, "years");
+        var neutronYearSec = NeutronDecayCalculationService.SecondsPerYear;
+
+        // Assert: 365.2422 * 86400 = 31556926.08 ثانية
+        Assert.Equal(365.2422 * 86400.0, decayYearSec, precision: 4);
+        Assert.Equal(decayYearSec, neutronYearSec, precision: 4);
+        Assert.Equal(DecayCalculationService.DaysPerYear, NeutronDecayCalculationService.DaysPerYear);
     }
 
     #endregion
