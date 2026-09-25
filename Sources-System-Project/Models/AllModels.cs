@@ -520,7 +520,7 @@ public class DoseRateResult
             if (IsAllNonGamma)
                 return "N/A (α/β)";
             if (HasMissingData)
-                return "N/A (بيانات غير مسجلة)";
+                return TranslationHelper.GetString("MsgDoseRateNotRecorded") ?? "N/A (بيانات غير مسجلة)";
             return "0 µSv/h @ 1m";
         }
     }

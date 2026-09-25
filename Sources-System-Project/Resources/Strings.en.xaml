@@ -1742,6 +1742,7 @@
     <system:String x:Key="MsgDoseRateNonGammaOnly">No effect at this distance (alpha/beta radiation only, absorbed by the source casing and air)</system:String>
     <system:String x:Key="MsgDoseRateMissingGammaConstant">Gamma constant data not recorded for this isotope</system:String>
     <system:String x:Key="MsgDoseRateNoContributionAt1m">No gamma radiation contribution at 1 meter</system:String>
+    <system:String x:Key="MsgDoseRateNotRecorded">N/A (No data recorded)</system:String>
     <system:String x:Key="LabelDoseRateContributing">Contributing</system:String>
     <system:String x:Key="LabelDoseRateNonContributingFormat">Non-contributing ({0})</system:String>
     <system:String x:Key="LabelDoseRateMissingGammaConstant">Γ data not recorded</system:String>

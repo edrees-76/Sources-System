@@ -324,4 +324,57 @@ public class DoseRateCalculationTests
         Assert.Equal("1.54 mSv/h @ 1m", highResult.FormattedSummary);
         Assert.Equal("1.54 mSv/h", highResult.FormattedTotalMicroSv);
     }
+
+    [Fact]
+    public void FormattedSummary_ReturnsArabicInArabicUi_AndEnglishInEnglishUi()
+    {
+        var co60 = new Radioisotope
+        {
+            Id = Guid.NewGuid(),
+            Name = "Cobalt-60",
+            Symbol = "Co-60",
+            RadiationType = "Gamma",
+            GammaConstant = null
+        };
+
+        var result = _decayService.CalculateDoseRateAtOneMeter(new[] { (co60, 200.0) });
+        Assert.True(result.HasMissingData);
+
+        // In Arabic UI (default)
+        Assert.Equal("N/A (بيانات غير مسجلة)", result.FormattedSummary);
+
+        // In English UI
+        Sources.Tests.Fixtures.WpfStaFixture.RunInSta(() =>
+        {
+            var dicts = System.Windows.Application.Current.Resources.MergedDictionaries;
+            var arabicDictIndex = -1;
+            for (int i = 0; i < dicts.Count; i++)
+            {
+                var src = dicts[i].Source?.OriginalString;
+                if (src != null && src.Contains("Strings.ar.xaml"))
+                {
+                    arabicDictIndex = i;
+                    break;
+                }
+            }
+            Assert.True(arabicDictIndex >= 0);
+
+            try
+            {
+                dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.en.xaml", UriKind.Absolute)
+                };
+
+                Assert.Equal("N/A (No data recorded)", result.FormattedSummary);
+            }
+            finally
+            {
+                dicts[arabicDictIndex] = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/Sources;component/Resources/Strings.ar.xaml", UriKind.Absolute)
+                };
+            }
+        });
+    }
 }

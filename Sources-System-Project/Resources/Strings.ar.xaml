@@ -1743,6 +1743,7 @@
     <system:String x:Key="MsgDoseRateNonGammaOnly">غير مؤثر عند هذه المسافة (أشعة ألفا/بيتا فقط ممتصة بغلاف المصدر والهواء)</system:String>
     <system:String x:Key="MsgDoseRateMissingGammaConstant">بيانات ثابت غاما غير مسجلة للنظير</system:String>
     <system:String x:Key="MsgDoseRateNoContributionAt1m">لا توجد مساهمة إشعاعية غاما عند 1 متر</system:String>
+    <system:String x:Key="MsgDoseRateNotRecorded">N/A (بيانات غير مسجلة)</system:String>
     <system:String x:Key="LabelDoseRateContributing">مساهم</system:String>
     <system:String x:Key="LabelDoseRateNonContributingFormat">غير مساهم ({0})</system:String>
     <system:String x:Key="LabelDoseRateMissingGammaConstant">بيانات Γ غير مسجلة</system:String>
