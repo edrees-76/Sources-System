@@ -21,6 +21,7 @@ public partial class ActivityCalculatorViewModel : ObservableObject
     private readonly IRadioisotopeService _isotopeService;
     private readonly IDecayCalculationService _decayService;
     private readonly IClipboardService _clipboard;
+    private readonly TimeProvider _timeProvider;
 
     // ─── أوضاع الحاسبة ───
     // 0: حساب النشاط الحالي/المستقبلي، 1: حساب الزمن لنشاط مستهدف
@@ -41,8 +42,8 @@ public partial class ActivityCalculatorViewModel : ObservableObject
     [ObservableProperty] private string _initialActivityUnit = "MBq";
     [ObservableProperty] private string _halfLifeValueText = string.Empty;
     [ObservableProperty] private string _halfLifeUnit = "years";
-    [ObservableProperty] private DateTime _calibrationDate = DateTime.Today.AddYears(-1);
-    [ObservableProperty] private DateTime _calculationDate = DateTime.Today;
+    [ObservableProperty] private DateTime _calibrationDate;
+    [ObservableProperty] private DateTime _calculationDate;
     [ObservableProperty] private string _selectedOutputUnit = "MBq";
     [ObservableProperty] private string _distanceText = "1";
 
@@ -108,11 +109,14 @@ public partial class ActivityCalculatorViewModel : ObservableObject
         "Bq", "kBq", "MBq", "GBq", "TBq", "Ci", "mCi", "µCi"
     };
 
-    public ActivityCalculatorViewModel(IRadioisotopeService isotopeService, IDecayCalculationService decayService, IClipboardService? clipboard = null)
+    public ActivityCalculatorViewModel(IRadioisotopeService isotopeService, IDecayCalculationService decayService, IClipboardService? clipboard = null, TimeProvider? timeProvider = null)
     {
         _isotopeService = isotopeService;
         _decayService = decayService;
         _clipboard = clipboard ?? new ClipboardService();
+        _timeProvider = timeProvider ?? TimeProvider.System;
+        CalibrationDate = _timeProvider.LocalToday().AddYears(-1);
+        CalculationDate = _timeProvider.LocalToday();
         InitChartAxes();
         LoadIsotopes();
     }
@@ -428,8 +432,8 @@ public partial class ActivityCalculatorViewModel : ObservableObject
         InitialActivityUnit = "MBq";
         HalfLifeValueText = string.Empty;
         HalfLifeUnit = "years";
-        CalibrationDate = DateTime.Today.AddYears(-1);
-        CalculationDate = DateTime.Today;
+        CalibrationDate = _timeProvider.LocalToday().AddYears(-1);
+        CalculationDate = _timeProvider.LocalToday();
         TargetActivityText = string.Empty;
         TargetActivityUnit = "MBq";
         SelectedOutputUnit = "MBq";

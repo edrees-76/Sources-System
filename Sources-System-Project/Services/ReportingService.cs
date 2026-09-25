@@ -14,10 +14,13 @@ namespace Sources.Services
 {
     public class ReportingService : IReportingService
     {
-        public ReportingService()
+        private readonly TimeProvider _timeProvider;
+
+        public ReportingService(TimeProvider? timeProvider = null)
         {
             // Set QuestPDF License
             QuestPDF.Settings.License = LicenseType.Community;
+            _timeProvider = timeProvider ?? TimeProvider.System;
         }
 
         private static readonly char[] InvalidSheetChars = { '\\', '/', '?', '*', '[', ']', ':' };
@@ -943,7 +946,7 @@ namespace Sources.Services
                     worksheet.Cell(row, 4).Value = u.Role?.DisplayName ?? "-";
                     worksheet.Cell(row, 5).Value = u.Email ?? "-";
                     worksheet.Cell(row, 6).Value = u.StatusDisplayName;
-                    worksheet.Cell(row, 7).Value = (u.LockoutEnd.HasValue && u.LockoutEnd.Value > DateTime.Now) ? "مقفل مؤقتاً" : "طبيعي";
+                    worksheet.Cell(row, 7).Value = (u.LockoutEnd.HasValue && u.LockoutEnd.Value > _timeProvider.LocalNow()) ? "مقفل مؤقتاً" : "طبيعي";
                     worksheet.Cell(row, 8).Value = u.LastLoginDate.HasValue ? u.LastLoginDate.Value.ToString("yyyy/MM/dd HH:mm") : "لم يسجل بعد";
                     row++;
                 }

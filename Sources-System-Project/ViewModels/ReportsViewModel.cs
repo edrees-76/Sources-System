@@ -129,6 +129,7 @@ public partial class ReportsViewModel : ObservableObject
     private readonly ISystemSettingsService _settingsService;
     private readonly IDbContextFactory<AppDbContext>? _dbFactory;
     private readonly INeutronSourceService? _neutronSourceService;
+    private readonly TimeProvider _timeProvider;
 
     [ObservableProperty] private string _selectedReport = "InventoryReport";
     [ObservableProperty] private ObservableCollection<ReportInventoryRow> _inventoryData = new();
@@ -146,7 +147,8 @@ public partial class ReportsViewModel : ObservableObject
         IReportingService reportingService,
         ISystemSettingsService settingsService,
         IDbContextFactory<AppDbContext>? dbFactory = null,
-        INeutronSourceService? neutronSourceService = null)
+        INeutronSourceService? neutronSourceService = null,
+        TimeProvider? timeProvider = null)
     {
         _sourceService = sourceService;
         _borrowService = borrowService;
@@ -154,6 +156,7 @@ public partial class ReportsViewModel : ObservableObject
         _settingsService = settingsService;
         _dbFactory = dbFactory;
         _neutronSourceService = neutronSourceService;
+        _timeProvider = timeProvider ?? TimeProvider.System;
         
         // جلب عتبة النشاط المنخفض من الإعدادات
         LowActivityThreshold = _settingsService.GetSetting("LowActivityThresholdPercent", 10.0);
@@ -191,7 +194,7 @@ public partial class ReportsViewModel : ObservableObject
                 break;
             case "LowActivityAlertReport":
                 // تصفية وتصنيف المصادر التي تجاوزت عتبات نصف العمر (T½)
-                var alertSources = GetLowActivityAlertSources(allSources);
+                var alertSources = GetLowActivityAlertSources(allSources, _timeProvider);
                 LowActivityAlertData = new ObservableCollection<ReportLowActivityAlertRow>(
                     alertSources.Select((s, index) => new ReportLowActivityAlertRow { RowNumber = index + 1, Source = s }));
                 break;
@@ -213,7 +216,7 @@ public partial class ReportsViewModel : ObservableObject
                 LowActivityData = new ObservableCollection<ReportLowActivityRow>(
                     (_sourceService.GetLowActivitySources(LowActivityThreshold) ?? new List<Source>()).Select((s, index) => new ReportLowActivityRow { RowNumber = index + 1, Source = s }));
                 LowActivityAlertData = new ObservableCollection<ReportLowActivityAlertRow>(
-                    GetLowActivityAlertSources(allSources).Select((s, index) => new ReportLowActivityAlertRow { RowNumber = index + 1, Source = s }));
+                    GetLowActivityAlertSources(allSources, _timeProvider).Select((s, index) => new ReportLowActivityAlertRow { RowNumber = index + 1, Source = s }));
                 FailedLeakTestsData = new ObservableCollection<ReportFailedLeakTestRow>(GetFailedLeakTestsRows());
                 break;
         }
@@ -293,13 +296,13 @@ public partial class ReportsViewModel : ObservableObject
         return fallbackRows;
     }
 
-    private static List<Source> GetLowActivityAlertSources(List<Source> allSources)
+    private static List<Source> GetLowActivityAlertSources(List<Source> allSources, TimeProvider? timeProvider = null)
     {
         return allSources
             .Where(s => StatusCatalog.IsActiveInventory(s.Status))
             .Select(s =>
             {
-                var (maxHalfLives, worstIsotope) = CalculateMaxHalfLivesElapsed(s);
+                var (maxHalfLives, worstIsotope) = CalculateMaxHalfLivesElapsed(s, timeProvider);
                 s.AlertHalfLivesElapsed = maxHalfLives;
                 s.AlertWorstIsotope = !string.IsNullOrEmpty(worstIsotope) ? worstIsotope : s.DisplayIsotopes;
                 s.AlertSeverity = maxHalfLives >= 6.0 ? "Critical" : (maxHalfLives >= 5.0 ? "Warning" : null);
@@ -440,10 +443,11 @@ public partial class ReportsViewModel : ObservableObject
     }
 
     // ───────────── دالة مساعدة: احتساب أعلى عدد فترات نصف عمر منقضية ورمز النظير الأسوأ ─────────────
-    public static (double MaxHalfLives, string WorstIsotopeSymbol) CalculateMaxHalfLivesElapsed(Source source)
+    public static (double MaxHalfLives, string WorstIsotopeSymbol) CalculateMaxHalfLivesElapsed(Source source, TimeProvider? timeProvider = null)
     {
         double max = -1;
         string worstIsotope = string.Empty;
+        var tp = timeProvider ?? TimeProvider.System;
 
         if (source.HasDetailedIsotopes &&
             source.SourceIsotopes != null &&
@@ -458,7 +462,7 @@ public partial class ReportsViewModel : ObservableObject
                 double halfLifeSec = ConvertHalfLifeToSeconds(isotope.HalfLife, isotope.HalfLifeUnit);
                 if (halfLifeSec <= 0) continue;
 
-                double elapsed = Math.Max(0, (DateTime.Now - calibDate).TotalSeconds);
+                double elapsed = Math.Max(0, (tp.LocalNow() - calibDate).TotalSeconds);
                 double hl = elapsed / halfLifeSec;
                 if (hl > max)
                 {
@@ -473,7 +477,7 @@ public partial class ReportsViewModel : ObservableObject
                 source.Radioisotope.HalfLife, source.Radioisotope.HalfLifeUnit);
             if (halfLifeSec > 0)
             {
-                double elapsed = Math.Max(0, (DateTime.Now - source.CalibrationDate).TotalSeconds);
+                double elapsed = Math.Max(0, (tp.LocalNow() - source.CalibrationDate).TotalSeconds);
                 max = elapsed / halfLifeSec;
                 worstIsotope = source.Radioisotope.Symbol;
             }

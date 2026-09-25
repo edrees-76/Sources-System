@@ -11,12 +11,19 @@ namespace Sources.Services;
 /// </summary>
 public class DecayCalculationService : IDecayCalculationService
 {
+    private readonly TimeProvider _timeProvider;
+
+    public DecayCalculationService(TimeProvider? timeProvider = null)
+    {
+        _timeProvider = timeProvider ?? TimeProvider.System;
+    }
+
     /// <summary>
     /// حساب النشاط الإشعاعي الحالي (عند اللحظة الحالية)
     /// </summary>
     public double CalculateCurrentActivity(double initialActivityBq, double halfLife, string halfLifeUnit, DateTime calibrationDate)
     {
-        return CalculateActivityAtDate(initialActivityBq, halfLife, halfLifeUnit, calibrationDate, DateTime.Now);
+        return CalculateActivityAtDate(initialActivityBq, halfLife, halfLifeUnit, calibrationDate, _timeProvider.LocalNow());
     }
 
     /// <summary>
@@ -137,7 +144,7 @@ public class DecayCalculationService : IDecayCalculationService
         var halfLifeSeconds = ConvertToSeconds(halfLife, halfLifeUnit);
         
         // تمديد المنحنى للمستقبل: 5 أنصاف أعمار من "اليوم" لكي يظهر للمستخدم متى يصبح النشاط صغيراً جداً (حوالي 3% من نشاط اليوم)
-        var futureEndDate = DateTime.Now.AddSeconds(halfLifeSeconds * 5);
+        var futureEndDate = _timeProvider.LocalNow().AddSeconds(halfLifeSeconds * 5);
         var totalTime = (futureEndDate - calibrationDate).TotalSeconds;
         
         // التحقق من أن المدة لا تقل عن 5 أنصاف أعمار في كل الأحوال
@@ -211,8 +218,8 @@ public class DecayCalculationService : IDecayCalculationService
             if (validIsotopes.Count > 0)
             {
                 // أقدم تاريخ معايرة بين كل النويدات
-                var startDate = validIsotopes.Min(si => si.CalibrationDate ?? (source.CalibrationDate != default ? source.CalibrationDate : DateTime.Today));
-                if (startDate == default) startDate = DateTime.Today;
+                var startDate = validIsotopes.Min(si => si.CalibrationDate ?? (source.CalibrationDate != default ? source.CalibrationDate : _timeProvider.LocalToday()));
+                if (startDate == default) startDate = _timeProvider.LocalToday();
 
                 // أطول فترة نصف عمر بين كل النويدات
                 double maxHalfLifeSec = 0;
@@ -288,7 +295,7 @@ public class DecayCalculationService : IDecayCalculationService
             double halfLifeSec = ConvertToSeconds(iso.HalfLife, iso.HalfLifeUnit);
             if (halfLifeSec <= 0) halfLifeSec = 86400;
 
-            var startDate = source.CalibrationDate != default ? source.CalibrationDate : DateTime.Today;
+            var startDate = source.CalibrationDate != default ? source.CalibrationDate : _timeProvider.LocalToday();
             DateTime endDate;
             try
             {

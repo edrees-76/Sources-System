@@ -36,6 +36,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
     private readonly IUserService _userService;
     private readonly IReportingService _reportingService;
     private readonly IMessenger _messenger;
+    private readonly TimeProvider _timeProvider;
 
     // ─── إدارة التبويبات ───
     [ObservableProperty] private string _selectedTab = "UsersManagement"; // UsersManagement, AuditLog, RolesPermissions
@@ -120,9 +121,10 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
 
     private readonly List<string> _customOrUnrecognizedPermissions = new();
 
-    public UsersViewModel(IUserService userService, IReportingService reportingService, IMessenger? messenger = null)
+    public UsersViewModel(IUserService userService, IReportingService reportingService, IMessenger? messenger = null, TimeProvider? timeProvider = null)
     {
         _messenger = messenger ?? WeakReferenceMessenger.Default;
+        _timeProvider = timeProvider ?? TimeProvider.System;
         _userService = userService;
         _reportingService = reportingService;
         LoadData();
@@ -185,7 +187,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
         TotalUsersCount = Users.Count;
         ActiveUsersCount = Users.Count(u => u.IsActive);
         AdminUsersCount = Users.Count(u => u.Role?.RoleName == RoleNames.Admin);
-        LockedUsersCount = Users.Count(u => u.LockoutEnd.HasValue && u.LockoutEnd.Value > DateTime.Now);
+        LockedUsersCount = Users.Count(u => u.LockoutEnd.HasValue && u.LockoutEnd.Value > _timeProvider.LocalNow());
     }
 
     private void UpdateRoleSummaries()
@@ -236,7 +238,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
 
         if (SelectedStatusFilter == "Active")
         {
-            query = query.Where(u => u.IsActive && (!u.LockoutEnd.HasValue || u.LockoutEnd.Value <= DateTime.Now));
+            query = query.Where(u => u.IsActive && (!u.LockoutEnd.HasValue || u.LockoutEnd.Value <= _timeProvider.LocalNow()));
         }
         else if (SelectedStatusFilter == "Frozen")
         {
@@ -244,7 +246,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
         }
         else if (SelectedStatusFilter == "Locked")
         {
-            query = query.Where(u => u.LockoutEnd.HasValue && u.LockoutEnd.Value > DateTime.Now);
+            query = query.Where(u => u.LockoutEnd.HasValue && u.LockoutEnd.Value > _timeProvider.LocalNow());
         }
 
         if (SelectedRoleFilter.HasValue && SelectedRoleFilter.Value != Guid.Empty)
@@ -268,7 +270,7 @@ public partial class UsersViewModel : ObservableObject, IEditableViewModel
 
         AuditLogs = new ObservableCollection<AuditLog>(logs);
 
-        var today = DateTime.Today;
+        var today = _timeProvider.LocalToday();
         ActivitiesTodayCount = logs.Count(l => l.ActionDate.Date == today);
         ModificationsTodayCount = logs.Count(l => l.ActionDate.Date == today &&
             (l.Action.Contains("Update") || l.Action.Contains("Delete") || l.Action.Contains("تعديل") || l.Action.Contains("حذف")));

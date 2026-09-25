@@ -22,6 +22,7 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
     private readonly IUserService _userService;
     private readonly ISystemSettingsService _settingsService;
     private readonly IMessenger _messenger;
+    private readonly TimeProvider _timeProvider;
 
     // ─── مجموعات العرض ───
     [ObservableProperty] private ObservableCollection<LeakTestRecord> _pagedRecords = new();
@@ -48,8 +49,8 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
 
     // ─── حقول نموذج الفحص ───
     [ObservableProperty] private Guid? _formSourceId;
-    [ObservableProperty] private DateTime _formTestDate = DateTime.Today;
-    [ObservableProperty] private DateTime _formNextDueDate = DateTime.Today.AddMonths(6);
+    [ObservableProperty] private DateTime _formTestDate;
+    [ObservableProperty] private DateTime _formNextDueDate;
     [ObservableProperty] private string _formResult = "Pass";
     [ObservableProperty] private string _formMeasuredActivityText = string.Empty;
     [ObservableProperty] private string _formInspectorName = string.Empty;
@@ -64,14 +65,18 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
         IReportingService reportingService,
         IUserService userService,
         ISystemSettingsService settingsService,
-        IMessenger? messenger = null)
+        IMessenger? messenger = null,
+        TimeProvider? timeProvider = null)
     {
         _messenger = messenger ?? WeakReferenceMessenger.Default;
+        _timeProvider = timeProvider ?? TimeProvider.System;
         _leakTestService = leakTestService;
         _sourceService = sourceService;
         _reportingService = reportingService;
         _userService = userService;
         _settingsService = settingsService;
+        FormTestDate = _timeProvider.LocalToday();
+        FormNextDueDate = _timeProvider.LocalToday().AddMonths(6);
 
         _messenger.Register<SourcesUpdatedMessage>(this);
     }
@@ -213,7 +218,7 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
         ModalTitle = TranslationHelper.GetString("MsgAddLeakTest") ?? "تسجيل اختبار تسرب جديد";
 
         FormSourceId = preselectedSource?.Id ?? SealedSources.FirstOrDefault()?.Id;
-        FormTestDate = DateTime.Today;
+        FormTestDate = _timeProvider.LocalToday();
         FormNextDueDate = _leakTestService.CalculateNextDueDate(FormTestDate);
         FormResult = "Pass";
         FormMeasuredActivityText = string.Empty;
@@ -262,7 +267,7 @@ public partial class LeakTestsViewModel : ObservableObject, IRecipient<SourcesUp
             return;
         }
 
-        if (FormTestDate > DateTime.Today.AddDays(1))
+        if (FormTestDate > _timeProvider.LocalToday().AddDays(1))
         {
             DialogHelper.ShowWarning(
                 TranslationHelper.GetString("MsgErrFutureTestDate") ?? "لا يمكن أن يكون تاريخ الفحص في المستقبل",

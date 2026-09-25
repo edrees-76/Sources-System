@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Time.Testing;
 using Sources.Data;
 using Sources.Helpers;
 using Sources.Models;
@@ -21,6 +22,13 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
     private readonly FakeLicenseService _fakeLicenseService = new();
     private readonly BorrowService _sut;
 
+    // الجولة 202 (المجموعة E): ساعة ثابتة صناعية بدل الاعتماد على DateTime.Now/Today الحقيقي،
+    // لإزالة سباق القراءتين المنفصلتين (بيانات الاختبار مقابل TimeProvider الخاص بالخدمة) القريب
+    // من منتصف الليل أو نهاية الشهر. 12:00 ظهراً بعيدة عمداً عن كلا الحدين.
+    private readonly FakeTimeProvider _fakeClock = new(new DateTimeOffset(2026, 6, 15, 10, 0, 0, TimeSpan.Zero));
+    private DateTime FixedToday => _fakeClock.LocalToday();
+    private DateTime FixedNow => _fakeClock.LocalNow();
+
     private Radioisotope _testIsotope = null!;
     private ActivityUnit _testUnit = null!;
     private Location _testLocation = null!;
@@ -33,7 +41,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
 
         _fakeAuditService = new FakeAuditService();
         _fakeUserService = new FakeUserService();
-        _sut = new BorrowService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService, _fakeLicenseService);
+        _sut = new BorrowService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService, _fakeLicenseService, timeProvider: _fakeClock);
 
         SeedCommonData();
     }
@@ -115,8 +123,8 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             BorrowerUserId = borrowerUserId ?? _testUser.Id,
             Purpose = "إجراء تجربة معايرة",
             Status = status,
-            RequestDate = requestDate ?? DateTime.Now,
-            ExpectedReturnDate = expectedReturnDate ?? DateTime.Now.AddDays(7),
+            RequestDate = requestDate ?? FixedNow,
+            ExpectedReturnDate = expectedReturnDate ?? FixedNow.AddDays(7),
             ActualReturnDate = actualReturnDate,
             Notes = notes,
             AddedBy = _testUser.Id
@@ -139,7 +147,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             SourceId = source.Id,
             BorrowerName = "م. خالد سعيد",
             Purpose = "استخدام في المختبر الإشعاعي",
-            ExpectedReturnDate = DateTime.Now.AddDays(5)
+            ExpectedReturnDate = FixedNow.AddDays(5)
         };
 
         // Act
@@ -307,7 +315,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         var source = CreateAndSaveSource(status: "InUse");
         var request = CreateAndSaveBorrowRequest(source.Id, status: initialStatus, notes: "ملاحظة الاستلام الأولية");
 
-        var actualReturnDate = DateTime.Now.AddDays(3);
+        var actualReturnDate = FixedNow.AddDays(3);
         string newNotes = "تم الفحص الإشعاعي والمصدر سليم تماماً";
 
         // Act
@@ -340,7 +348,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         var source = CreateAndSaveSource(status: "InUse");
         var request = CreateAndSaveBorrowRequest(source.Id, status: "Delivered", notes: null);
 
-        var actualReturnDate = DateTime.Now;
+        var actualReturnDate = FixedNow;
         string returnNotes = "إرجاع بحالة ممتازة";
 
         // Act
@@ -361,7 +369,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         var nonExistentId = Guid.NewGuid();
 
         // Act
-        var result = _sut.MarkReturned(nonExistentId, _testUser.Id, DateTime.Now);
+        var result = _sut.MarkReturned(nonExistentId, _testUser.Id, FixedNow);
 
         // Assert
         Assert.False(result.Success);
@@ -379,7 +387,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         var request = CreateAndSaveBorrowRequest(source.Id, status: invalidStatus);
 
         // Act
-        var result = _sut.MarkReturned(request.Id, _testUser.Id, DateTime.Now);
+        var result = _sut.MarkReturned(request.Id, _testUser.Id, FixedNow);
 
         // Assert
         Assert.False(result.Success);
@@ -401,7 +409,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         }
 
         // Act
-        var result = _sut.MarkReturned(request.Id, _testUser.Id, DateTime.Now, "إرجاع لمصدر محذوف");
+        var result = _sut.MarkReturned(request.Id, _testUser.Id, FixedNow, "إرجاع لمصدر محذوف");
 
         // Assert
         Assert.True(result.Success);
@@ -427,12 +435,12 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         var source3 = CreateAndSaveSource(sourceCode: "SRC-OK-003", status: "InUse");
 
         // Overdue requests (ExpectedReturnDate was 3 days ago)
-        var pastDate = DateTime.Now.AddDays(-3);
+        var pastDate = FixedNow.AddDays(-3);
         var ovdReq1 = CreateAndSaveBorrowRequest(source1.Id, status: "Delivered", expectedReturnDate: pastDate);
         var ovdReq2 = CreateAndSaveBorrowRequest(source2.Id, status: "Approved", expectedReturnDate: pastDate);
 
         // Active request not overdue (ExpectedReturnDate is 5 days in future)
-        var futureDate = DateTime.Now.AddDays(5);
+        var futureDate = FixedNow.AddDays(5);
         var okReq = CreateAndSaveBorrowRequest(source3.Id, status: "Delivered", expectedReturnDate: futureDate);
 
         // Act
@@ -457,7 +465,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
     {
         // Arrange
         var source = CreateAndSaveSource(status: "InUse");
-        CreateAndSaveBorrowRequest(source.Id, status: "Delivered", expectedReturnDate: DateTime.Now.AddDays(2));
+        CreateAndSaveBorrowRequest(source.Id, status: "Delivered", expectedReturnDate: FixedNow.AddDays(2));
 
         int initialAuditCount = _fakeAuditService.LoggedEntries.Count;
 
@@ -476,8 +484,8 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         var returnedReq = CreateAndSaveBorrowRequest(
             source.Id,
             status: "Returned",
-            expectedReturnDate: DateTime.Now.AddDays(-10),
-            actualReturnDate: DateTime.Now.AddDays(-5));
+            expectedReturnDate: FixedNow.AddDays(-10),
+            actualReturnDate: FixedNow.AddDays(-5));
 
         // Act
         _sut.CheckAndUpdateOverdue();
@@ -523,9 +531,9 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         var source2 = CreateAndSaveSource(sourceCode: "SRC-ALL-002");
         var source3 = CreateAndSaveSource(sourceCode: "SRC-ALL-003");
 
-        var req1 = CreateAndSaveBorrowRequest(source1.Id, status: "Returned", requestDate: DateTime.Now.AddDays(-5));
-        var req2 = CreateAndSaveBorrowRequest(source2.Id, status: "Delivered", requestDate: DateTime.Now.AddDays(-1));
-        var req3 = CreateAndSaveBorrowRequest(source3.Id, status: "Delivered", requestDate: DateTime.Now.AddDays(-10));
+        var req1 = CreateAndSaveBorrowRequest(source1.Id, status: "Returned", requestDate: FixedNow.AddDays(-5));
+        var req2 = CreateAndSaveBorrowRequest(source2.Id, status: "Delivered", requestDate: FixedNow.AddDays(-1));
+        var req3 = CreateAndSaveBorrowRequest(source3.Id, status: "Delivered", requestDate: FixedNow.AddDays(-10));
 
         // Act
         var all = _sut.GetAll();
@@ -553,8 +561,8 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         var otherSource = CreateAndSaveSource(sourceCode: "SRC-OTHER-002");
 
         // targetSource has 1 Returned (history) and 1 Delivered (active)
-        var req1 = CreateAndSaveBorrowRequest(targetSource.Id, status: "Returned", requestDate: DateTime.Now.AddDays(-2));
-        var req2 = CreateAndSaveBorrowRequest(targetSource.Id, status: "Delivered", requestDate: DateTime.Now.AddDays(-1));
+        var req1 = CreateAndSaveBorrowRequest(targetSource.Id, status: "Returned", requestDate: FixedNow.AddDays(-2));
+        var req2 = CreateAndSaveBorrowRequest(targetSource.Id, status: "Delivered", requestDate: FixedNow.AddDays(-1));
         var reqOther = CreateAndSaveBorrowRequest(otherSource.Id, status: "Delivered");
 
         // Act
@@ -582,8 +590,8 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         var source2 = CreateAndSaveSource(sourceCode: "SRC-PND-002");
         var source3 = CreateAndSaveSource(sourceCode: "SRC-PND-003");
 
-        CreateAndSaveBorrowRequest(source1.Id, status: "Pending", requestDate: DateTime.Now.AddDays(-2));
-        CreateAndSaveBorrowRequest(source2.Id, status: "Pending", requestDate: DateTime.Now.AddDays(-1));
+        CreateAndSaveBorrowRequest(source1.Id, status: "Pending", requestDate: FixedNow.AddDays(-2));
+        CreateAndSaveBorrowRequest(source2.Id, status: "Pending", requestDate: FixedNow.AddDays(-1));
         CreateAndSaveBorrowRequest(source3.Id, status: "Delivered");
 
         // Act
@@ -703,7 +711,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             BorrowerName = "مستعير قديم 1",
             Purpose = "استعارة سابقة 1",
             Status = "Returned",
-            ActualReturnDate = DateTime.Now.AddDays(-20)
+            ActualReturnDate = FixedNow.AddDays(-20)
         };
         var req2 = new BorrowRequest
         {
@@ -712,7 +720,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             BorrowerName = "مستعير قديم 2",
             Purpose = "استعارة سابقة 2",
             Status = "Returned",
-            ActualReturnDate = DateTime.Now.AddDays(-10)
+            ActualReturnDate = FixedNow.AddDays(-10)
         };
         var reqActive = new BorrowRequest
         {
@@ -741,7 +749,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
     {
         // Arrange
         using var db = _fixture.CreateContext();
-        var source = TestDataBuilder.CreateSource(_testIsotope, _testUnit, _testLocation, "SRC-DUE-TODAY", 100.0, DateTime.Now.AddMonths(-1), "InUse");
+        var source = TestDataBuilder.CreateSource(_testIsotope, _testUnit, _testLocation, "SRC-DUE-TODAY", 100.0, FixedNow.AddMonths(-1), "InUse");
         db.Sources.Add(source);
 
         var reqDueToday = new BorrowRequest
@@ -751,8 +759,8 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             BorrowerName = "مستعير اليوم",
             Purpose = "فحص استحقاق اليوم",
             Status = "Delivered",
-            RequestDate = DateTime.Today.AddDays(-5),
-            ExpectedReturnDate = DateTime.Today // Due today
+            RequestDate = FixedToday.AddDays(-5),
+            ExpectedReturnDate = FixedToday // Due today
         };
         db.BorrowRequests.Add(reqDueToday);
         db.SaveChanges();
@@ -780,8 +788,8 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
     {
         // Arrange
         using var db = _fixture.CreateContext();
-        var src1 = TestDataBuilder.CreateSource(_testIsotope, _testUnit, _testLocation, "SRC-DUE-3D", 100.0, DateTime.Now.AddMonths(-1), "InUse");
-        var src2 = TestDataBuilder.CreateSource(_testIsotope, _testUnit, _testLocation, "SRC-DUE-10D", 100.0, DateTime.Now.AddMonths(-1), "InUse");
+        var src1 = TestDataBuilder.CreateSource(_testIsotope, _testUnit, _testLocation, "SRC-DUE-3D", 100.0, FixedNow.AddMonths(-1), "InUse");
+        var src2 = TestDataBuilder.CreateSource(_testIsotope, _testUnit, _testLocation, "SRC-DUE-10D", 100.0, FixedNow.AddMonths(-1), "InUse");
         db.Sources.AddRange(src1, src2);
 
         var reqIn3Days = new BorrowRequest
@@ -791,8 +799,8 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             BorrowerName = "مستعير 1",
             Purpose = "استعارة 3 أيام",
             Status = "Delivered",
-            RequestDate = DateTime.Today,
-            ExpectedReturnDate = DateTime.Today.AddDays(3)
+            RequestDate = FixedToday,
+            ExpectedReturnDate = FixedToday.AddDays(3)
         };
         var reqIn10Days = new BorrowRequest
         {
@@ -801,8 +809,8 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             BorrowerName = "مستعير 2",
             Purpose = "استعارة 10 أيام",
             Status = "Delivered",
-            RequestDate = DateTime.Today,
-            ExpectedReturnDate = DateTime.Today.AddDays(10)
+            RequestDate = FixedToday,
+            ExpectedReturnDate = FixedToday.AddDays(10)
         };
         db.BorrowRequests.AddRange(reqIn3Days, reqIn10Days);
         db.SaveChanges();
@@ -811,7 +819,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
         var settingsService = new SystemSettingsService(_fixture.ContextFactory, _fakeLicenseService);
         settingsService.SaveSetting("DueSoonDaysThreshold", "5");
 
-        var serviceWithSettings = new BorrowService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService, _fakeLicenseService, settingsService);
+        var serviceWithSettings = new BorrowService(_fixture.ContextFactory, _fakeAuditService, _fakeUserService, _fakeLicenseService, settingsService, _fakeClock);
 
         // Act: Threshold = 5 -> only reqIn3Days is within 5 days
         var count5Days = serviceWithSettings.GetDueSoonCount();
@@ -830,9 +838,9 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
     {
         // Arrange
         using var db = _fixture.CreateContext();
-        var src1 = TestDataBuilder.CreateSource(_testIsotope, _testUnit, _testLocation, "SRC-DUE-ORD1", 100.0, DateTime.Now.AddMonths(-1), "InUse");
-        var src2 = TestDataBuilder.CreateSource(_testIsotope, _testUnit, _testLocation, "SRC-DUE-ORD2", 100.0, DateTime.Now.AddMonths(-1), "InUse");
-        var src3 = TestDataBuilder.CreateSource(_testIsotope, _testUnit, _testLocation, "SRC-DUE-ORD3", 100.0, DateTime.Now.AddMonths(-1), "Storage");
+        var src1 = TestDataBuilder.CreateSource(_testIsotope, _testUnit, _testLocation, "SRC-DUE-ORD1", 100.0, FixedNow.AddMonths(-1), "InUse");
+        var src2 = TestDataBuilder.CreateSource(_testIsotope, _testUnit, _testLocation, "SRC-DUE-ORD2", 100.0, FixedNow.AddMonths(-1), "InUse");
+        var src3 = TestDataBuilder.CreateSource(_testIsotope, _testUnit, _testLocation, "SRC-DUE-ORD3", 100.0, FixedNow.AddMonths(-1), "Storage");
         db.Sources.AddRange(src1, src2, src3);
 
         var req1 = new BorrowRequest
@@ -842,7 +850,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             BorrowerName = "المستعير الأول",
             Purpose = "غرض 1",
             Status = "Delivered",
-            ExpectedReturnDate = DateTime.Today.AddDays(4)
+            ExpectedReturnDate = FixedToday.AddDays(4)
         };
         var req2 = new BorrowRequest
         {
@@ -851,7 +859,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             BorrowerName = "المستعير الثاني",
             Purpose = "غرض 2",
             Status = "Delivered",
-            ExpectedReturnDate = DateTime.Today.AddDays(1)
+            ExpectedReturnDate = FixedToday.AddDays(1)
         };
         var reqReturned = new BorrowRequest
         {
@@ -860,7 +868,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             BorrowerName = "مستعير تم إرجاعه",
             Purpose = "غرض 3",
             Status = "Returned",
-            ExpectedReturnDate = DateTime.Today.AddDays(2)
+            ExpectedReturnDate = FixedToday.AddDays(2)
         };
         db.BorrowRequests.AddRange(req1, req2, reqReturned);
         db.SaveChanges();
@@ -883,7 +891,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
     {
         // Arrange
         using var db = _fixture.CreateContext();
-        var source = TestDataBuilder.CreateSource(_testIsotope, _testUnit, _testLocation, "SRC-HIST-DEL", 100.0, DateTime.Now.AddMonths(-2), "InUse");
+        var source = TestDataBuilder.CreateSource(_testIsotope, _testUnit, _testLocation, "SRC-HIST-DEL", 100.0, FixedNow.AddMonths(-2), "InUse");
         db.Sources.Add(source);
 
         var borrowReq = new BorrowRequest
@@ -893,9 +901,9 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             BorrowerName = "مستعير تاريخي",
             Purpose = "استعارة سابقة",
             Status = "Returned",
-            RequestDate = DateTime.Today.AddDays(-30),
-            ExpectedReturnDate = DateTime.Today.AddDays(-20),
-            ActualReturnDate = DateTime.Today.AddDays(-20)
+            RequestDate = FixedToday.AddDays(-30),
+            ExpectedReturnDate = FixedToday.AddDays(-20),
+            ActualReturnDate = FixedToday.AddDays(-20)
         };
         db.BorrowRequests.Add(borrowReq);
         db.SaveChanges();
@@ -939,9 +947,9 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             var leakTest = new LeakTestRecord
             {
                 SourceId = source.Id,
-                TestDate = DateTime.Today.AddDays(-2),
+                TestDate = FixedToday.AddDays(-2),
                 Result = "Fail",
-                NextDueDate = DateTime.Today.AddMonths(6),
+                NextDueDate = FixedToday.AddMonths(6),
                 Notes = "تسرب إشعاعي مكتشف في الفحص"
             };
             db.LeakTestRecords.Add(leakTest);
@@ -953,7 +961,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             SourceId = source.Id,
             BorrowerName = "م. خالد سعيد",
             Purpose = "استخدام في المختبر",
-            ExpectedReturnDate = DateTime.Now.AddDays(5)
+            ExpectedReturnDate = FixedNow.AddDays(5)
         };
 
         // Act
@@ -979,9 +987,9 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             var leakTest = new LeakTestRecord
             {
                 SourceId = source.Id,
-                TestDate = DateTime.Today.AddDays(-5),
+                TestDate = FixedToday.AddDays(-5),
                 Result = "Pass",
-                NextDueDate = DateTime.Today.AddMonths(6)
+                NextDueDate = FixedToday.AddMonths(6)
             };
             db.LeakTestRecords.Add(leakTest);
             db.SaveChanges();
@@ -992,7 +1000,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             SourceId = source.Id,
             BorrowerName = "م. سالم أحمد",
             Purpose = "استخدام في المعايرة",
-            ExpectedReturnDate = DateTime.Now.AddDays(5)
+            ExpectedReturnDate = FixedNow.AddDays(5)
         };
 
         // Act
@@ -1013,7 +1021,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             SourceId = source.Id,
             BorrowerName = "د. أنور حسن",
             Purpose = "استخدام في التدريس",
-            ExpectedReturnDate = DateTime.Now.AddDays(3)
+            ExpectedReturnDate = FixedNow.AddDays(3)
         };
 
         // Act
@@ -1035,17 +1043,17 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             var oldTest = new LeakTestRecord
             {
                 SourceId = source.Id,
-                TestDate = DateTime.Today.AddDays(-30),
+                TestDate = FixedToday.AddDays(-30),
                 Result = "Fail",
-                NextDueDate = DateTime.Today.AddMonths(6)
+                NextDueDate = FixedToday.AddMonths(6)
             };
             // Latest test: Pass
             var newTest = new LeakTestRecord
             {
                 SourceId = source.Id,
-                TestDate = DateTime.Today.AddDays(-2),
+                TestDate = FixedToday.AddDays(-2),
                 Result = "Pass",
-                NextDueDate = DateTime.Today.AddMonths(6)
+                NextDueDate = FixedToday.AddMonths(6)
             };
             db.LeakTestRecords.AddRange(oldTest, newTest);
             db.SaveChanges();
@@ -1056,7 +1064,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
             SourceId = source.Id,
             BorrowerName = "م. علي حسن",
             Purpose = "استخدام بعد إعادة الفحص",
-            ExpectedReturnDate = DateTime.Now.AddDays(7)
+            ExpectedReturnDate = FixedNow.AddDays(7)
         };
 
         // Act
@@ -1122,7 +1130,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
                     SourceId = source.Id,
                     BorrowerName = "EN Borrower 2",
                     Purpose = "English success test",
-                    ExpectedReturnDate = DateTime.Now.AddDays(5)
+                    ExpectedReturnDate = FixedNow.AddDays(5)
                 };
                 var createResult = _sut.CreateRequest(successRequest);
 
@@ -1134,7 +1142,7 @@ public class BorrowServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposa
                 using var db = _fixture.CreateContext();
                 var createdReq = db.BorrowRequests.First(b => b.SourceId == source.Id);
 
-                var returnResult = _sut.MarkReturned(createdReq.Id, _testUser.Id, DateTime.Now);
+                var returnResult = _sut.MarkReturned(createdReq.Id, _testUser.Id, FixedNow);
 
                 Assert.True(returnResult.Success);
                 Assert.Equal("The source return was recorded successfully and it is now available in storage.", returnResult.Message);

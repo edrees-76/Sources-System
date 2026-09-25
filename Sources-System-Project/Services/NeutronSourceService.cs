@@ -17,13 +17,15 @@ public class NeutronSourceService : INeutronSourceService
     private readonly IAuditService _auditService;
     private readonly IUserService _userService;
     private readonly ILicenseService _licenseService;
+    private readonly TimeProvider _timeProvider;
 
-    public NeutronSourceService(IDbContextFactory<AppDbContext> dbFactory, IAuditService auditService, IUserService userService, ILicenseService licenseService)
+    public NeutronSourceService(IDbContextFactory<AppDbContext> dbFactory, IAuditService auditService, IUserService userService, ILicenseService licenseService, TimeProvider? timeProvider = null)
     {
         _dbFactory = dbFactory;
         _auditService = auditService;
         _userService = userService;
         _licenseService = licenseService;
+        _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
     /// <summary>جلب جميع المصادر النيترونية النشطة</summary>
@@ -137,9 +139,9 @@ public class NeutronSourceService : INeutronSourceService
             return (false, TranslationHelper.GetString("MsgErrActivityValuePositive") ?? "قيمة النشاط الإشعاعي يجب أن تكون أكبر من صفر");
         if (item.ActivityValue.HasValue != item.ActivityUnitId.HasValue)
             return (false, TranslationHelper.GetString("MsgErrActivityBothOrNeither") ?? "يجب إدخال قيمة النشاط الإشعاعي ووحدته معاً أو تركهما فارغين");
-        if (item.CalibrationDate.HasValue && item.CalibrationDate.Value.Date > DateTime.Today)
+        if (item.CalibrationDate.HasValue && item.CalibrationDate.Value.Date > _timeProvider.LocalToday())
             return (false, TranslationHelper.GetString("MsgErrCalibrationDateFuture") ?? "لا يمكن أن يكون تاريخ المعايرة في المستقبل.");
-        if (item.EmissionCalibrationDate.HasValue && item.EmissionCalibrationDate.Value.Date > DateTime.Today)
+        if (item.EmissionCalibrationDate.HasValue && item.EmissionCalibrationDate.Value.Date > _timeProvider.LocalToday())
             return (false, TranslationHelper.GetString("MsgErrEmissionCalibrationDateFuture") ?? "تاريخ معايرة الانبعاث لا يمكن أن يكون في المستقبل");
         if (item.NeutronSourceTypeId == Guid.Empty) return (false, TranslationHelper.GetString("MsgErrNeutronTypeReq") ?? "نوع المصدر النيتروني مطلوب");
 
@@ -230,9 +232,9 @@ public class NeutronSourceService : INeutronSourceService
             return (false, TranslationHelper.GetString("MsgErrActivityValuePositive") ?? "قيمة النشاط الإشعاعي يجب أن تكون أكبر من صفر");
         if (item.ActivityValue.HasValue != item.ActivityUnitId.HasValue)
             return (false, TranslationHelper.GetString("MsgErrActivityBothOrNeither") ?? "يجب إدخال قيمة النشاط الإشعاعي ووحدته معاً أو تركهما فارغين");
-        if (item.CalibrationDate.HasValue && item.CalibrationDate.Value.Date > DateTime.Today)
+        if (item.CalibrationDate.HasValue && item.CalibrationDate.Value.Date > _timeProvider.LocalToday())
             return (false, TranslationHelper.GetString("MsgErrCalibrationDateFuture") ?? "لا يمكن أن يكون تاريخ المعايرة في المستقبل.");
-        if (item.EmissionCalibrationDate.HasValue && item.EmissionCalibrationDate.Value.Date > DateTime.Today)
+        if (item.EmissionCalibrationDate.HasValue && item.EmissionCalibrationDate.Value.Date > _timeProvider.LocalToday())
             return (false, TranslationHelper.GetString("MsgErrEmissionCalibrationDateFuture") ?? "تاريخ معايرة الانبعاث لا يمكن أن يكون في المستقبل");
         if (item.NeutronSourceTypeId == Guid.Empty) return (false, TranslationHelper.GetString("MsgErrNeutronTypeReq") ?? "نوع المصدر النيتروني مطلوب");
 

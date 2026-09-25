@@ -220,6 +220,101 @@ Restore`/`AppDbContext` القديم لـAm-241/Be (محجوزان للجولة 
 - **R201-E (`61be44a`):** 38 اختباراً جديداً (`Round201NewCatalogAndRoleTests.cs`) — جولة كاملة لكل قيمة في `BorrowStatusCatalog` (كود/عربي/إنجليزي/لون) + قيم غير معروفة (فارغة/`null`/غير موثَّقة/متغيّر حالة أحرف)، Set Helpers، `BorrowRequest.StatusDisplay`/لوحتا الإرجاع، ثوابت/`ToStored`/`IsActiveInventory` في `StatusCatalog`، `RoleNames` (ثوابت + عرض ar/en لدور متوقع وغير متوقع)، و`Role.DisplayName`، وخيارات فلتر `LocationDetailsViewModel`/`BorrowViewModel` (Value ثابت، Display يتغيّر باللغة). Debug 1538/1538 (1500+38).
 - **R201-F (`2dd09f5`):** توثيق — تحديث رأس `release-readiness.md` (main عند الجولة 200، الجولة 201 قيد المراجعة)، إغلاق بندي تبعثر سلاسل الحالة واسم الدور، وهذا السطر.
 
+**الجولة 202 (فاصل الوقت `TimeProvider` — بلا UTC؛ فرع `refactor/round-202-time-handling`، مبنية على
+`main` عند `35dbc0e` بعد دمج الجولة 201 عبر PR #97):** العقد الكامل + اكتشافات D1–D5 وقرارات
+المعماري (بما فيها الملحق حول دقة الاضمحلال والرفض النهائي لتخزين UTC) في
+`docs/rounds/202-time-handling.md`. **D1:** 144 قراءة زمن إنتاجية في 31 ملفاً (لا `UtcNow`/
+`DateTimeOffset` إطلاقاً — الكل `DateTime.Now`/`DateTime.Today` محلي)، مصنَّفة: 26 كتابة INSTANT
+دائمة + 8 مقارنات قفل/تدقيق INSTANT + 37 INSTANT غير دائمة (أسماء ملفات/رؤوس تقارير/نسخ احتياطي/
+سجلّ) + 37 CALENDAR + 20 DECAY/ELAPSED + 16 بيانات اختبار (`TestDataGeneratorService`، خارج
+النطاق). **D2:** 28 خاصية `DateTime` في نموذج EF، كلها TEXT في SQLite بلا مُحوِّل قيمة فتُقرأ
+`Kind=Unspecified` دوماً؛ 20 INSTANT و8 CALENDAR (الأخيرة تحمل وقت اليوم فعلياً لا تاريخاً صرفاً —
+اكتشاف D2-1). **D3:** لا تعارضات أساس مختلفة على القاعدة الحالية (الكل محلي/Unspecified)؛ التحويل
+إلى UTC كان سيَخلُق أربعة تعارضات كامنة (قفل الحساب، عدادات «اليوم» في التدقيق، مرشِّحات التاريخ،
+صف تدقيق `SystemResetService`) — هذا الاكتشاف هو أساس قرار الرفض النهائي في §4 من
+`release-readiness.md`. **قرار المعماري الحاسم:** تخزين UTC مرفوض نهائياً؛ المجموعتان C وD من
+العقد الأصلي أُلغيتا بالكامل؛ النطاق الفعلي = A (فاصل زمن TimeProvider بلا تغيير نوع)، B (اختبارات
+تثبيت سلوك)، E (حتمية اختبارات D5)، F (توثيق) فقط.
+- **R202-A (`2ad1064`):** إضافة `TimeProviderExtensions.LocalNow/LocalToday` (تكافئ `DateTime.Now`/
+  `DateTime.Today` قيمةً ونوعاً `Kind=Local` تماماً مع `TimeProvider.System`) و`AppClock` (مُسنَد ثابت
+  بـ`AsyncLocal<TimeProvider?>` للمواضع غير القابلة للحقن)، وتسجيل `TimeProvider.System` أحادياً في
+  DI. توجيه 65 من أصل 144 موقعاً (فئتا CALENDAR وDECAY/ELAPSED ومقارنات القفل) عبر معامل بناء اختياري
+  لاحق `TimeProvider? timeProvider = null` في كل خدمة/ViewModel متأثرة (`SourcesViewModel`،
+  `NeutronSourceService`، `SourceService`، `BorrowViewModel`، `LeakTestsViewModel`،
+  `ActivityCalculatorViewModel`، `BorrowService`، `LeakTestService`، `AlertService`،
+  `DecayCalculationService`، `NeutronDecayCalculationService`، `ReportsViewModel`،
+  `DashboardViewModel`، `UserService`، `UsersViewModel`، `ReportingService`) + موضعان عبر `AppClock`
+  في `AllModels.cs` (`User.IsLocked`، `LeakTestRecord.TestDate`/`StatusDisplay`). انحراف تنفيذي
+  واحد غير مخطَّط: `AlertService`/`ReportsViewModel.CalculateMaxHalfLivesElapsed` (ثابتتان `static`)
+  و`ReportsViewModel.GetLowActivityAlertSources` (`private static`) لا يمكنها قراءة حقل نسخة، فأُضيف
+  معامل اختياري لاحق `TimeProvider?` لكل منها وحُدِّثت كل استدعاءات داخل نفس الملف لتمرير
+  `_timeProvider` صراحة؛ المستدعيان الخارجيان (`AlertsViewModel`، `DashboardViewModel`×2) بقيا على
+  الافتراضي `TimeProvider.System` — بلا أي تغيير سلوك. 144-65=79 موقعاً بقيت كما هي تماماً (كتابات
+  INSTANT، أسماء ملفات، رؤوس تقارير، نسخ احتياطي، سجلّ، ساعة `MainViewModel` الحيّة،
+  `SystemResetService` الممنوع، `TestDataGeneratorService`). Debug محلي بعد A: **1569/1569** (بلا
+  تغيير عن الأساس — تعديل صرف بلا اختبارات جديدة بعد).
+- **R202-B (`3551328`):** حزمة `Microsoft.Extensions.TimeProvider.Testing` **10.10.0** لمشروع
+  الاختبارات. 30 اختباراً جديداً في `Round202TimeHandlingCharacterizationTests.cs` بساعة مزيَّفة
+  ثابتة (منطقة صناعية `Libya-Test`=UTC+2 بلا اعتماد على منطقة عامل CI) تقود الكود الإنتاجي الحقيقي
+  بعد A: تثبيت قيمتي الاضمحلال المرجعيتين من عقد الجولة بدقة الدقيقة (Tc-99m ≈9.238773496698382E-011
+  mCi، F-18 ≈1.3265170327085314E-038 mCi، حساب مستقل بدقة tick)، نويدة طويلة العمر (Cs-137)،
+  اضمحلال الانبعاث النيتروني، عدد أنصاف الأعمار المنقضية للتنبيهات، استحقاق/تأخر اختبارات التسرب
+  (بما فيها `LeakTestRecord.StatusDisplay` عبر `AppClock.Override`)، استحقاق/تأخر الاستعارة، وانتهاء
+  قفل الحساب — عند 23:30 محلياً و00:30 اليوم التالي وحدّ نهاية الشهر (2026-09-30↔10-01). **اكتشاف
+  ومعالجة قبل الالتزام (لا STOP إنتاجي):** الصياغة الأولى لبناء اللحظة العالمية مرَّرت `DateTimeOffset`
+  بإزاحة +2 غير صفرية إلى `FakeTimeProvider.SetUtcNow`، فطُبِّقت الإزاحة مرتين عند `GetLocalNow()`
+  (انزياح 4 ساعات بدل 2 — أُكِّد تجريبياً بمشروع فحص منفصل لم يُلتزَم). عولج بتمرير `DateTimeOffset`
+  حقيقي بصفر إزاحة (`localDateTime.AddHours(-2)`) — عيب في أداة الاختبار لا في الإنتاج، فلم يتغيّر
+  أي توقّع. تُغطّي أيضاً حالة نموذج EF FK (دور مفقود لمستخدم اختبار) بإصلاح بيانات اختبار محض. Debug
+  محلي بعد B: **1599/1599** (1569+30).
+- **R202-E (`a38b34a`):** حتمية اختبارات D5 الحساسة لمنتصف الليل/نهاية الشهر عبر حقن نفس نمط الساعة
+  المزيَّفة الثابتة (2026-06-15 الساعة 10 صباحاً — بعيدة عمداً عن كلا الحدّين): `BorrowServiceTests`
+  (58 موقعاً)، `BorrowViewModelAndDueSoonTests` (47)، `LeakTestServiceTests` (18)،
+  `LeakTestsViewModelTests` (3)، `AlertServiceTests` (32) — 158 موقعاً محوَّلاً إجمالاً، صفر قراءات
+  ساعة حقيقية متبقية في هذه الملفات الخمسة. `UserServiceTests` (اختبارات القفل، 15 قراءة) و
+  `DecayCalculationServiceTests` (3 قراءات) **لم تُعدَّلا عمداً**: قراءاتهما دقيقة كاملة غير مبتورة
+  عند `.Date` بهامش أمان دقائق كاملة، فلا تتأثر فعلياً بتذبذب حدّ اليوم/الشهر (موثَّق بالتفصيل في
+  جدول الجولة 202). **اكتشاف أثناء التحويل (لا تغيير في معنى الاختبار):** إزالة الانزياح الإيجابي
+  العرضي بين قراءتي الساعة الحقيقية المنفصلتين كشفت هشاشة تقريب عشري بحت في حالتي حدّ فاصل بالضبط
+  (5.0 و6.0 فترة نصف عمر) في `AlertServiceTests` — عولجت بهامش ثانية واحدة على بيانات الاختبار
+  (لا تغيير في التأكيدات أو قيم الشدة). Debug محلي بعد E: **1599/1599** (بلا اختبارات جديدة — نفس
+  الأعداد، تحويل ملفات قائمة فقط).
+- **R202-F:** توثيق أولي — تحديث رأس `release-readiness.md` (main عند الجولة 201/`35dbc0e`، الجولة
+  202 قيد المراجعة) + إغلاق بند «توحيد UTC» نهائياً في §4 و«قائمة ما بعد الإصدار» + تسجيل بند
+  معماري جديد للجولة 205 (`ConvertToSeconds` ووحدة "m" الغامضة) + ملحق «Implementation notes» في
+  `docs/rounds/202-time-handling.md`.
+
+**مراجعة القائد على PR #98 (طلب تعديلات على المجموعة B) وإصلاحها:** راجع القائد الفرق الكامل؛
+قبِل A وE وF كما هي (بما فيها هامش الثانية الواحدة في `AlertServiceTests`)، ورفض جزءاً من B وفق
+قرار المعماري 2B/CORE RULE: (1) Tc-99m/F-18 كانا مثبَّتين عند لحظة 20:53 فقط، لا عند الساعات
+الأربع الثابتة المتعاقَد عليها؛ (2) اختبارا Cs-137 والانبعاث النيتروني كانا يحسبان القيمة المتوقعة
+وقت التشغيل **بنفس صيغة الإنتاج** (`AddYears(-n)` + إعادة حساب الأس) — إعادة تنفيذ منطق ممنوعة
+صراحةً بالعقد؛ (3) اختبار الاستعارة لم يكن حدّياً (لم يثبّت اليوم بالضبط/حدّ العتبة بالضبط)؛
+(4) لا اختبار يستدعي `AlertService.GenerateAlerts()` الحقيقية لعدّ التنبيهات فعلياً؛ (5) لا تغطية
+لعدّادات `UsersViewModel`؛ (6) لا فحص فعلي لجدوى لوحة القيادة. **R202-B-fix (`ee2bf9d`، ملف
+الاختبار فقط، لا تعديل إنتاجي):** عُولجت البنود الستة جميعاً — Tc-99m/F-18 أصبحا مثبَّتين بخمس
+لحظات لكل منهما (20:53 + الساعات الأربع)؛ Cs-137/النيتروني استبدلا المعايرة النسبية بتاريخ معايرة
+مطلق ثابت وقيمة متوقعة حرفية واحدة محسوبة يدوياً لكل ساعة (لا إعادة تنفيذ)؛ اختبار الاستعارة أصبح
+حدّياً بأربعة طلبات (أمس/اليوم بالضبط/حدّ 7 أيام/حدّ+1) وتأكيد الحالات والعدد بالضبط؛ اختبار جديد
+يستدعي `GenerateAlerts()` الحقيقية بمصادر عند 4.9/5.2/6.3 T½ ويؤكد العدد بالضبط لكل شدة؛ اختبار
+جديد لـ`UsersViewModel.LockedUsersCount`/`ActivitiesTodayCount` عند الساعة 00:30 (بمُرسِل
+`WeakReferenceMessenger` معزول خاص بالاختبار بدل `.Default`، إذ لا تُنفِّذ `UsersViewModel`
+`IDisposable`)؛ وتوثيق مُفصَّل داخل التعليقات وفي ملف عقد الجولة لسبب تعذُّر تثبيت عدّادي لوحة
+القيادة تحديداً (`DashboardViewModel.UpdateLowActivityAlertCard` يستدعي المُساعد الثابت **بلا**
+تمرير `TimeProvider`، فيستخدم دوماً الساعة الحقيقية بصرف النظر عن `_timeProvider` المحقون في نفس
+الـViewModel — موقع خارج الـ65 المتعاقَد عليها، والإنتاج مجمَّد منذ R202-A فلا يجوز تعديله هنا).
+لم يتغيّر أي كود إنتاجي؛ Debug بعد الإصلاح مطابق على نفس القاعدة الإنتاجية غير المعدَّلة منذ
+R202-A. **R202-F-fix (هذا التحديث):** تحديث هذا القسم وملف عقد الجولة بالأعداد النهائية وجدول B
+الموسَّع.
+
+**النتائج:** Debug محلي على فرع الجولة 202 (آخر التزام `ee2bf9d`): **1610 نجاح، 0 فشل، 0 تجاوز**
+(خط الأساس 1569 + **41** جديداً في المجموعة B الإجمالية: 30 في R202-B + 11 في R202-B-fix؛ R202-E
+حوَّلت ملفات قائمة بلا إضافة عدد). لا تغيير في الإنتاج منذ R202-A (E/F/B-fix لم تلمس سوى ملفات
+الاختبار والتوثيق) — أي أن النجاح على الرأس الحالي يعادل النجاح على الإنتاج بعد A تماماً. CI
+(Release «Build and Test») لم تُشغَّل بعد وقت كتابة هذا السطر — **قيد الانتظار (pending)**؛ سيُحدَّث
+هذا السطر برقم التشغيل والنتيجة عند توفرها. لا ترحيل EF، لا تغيير مخطط، لا `git add .`/`-A`.
+التزامات إصلاح موثَّقة (انحراف معلَن، لا تعديل لاحق أو `--amend`): `R202-B-fix`، `R202-F-fix`.
+
 **مراجعة القائد على PR #97 (طلب تعديلات) وإصلاحاتها:** راجع القائد الفرق (diff) واكتشف أن 7 اختبارات في `Round201CharacterizationTests.cs` تُعيد تنفيذ نفس المُسنَد/التبديل (switch) داخل جسم الاختبار بدل استدعاء الكود الإنتاجي الذي تُعدِّله الدفعات B–D (`LeakTests_SealedActiveList_ReplicatesCurrentPredicate*`, `AlertService_ActiveSourcesQuery_ReplicatesCurrentEfPredicate`, `ReportsViewModel_ActivityReport_ReplicatesCurrentPredicate`, `BorrowViewModel_KpiCounts_ReplicateCurrentPredicates`, `BorrowViewModel_CanReturn_ReplicatesCurrentPredicate`, `UsersViewModel_AdminUsersCount_ReplicatesCurrentPredicate`, `UsersViewModel_PermissionsAllShortCircuit_ReplicatesCurrentPredicate`) — فهذه السبعة كانت ستنجح أياً كان سلوك B–D، ولا تثبت شيئاً عن الكود الإنتاجي فعلياً. كذلك مواقع لم تُثبَّت إطلاقاً: فلتر/بحث `SourcesViewModel` (تبويبات المصادر/النيتروني/المحذوفات)، فلتر/عدادات/جدول `DashboardViewModel`، `GeneralReport` في `ReportsViewModel`، القائمة الحقيقية للمصادر المتاحة للاستعارة وعدادات `BorrowViewModel` عبر الـVM نفسه، ملخصات الأدوار وظهور قسم الصلاحيات في `UsersViewModel`، والتحقق المنطقي العلني في `PasswordPromptDialog`. **R201-A-fix (`919d4a3`):** ملف جديد `Round201CharacterizationSiteTests.cs` (31 اختباراً) يقود كل موقع أعلاه عبر الكود الإنتاجي الحقيقي فعلياً (أوامر/خصائص عامة حقيقية: `LoadDataCommand`، `SearchCommand`، `EditCommand`، `SaveCommand`، `EditRoleId`، `GenerateAlerts()`، `ValidateAdminPassword`)، مع `ConcurrentSqliteFixture` جديد (محلي لهذا الملف فقط — قاعدة ذاكرة `Cache=Shared` بدل اتصال `SqliteConnection` واحد مشترك حرفياً، لازم لأن هذه الـViewModels تستخدم `Task.Run` داخلياً فيتصادم أكثر من `DbContext` في آنٍ واحد على اتصال `SqliteInMemoryFixture` المشترك بخطأ "active statements"). أُثبت الملف نفسه حرفياً على القاعدة غير المعدَّلة (`0ce781d`، عبر worktree منفصل مؤقت أُزيل بعدها) وعلى HEAD: **31/31 ناجحاً في الحالتين** — لم تُفعَّل قاعدة التوقف. **R201-C-fix (`88687c4`):** `BorrowService.cs:198` (`"Returned"` منسي) يستخدم الآن `BorrowStatusCatalog.Returned`؛ تصحيح تعليق في `StatusCatalog.cs`. Debug محلي بعد الإصلاحات: **1569/1569** (1538 + 31 جديدة).
 
 **النتائج (القائد، بعد التحقق المستقل):** Debug محلي على `044554b`: **1569 نجاح، 0 فشل، 0 تجاوز** (خط الأساس 1414 + **155** جديداً: 86 في `Round201CharacterizationTests.cs`، 31 في `Round201CharacterizationSiteTests.cs`، 38 في `Round201NewCatalogAndRoleTests.cs`)؛ Release محلي: **1567/0/0**. CI Release «Build and Test» على `044554b` (التشغيل `36019150242`): **1567 نجاح، 0 فشل، 0 تجاوز** (خط أساس CI 1412 + 155)، والتحذيرات الثلاثة المعروفة `CS8604` فقط (`LoginWindow.xaml.cs:104`/`:199`، `ViewInstantiationTests.cs:218`). `TestDataIsolationSentinelTests`: **6/6**. `change-verifier`: **PASS** — أعاد تشغيل `Round201CharacterizationSiteTests` مستقلاً على `0ce781d` (31/31) وعلى `044554b` (31/31)، وتحقق أن `Round201CharacterizationTests.cs` مطابق بايتياً بين `0ce781d` والرأس وأن لا ملف اختبار سابق للجولة تغيّر. **كل اختبارات تثبيت السلوك الحقيقية (Group A عدا السبعة المصنَّفة «ليست دليلاً»، + R201-A-fix) نجحت على القاعدة غير المعدَّلة وبعد B وC وD دون أي تغيير في النتائج المتوقعة.** التزامات إصلاح (انحراف معلَن): `R201-A-fix`، `R201-C-fix`، `R201-F-fix`، `R201-A-fix2` (`044554b`: إزالة تحذير `CS1998` أدخله `R201-A-fix` — توقيع اختبار فقط، بلا تغيير توقع)، و`R201-F-fix2` (هذا التحديث التوثيقي من القائد). لا ترحيل EF، لا تغيير مخطط/قيم مخزَّنة/بذر.

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Sources.Models;
 using Sources.Services;
@@ -19,6 +20,11 @@ public class LeakTestsViewModelTests
     private readonly Mock<ISystemSettingsService> _mockSettingsService;
     private readonly LeakTestsViewModel _viewModel;
 
+    // الجولة 202 (المجموعة E): ساعة ثابتة صناعية بدل الاعتماد على DateTime.Now/Today الحقيقي
+    // لإزالة سباق القراءتين المنفصلتين القريب من منتصف الليل أو نهاية الشهر.
+    private readonly FakeTimeProvider _fakeClock = new(new DateTimeOffset(2026, 6, 15, 10, 0, 0, TimeSpan.Zero));
+    private DateTime FixedToday => _fakeClock.LocalToday();
+
     public LeakTestsViewModelTests()
     {
         _mockLeakTestService = new Mock<ILeakTestService>();
@@ -32,7 +38,8 @@ public class LeakTestsViewModelTests
             _mockSourceService.Object,
             _mockReportingService.Object,
             _mockUserService.Object,
-            _mockSettingsService.Object);
+            _mockSettingsService.Object,
+            timeProvider: _fakeClock);
     }
 
     [Fact]
@@ -41,7 +48,7 @@ public class LeakTestsViewModelTests
         // Arrange
         _mockLeakTestService
             .Setup(s => s.CalculateNextDueDate(It.IsAny<DateTime>(), null))
-            .Returns(DateTime.Today.AddMonths(6));
+            .Returns(FixedToday.AddMonths(6));
 
         // Act
         _viewModel.OpenAddModal();
@@ -51,8 +58,8 @@ public class LeakTestsViewModelTests
         Assert.False(_viewModel.IsEditingRecord);
         Assert.Equal("تسجيل اختبار تسرب جديد", _viewModel.ModalTitle);
         Assert.Equal("Pass", _viewModel.FormResult);
-        Assert.Equal(DateTime.Today, _viewModel.FormTestDate);
-        Assert.Equal(DateTime.Today.AddMonths(6), _viewModel.FormNextDueDate);
+        Assert.Equal(FixedToday, _viewModel.FormTestDate);
+        Assert.Equal(FixedToday.AddMonths(6), _viewModel.FormNextDueDate);
     }
 
     [Fact]

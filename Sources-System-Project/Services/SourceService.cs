@@ -15,14 +15,16 @@ public class SourceService : ISourceService
     private readonly IAuditService _auditService;
     private readonly IUserService _userService;
     private readonly ILicenseService _licenseService;
+    private readonly TimeProvider _timeProvider;
 
-    public SourceService(IDbContextFactory<AppDbContext> dbFactory, IDecayCalculationService decayService, IAuditService auditService, IUserService userService, ILicenseService licenseService)
+    public SourceService(IDbContextFactory<AppDbContext> dbFactory, IDecayCalculationService decayService, IAuditService auditService, IUserService userService, ILicenseService licenseService, TimeProvider? timeProvider = null)
     {
         _dbFactory = dbFactory;
         _decayService = decayService;
         _auditService = auditService;
         _userService = userService;
         _licenseService = licenseService;
+        _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
     public List<Source> GetAllSources()
@@ -98,7 +100,7 @@ public class SourceService : ISourceService
             return (false, TranslationHelper.GetString("MsgErrInvalidIsotopeActivityFinite") ?? "قيمة النشاط لنظير الخليط غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (source.SourceIsotopes != null && source.SourceIsotopes.Any(si => si.InitialActivityValue.HasValue && !double.IsFinite(si.InitialActivityValue.Value)))
             return (false, TranslationHelper.GetString("MsgErrInvalidIsotopeActivityFinite") ?? "قيمة النشاط لنظير الخليط غير صالحة (يجب أن تكون رقماً منتهياً)");
-        if (source.CalibrationDate.Date > DateTime.Today)
+        if (source.CalibrationDate.Date > _timeProvider.LocalToday())
             return (false, TranslationHelper.GetString("MsgErrCalibrationDateFuture") ?? "لا يمكن أن يكون تاريخ المعايرة في المستقبل.");
 
         using var db = _dbFactory.CreateDbContext();
@@ -192,7 +194,7 @@ public class SourceService : ISourceService
             return (false, TranslationHelper.GetString("MsgErrInvalidIsotopeActivityFinite") ?? "قيمة النشاط لنظير الخليط غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (source.SourceIsotopes != null && source.SourceIsotopes.Any(si => si.InitialActivityValue.HasValue && !double.IsFinite(si.InitialActivityValue.Value)))
             return (false, TranslationHelper.GetString("MsgErrInvalidIsotopeActivityFinite") ?? "قيمة النشاط لنظير الخليط غير صالحة (يجب أن تكون رقماً منتهياً)");
-        if (source.CalibrationDate.Date > DateTime.Today)
+        if (source.CalibrationDate.Date > _timeProvider.LocalToday())
             return (false, TranslationHelper.GetString("MsgErrCalibrationDateFuture") ?? "لا يمكن أن يكون تاريخ المعايرة في المستقبل.");
 
         using var db = _dbFactory.CreateDbContext();
@@ -573,7 +575,7 @@ public class SourceService : ISourceService
 
         if (isotope == null || unit == null) return;
 
-        var calibDate = si.CalibrationDate ?? parentCalibrationDate ?? si.Source?.CalibrationDate ?? DateTime.Now;
+        var calibDate = si.CalibrationDate ?? parentCalibrationDate ?? si.Source?.CalibrationDate ?? _timeProvider.LocalNow();
         var initialBq = si.InitialActivityValue.Value * unit.ConversionToBq;
         var currentBq = _decayService.CalculateCurrentActivity(initialBq, isotope.HalfLife, isotope.HalfLifeUnit, calibDate);
         si.CurrentActivityValue = _decayService.ConvertFromBq(currentBq, unit.ConversionToBq);

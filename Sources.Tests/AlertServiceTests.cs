@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Sources.Data;
 using Sources.Helpers;
@@ -22,6 +23,12 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
     private readonly AlertService _alertService;
     private readonly FakeLicenseService _fakeLicenseService = new();
 
+    // الجولة 202 (المجموعة E): ساعة ثابتة صناعية بدل الاعتماد على DateTime.Now/Today الحقيقي
+    // لإزالة سباق القراءتين المنفصلتين القريب من منتصف الليل أو نهاية الشهر.
+    private readonly FakeTimeProvider _fakeClock = new(new DateTimeOffset(2026, 6, 15, 10, 0, 0, TimeSpan.Zero));
+    private DateTime FixedToday => _fakeClock.LocalToday();
+    private DateTime FixedNow => _fakeClock.LocalNow();
+
     // كائنات مرجعية مشتركة
     private Radioisotope _isoCs137 = null!; // T½ = 30.08 years
     private Radioisotope _isoCo60 = null!;  // T½ = 5.27 years
@@ -34,14 +41,15 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
         _fixture = fixture;
         _fixture.ResetDatabase();
 
-        _decayService = new DecayCalculationService();
+        _decayService = new DecayCalculationService(_fakeClock);
         _settingsService = new SystemSettingsService(_fixture.ContextFactory, _fakeLicenseService);
 
         _alertService = new AlertService(
             _fixture.ContextFactory,
             _decayService,
             _settingsService,
-            _fakeLicenseService);
+            _fakeLicenseService,
+            _fakeClock);
 
         SeedLookupData();
     }
@@ -83,9 +91,14 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
     {
         // Arrange
         // Co-60 فترة نصف عمره 5.27 سنة (1924.8675 يوم)
+        // الجولة 202 (E): عند الساعة الثابتة تصبح القراءتان (بناء بيانات الاختبار وحساب الإنتاج)
+        // بنفس اللحظة تماماً؛ نضيف ثانية واحدة هامشية لحالتي الحدّ بالضبط (5.0 و6.0) كي لا يسقط
+        // الفارق العشري لتحويل AddDays/TotalSeconds الناتج المحسوب دون العتبة (>=) بسبب التقريب
+        // العشري البحت — لا تغيير في معنى الاختبار (لا يزال يثبت السلوك عند/فوق نفس العتبة الأصلية)
         var halfLifeDays = 5.27 * 365.25;
+        var boundaryEpsilonSeconds = (halfLivesElapsed == 5.0 || halfLivesElapsed == 6.0) ? 1.0 : 0.0;
         var elapsedDays = halfLivesElapsed * halfLifeDays;
-        var calibrationDate = DateTime.Now.AddDays(-elapsedDays);
+        var calibrationDate = FixedNow.AddDays(-elapsedDays).AddSeconds(-boundaryEpsilonSeconds);
 
         var source = TestDataBuilder.CreateSource(
             _isoCo60,
@@ -131,7 +144,7 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
         // مصدر يحتوي على نظيرين:
         // 1. Cs-137: T½ = 30.08 سنة (انقضى سنتان = 0.066 T½ -> لا تنبيه)
         // 2. Co-60:  T½ = 5.27 سنة (انقضى 31.62 سنة = 6.0 T½ -> Critical)
-        var now = DateTime.Now;
+        var now = FixedNow;
         var source = TestDataBuilder.CreateSource(
             _isoCs137,
             _unitBq,
@@ -179,7 +192,7 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
         // Arrange
         // نظير 1: Cs-137 (انقضى 1 سنة = 0.03 T½ -> None)
         // نظير 2: Co-60  (انقضى 5.3 فترة نصف عمر = 27.93 سنة -> Warning)
-        var now = DateTime.Now;
+        var now = FixedNow;
         var source = TestDataBuilder.CreateSource(
             _isoCs137,
             _unitBq,
@@ -224,7 +237,7 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
             _unitBq,
             _testLocation,
             sourceCode: "SRC-DELETED-ALERT",
-            calibrationDate: DateTime.Now.AddDays(-10 * 5.27 * 365.25),
+            calibrationDate: FixedNow.AddDays(-10 * 5.27 * 365.25),
             status: "InUse");
 
         source.IsDeleted = true;
@@ -252,8 +265,8 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
     {
         // Arrange
         // كل المصادر تمت معايرتها اليوم (0 فترات نصف عمر)
-        var source1 = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-FRESH-1", calibrationDate: DateTime.Now);
-        var source2 = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-FRESH-2", calibrationDate: DateTime.Now);
+        var source1 = TestDataBuilder.CreateSource(_isoCs137, _unitBq, _testLocation, "SRC-FRESH-1", calibrationDate: FixedNow);
+        var source2 = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-FRESH-2", calibrationDate: FixedNow);
 
         using (var context = _fixture.CreateContext())
         {
@@ -287,7 +300,7 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
             _unitBq,
             _testLocation,
             sourceCode: $"SRC-STAT-{status}",
-            calibrationDate: DateTime.Now.AddDays(-8 * 5.27 * 365.25),
+            calibrationDate: FixedNow.AddDays(-8 * 5.27 * 365.25),
             status: status);
 
         using (var context = _fixture.CreateContext())
@@ -325,7 +338,7 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
             _unitBq,
             _testLocation,
             sourceCode: "SRC-LIFECYCLE-1",
-            calibrationDate: DateTime.Now.AddDays(-7 * 5.27 * 365.25));
+            calibrationDate: FixedNow.AddDays(-7 * 5.27 * 365.25));
 
         using (var context = _fixture.CreateContext())
         {
@@ -357,8 +370,8 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
     public void MarkAllAsRead_MarksAllActiveAlertsAsRead()
     {
         // Arrange
-        var src1 = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-READ-1", calibrationDate: DateTime.Now.AddDays(-7 * 5.27 * 365.25));
-        var src2 = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-READ-2", calibrationDate: DateTime.Now.AddDays(-5.5 * 5.27 * 365.25));
+        var src1 = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-READ-1", calibrationDate: FixedNow.AddDays(-7 * 5.27 * 365.25));
+        var src2 = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-READ-2", calibrationDate: FixedNow.AddDays(-5.5 * 5.27 * 365.25));
 
         using (var context = _fixture.CreateContext())
         {
@@ -382,9 +395,9 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
     {
         // Arrange
         // مصدر حرج (7 فترات نصف عمر)
-        var srcCritical = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-CRIT", calibrationDate: DateTime.Now.AddDays(-7 * 5.27 * 365.25));
+        var srcCritical = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-CRIT", calibrationDate: FixedNow.AddDays(-7 * 5.27 * 365.25));
         // مصدر تحذيري (5.2 فترات نصف عمر)
-        var srcWarning = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-WARN", calibrationDate: DateTime.Now.AddDays(-5.2 * 5.27 * 365.25));
+        var srcWarning = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-WARN", calibrationDate: FixedNow.AddDays(-5.2 * 5.27 * 365.25));
 
         using (var context = _fixture.CreateContext())
         {
@@ -413,7 +426,7 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
             _unitBq,
             _testLocation,
             sourceCode: "SRC-RESOLVE-TEST",
-            calibrationDate: DateTime.Now.AddDays(-8 * 5.27 * 365.25));
+            calibrationDate: FixedNow.AddDays(-8 * 5.27 * 365.25));
 
         using (var context = _fixture.CreateContext())
         {
@@ -429,7 +442,7 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
         {
             var dbSource = context.Sources.Find(source.Id);
             Assert.NotNull(dbSource);
-            dbSource.CalibrationDate = DateTime.Now;
+            dbSource.CalibrationDate = FixedNow;
             context.SaveChanges();
         }
 
@@ -454,8 +467,8 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
         // وليست إنشاءً لبيانات عمل جديدة، لذا لا يجب أن يحجبها فحص RequireActivated (الجولة 190).
         _fakeLicenseService.IsActivated = false;
 
-        var src1 = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-TRIAL-ALERT-1", calibrationDate: DateTime.Now.AddDays(-7 * 5.27 * 365.25));
-        var src2 = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-TRIAL-ALERT-2", calibrationDate: DateTime.Now.AddDays(-7 * 5.27 * 365.25));
+        var src1 = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-TRIAL-ALERT-1", calibrationDate: FixedNow.AddDays(-7 * 5.27 * 365.25));
+        var src2 = TestDataBuilder.CreateSource(_isoCo60, _unitBq, _testLocation, "SRC-TRIAL-ALERT-2", calibrationDate: FixedNow.AddDays(-7 * 5.27 * 365.25));
 
         using (var context = _fixture.CreateContext())
         {
@@ -562,7 +575,7 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
             _unitBq,
             _testLocation,
             sourceCode: "SRC-SEALED-NO-TEST",
-            calibrationDate: DateTime.Now,
+            calibrationDate: FixedNow,
             isSealed: true);
 
         using (var context = _fixture.CreateContext())
@@ -590,7 +603,7 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
             _unitBq,
             _testLocation,
             sourceCode: "SRC-UNSEALED-TEST",
-            calibrationDate: DateTime.Now,
+            calibrationDate: FixedNow,
             isSealed: false);
 
         using (var context = _fixture.CreateContext())
@@ -616,17 +629,17 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
             _unitBq,
             _testLocation,
             sourceCode: "SRC-SEALED-OVERDUE",
-            calibrationDate: DateTime.Now,
+            calibrationDate: FixedNow,
             isSealed: true);
 
         var oldTest = new LeakTestRecord
         {
             Id = Guid.NewGuid(),
             SourceId = source.Id,
-            TestDate = DateTime.Today.AddMonths(-8),
-            NextDueDate = DateTime.Today.AddDays(-15), // Overdue by 15 days
+            TestDate = FixedToday.AddMonths(-8),
+            NextDueDate = FixedToday.AddDays(-15), // Overdue by 15 days
             Result = "Pass",
-            CreatedAt = DateTime.Now.AddMonths(-8)
+            CreatedAt = FixedNow.AddMonths(-8)
         };
 
         using (var context = _fixture.CreateContext())
@@ -647,7 +660,7 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
         // AlertService.cs، بدل مطابقة سلسلة ثابتة — يتطابق الطرفان دوماً بغض النظر عن حالة
         // Application.Current المشتركة على مستوى العملية (نص عربي حقيقي أو اسم المفتاح الخام).
         var dueDate = oldTest.NextDueDate.Date;
-        int overdueDays = (DateTime.Today - dueDate).Days;
+        int overdueDays = (FixedToday - dueDate).Days;
         var expectedMessage = TranslationHelper.GetFormat("MsgAlertLeakTestOverdue", overdueDays, dueDate);
         Assert.Contains(expectedMessage, leakAlert.Message);
     }
@@ -661,17 +674,17 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
             _unitBq,
             _testLocation,
             sourceCode: "SRC-SEALED-DUE-SOON",
-            calibrationDate: DateTime.Now,
+            calibrationDate: FixedNow,
             isSealed: true);
 
         var testRecord = new LeakTestRecord
         {
             Id = Guid.NewGuid(),
             SourceId = source.Id,
-            TestDate = DateTime.Today.AddMonths(-5).AddDays(-20),
-            NextDueDate = DateTime.Today.AddDays(10), // Due in 10 days
+            TestDate = FixedToday.AddMonths(-5).AddDays(-20),
+            NextDueDate = FixedToday.AddDays(10), // Due in 10 days
             Result = "Pass",
-            CreatedAt = DateTime.Now.AddMonths(-5)
+            CreatedAt = FixedNow.AddMonths(-5)
         };
 
         using (var context = _fixture.CreateContext())
@@ -690,7 +703,7 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
         Assert.Equal("Warning", leakAlert.Severity);
         // نفس السبب أعلاه: نحسب النص المتوقَّع ديناميكياً بدل مطابقة سلسلة ثابتة.
         var dueDate = testRecord.NextDueDate.Date;
-        int remainingDays = (dueDate - DateTime.Today).Days;
+        int remainingDays = (dueDate - FixedToday).Days;
         var expectedMessage = TranslationHelper.GetFormat("MsgAlertLeakTestDueSoon", remainingDays, dueDate);
         Assert.Contains(expectedMessage, leakAlert.Message);
     }
@@ -705,7 +718,7 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
             _unitBq,
             _testLocation,
             sourceCode: "SRC-CLEAN-LEAK-ALERT",
-            calibrationDate: DateTime.Now,
+            calibrationDate: FixedNow,
             isSealed: true);
 
         using (var context = _fixture.CreateContext())
@@ -722,10 +735,10 @@ public class AlertServiceTests : IClassFixture<SqliteInMemoryFixture>, IDisposab
         {
             Id = Guid.NewGuid(),
             SourceId = source.Id,
-            TestDate = DateTime.Today,
-            NextDueDate = DateTime.Today.AddMonths(6),
+            TestDate = FixedToday,
+            NextDueDate = FixedToday.AddMonths(6),
             Result = "Pass",
-            CreatedAt = DateTime.Now
+            CreatedAt = FixedNow
         };
 
         using (var context = _fixture.CreateContext())

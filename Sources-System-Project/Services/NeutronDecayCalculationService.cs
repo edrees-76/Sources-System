@@ -14,12 +14,19 @@ public class NeutronDecayCalculationService : INeutronDecayCalculationService
     public const double SecondsPerDay = 86400.0;
     public const double SecondsPerYear = DaysPerYear * SecondsPerDay;
 
+    private readonly TimeProvider _timeProvider;
+
+    public NeutronDecayCalculationService(TimeProvider? timeProvider = null)
+    {
+        _timeProvider = timeProvider ?? TimeProvider.System;
+    }
+
     /// <summary>
     /// حساب معدل الانبعاث النيتروني الحالي للمصدر (عند اللحظة الحالية)
     /// </summary>
     public NeutronDecayResult CalculateCurrentEmissionRate(NeutronSource? source)
     {
-        return CalculateEmissionRateAtDate(source, DateTime.Now);
+        return CalculateEmissionRateAtDate(source, _timeProvider.LocalNow());
     }
 
     /// <summary>
@@ -155,7 +162,7 @@ public class NeutronDecayCalculationService : INeutronDecayCalculationService
     /// حساب النشاط الإشعاعي الحالي للمصدر (عند اللحظة الحالية)
     /// </summary>
     public NeutronDecayResult CalculateCurrentSourceActivity(NeutronSource? source)
-        => CalculateSourceActivityAtDate(source, DateTime.Now);
+        => CalculateSourceActivityAtDate(source, _timeProvider.LocalNow());
 
     /// <summary>
     /// حساب النشاط الإشعاعي للمصدر عند تاريخ حساب محدد اعتماداً على CalibrationDate كتاريخ
