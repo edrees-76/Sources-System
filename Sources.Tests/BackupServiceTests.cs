@@ -641,4 +641,61 @@ public class BackupServiceTests : IDisposable
         Assert.NotNull(result.BackupPath);
         Assert.True(File.Exists(result.BackupPath), "New backup file must exist");
     }
+
+    [Fact]
+    public void CreatePreResetBackup_ProducesPreResetNamedZip_AndNeverDeletedByCleanOldBackups()
+    {
+        // Arrange
+        CreateValidSqliteDatabase(_dbPath, "Sources", "SRC-PRE-RESET-TEST");
+        var targetDir = Path.Combine(_testRoot, BackupService.BackupFolderName);
+        Directory.CreateDirectory(targetDir);
+
+        // Pre-reset backup file older than 30 days (45 days ago)
+        var oldPreReset = Path.Combine(targetDir, "SOURCES_pre_reset_2026-06-01_10-00-00.zip");
+        File.WriteAllBytes(oldPreReset, new byte[64]);
+        File.SetCreationTime(oldPreReset, DateTime.Now.AddDays(-45));
+
+        // Ordinary backup older than 30 days (45 days ago)
+        var oldOrdinary = Path.Combine(targetDir, "SOURCES_backup_2026-06-01_10-00-00.zip");
+        File.WriteAllBytes(oldOrdinary, new byte[64]);
+        File.SetCreationTime(oldOrdinary, DateTime.Now.AddDays(-45));
+
+        // Act 1: Call CreatePreResetBackup
+        var result = _sut.CreatePreResetBackup();
+
+        // Assert 1: Created successfully with SOURCES_pre_reset_ prefix
+        Assert.True(result.Success);
+        Assert.NotNull(result.BackupPath);
+        Assert.Contains("SOURCES_pre_reset_", Path.GetFileName(result.BackupPath));
+        Assert.True(File.Exists(result.BackupPath));
+
+        // Act 2: Trigger ordinary CreateBackup which calls CleanOldBackups(30, targetDir)
+        var ordinaryResult = _sut.CreateBackup(targetDir);
+        Assert.True(ordinaryResult.Success);
+
+        // Assert 2: Pre-reset backup older than 30 days SURVIVES, ordinary backup older than 30 days is REMOVED
+        Assert.True(File.Exists(oldPreReset), "Pre-reset backup older than 30 days must survive CleanOldBackups");
+        Assert.False(File.Exists(oldOrdinary), "Ordinary backup older than 30 days must be deleted by CleanOldBackups");
+    }
+
+    [Fact]
+    public void GetBackups_IncludesBothOrdinaryAndPreResetBackups()
+    {
+        // Arrange
+        var ordinary = Path.Combine(_backupDir, "SOURCES_backup_2026-09-01_10-00-00.zip");
+        var preReset = Path.Combine(_backupDir, "SOURCES_pre_reset_2026-09-02_10-00-00.zip");
+        var unrelated = Path.Combine(_backupDir, "OTHER_file_2026-09-03.zip");
+
+        File.WriteAllBytes(ordinary, new byte[100]);
+        File.WriteAllBytes(preReset, new byte[200]);
+        File.WriteAllBytes(unrelated, new byte[300]);
+
+        // Act
+        var backups = _sut.GetBackups();
+
+        // Assert
+        Assert.Contains(backups, b => b.FileName == Path.GetFileName(ordinary));
+        Assert.Contains(backups, b => b.FileName == Path.GetFileName(preReset));
+        Assert.DoesNotContain(backups, b => b.FileName == Path.GetFileName(unrelated));
+    }
 }

@@ -49,8 +49,8 @@ public class SystemResetService : ISystemResetService
         if (!adminGuard.Allowed)
             return (false, adminGuard.Message, null);
 
-        // 1. أخذ نسخة احتياطية كاملة إجبارية قبل أي تعديل
-        var backupResult = _backupService.CreateBackup();
+        // 1. أخذ نسخة احتياطية كاملة إجبارية دائمة قبل أي تعديل
+        var backupResult = _backupService.CreatePreResetBackup();
         if (!backupResult.Success || string.IsNullOrEmpty(backupResult.BackupPath))
         {
             return (false, $"{TranslationHelper.GetString("MsgErrForcedBackupFailedPrefix") ?? "فشل إنشاء النسخة الاحتياطية الإجبارية"}: {backupResult.Message}", null);

@@ -35,6 +35,8 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
         _mockBackupService = new Mock<IBackupService>();
         _mockBackupService.Setup(b => b.CreateBackup())
             .Returns((true, "Backup created", "C:\\Backups\\pre_reset_backup.db"));
+        _mockBackupService.Setup(b => b.CreatePreResetBackup())
+            .Returns((true, "Backup created", "C:\\Backups\\pre_reset_backup.db"));
 
         _mockSettingsService = new Mock<ISystemSettingsService>();
         _mockCertificateService = new Mock<ISourceCertificateService>();
@@ -388,6 +390,8 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
         // Arrange
         _mockBackupService.Setup(b => b.CreateBackup())
             .Returns((false, "Disk error: No space left", null));
+        _mockBackupService.Setup(b => b.CreatePreResetBackup())
+            .Returns((false, "Disk error: No space left", null));
 
         var loc = TestDataBuilder.CreateLocation(name: "موقع لا يجب أن يُحذف");
         var iso = TestDataBuilder.CreateRadioisotope("Co-60", "Cobalt-60", 5.27, "years", 1332.5);
@@ -484,6 +488,8 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
             var mockBackupFail = new Mock<IBackupService>();
             mockBackupFail.Setup(b => b.CreateBackup())
                 .Returns((false, "Simulated backup disk full", null));
+            mockBackupFail.Setup(b => b.CreatePreResetBackup())
+                .Returns((false, "Simulated backup disk full", null));
 
             var auditMock = new Mock<IAuditService>();
             var realCertService = new SourceCertificateService(_fixture.ContextFactory, auditMock.Object, _fakeLicenseService, tempFolder);
@@ -561,6 +567,7 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
         Assert.Contains("مدير النظام", result.Message);
         Assert.Null(result.BackupPath);
         _mockBackupService.Verify(b => b.CreateBackup(), Times.Never);
+        _mockBackupService.Verify(b => b.CreatePreResetBackup(), Times.Never);
 
         using (var db = _fixture.CreateContext())
         {
@@ -588,6 +595,7 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
         Assert.False(result.Success);
         Assert.Null(result.BackupPath);
         _mockBackupService.Verify(b => b.CreateBackup(), Times.Never);
+        _mockBackupService.Verify(b => b.CreatePreResetBackup(), Times.Never);
 
         using (var db = _fixture.CreateContext())
         {
@@ -616,6 +624,7 @@ public class SystemResetServiceTests : IClassFixture<SqliteInMemoryFixture>, IDi
         Assert.Contains("تجريبية", result.Message);
         Assert.Null(result.BackupPath);
         _mockBackupService.Verify(b => b.CreateBackup(), Times.Never);
+        _mockBackupService.Verify(b => b.CreatePreResetBackup(), Times.Never);
 
         using (var db = _fixture.CreateContext())
         {
