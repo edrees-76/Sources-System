@@ -70,7 +70,8 @@ public class ViewInstantiationTests
                 Assert.Same(drill, window.DataContext);
                 var grid = window.FindName("SourcesGrid") as System.Windows.Controls.DataGrid;
                 Assert.NotNull(grid);
-                Assert.Equal(7, grid!.Columns.Count);
+                // #، الكود، النظائر، الموقع، الحالة، النشاط، الوحدة، معدل الجرعة
+                Assert.Equal(8, grid!.Columns.Count);
             }
             finally
             {
