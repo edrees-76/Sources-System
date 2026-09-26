@@ -357,3 +357,9 @@ R202-A. **R202-F-fix (هذا التحديث):** تحديث هذا القسم و�
   - R207-C (`041d415`): توطين نصوص XAML باستبدال النص الصلب لعنوان التطبيق في `MainWindow.xaml:74` بـ `{DynamicResource BrandAppTitle}` (F12)، واستبدال التلميحات العربية الصلبة في `LeakTestsView.xaml:451,469` بـ `{DynamicResource HintInspectorName}` و`{DynamicResource HintLeakTestNotes}` (F13, F14)، مع تزويد القاموسين بالمفاتيح المقابلة. إضافة اختبارات XAML في `Round207XamlLocalizationTests.cs` (اختبار واحد).
   - R207-D: توثيق الجولة 207 في ملخص الجلسات وجاهزية النشر والعقد المستخدم.
   النتائج: `dotnet test Sources.sln -c Debug` الكامل محلياً: **1646 نجاح، 0 فشل، 0 تجاوز** (خط الأساس 1638 + 8 اختبارات جديدة: 5 في R207-A، 2 في R207-B، 1 في R207-C). `TestDataIsolationSentinelTests`: 6/6 نجاح. صفر تحذيرات جديدة (نفس التحذيرات الثلاثة المعروفة CS8604). لم تُمس الملفات المحظورة (`LoginWindow`/`LoginView`/`SplashWindow`).
+
+- الجولة 208 (الإصدار النهائي v1.1.0، فرع `claude/round-208-release-v1.1.0`):
+  - R208-A (`c254193`): رفع رقم إصدار المنظومة إلى 1.1.0 في `Sources-System-Project/Sources.csproj` (`<Version>1.1.0</Version>`) وفي سكربت Inno Setup `deploy/installer.iss` (`#define AppVersion "1.1.0"`). التحقق من خروج 1.1.0 في `dotnet build -c Release`.
+  - R208-B (`a526d9f`): تنفيذ سكربت النشر وبناء المثبت `deploy/build-installer.ps1`: إتمام `dotnet publish` الذاتي الاكتفاء لمعمارية `win-x64`، توليد صور معالج التثبيت، وتصريف Inno Setup 6 إلى `deploy/output/SourcesSystemSetup.exe` بحجم 81,806,397 بايت (~81.8 MB) وأرشفته إلى `deploy/Release/v1.1.0/SourcesSystemSetup_v1.1.0.exe`.
+  - R208-C: توثيق الإصدار وإعداد ملاحظات النشر `deploy/release-notes.md` وتحديث لوحة جاهزية النشر `docs/release-readiness.md` والعقد المستخدم `contract-used.md`.
+  النتائج: `dotnet test Sources.sln -c Debug` الكامل: **1646 نجاح، 0 فشل، 0 تجاوز**. `TestDataIsolationSentinelTests`: 6/6 نجاح. صفر تحذيرات جديدة. بناء المثبت والأرشفة مكتملان بنجاح.

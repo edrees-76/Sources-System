@@ -9,7 +9,7 @@
     <RootNamespace>Sources</RootNamespace>
     <AssemblyName>Sources</AssemblyName>
     <NoWarn>$(NoWarn);NU1701;CA1416</NoWarn>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
