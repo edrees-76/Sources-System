@@ -24,20 +24,26 @@ public class ViewInstantiationTests
         {
             var view = new DashboardView();
             Assert.NotNull(view);
-            var isotopeChart = view.FindName("IsotopeChart") as LiveChartsCore.SkiaSharpView.WPF.CartesianChart;
-            var locationChart = view.FindName("LocationChart") as LiveChartsCore.SkiaSharpView.WPF.CartesianChart;
-            var histogramChart = view.FindName("HistogramChart") as LiveChartsCore.SkiaSharpView.WPF.CartesianChart;
+            // الجولة 212: رسوم النشاط والنظائر والمواقع أصبحت أشرطة WPF أصلية (ItemsControl)
+            // بدل LiveCharts/Skia؛ منحنى التحلل وحده بقي رسماً بتلميح مخصص.
+            var activityLadder = view.FindName("ActivityLadder") as System.Windows.Controls.ItemsControl;
+            var isotopeBars = view.FindName("IsotopeBars") as System.Windows.Controls.ItemsControl;
+            var locationBars = view.FindName("LocationBars") as System.Windows.Controls.ItemsControl;
             var decayChart = view.FindName("DecayChart") as LiveChartsCore.SkiaSharpView.WPF.CartesianChart;
 
-            Assert.NotNull(isotopeChart);
-            Assert.NotNull(locationChart);
-            Assert.NotNull(histogramChart);
+            Assert.NotNull(activityLadder);
+            Assert.NotNull(isotopeBars);
+            Assert.NotNull(locationBars);
             Assert.NotNull(decayChart);
 
-            Assert.NotNull(isotopeChart.Tooltip);
-            Assert.NotNull(locationChart.Tooltip);
-            Assert.NotNull(histogramChart.Tooltip);
+            Assert.NotNull(activityLadder.ItemTemplate);
+            Assert.NotNull(isotopeBars.ItemTemplate);
+            Assert.NotNull(locationBars.ItemTemplate);
             Assert.NotNull(decayChart.Tooltip);
+
+            Assert.Null(view.FindName("HistogramChart"));
+            Assert.Null(view.FindName("IsotopeChart"));
+            Assert.Null(view.FindName("LocationChart"));
         });
     }
 

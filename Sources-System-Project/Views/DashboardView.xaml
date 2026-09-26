@@ -8,6 +8,93 @@
              xmlns:converters="clr-namespace:Sources.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="1500" d:DesignWidth="1200">
+    <UserControl.Resources>
+        <!-- الجولة 212: رسوم شريطية أفقية بعناصر WPF أصلية بدل LiveCharts/Skia.
+             النصوص TextBlock عادية فتعالج WPF تشكيل العربية واتجاهها (BiDi) تلقائياً،
+             والشريط يبدأ من جهة بداية السطر (اليمين في العربية) ويبدأ دائماً من الصفر. -->
+        <Style x:Key="DashboardBarRowButtonStyle" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="RowBorder" Background="Transparent" CornerRadius="6" Padding="4,3">
+                            <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource DataGridRowHover}"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource DataGridRowHover}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <DataTemplate x:Key="DashboardBarRowTemplate">
+            <Button Style="{StaticResource DashboardBarRowButtonStyle}"
+                    Command="{Binding Tag, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                    CommandParameter="{Binding}"
+                    AutomationProperties.Name="{Binding ToolTipText}">
+                <Button.ToolTip>
+                    <ToolTip FlowDirection="{DynamicResource CurrentFlowDirection}">
+                        <TextBlock Text="{Binding ToolTipText}"/>
+                    </ToolTip>
+                </Button.ToolTip>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="BarName" MaxWidth="220"/>
+                        <ColumnDefinition Width="*" MinWidth="60"/>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="BarValue"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- الاسم (+ سطر فرعي اختياري لمدى النطاق بالـ Bq، من اليسار لليمين حتى لا ينقلب الأُسّ والشرطة) -->
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0">
+                        <TextBlock Text="{Binding Label}" FontSize="12" Foreground="{DynamicResource TextPrimary}"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding SubLabel}" FontSize="10" Foreground="{DynamicResource TextSecondary}"
+                                   FlowDirection="LeftToRight" HorizontalAlignment="Left"
+                                   Visibility="{Binding HasSubLabel, Converter={StaticResource BoolToVis}}"/>
+                    </StackPanel>
+
+                    <!-- الشريط: عرضه نسبة من أكبر قيمة؛ القيمة الصفرية تظهر بإطار منقّط بدل أن تختفي -->
+                    <Grid Grid.Column="1" Height="14" VerticalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{Binding BarWidth}"/>
+                            <ColumnDefinition Width="{Binding RestWidth}"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Background="{DynamicResource ChartBarBrush}" CornerRadius="0,4,4,0"/>
+                        <Rectangle Grid.Column="0" Grid.ColumnSpan="2" Width="14" HorizontalAlignment="Left"
+                                   Stroke="{DynamicResource TextSecondary}" StrokeThickness="1" StrokeDashArray="2,2"
+                                   RadiusX="2" RadiusY="2"
+                                   Visibility="{Binding IsZero, Converter={StaticResource BoolToVis}}"/>
+                    </Grid>
+
+                    <!-- العدد + النسبة: ظاهران دائماً، لا يعتمدان على التلميح -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
+                        <TextBlock Text="{Binding CountText}" FontSize="12" FontWeight="SemiBold" MinWidth="22"
+                                   Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="{Binding PercentText}" FontSize="11" Margin="6,0,0,0" MinWidth="40"
+                                   Foreground="{DynamicResource TextSecondary}" FlowDirection="LeftToRight"/>
+                    </StackPanel>
+                </Grid>
+            </Button>
+        </DataTemplate>
+
+        <Style x:Key="DashboardOthersTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+            <Setter Property="Margin" Value="4,6,4,0"/>
+            <Style.Triggers>
+                <Trigger Property="Text" Value="">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
     <Grid>
         <!-- الطبقة الرئيسية مع Side Panel overlay -->
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
@@ -985,17 +1072,11 @@
                                 <TextBlock Text="{DynamicResource HistogramSubtitle}" FontSize="11" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,2,0,0"/>
                             </StackPanel>
                             
-                            <Grid Grid.Row="1" FlowDirection="LeftToRight">
-                                <lvc:CartesianChart x:Name="HistogramChart"
-                                                    Series="{Binding ActivityHistogramSeries}"
-                                                    XAxes="{Binding HistogramXAxes}" YAxes="{Binding HistogramYAxes}"
-                                                    DrawMargin="{Binding BarDrawMargin}"
-                                                    DrawMarginFrame="{Binding BarDrawMarginFrame}"
-                                                    LegendPosition="Hidden" 
-                                                    TooltipTextPaint="{Binding ChartTextPaint}" 
-                                                    TooltipBackgroundPaint="{Binding ChartTooltipBackgroundPaint}"
-                                                    DataPointerDown="HistogramChart_DataPointerDown"/>
-                            </Grid>
+                            <ItemsControl Grid.Row="1" x:Name="ActivityLadder" ItemsSource="{Binding ActivityLadderRows}"
+                                          Tag="{Binding OpenActivityBinRowCommand}"
+                                          ItemTemplate="{StaticResource DashboardBarRowTemplate}"
+                                          Grid.IsSharedSizeScope="True" Focusable="False" ClipToBounds="True"
+                                          VerticalAlignment="Center"/>
                         </Grid>
                     </Border>
 
@@ -1098,18 +1179,14 @@
                             </Grid>
 
                             <!-- Chart (When enough data >= 2 isotopes) -->
-                            <Grid Grid.Row="1" FlowDirection="LeftToRight"
-                                  Visibility="{Binding HasEnoughIsotopeData, Converter={StaticResource BoolToVis}}">
-                                <lvc:CartesianChart x:Name="IsotopeChart"
-                                                   Series="{Binding SourcesByIsotopeSeries}"
-                                                   XAxes="{Binding IsotopeXAxes}"
-                                                   YAxes="{Binding IsotopeYAxes}"
-                                                   DrawMargin="{Binding IsotopeDrawMargin}"
-                                                   DrawMarginFrame="{Binding IsotopeDrawMarginFrame}"
-                                                   LegendPosition="Hidden"
-                                                   TooltipTextPaint="{Binding ChartTextPaint}"
-                                                   TooltipBackgroundPaint="{Binding ChartTooltipBackgroundPaint}"/>
-                            </Grid>
+                            <DockPanel Grid.Row="1"
+                                       Visibility="{Binding HasEnoughIsotopeData, Converter={StaticResource BoolToVis}}">
+                                <TextBlock DockPanel.Dock="Bottom" Text="{Binding IsotopeOthersText}" Style="{StaticResource DashboardOthersTextStyle}"/>
+                                <ItemsControl x:Name="IsotopeBars" ItemsSource="{Binding IsotopeBarRows}"
+                                              Tag="{Binding OpenIsotopeRowCommand}"
+                                              ItemTemplate="{StaticResource DashboardBarRowTemplate}"
+                                              Grid.IsSharedSizeScope="True" Focusable="False" ClipToBounds="True"/>
+                            </DockPanel>
 
                             <!-- Insufficient Data Fallback Message -->
                             <Border Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="20"
@@ -1156,18 +1233,14 @@
                             </Grid>
 
                             <!-- Chart (When enough data >= 2 locations) -->
-                            <Grid Grid.Row="1" FlowDirection="LeftToRight"
-                                  Visibility="{Binding HasEnoughLocationData, Converter={StaticResource BoolToVis}}">
-                                <lvc:CartesianChart x:Name="LocationChart"
-                                                   Series="{Binding SourcesByLocationSeries}"
-                                                   XAxes="{Binding LocationXAxes}"
-                                                   YAxes="{Binding LocationYAxes}"
-                                                   DrawMargin="{Binding LocationDrawMargin}"
-                                                   DrawMarginFrame="{Binding LocationDrawMarginFrame}"
-                                                   LegendPosition="Hidden"
-                                                   TooltipTextPaint="{Binding ChartTextPaint}"
-                                                   TooltipBackgroundPaint="{Binding ChartTooltipBackgroundPaint}"/>
-                            </Grid>
+                            <DockPanel Grid.Row="1"
+                                       Visibility="{Binding HasEnoughLocationData, Converter={StaticResource BoolToVis}}">
+                                <TextBlock DockPanel.Dock="Bottom" Text="{Binding LocationOthersText}" Style="{StaticResource DashboardOthersTextStyle}"/>
+                                <ItemsControl x:Name="LocationBars" ItemsSource="{Binding LocationBarRows}"
+                                              Tag="{Binding OpenLocationRowCommand}"
+                                              ItemTemplate="{StaticResource DashboardBarRowTemplate}"
+                                              Grid.IsSharedSizeScope="True" Focusable="False" ClipToBounds="True"/>
+                            </DockPanel>
 
                             <!-- Insufficient Data Fallback Message -->
                             <Border Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="20"

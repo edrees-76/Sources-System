@@ -18,5 +18,7 @@
     <SolidColorBrush x:Key="DataGridRowSelectedHover" Color="#234149"/>
     <SolidColorBrush x:Key="InputBackground" Color="#1D1E21"/>
     <SolidColorBrush x:Key="ChartBackground" Color="#202226"/>
+    <!-- الجولة 212: لون أشرطة رسوم لوحة التحكم (تباين كافٍ مع خلفية البطاقة في كل وضع) -->
+    <SolidColorBrush x:Key="ChartBarBrush" Color="#5FA3B0"/>
 
 </ResourceDictionary>

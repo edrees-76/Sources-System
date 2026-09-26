@@ -323,10 +323,22 @@
 
     <!-- ── Dashboard Redesign: Histogram, Top-10, Filters, Side Panel, Category ── -->
     <system:String x:Key="HistogramTitle">توزيع المصادر حسب نطاقات النشاط الإشعاعي</system:String>
-    <system:String x:Key="HistogramSubtitle">عدد المصادر في كل نطاق لوغاريتمي (Bq)</system:String>
+    <system:String x:Key="HistogramSubtitle">عدد المصادر في كل نطاق نشاط، من الأعلى إلى الأدنى</system:String>
     <system:String x:Key="BtnShowAllIsotopes">عرض جميع النظائر ←</system:String>
     <system:String x:Key="BtnShowAllLocations">عرض جميع المواقع ←</system:String>
     <system:String x:Key="LabelOthers">أخرى</system:String>
+    <!-- الجولة 212: رسوم لوحة التحكم الشريطية الأصلية (WPF) -->
+    <system:String x:Key="ActivityBinBelowKBq">أقل من 1 kBq</system:String>
+    <system:String x:Key="ActivityBinPBqAndAbove">1 PBq فأكثر</system:String>
+    <system:String x:Key="DrilldownIsotopeTitle">المصادر التي تحتوي النظير</system:String>
+    <system:String x:Key="DrilldownLocationTitle">المصادر في الموقع</system:String>
+    <system:String x:Key="OthersSummaryFormat">أخرى ({0}): {1} · {2}</system:String>
+    <system:String x:Key="SourceCountZero">لا مصادر</system:String>
+    <system:String x:Key="SourceCountOne">مصدر واحد</system:String>
+    <system:String x:Key="SourceCountTwo">مصدران</system:String>
+    <system:String x:Key="SourceCountFew">{0} مصادر</system:String>
+    <system:String x:Key="SourceCountMany">{0} مصدراً</system:String>
+    <system:String x:Key="SourceCountOther">{0} مصدر</system:String>
     <system:String x:Key="DashboardWelcomeTitle">لوحة المتابعة الشاملة</system:String>
     <system:String x:Key="DashboardWelcomeSubtitle">المراقبة الإشعاعية والتشغيلية المباشرة للمصادر</system:String>
     <system:String x:Key="DashboardSearchHint">بحث بالكود أو الرقم المسلسل...</system:String>
