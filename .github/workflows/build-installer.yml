@@ -3,6 +3,7 @@ name: Build Installer
 # يبني مثبِّت Windows (SourcesSystemSetup.exe) على عدّاء ويندوز نظيف بنفس سكربت
 # deploy/build-installer.ps1 المستخدم محلياً، ويرفعه كـ artifact قابل للتنزيل من صفحة التشغيل.
 # الجولة 210. لا توقيع كود (خارج النطاق، كما في installer.iss).
+# الجولة 213: عند دفع وسم v* تنشر مهمة publish-release إصدار GitHub بالمثبِّت وبصمته وملاحظات الإصدار.
 on:
   workflow_dispatch:
   push:
@@ -81,3 +82,74 @@ jobs:
             ${{ steps.hash.outputs.path }}.sha256
           if-no-files-found: error
           retention-days: 30
+
+  # الجولة 213: نشر إصدار GitHub تلقائياً عند دفع وسم v* فقط (لا يعمل على PR ولا التشغيل اليدوي).
+  # مهمة منفصلة بصلاحية كتابة على المحتوى وحدها؛ مهمة البناء تبقى بصلاحية قراءة.
+  publish-release:
+    name: Publish GitHub Release
+    needs: build-installer
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Installer Artifact
+        uses: actions/download-artifact@v4
+        with:
+          pattern: SourcesSystemSetup_v*
+          merge-multiple: true
+          path: dist
+
+      - name: Verify Tag Matches Project Version
+        shell: bash
+        run: |
+          set -euo pipefail
+          ver="${GITHUB_REF_NAME#v}"
+          csproj_ver="$(grep -oP '(?<=<Version>)[^<]+' Sources-System-Project/Sources.csproj)"
+          if [ "$ver" != "$csproj_ver" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match Sources.csproj Version $csproj_ver" >&2
+            exit 1
+          fi
+          test -f "dist/SourcesSystemSetup_v${ver}.exe"
+          test -f "dist/SourcesSystemSetup_v${ver}.exe.sha256"
+
+      - name: Extract Release Notes
+        shell: bash
+        run: |
+          set -euo pipefail
+          ver="${GITHUB_REF_NAME#v}"
+          # القسم الذي يبدأ بعنوان «## ... v<ver>» حتى العنوان التالي أو الفاصل ---
+          awk -v tag="v${ver}" '
+            /^## / { if (found) exit; if (index($0, tag)) { found = 1; print; next } }
+            found && /^---/ { exit }
+            found { print }
+          ' deploy/release-notes.md | sed 's/\r$//' > release-body.md
+          if [ ! -s release-body.md ]; then
+            echo "No section for v${ver} in deploy/release-notes.md" >&2
+            exit 1
+          fi
+          {
+            echo
+            echo "**SHA256:** \`$(cut -d' ' -f1 "dist/SourcesSystemSetup_v${ver}.exe.sha256")\`"
+          } >> release-body.md
+          cat release-body.md
+
+      - name: Create GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          ver="${GITHUB_REF_NAME#v}"
+          gh release create "$GITHUB_REF_NAME" \
+            "dist/SourcesSystemSetup_v${ver}.exe" \
+            "dist/SourcesSystemSetup_v${ver}.exe.sha256" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "منظومة مصادر ${GITHUB_REF_NAME}" \
+            --notes-file release-body.md \
+            --verify-tag

@@ -28,7 +28,7 @@
 #endif
 
 #ifndef AppVersion
-  #define AppVersion "1.1.1"
+  #define AppVersion "1.1.2"
 #endif
 
 [Setup]
@@ -78,7 +78,7 @@ UninstallStatusLabel=يرجى الانتظار ريثما يتم إزالة تث
 
 [CustomMessages]
 ; NameAndVersion رسالة مخصّصة في Inno Setup 6 (لا تُقبل في [Messages]، ويتجاهلها المصرّف مع تحذير).
-; منها يُبنى AppVerName الذي يظهر في شريط العنوان وصفحة الترحيب: «الإصدار ‎1.1.1».
+; منها يُبنى AppVerName الذي يظهر في شريط العنوان وصفحة الترحيب: «الإصدار ‎1.1.2».
 NameAndVersion=%1 الإصدار ‎%2
 
 [Tasks]
