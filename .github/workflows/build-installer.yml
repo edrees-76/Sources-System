@@ -36,6 +36,9 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      # ملاحظة: نصوص الخطوات المضمَّنة ASCII فقط — Windows PowerShell 5.1 يقرأ ملف الخطوة
+      # المؤقت (UTF-8 بلا BOM) بترميز ANSI فتتلف أي نصوص عربية ويفشل التحليل. وكتابة
+      # GITHUB_OUTPUT بـ -Encoding ascii لأن utf8 في 5.1 يضيف BOM يُفسد اسم المتغير.
       - name: Ensure Inno Setup 6
         id: inno
         shell: powershell
@@ -43,12 +46,12 @@ jobs:
           $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
           if (-not (Test-Path $iscc)) {
             choco install innosetup -y --no-progress
-            if ($LASTEXITCODE -ne 0) { throw "فشل تثبيت Inno Setup عبر choco (رمز $LASTEXITCODE)." }
+            if ($LASTEXITCODE -ne 0) { throw "choco install innosetup failed (exit $LASTEXITCODE)." }
           }
-          if (-not (Test-Path $iscc)) { throw "ISCC.exe غير موجود بعد التثبيت: $iscc" }
+          if (-not (Test-Path $iscc)) { throw "ISCC.exe not found after install: $iscc" }
           $arabic = Join-Path (Split-Path $iscc) "Languages\Arabic.isl"
-          if (-not (Test-Path $arabic)) { throw "ملف اللغة العربية غير موجود في Inno Setup: $arabic" }
-          "iscc=$iscc" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          if (-not (Test-Path $arabic)) { throw "Arabic.isl not found in Inno Setup: $arabic" }
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "iscc=$iscc" -Encoding ascii
 
       - name: Build Installer
         shell: powershell
@@ -60,13 +63,14 @@ jobs:
         shell: powershell
         run: |
           $file = Get-ChildItem -Path deploy\Release -Recurse -Filter "SourcesSystemSetup_v*.exe" | Select-Object -First 1
-          if (-not $file) { throw "لم يُعثر على المثبِّت المؤرشَف تحت deploy\Release." }
+          if (-not $file) { throw "Archived installer not found under deploy\Release." }
           $hash = (Get-FileHash -Algorithm SHA256 -Path $file.FullName).Hash
           $sizeMb = [math]::Round($file.Length / 1MB, 1)
-          "name=$($file.BaseName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          "path=$($file.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          "### $($file.Name)`n`n- الحجم: $sizeMb MB`n- SHA256: ``$hash``" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
-          "$hash  $($file.Name)" | Out-File -FilePath "$($file.FullName).sha256" -Encoding ascii
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "name=$($file.BaseName)" -Encoding ascii
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "path=$($file.FullName)" -Encoding ascii
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "### $($file.Name)`n`n- Size: $sizeMb MB`n- SHA256: ``$hash``" -Encoding ascii
+          Set-Content -Path "$($file.FullName).sha256" -Value "$hash  $($file.Name)" -Encoding ascii
+          Write-Host "Installer: $($file.FullName) ($sizeMb MB) SHA256=$hash"
 
       - name: Upload Installer
         uses: actions/upload-artifact@v4
