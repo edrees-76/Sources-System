@@ -342,6 +342,13 @@
     <system:String x:Key="SourceCountFew">{0} sources</system:String>
     <system:String x:Key="SourceCountMany">{0} sources</system:String>
     <system:String x:Key="SourceCountOther">{0} sources</system:String>
+    <system:String x:Key="DecayRemainingSubtitle">Remaining activity of the 5 most active sources, as a percentage of today</system:String>
+    <system:String x:Key="DecayHorizonHint">Range</system:String>
+    <system:String x:Key="DecayHorizon1Year">1 year</system:String>
+    <system:String x:Key="DecayHorizon5Years">5 years</system:String>
+    <system:String x:Key="DecayHorizon10Years">10 years</system:String>
+    <system:String x:Key="DecayHorizon30Years">30 years</system:String>
+    <system:String x:Key="MsgDrillDownOpenFailed">Could not open the sources window.</system:String>
     <system:String x:Key="DashboardWelcomeTitle">Overview Dashboard</system:String>
     <system:String x:Key="DashboardWelcomeSubtitle">Real-time radiological and operational monitoring</system:String>
     <system:String x:Key="DashboardSearchHint">Search by code or serial number...</system:String>

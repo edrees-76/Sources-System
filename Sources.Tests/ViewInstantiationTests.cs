@@ -41,9 +41,41 @@ public class ViewInstantiationTests
             Assert.NotNull(locationBars.ItemTemplate);
             Assert.NotNull(decayChart.Tooltip);
 
+            Assert.NotNull(view.FindName("DecayLegend"));
+            Assert.NotNull(view.FindName("DecayHorizonCombo"));
             Assert.Null(view.FindName("HistogramChart"));
             Assert.Null(view.FindName("IsotopeChart"));
             Assert.Null(view.FindName("LocationChart"));
+        });
+    }
+
+    [Fact]
+    public void DashboardSourcesWindow_InstantiatesWithRows()
+    {
+        RunInSta(() =>
+        {
+            var drill = new Sources.ViewModels.DashboardDrillDown
+            {
+                Title = "المصادر في الموقع: المختبر",
+                CountText = "مصدران",
+                Rows = new[]
+                {
+                    new Sources.ViewModels.DashboardSourceRow { RowNumber = 1, Source = new Sources.Models.Source { SourceCode = "S1" } },
+                    new Sources.ViewModels.DashboardSourceRow { RowNumber = 2, Source = new Sources.Models.Source { SourceCode = "S2" } },
+                }
+            };
+            var window = new DashboardSourcesWindow(drill);
+            try
+            {
+                Assert.Same(drill, window.DataContext);
+                var grid = window.FindName("SourcesGrid") as System.Windows.Controls.DataGrid;
+                Assert.NotNull(grid);
+                Assert.Equal(7, grid!.Columns.Count);
+            }
+            finally
+            {
+                window.Close();
+            }
         });
     }
 
