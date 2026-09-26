@@ -1,0 +1,79 @@
+name: Build Installer
+
+# يبني مثبِّت Windows (SourcesSystemSetup.exe) على عدّاء ويندوز نظيف بنفس سكربت
+# deploy/build-installer.ps1 المستخدم محلياً، ويرفعه كـ artifact قابل للتنزيل من صفحة التشغيل.
+# الجولة 210. لا توقيع كود (خارج النطاق، كما في installer.iss).
+on:
+  workflow_dispatch:
+  push:
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'deploy/**'
+      - 'Sources-System-Project/Sources.csproj'
+      - '.github/workflows/build-installer.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-installer:
+    name: Build Installer
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Ensure Inno Setup 6
+        id: inno
+        shell: powershell
+        run: |
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            choco install innosetup -y --no-progress
+            if ($LASTEXITCODE -ne 0) { throw "فشل تثبيت Inno Setup عبر choco (رمز $LASTEXITCODE)." }
+          }
+          if (-not (Test-Path $iscc)) { throw "ISCC.exe غير موجود بعد التثبيت: $iscc" }
+          $arabic = Join-Path (Split-Path $iscc) "Languages\Arabic.isl"
+          if (-not (Test-Path $arabic)) { throw "ملف اللغة العربية غير موجود في Inno Setup: $arabic" }
+          "iscc=$iscc" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Build Installer
+        shell: powershell
+        run: |
+          & .\deploy\build-installer.ps1 -Configuration Release -InnoSetupCompiler "${{ steps.inno.outputs.iscc }}"
+
+      - name: Hash Installer
+        id: hash
+        shell: powershell
+        run: |
+          $file = Get-ChildItem -Path deploy\Release -Recurse -Filter "SourcesSystemSetup_v*.exe" | Select-Object -First 1
+          if (-not $file) { throw "لم يُعثر على المثبِّت المؤرشَف تحت deploy\Release." }
+          $hash = (Get-FileHash -Algorithm SHA256 -Path $file.FullName).Hash
+          $sizeMb = [math]::Round($file.Length / 1MB, 1)
+          "name=$($file.BaseName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "path=$($file.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "### $($file.Name)`n`n- الحجم: $sizeMb MB`n- SHA256: ``$hash``" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          "$hash  $($file.Name)" | Out-File -FilePath "$($file.FullName).sha256" -Encoding ascii
+
+      - name: Upload Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.hash.outputs.name }}
+          path: |
+            ${{ steps.hash.outputs.path }}
+            ${{ steps.hash.outputs.path }}.sha256
+          if-no-files-found: error
+          retention-days: 30
