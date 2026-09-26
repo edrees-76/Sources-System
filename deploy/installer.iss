@@ -61,13 +61,17 @@ Name: "arabic"; MessagesFile: "compiler:Languages\Arabic.isl"
 ; السبب: ويندوز يطبّق «استبدال الأرقام حسب السياق»، فالرقم الواقع بعد كلمة عربية يُرسَم
 ; بأرقام هندية. الحل: علامة LRM غير مرئية (U+200E) قبل كل رقم متغير، فيُرسَم بأرقام لاتينية.
 ; باقي نصوص هذه الرسائل مطابقة حرفياً لملف Arabic.isl الرسمي.
-NameAndVersion=%1 الإصدار ‎%2
 AboutSetupMessage=%1 الإصدار ‎%2%n%3%n%n%1 صفحة الأنترنت:%n%4
 WinVersionTooLowError=هذا البرنامج يتطلب %1 الإصدار ‎%2 أو أعلى.
 WinVersionTooHighError=لا يمكن تثبيت هذا البرنامج على %1 الإصدار ‎%2 أو أعلى.
 DiskSpaceGBLabel=تحتاج على الأقل ‎[gb] GB من المساحة لتثبيت البرنامج.
 DiskSpaceMBLabel=تحتاج على الأقل ‎[mb] MB من المساحة لتثبيت البرنامج.
 DiskSpaceWarning=يتطلب الإعداد على الأقل ‎%1 KB من المساحة الفارغة للتثبيت، ولكن محرك الأقراص المحدد فيه فقط ‎%2 KB متوفرة.%n%nهل تريد المتابعة على أية حال؟
+
+[CustomMessages]
+; NameAndVersion رسالة مخصّصة في Inno Setup 6 (لا تُقبل في [Messages]، ويتجاهلها المصرّف مع تحذير).
+; منها يُبنى AppVerName الذي يظهر في شريط العنوان وصفحة الترحيب: «الإصدار ‎1.1.1».
+NameAndVersion=%1 الإصدار ‎%2
 
 [Tasks]
 Name: "desktopicon"; Description: "إنشاء أيقونة على سطح المكتب"; GroupDescription: "أيقونات إضافية:"
