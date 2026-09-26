@@ -16,6 +16,7 @@ public interface IUserService
     (bool Success, string Message) CreateUser(User user, string password);
     (bool Success, string Message) UpdateUser(User user);
     (bool Success, string Message) ResetPassword(Guid userId, string newPassword);
+    (bool Success, string Message) ChangeOwnPassword(string currentPassword, string newPassword);
     (bool Success, string Message) UnlockAccount(Guid userId);
     (bool Success, string Message) DeleteUser(Guid userId);
     (bool Success, string Message) RestoreUser(Guid userId);

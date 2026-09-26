@@ -21,6 +21,15 @@ public class BackupServiceTests : IDisposable
     private readonly string _certsDir;
     private readonly BackupService _sut;
     private readonly FakeLicenseService _fakeLicenseService = new();
+    // الاستعادة عملية مدير نظام حصراً (الجولة 209): الخدمة تُبنى بمستخدم مدير مسجَّل.
+    private readonly FakeUserService _adminUserService = new(new Sources.Models.User
+    {
+        Id = Guid.NewGuid(),
+        FullName = "مدير اختباري",
+        Username = "admin",
+        IsActive = true,
+        Role = new Sources.Models.Role { RoleName = RoleNames.Admin }
+    });
 
     public BackupServiceTests()
     {
@@ -35,7 +44,7 @@ public class BackupServiceTests : IDisposable
         // مجلد شهادات صريح ومؤقت: بدونه كان يُستخدم المجلد الافتراضي تحت DatabasePaths.AppDataDirectory
         // الحقيقي (الجولة 199 — عزل بيانات الاختبار)، رغم أن التوجيه العام في TestModuleInitializer
         // يعيد توجيهه أيضاً؛ هذا التمرير الصريح دفاع إضافي وتوضيح لنية الاختبار.
-        _sut = new BackupService(_dbPath, _backupDir, _certsDir, licenseService: _fakeLicenseService);
+        _sut = new BackupService(_dbPath, _backupDir, _certsDir, licenseService: _fakeLicenseService, userService: _adminUserService);
     }
 
     private void CreateValidSqliteDatabase(string path, string tableName = "Sources", string sampleData = "SRC-TEST-001", bool includeInitialSchemaMigration = true)

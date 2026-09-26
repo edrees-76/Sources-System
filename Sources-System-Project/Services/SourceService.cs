@@ -592,15 +592,30 @@ public class SourceService : ISourceService
         var sources = GetAllSources();
         return sources
             .Where(s => StatusCatalog.IsActiveInventory(s.Status))
-            .Where(s =>
-            {
-                if (s.InitialActivityValue <= 0) return false;
-                var ratio = (s.CurrentActivityValue / s.InitialActivityValue) * 100;
-                return ratio <= thresholdPercent;
-            })
-            .OrderBy(s => (s.CurrentActivityValue / s.InitialActivityValue))
-            .ThenBy(s => s.SourceCode)
+            .Select(s => (Source: s, Fraction: GetRemainingActivityFraction(s)))
+            .Where(x => x.Fraction.HasValue && x.Fraction.Value * 100 <= thresholdPercent)
+            .OrderBy(x => x.Fraction!.Value)
+            .ThenBy(x => x.Source.SourceCode)
+            .Select(x => x.Source)
             .ToList();
+    }
+
+    /// <summary>
+    /// نسبة النشاط المتبقي (0..1) بعد تحويل النشاطين الحالي والابتدائي إلى Bq (الجولة 209):
+    /// الوحدة الحالية قد تختلف عن الابتدائية (مثلاً ابتدائي بـ mCi وحالي بـ MBq)، فقسمة القيمتين
+    /// الخام مباشرة تعطي نسبة خاطئة. يُعيد null إن تعذّر معرفة معامل تحويل أي من الوحدتين.
+    /// </summary>
+    internal static double? GetRemainingActivityFraction(Source source)
+    {
+        var initialFactor = source.InitialActivityUnit?.ConversionToBq;
+        var currentFactor = source.CurrentActivityUnit?.ConversionToBq;
+        if (initialFactor is not > 0 || currentFactor is not > 0) return null;
+
+        var initialBq = source.InitialActivityValue * initialFactor.Value;
+        var currentBq = source.CurrentActivityValue * currentFactor.Value;
+        if (!double.IsFinite(initialBq) || !double.IsFinite(currentBq) || initialBq <= 0) return null;
+
+        return currentBq / initialBq;
     }
 
     public bool HasActiveBorrow(Guid sourceId)

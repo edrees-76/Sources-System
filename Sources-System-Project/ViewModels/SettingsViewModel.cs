@@ -341,6 +341,15 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void RestoreBackup()
     {
+        // الخدمة تفرض صلاحية المدير فعلياً؛ هذا الفحص المبكر يمنع فتح نافذة اختيار الملف بلا فائدة.
+        if (!IsAdmin)
+        {
+            DialogHelper.ShowWarning(
+                TranslationHelper.GetString("MsgErrAdminOnly") ?? "غير مصرح: هذه العملية مخصصة لمدير النظام فقط",
+                TranslationHelper.GetString("RestoreBackupTitle") ?? "استعادة نسخة احتياطية");
+            return;
+        }
+
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
             Title = TranslationHelper.GetString("RestoreBackupTitle") ?? "استعادة نسخة احتياطية",

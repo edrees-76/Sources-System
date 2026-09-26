@@ -30,6 +30,7 @@ public class FakeUserService : IUserService
     public (bool Success, string Message) CreateUser(User user, string password) => (true, "تم إنشاء المستخدم");
     public (bool Success, string Message) UpdateUser(User user) => (true, "تم تحديث المستخدم");
     public (bool Success, string Message) ResetPassword(Guid userId, string newPassword) => (true, "تم إعادة تعيين كلمة المرور");
+    public (bool Success, string Message) ChangeOwnPassword(string currentPassword, string newPassword) => (true, "تم تغيير كلمة المرور");
     public (bool Success, string Message) UnlockAccount(Guid userId) => (true, "تم إلغاء القفل");
     public (bool Success, string Message) DeleteUser(Guid userId) => (true, "تم الحذف");
     public (bool Success, string Message) RestoreUser(Guid userId) => (true, "تم الاسترجاع");

@@ -22,6 +22,16 @@ public class SourceCertificateServiceTests : IClassFixture<SqliteInMemoryFixture
     private readonly SourceCertificateService _sut;
     private readonly FakeLicenseService _fakeLicenseService = new();
 
+    // الاستعادة عملية مدير نظام حصراً (الجولة 209).
+    private static FakeUserService AdminUserService() => new(new User
+    {
+        Id = Guid.NewGuid(),
+        FullName = "مدير اختباري",
+        Username = "admin",
+        IsActive = true,
+        Role = new Role { RoleName = Sources.Helpers.RoleNames.Admin }
+    });
+
     public SourceCertificateServiceTests(SqliteInMemoryFixture fixture)
     {
         _fixture = fixture;
@@ -169,7 +179,7 @@ public class SourceCertificateServiceTests : IClassFixture<SqliteInMemoryFixture
         File.WriteAllText(Path.Combine(testCertsDir, "guid1.pdf"), "Fake Certificate 1");
         File.WriteAllText(Path.Combine(testCertsDir, "guid2.docx"), "Fake Certificate 2");
 
-        var backupService = new BackupService(testDbPath, testBackupsDir, testCertsDir, _fakeLicenseService);
+        var backupService = new BackupService(testDbPath, testBackupsDir, testCertsDir, _fakeLicenseService, AdminUserService());
 
         try
         {
@@ -234,7 +244,7 @@ public class SourceCertificateServiceTests : IClassFixture<SqliteInMemoryFixture
         }
         SqliteConnection.ClearAllPools();
 
-        var backupService = new BackupService(testDbPath, testBackupsDir, testCertsDir, _fakeLicenseService);
+        var backupService = new BackupService(testDbPath, testBackupsDir, testCertsDir, _fakeLicenseService, AdminUserService());
 
         try
         {
@@ -295,7 +305,7 @@ public class SourceCertificateServiceTests : IClassFixture<SqliteInMemoryFixture
             zip.CreateEntryFromFile(certTemp, "Certificates/new_cert.pdf");
         }
 
-        var backupService = new BackupService(testDbPath, testBackupsDir, testCertsDir, _fakeLicenseService);
+        var backupService = new BackupService(testDbPath, testBackupsDir, testCertsDir, _fakeLicenseService, AdminUserService());
 
         try
         {
@@ -350,7 +360,7 @@ public class SourceCertificateServiceTests : IClassFixture<SqliteInMemoryFixture
             zip.CreateEntryFromFile(dummyFile, "dummy.txt");
         }
 
-        var backupService = new BackupService(testDbPath, testBackupsDir, testCertsDir, _fakeLicenseService);
+        var backupService = new BackupService(testDbPath, testBackupsDir, testCertsDir, _fakeLicenseService, AdminUserService());
 
         try
         {

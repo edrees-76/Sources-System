@@ -348,6 +348,14 @@
                                        FontSize="10" HorizontalAlignment="Right" Opacity="0.9"/>
                         </StackPanel>
 
+                        <!-- تغيير كلمة المرور للمستخدم الحالي (الجولة 209) -->
+                        <Button Style="{StaticResource MaterialDesignIconButton}"
+                                Command="{Binding ChangeOwnPasswordCommand}"
+                                Foreground="{DynamicResource SidebarForeground}"
+                                ToolTip="{DynamicResource ToolTipChangeOwnPassword}">
+                            <materialDesign:PackIcon Kind="KeyChange" Width="20" Height="20"/>
+                        </Button>
+
                         <!-- زر الطي/التوسيع -->
                         <Button Style="{StaticResource MaterialDesignIconButton}"
                                 Command="{Binding ToggleSidebarCommand}"

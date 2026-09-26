@@ -20,6 +20,10 @@ public class UserService : IUserService
     private const int MaxFailedAttempts = 5;
     /// <summary>مدة قفل الحساب بالدقائق</summary>
     private const int LockoutDurationMinutes = 15;
+    /// <summary>أقل طول مقبول لكلمة المرور (الجولة 209)</summary>
+    public const int MinPasswordLength = 6;
+    /// <summary>اسم حساب مدير النظام الأساسي المحمي من الحذف والتجميد والتخفيض</summary>
+    private const string BaseAdminUsername = "admin";
 
     public User? CurrentUser => _currentUser;
     public bool IsLoggedIn => _currentUser != null;
@@ -37,10 +41,18 @@ public class UserService : IUserService
         try
         {
             using var db = _dbFactory.CreateDbContext();
-            var lowerUsername = username.ToLower();
+            var trimmedUsername = (username ?? string.Empty).Trim();
+            var lowerUsername = trimmedUsername.ToLower();
+            // المطابقة التامة أولاً، ثم غير الحساسة لحالة الأحرف: قواعد قديمة قد تحوي اسمين
+            // يختلفان في حالة الأحرف فقط (مثل admin وAdmin) قبل فرض التفرّد غير الحساس (الجولة 209).
             var user = db.Users
-                .Include(u => u.Role)
-                .FirstOrDefault(u => u.Username.ToLower() == lowerUsername);
+                           .Include(u => u.Role)
+                           .FirstOrDefault(u => u.Username == trimmedUsername)
+                       ?? db.Users
+                           .Include(u => u.Role)
+                           .Where(u => u.Username.ToLower() == lowerUsername)
+                           .OrderBy(u => u.CreatedAt)
+                           .FirstOrDefault();
 
             if (user == null)
                 return (false, TranslationHelper.GetString("MsgErrUsernameNotFound") ?? "اسم المستخدم غير موجود");
@@ -63,7 +75,7 @@ public class UserService : IUserService
 
                 if (user.FailedLoginAttempts >= MaxFailedAttempts)
                 {
-                    user.LockoutEnd = DateTime.Now.AddMinutes(LockoutDurationMinutes);
+                    user.LockoutEnd = _timeProvider.LocalNow().AddMinutes(LockoutDurationMinutes);
                     user.FailedLoginAttempts = 0;
                     db.SaveChanges();
                     LoggerService.LogInfo($"تم قفل حساب {username} بعد {MaxFailedAttempts} محاولات فاشلة");
@@ -79,7 +91,7 @@ public class UserService : IUserService
             // ─── تسجيل دخول ناجح ───
             user.FailedLoginAttempts = 0;
             user.LockoutEnd = null;
-            user.LastLoginDate = DateTime.Now;
+            user.LastLoginDate = _timeProvider.LocalNow();
             db.SaveChanges();
 
             _currentUser = user;
@@ -124,8 +136,17 @@ public class UserService : IUserService
         var guard = AuthorizationGuard.RequireAdmin(CurrentUser);
         if (!guard.Allowed) return (false, guard.Message);
 
+        var passwordCheck = ValidateNewPassword(password);
+        if (!passwordCheck.Valid) return (false, passwordCheck.Message);
+
+        user.Username = (user.Username ?? string.Empty).Trim();
+        if (string.IsNullOrEmpty(user.Username))
+            return (false, TranslationHelper.GetString("MsgErrUsernameRequired") ?? "اسم المستخدم مطلوب");
+
         using var db = _dbFactory.CreateDbContext();
-        if (db.Users.Any(u => u.Username == user.Username))
+        // التفرّد غير حساس لحالة الأحرف لأن تسجيل الدخول غير حساس لها (admin و Admin حساب واحد).
+        var lowerNewUsername = user.Username.ToLower();
+        if (db.Users.Any(u => u.Username.ToLower() == lowerNewUsername))
             return (false, TranslationHelper.GetString("MsgErrUsernameExists") ?? "اسم المستخدم موجود بالفعل");
 
         user.PasswordHash = PasswordHelper.HashPassword(password);
@@ -164,9 +185,26 @@ public class UserService : IUserService
         if (!guard.Allowed) return (false, guard.Message);
 
         using var db = _dbFactory.CreateDbContext();
-        var existing = db.Users.Find(user.Id);
+        var existing = db.Users.Include(u => u.Role).FirstOrDefault(u => u.Id == user.Id);
         if (existing == null)
             return (false, TranslationHelper.GetString("MsgErrUserNotFound") ?? "المستخدم غير موجود");
+
+        var adminRoleId = db.Roles.Where(r => r.RoleName == RoleNames.Admin).Select(r => (Guid?)r.Id).FirstOrDefault();
+        var wasActiveAdmin = existing.IsActive && adminRoleId.HasValue && existing.RoleId == adminRoleId.Value;
+        var willBeActiveAdmin = user.IsActive && adminRoleId.HasValue && user.RoleId == adminRoleId.Value;
+
+        // حساب مدير النظام الأساسي لا يُجمَّد ولا يُخفَّض دوره (نفس حماية ToggleUserFreeze و DeleteUser).
+        if (IsBaseAdmin(existing) && !willBeActiveAdmin)
+            return (false, TranslationHelper.GetString("MsgErrCannotDemoteOrFreezeBaseAdmin") ?? "لا يمكن تجميد حساب مدير النظام الأساسي أو تغيير دوره");
+
+        // لا يُجمِّد المستخدم حسابه الحالي بنفسه.
+        if (CurrentUser != null && existing.Id == CurrentUser.Id && !user.IsActive)
+            return (false, TranslationHelper.GetString("MsgErrCannotFreezeOwnAccount") ?? "لا يمكنك تجميد حسابك الحالي");
+
+        // يجب أن يبقى مدير نظام نشط واحد على الأقل.
+        if (wasActiveAdmin && !willBeActiveAdmin &&
+            !db.Users.Any(u => u.Id != existing.Id && u.IsActive && u.RoleId == adminRoleId!.Value))
+            return (false, TranslationHelper.GetString("MsgErrLastActiveAdmin") ?? "لا يمكن تنفيذ العملية: يجب أن يبقى مدير نظام نشط واحد على الأقل");
 
         var oldValuesObj = new
         {
@@ -219,6 +257,9 @@ public class UserService : IUserService
         var guard = AuthorizationGuard.RequireAdmin(CurrentUser);
         if (!guard.Allowed) return (false, guard.Message);
 
+        var passwordCheck = ValidateNewPassword(newPassword);
+        if (!passwordCheck.Valid) return (false, passwordCheck.Message);
+
         using var db = _dbFactory.CreateDbContext();
         var user = db.Users.Find(userId);
         if (user == null) return (false, TranslationHelper.GetString("MsgErrUserNotFound") ?? "المستخدم غير موجود");
@@ -231,6 +272,7 @@ public class UserService : IUserService
         user.LockoutEnd = null;
         user.MustChangePassword = false;
         db.SaveChanges();
+        SyncCurrentUserPassword(user);
 
         var auditService = _auditService ?? new AuditService(_dbFactory, this);
         auditService.Log("ResetPassword", "Users", userId, $"إعادة تعيين كلمة مرور المستخدم: {user.FullName} (@{user.Username})");
@@ -285,6 +327,8 @@ public class UserService : IUserService
 
         // منع حذف مستخدم admin الأساسي
         if (user.Username == "admin") return (false, TranslationHelper.GetString("MsgErrCannotDeleteAdmin") ?? "لا يمكن حذف حساب مدير النظام الأساسي");
+        if (CurrentUser != null && user.Id == CurrentUser.Id)
+            return (false, TranslationHelper.GetString("MsgErrCannotDeleteOwnAccount") ?? "لا يمكنك حذف حسابك الحالي");
 
         user.IsDeleted = true;
         user.IsActive = false;
@@ -349,6 +393,8 @@ public class UserService : IUserService
         var user = db.Users.Find(userId);
         if (user == null) return (false, TranslationHelper.GetString("MsgErrUserNotFound") ?? "المستخدم غير موجود");
         if (user.Username == "admin") return (false, TranslationHelper.GetString("MsgErrCannotFreezeAdmin") ?? "لا يمكن تجميد حساب مدير النظام الأساسي");
+        if (user.IsActive && CurrentUser != null && user.Id == CurrentUser.Id)
+            return (false, TranslationHelper.GetString("MsgErrCannotFreezeOwnAccount") ?? "لا يمكنك تجميد حسابك الحالي");
 
         var oldValuesObj = new { user.IsActive };
 
@@ -371,6 +417,66 @@ public class UserService : IUserService
             JsonSerializer.Serialize(new { user.IsActive }));
 
         return (true, string.Format(TranslationHelper.GetString("MsgSuccessToggleFreeze") ?? "تم {0} حساب {1}", translatedAction, user.FullName));
+    }
+
+    /// <summary>
+    /// تغيير المستخدم المسجَّل لكلمة مروره بنفسه بعد التحقق من كلمة المرور الحالية (الجولة 209).
+    /// لا يتطلب صلاحية مدير ولا تفعيلاً: عملية أمان حساب وليست بيانات عمل، فتعمل قبل التفعيل أيضاً
+    /// (نفس قرار الجولتين 186 و190 لـ ResetPassword و UnlockAccount). تغيير كلمة المرور الافتراضية
+    /// يبقى اختيارياً بقرار الجولة 187؛ نجاح التغيير هنا يُصفِّر MustChangePassword فيزول التنبيه الدائم.
+    /// </summary>
+    public (bool Success, string Message) ChangeOwnPassword(string currentPassword, string newPassword)
+    {
+        if (CurrentUser == null)
+            return (false, TranslationHelper.GetString("MsgErrNotLoggedIn") ?? "لا يمكن تنفيذ العملية: لا يوجد مستخدم مسجَّل الدخول.");
+
+        var passwordCheck = ValidateNewPassword(newPassword);
+        if (!passwordCheck.Valid) return (false, passwordCheck.Message);
+
+        using var db = _dbFactory.CreateDbContext();
+        var user = db.Users.Find(CurrentUser.Id);
+        if (user == null) return (false, TranslationHelper.GetString("MsgErrUserNotFound") ?? "المستخدم غير موجود");
+
+        if (!PasswordHelper.VerifyPassword(currentPassword, user.PasswordHash))
+            return (false, TranslationHelper.GetString("MsgErrCurrentPasswordIncorrect") ?? "كلمة المرور الحالية غير صحيحة");
+
+        if (PasswordHelper.VerifyPassword(newPassword, user.PasswordHash))
+            return (false, TranslationHelper.GetString("MsgErrNewPasswordSameAsCurrent") ?? "كلمة المرور الجديدة يجب أن تختلف عن كلمة المرور الحالية");
+
+        user.PasswordHash = PasswordHelper.HashPassword(newPassword);
+        user.MustChangePassword = false;
+        user.FailedLoginAttempts = 0;
+        user.LockoutEnd = null;
+        db.SaveChanges();
+        SyncCurrentUserPassword(user);
+
+        var auditService = _auditService ?? new AuditService(_dbFactory, this);
+        auditService.Log("ChangeOwnPassword", "Users", user.Id, $"تغيير المستخدم لكلمة مروره: {user.FullName} (@{user.Username})");
+
+        return (true, TranslationHelper.GetString("MsgSuccessOwnPasswordChanged") ?? "تم تغيير كلمة المرور بنجاح");
+    }
+
+    private static (bool Valid, string Message) ValidateNewPassword(string? password)
+    {
+        if (string.IsNullOrWhiteSpace(password) || password.Length < MinPasswordLength)
+            return (false, string.Format(TranslationHelper.GetString("MsgErrPasswordTooShort") ?? "كلمة المرور يجب ألا تقل عن {0} أحرف", MinPasswordLength));
+        return (true, string.Empty);
+    }
+
+    private static bool IsBaseAdmin(User user) =>
+        string.Equals(user.Username, BaseAdminUsername, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// مزامنة نسخة المستخدم المسجَّل في الذاكرة بعد تغيير كلمة مروره، كي لا تقبل نوافذ التحقق
+    /// (مثل PasswordPromptDialog) كلمة المرور القديمة حتى إعادة تسجيل الدخول.
+    /// </summary>
+    private void SyncCurrentUserPassword(User updated)
+    {
+        if (_currentUser == null || _currentUser.Id != updated.Id) return;
+        _currentUser.PasswordHash = updated.PasswordHash;
+        _currentUser.MustChangePassword = updated.MustChangePassword;
+        _currentUser.FailedLoginAttempts = updated.FailedLoginAttempts;
+        _currentUser.LockoutEnd = updated.LockoutEnd;
     }
 
     /// <summary>استرجاع سجل التدقيق مع فلاتر اختيارية</summary>

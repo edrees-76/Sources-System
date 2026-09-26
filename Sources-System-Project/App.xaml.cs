@@ -19,8 +19,11 @@ public partial class App : Application
         {
             try {
                 var ex = args.ExceptionObject as Exception;
-                System.IO.File.WriteAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "crash.log"), ex?.ToString());
-            } catch { } // Silently handling errors in the global error handler
+                // مجلد السجلات تحت LocalAppData (من DatabasePaths): مجلد التثبيت تحت Program Files غير قابل للكتابة
+                // لمستخدم عادي، فكان سجل الانهيار يضيع بصمت في النسخة المثبَّتة (الجولة 209).
+                System.IO.Directory.CreateDirectory(Sources.Data.DatabasePaths.LogsDirectory);
+                System.IO.File.WriteAllText(System.IO.Path.Combine(Sources.Data.DatabasePaths.LogsDirectory, "crash.log"), ex?.ToString());
+            } catch { } // آخر خط دفاع: لا مكان آخر لتسجيل فشل كتابة سجل الانهيار نفسه
         };
     }
 
