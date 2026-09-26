@@ -2018,6 +2018,21 @@
     <system:String x:Key="BrandAppTitle">Sources</system:String>
     <system:String x:Key="HintInspectorName">e.g. Dr. Ahmed Ali</system:String>
     <system:String x:Key="HintLeakTestNotes">Any notes about the wipe test procedure...</system:String>
+
+    <!-- Round 209: backup restore safety, user management guards, own password change, half-life unit validation -->
+    <system:String x:Key="MsgErrBackupUnsafeEntry">The backup file contains an unsafe file path and cannot be restored.</system:String>
+    <system:String x:Key="MsgErrUsernameRequired">Username is required</system:String>
+    <system:String x:Key="MsgErrCannotDemoteOrFreezeBaseAdmin">The primary system administrator account cannot be frozen or have its role changed</system:String>
+    <system:String x:Key="MsgErrCannotDeleteOwnAccount">You cannot delete your own account</system:String>
+    <system:String x:Key="MsgErrLastActiveAdmin">Operation not allowed: at least one active system administrator must remain</system:String>
+    <system:String x:Key="MsgErrCurrentPasswordIncorrect">The current password is incorrect</system:String>
+    <system:String x:Key="MsgErrNewPasswordSameAsCurrent">The new password must be different from the current password</system:String>
+    <system:String x:Key="MsgSuccessOwnPasswordChanged">Password changed successfully</system:String>
+    <system:String x:Key="MsgErrPasswordTooShort">Password must be at least {0} characters long</system:String>
+    <system:String x:Key="MsgErrUnsupportedHalfLifeUnit">Unsupported half-life unit</system:String>
+    <system:String x:Key="TitleChangeOwnPassword">Change Password</system:String>
+    <system:String x:Key="LabelCurrentPassword">Current password</system:String>
+    <system:String x:Key="ToolTipChangeOwnPassword">Change password</system:String>
 </ResourceDictionary>
 
 

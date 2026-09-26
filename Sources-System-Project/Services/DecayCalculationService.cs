@@ -149,9 +149,10 @@ public class DecayCalculationService : IDecayCalculationService
                         }
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Fallback to seeded standards if DB is temporarily unavailable
+                    // الرجوع للمعاملات المعيارية المزروعة إن تعذّرت قراءة الجدول مؤقتاً — مع تسجيل السبب لا إخفائه.
+                    LoggerService.LogWarning($"DecayCalculationService: تعذّرت قراءة جدول وحدات النشاط، استُخدمت المعاملات المعيارية: {ex.Message}");
                 }
             }
 
@@ -499,17 +500,35 @@ public class DecayCalculationService : IDecayCalculationService
         return microSvPerHour * 0.1;
     }
 
-    private double ConvertToSeconds(double value, string unit)
+    /// <summary>
+    /// هل وحدة نصف العمر مدعومة في محرك الاضمحلال (بعد إزالة الفراغات الطرفية وتجاهل حالة الأحرف).
+    /// تُستخدم في طبقة الخدمة لرفض حفظ نظير بوحدة غير معروفة (الجولة 209).
+    /// </summary>
+    public static bool IsSupportedHalfLifeUnit(string? unit) => TryGetSecondsPerUnit(unit, out _);
+
+    private static bool TryGetSecondsPerUnit(string? unit, out double secondsPerUnit)
     {
-        return unit?.ToLower() switch
+        secondsPerUnit = unit?.Trim().ToLowerInvariant() switch
         {
-            "seconds" or "second" or "s" => value,
-            "minutes" or "minute" or "min" or "m" => value * 60,
-            "hours" or "hour" or "h" => value * 3600,
-            "days" or "day" or "d" => value * SecondsPerDay,
-            "months" or "month" or "mo" => value * 30 * SecondsPerDay, // 30 يوماً
-            "years" or "year" or "yr" or "y" => value * SecondsPerYear, // 365.2422 يوماً
-            _ => value * SecondsPerYear // افتراضي: سنوات
+            "seconds" or "second" or "s" => 1,
+            "minutes" or "minute" or "min" or "m" => 60,
+            "hours" or "hour" or "h" => 3600,
+            "days" or "day" or "d" => SecondsPerDay,
+            "months" or "month" or "mo" => 30 * SecondsPerDay, // 30 يوماً
+            "years" or "year" or "yr" or "y" => SecondsPerYear, // 365.2422 يوماً
+            _ => 0
         };
+        return secondsPerUnit > 0;
+    }
+
+    /// <summary>
+    /// تحويل زمن إلى ثوانٍ. الوحدة غير المعروفة تُرفض صراحة برمي ArgumentException (الجولة 209)
+    /// بدل افتراضها "سنوات" بصمت — نفس قرار الجولة 205 لوحدات النشاط المجهولة.
+    /// </summary>
+    private static double ConvertToSeconds(double value, string unit)
+    {
+        if (!TryGetSecondsPerUnit(unit, out var secondsPerUnit))
+            throw new ArgumentException($"Unsupported half-life/time unit: '{unit}'", nameof(unit));
+        return value * secondsPerUnit;
     }
 }

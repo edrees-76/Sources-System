@@ -2019,6 +2019,21 @@
     <system:String x:Key="BrandAppTitle">مصادر</system:String>
     <system:String x:Key="HintInspectorName">د. أحمد علي</system:String>
     <system:String x:Key="HintLeakTestNotes">أي ملاحظات حول إجراءات المسح والمسحة القطنية...</system:String>
+
+    <!-- Round 209: backup restore safety, user management guards, own password change, half-life unit validation -->
+    <system:String x:Key="MsgErrBackupUnsafeEntry">ملف النسخة الاحتياطية يحتوي على مسار ملف غير آمن، ولا يمكن استعادته.</system:String>
+    <system:String x:Key="MsgErrUsernameRequired">اسم المستخدم مطلوب</system:String>
+    <system:String x:Key="MsgErrCannotDemoteOrFreezeBaseAdmin">لا يمكن تجميد حساب مدير النظام الأساسي أو تغيير دوره</system:String>
+    <system:String x:Key="MsgErrCannotDeleteOwnAccount">لا يمكنك حذف حسابك الحالي</system:String>
+    <system:String x:Key="MsgErrLastActiveAdmin">لا يمكن تنفيذ العملية: يجب أن يبقى مدير نظام نشط واحد على الأقل</system:String>
+    <system:String x:Key="MsgErrCurrentPasswordIncorrect">كلمة المرور الحالية غير صحيحة</system:String>
+    <system:String x:Key="MsgErrNewPasswordSameAsCurrent">كلمة المرور الجديدة يجب أن تختلف عن كلمة المرور الحالية</system:String>
+    <system:String x:Key="MsgSuccessOwnPasswordChanged">تم تغيير كلمة المرور بنجاح</system:String>
+    <system:String x:Key="MsgErrPasswordTooShort">كلمة المرور يجب ألا تقل عن {0} أحرف</system:String>
+    <system:String x:Key="MsgErrUnsupportedHalfLifeUnit">وحدة نصف العمر غير مدعومة</system:String>
+    <system:String x:Key="TitleChangeOwnPassword">تغيير كلمة المرور</system:String>
+    <system:String x:Key="LabelCurrentPassword">كلمة المرور الحالية</system:String>
+    <system:String x:Key="ToolTipChangeOwnPassword">تغيير كلمة المرور</system:String>
 </ResourceDictionary>
 
 

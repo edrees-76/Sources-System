@@ -909,6 +909,7 @@
                                     </StackPanel>
                                 </Button>
                                 <Button Command="{Binding RestoreBackupCommand}" Padding="20,10"
+                                        Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"
                                         Style="{StaticResource SecondaryButton}">
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Kind="DatabaseImport" VerticalAlignment="Center" Margin="0,0,8,0"/>

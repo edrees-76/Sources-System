@@ -51,6 +51,9 @@ public class RadioisotopeService : IRadioisotopeService
         if (!double.IsFinite(item.HalfLife))
             return (false, TranslationHelper.GetString("MsgErrInvalidHalfLifeFinite") ?? "قيمة نصف العمر غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.HalfLife <= 0) return (false, TranslationHelper.GetString("MsgErrHalfLifeMustBePositive") ?? "نصف العمر يجب أن يكون أكبر من صفر");
+        if (!DecayCalculationService.IsSupportedHalfLifeUnit(item.HalfLifeUnit))
+            return (false, TranslationHelper.GetString("MsgErrUnsupportedHalfLifeUnit") ?? "وحدة نصف العمر غير مدعومة");
+        item.HalfLifeUnit = item.HalfLifeUnit.Trim();
         if (!double.IsFinite(item.Energy))
             return (false, TranslationHelper.GetString("MsgErrInvalidEnergyFinite") ?? "قيمة الطاقة غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.Energy < 0) return (false, TranslationHelper.GetString("MsgErrInvalidEnergy") ?? "قيمة الطاقة غير صالحة");
@@ -108,6 +111,9 @@ public class RadioisotopeService : IRadioisotopeService
         if (!double.IsFinite(item.HalfLife))
             return (false, TranslationHelper.GetString("MsgErrInvalidHalfLifeFinite") ?? "قيمة نصف العمر غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.HalfLife <= 0) return (false, TranslationHelper.GetString("MsgErrHalfLifeMustBePositive") ?? "نصف العمر يجب أن يكون أكبر من صفر");
+        if (!DecayCalculationService.IsSupportedHalfLifeUnit(item.HalfLifeUnit))
+            return (false, TranslationHelper.GetString("MsgErrUnsupportedHalfLifeUnit") ?? "وحدة نصف العمر غير مدعومة");
+        item.HalfLifeUnit = item.HalfLifeUnit.Trim();
         if (!double.IsFinite(item.Energy))
             return (false, TranslationHelper.GetString("MsgErrInvalidEnergyFinite") ?? "قيمة الطاقة غير صالحة (يجب أن تكون رقماً منتهياً)");
         if (item.Energy < 0) return (false, TranslationHelper.GetString("MsgErrInvalidEnergy") ?? "قيمة الطاقة غير صالحة");

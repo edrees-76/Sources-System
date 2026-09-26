@@ -384,6 +384,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
 
 
+    /// <summary>تغيير المستخدم الحالي لكلمة مروره بنفسه (الجولة 209) — متاح لكل مستخدم مسجَّل بلا صلاحية مدير.</summary>
+    [RelayCommand]
+    private void ChangeOwnPassword()
+    {
+        if (!IsLoggedIn) return;
+        Views.ChangeOwnPasswordDialog.Request();
+    }
+
     [RelayCommand]
     private void ToggleSidebar()
     {
