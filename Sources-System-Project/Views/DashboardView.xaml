@@ -8,6 +8,93 @@
              xmlns:converters="clr-namespace:Sources.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="1500" d:DesignWidth="1200">
+    <UserControl.Resources>
+        <!-- الجولة 212: رسوم شريطية أفقية بعناصر WPF أصلية بدل LiveCharts/Skia.
+             النصوص TextBlock عادية فتعالج WPF تشكيل العربية واتجاهها (BiDi) تلقائياً،
+             والشريط يبدأ من جهة بداية السطر (اليمين في العربية) ويبدأ دائماً من الصفر. -->
+        <Style x:Key="DashboardBarRowButtonStyle" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="RowBorder" Background="Transparent" CornerRadius="6" Padding="6,5">
+                            <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource DataGridRowHover}"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource DataGridRowHover}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <DataTemplate x:Key="DashboardBarRowTemplate">
+            <Button Style="{StaticResource DashboardBarRowButtonStyle}"
+                    Command="{Binding Tag, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                    CommandParameter="{Binding}"
+                    AutomationProperties.Name="{Binding ToolTipText}">
+                <Button.ToolTip>
+                    <ToolTip FlowDirection="{DynamicResource CurrentFlowDirection}">
+                        <TextBlock Text="{Binding ToolTipText}"/>
+                    </ToolTip>
+                </Button.ToolTip>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="BarName" MaxWidth="220"/>
+                        <ColumnDefinition Width="*" MinWidth="60"/>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="BarValue"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- الاسم (+ سطر فرعي اختياري لمدى النطاق بالـ Bq، من اليسار لليمين حتى لا ينقلب الأُسّ والشرطة) -->
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0">
+                        <TextBlock Text="{Binding Label}" FontSize="12.5" Foreground="{DynamicResource TextPrimary}"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding SubLabel}" FontSize="10.5" Foreground="{DynamicResource TextSecondary}"
+                                   FlowDirection="LeftToRight" HorizontalAlignment="Left" Margin="0,2,0,0"
+                                   Visibility="{Binding HasSubLabel, Converter={StaticResource BoolToVis}}"/>
+                    </StackPanel>
+
+                    <!-- الشريط: عرضه نسبة من أكبر قيمة؛ القيمة الصفرية تظهر بإطار منقّط بدل أن تختفي -->
+                    <Grid Grid.Column="1" Height="14" VerticalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{Binding BarWidth}"/>
+                            <ColumnDefinition Width="{Binding RestWidth}"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Background="{DynamicResource ChartBarBrush}" CornerRadius="0,4,4,0"/>
+                        <Rectangle Grid.Column="0" Grid.ColumnSpan="2" Width="14" HorizontalAlignment="Left"
+                                   Stroke="{DynamicResource TextSecondary}" StrokeThickness="1" StrokeDashArray="2,2"
+                                   RadiusX="2" RadiusY="2"
+                                   Visibility="{Binding IsZero, Converter={StaticResource BoolToVis}}"/>
+                    </Grid>
+
+                    <!-- العدد + النسبة: ظاهران دائماً، لا يعتمدان على التلميح -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
+                        <TextBlock Text="{Binding CountText}" FontSize="12" FontWeight="SemiBold" MinWidth="22"
+                                   Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="{Binding PercentText}" FontSize="11" Margin="6,0,0,0" MinWidth="40"
+                                   Foreground="{DynamicResource TextSecondary}" FlowDirection="LeftToRight"/>
+                    </StackPanel>
+                </Grid>
+            </Button>
+        </DataTemplate>
+
+        <Style x:Key="DashboardOthersTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+            <Setter Property="Margin" Value="4,6,4,0"/>
+            <Style.Triggers>
+                <Trigger Property="Text" Value="">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
     <Grid>
         <!-- الطبقة الرئيسية مع Side Panel overlay -->
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
@@ -21,7 +108,7 @@
                     <RowDefinition Height="16"/>        <!-- Spacer -->
                     <RowDefinition Height="Auto"/>      <!-- Row 6: Sources DataGrid with Filters + Pagination -->
                     <RowDefinition Height="16"/>        <!-- Spacer -->
-                    <RowDefinition Height="300"/>       <!-- Row 8: Charts Row 1 (Histogram + Decay Curve) -->
+                    <RowDefinition Height="380"/>       <!-- Row 8: Charts Row 1 (Activity ladder + Decay) — الجولة 212: ارتفاع أكبر لتفادي ضغط الصفوف -->
                     <RowDefinition Height="16"/>        <!-- Spacer -->
                     <RowDefinition Height="360"/>       <!-- Row 10: Charts Row 2 (Isotope Top-10 + Location Top-10) -->
                     <RowDefinition Height="16"/>        <!-- Spacer -->
@@ -985,21 +1072,15 @@
                                 <TextBlock Text="{DynamicResource HistogramSubtitle}" FontSize="11" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,2,0,0"/>
                             </StackPanel>
                             
-                            <Grid Grid.Row="1" FlowDirection="LeftToRight">
-                                <lvc:CartesianChart x:Name="HistogramChart"
-                                                    Series="{Binding ActivityHistogramSeries}"
-                                                    XAxes="{Binding HistogramXAxes}" YAxes="{Binding HistogramYAxes}"
-                                                    DrawMargin="{Binding BarDrawMargin}"
-                                                    DrawMarginFrame="{Binding BarDrawMarginFrame}"
-                                                    LegendPosition="Hidden" 
-                                                    TooltipTextPaint="{Binding ChartTextPaint}" 
-                                                    TooltipBackgroundPaint="{Binding ChartTooltipBackgroundPaint}"
-                                                    DataPointerDown="HistogramChart_DataPointerDown"/>
-                            </Grid>
+                            <ItemsControl Grid.Row="1" x:Name="ActivityLadder" ItemsSource="{Binding ActivityLadderRows}"
+                                          Tag="{Binding OpenActivityBinRowCommand}"
+                                          ItemTemplate="{StaticResource DashboardBarRowTemplate}"
+                                          Grid.IsSharedSizeScope="True" Focusable="False" ClipToBounds="True"
+                                          VerticalAlignment="Center"/>
                         </Grid>
                     </Border>
 
-                    <!-- Decay Curve -->
+                    <!-- Decay: «النشاط المتبقي» (الجولة 212) — نسبة من نشاط اليوم على محور خطي 0–100% -->
                     <Border Grid.Column="2" Background="{DynamicResource CardBackground}" CornerRadius="12" Padding="12">
                         <Border.Effect>
                             <DropShadowEffect BlurRadius="12" Opacity="0.08" ShadowDepth="2"/>
@@ -1008,37 +1089,35 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
-                            
-                            <Grid Grid.Row="0" Margin="0,0,0,8">
+
+                            <Grid Grid.Row="0" Margin="0,0,0,6">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <materialDesign:PackIcon Kind="ChartLine" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{DynamicResource ChartDecayCurve}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="ChartLine" Width="20" Height="20" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource ChartDecayCurve}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <TextBlock Text="{DynamicResource DecayRemainingSubtitle}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"
+                                               TextWrapping="Wrap"
+                                               Visibility="{Binding IsDecayComparisonMode, Converter={StaticResource BoolToVis}}"/>
                                 </StackPanel>
-                                <ItemsControl Grid.Column="1" ItemsSource="{Binding DecayLegendItems}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8,0">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <StackPanel Orientation="Horizontal" Margin="6,2">
-                                                <Ellipse Width="10" Height="10" Fill="{Binding Color, Converter={StaticResource HexToBrush}}" VerticalAlignment="Center"/>
-                                                <TextBlock Text="{Binding Label}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="5,0,0,0" VerticalAlignment="Center"/>
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                <ComboBox Grid.Column="1" x:Name="DecayHorizonCombo"
+                                          ItemsSource="{Binding DecayHorizonOptions}" SelectedItem="{Binding SelectedDecayHorizon}"
+                                          DisplayMemberPath="Label" Width="100" Style="{StaticResource FormComboBox}"
+                                          materialDesign:HintAssist.Hint="{DynamicResource DecayHorizonHint}" Padding="4" Height="28" FontSize="11"
+                                          Margin="8,0,0,0" VerticalAlignment="Center"
+                                          Visibility="{Binding IsDecayComparisonMode, Converter={StaticResource BoolToVis}}"/>
                                 <ComboBox Grid.Column="2" ItemsSource="{Binding AvailableSources}" SelectedItem="{Binding SelectedDecaySource}"
                                           DisplayMemberPath="SourceCode" Width="130" Style="{StaticResource FormComboBox}"
                                           materialDesign:TextFieldAssist.HasClearButton="True"
-                                          materialDesign:HintAssist.Hint="{DynamicResource SelectSourceHint}" Padding="4" Height="28" FontSize="11"/>
+                                          materialDesign:HintAssist.Hint="{DynamicResource SelectSourceHint}" Padding="4" Height="28" FontSize="11"
+                                          Margin="8,0,0,0" VerticalAlignment="Center"/>
                             </Grid>
 
                             <Grid Grid.Row="1" FlowDirection="LeftToRight">
@@ -1049,6 +1128,26 @@
                                                    DrawMarginFrame="{Binding DecayDrawMarginFrame}"
                                                    LegendPosition="Hidden" TooltipTextPaint="{Binding ChartTextPaint}" TooltipBackgroundPaint="{Binding ChartTooltipBackgroundPaint}"/>
                             </Grid>
+
+                            <!-- وسيلة الإيضاح: لون + كود المصدر + (النظير · النسبة في نهاية المدى) -->
+                            <ItemsControl Grid.Row="2" x:Name="DecayLegend" ItemsSource="{Binding DecayLegendItems}" Margin="0,6,0,0" Focusable="False">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Margin="0,2,14,2">
+                                            <Border Width="14" Height="4" CornerRadius="2" Background="{Binding Color, Converter={StaticResource HexToBrush}}" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Label}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Detail}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="6,0,0,0" VerticalAlignment="Center"
+                                                       FlowDirection="LeftToRight"
+                                                       Visibility="{Binding HasDetail, Converter={StaticResource BoolToVis}}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </Grid>
                     </Border>
 
@@ -1098,18 +1197,14 @@
                             </Grid>
 
                             <!-- Chart (When enough data >= 2 isotopes) -->
-                            <Grid Grid.Row="1" FlowDirection="LeftToRight"
-                                  Visibility="{Binding HasEnoughIsotopeData, Converter={StaticResource BoolToVis}}">
-                                <lvc:CartesianChart x:Name="IsotopeChart"
-                                                   Series="{Binding SourcesByIsotopeSeries}"
-                                                   XAxes="{Binding IsotopeXAxes}"
-                                                   YAxes="{Binding IsotopeYAxes}"
-                                                   DrawMargin="{Binding IsotopeDrawMargin}"
-                                                   DrawMarginFrame="{Binding IsotopeDrawMarginFrame}"
-                                                   LegendPosition="Hidden"
-                                                   TooltipTextPaint="{Binding ChartTextPaint}"
-                                                   TooltipBackgroundPaint="{Binding ChartTooltipBackgroundPaint}"/>
-                            </Grid>
+                            <DockPanel Grid.Row="1"
+                                       Visibility="{Binding HasEnoughIsotopeData, Converter={StaticResource BoolToVis}}">
+                                <TextBlock DockPanel.Dock="Bottom" Text="{Binding IsotopeOthersText}" Style="{StaticResource DashboardOthersTextStyle}"/>
+                                <ItemsControl x:Name="IsotopeBars" ItemsSource="{Binding IsotopeBarRows}"
+                                              Tag="{Binding OpenIsotopeRowCommand}"
+                                              ItemTemplate="{StaticResource DashboardBarRowTemplate}"
+                                              Grid.IsSharedSizeScope="True" Focusable="False" ClipToBounds="True"/>
+                            </DockPanel>
 
                             <!-- Insufficient Data Fallback Message -->
                             <Border Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="20"
@@ -1156,18 +1251,14 @@
                             </Grid>
 
                             <!-- Chart (When enough data >= 2 locations) -->
-                            <Grid Grid.Row="1" FlowDirection="LeftToRight"
-                                  Visibility="{Binding HasEnoughLocationData, Converter={StaticResource BoolToVis}}">
-                                <lvc:CartesianChart x:Name="LocationChart"
-                                                   Series="{Binding SourcesByLocationSeries}"
-                                                   XAxes="{Binding LocationXAxes}"
-                                                   YAxes="{Binding LocationYAxes}"
-                                                   DrawMargin="{Binding LocationDrawMargin}"
-                                                   DrawMarginFrame="{Binding LocationDrawMarginFrame}"
-                                                   LegendPosition="Hidden"
-                                                   TooltipTextPaint="{Binding ChartTextPaint}"
-                                                   TooltipBackgroundPaint="{Binding ChartTooltipBackgroundPaint}"/>
-                            </Grid>
+                            <DockPanel Grid.Row="1"
+                                       Visibility="{Binding HasEnoughLocationData, Converter={StaticResource BoolToVis}}">
+                                <TextBlock DockPanel.Dock="Bottom" Text="{Binding LocationOthersText}" Style="{StaticResource DashboardOthersTextStyle}"/>
+                                <ItemsControl x:Name="LocationBars" ItemsSource="{Binding LocationBarRows}"
+                                              Tag="{Binding OpenLocationRowCommand}"
+                                              ItemTemplate="{StaticResource DashboardBarRowTemplate}"
+                                              Grid.IsSharedSizeScope="True" Focusable="False" ClipToBounds="True"/>
+                            </DockPanel>
 
                             <!-- Insufficient Data Fallback Message -->
                             <Border Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="20"

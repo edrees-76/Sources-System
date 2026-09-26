@@ -24,20 +24,59 @@ public class ViewInstantiationTests
         {
             var view = new DashboardView();
             Assert.NotNull(view);
-            var isotopeChart = view.FindName("IsotopeChart") as LiveChartsCore.SkiaSharpView.WPF.CartesianChart;
-            var locationChart = view.FindName("LocationChart") as LiveChartsCore.SkiaSharpView.WPF.CartesianChart;
-            var histogramChart = view.FindName("HistogramChart") as LiveChartsCore.SkiaSharpView.WPF.CartesianChart;
+            // الجولة 212: رسوم النشاط والنظائر والمواقع أصبحت أشرطة WPF أصلية (ItemsControl)
+            // بدل LiveCharts/Skia؛ منحنى التحلل وحده بقي رسماً بتلميح مخصص.
+            var activityLadder = view.FindName("ActivityLadder") as System.Windows.Controls.ItemsControl;
+            var isotopeBars = view.FindName("IsotopeBars") as System.Windows.Controls.ItemsControl;
+            var locationBars = view.FindName("LocationBars") as System.Windows.Controls.ItemsControl;
             var decayChart = view.FindName("DecayChart") as LiveChartsCore.SkiaSharpView.WPF.CartesianChart;
 
-            Assert.NotNull(isotopeChart);
-            Assert.NotNull(locationChart);
-            Assert.NotNull(histogramChart);
+            Assert.NotNull(activityLadder);
+            Assert.NotNull(isotopeBars);
+            Assert.NotNull(locationBars);
             Assert.NotNull(decayChart);
 
-            Assert.NotNull(isotopeChart.Tooltip);
-            Assert.NotNull(locationChart.Tooltip);
-            Assert.NotNull(histogramChart.Tooltip);
+            Assert.NotNull(activityLadder.ItemTemplate);
+            Assert.NotNull(isotopeBars.ItemTemplate);
+            Assert.NotNull(locationBars.ItemTemplate);
             Assert.NotNull(decayChart.Tooltip);
+
+            Assert.NotNull(view.FindName("DecayLegend"));
+            Assert.NotNull(view.FindName("DecayHorizonCombo"));
+            Assert.Null(view.FindName("HistogramChart"));
+            Assert.Null(view.FindName("IsotopeChart"));
+            Assert.Null(view.FindName("LocationChart"));
+        });
+    }
+
+    [Fact]
+    public void DashboardSourcesWindow_InstantiatesWithRows()
+    {
+        RunInSta(() =>
+        {
+            var drill = new Sources.ViewModels.DashboardDrillDown
+            {
+                Title = "المصادر في الموقع: المختبر",
+                CountText = "مصدران",
+                Rows = new[]
+                {
+                    new Sources.ViewModels.DashboardSourceRow { RowNumber = 1, Source = new Sources.Models.Source { SourceCode = "S1" } },
+                    new Sources.ViewModels.DashboardSourceRow { RowNumber = 2, Source = new Sources.Models.Source { SourceCode = "S2" } },
+                }
+            };
+            var window = new DashboardSourcesWindow(drill);
+            try
+            {
+                Assert.Same(drill, window.DataContext);
+                var grid = window.FindName("SourcesGrid") as System.Windows.Controls.DataGrid;
+                Assert.NotNull(grid);
+                // #، الكود، النظائر، الموقع، الحالة، النشاط، الوحدة، معدل الجرعة
+                Assert.Equal(8, grid!.Columns.Count);
+            }
+            finally
+            {
+                window.Close();
+            }
         });
     }
 

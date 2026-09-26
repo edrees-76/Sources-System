@@ -326,10 +326,29 @@
 
     <!-- ── Dashboard Redesign: Histogram, Top-10, Filters, Side Panel, Category ── -->
     <system:String x:Key="HistogramTitle">Sources by Activity Range</system:String>
-    <system:String x:Key="HistogramSubtitle">Number of sources in each logarithmic range (Bq)</system:String>
+    <system:String x:Key="HistogramSubtitle">Number of sources in each activity range, highest first</system:String>
     <system:String x:Key="BtnShowAllIsotopes">Show All Isotopes ←</system:String>
     <system:String x:Key="BtnShowAllLocations">Show All Locations ←</system:String>
     <system:String x:Key="LabelOthers">Others</system:String>
+    <!-- الجولة 212: رسوم لوحة التحكم الشريطية الأصلية (WPF) -->
+    <system:String x:Key="ActivityBinBelowKBq">Below 1 kBq</system:String>
+    <system:String x:Key="ActivityBinPBqAndAbove">1 PBq and above</system:String>
+    <system:String x:Key="DrilldownIsotopeTitle">Sources containing isotope</system:String>
+    <system:String x:Key="DrilldownLocationTitle">Sources in location</system:String>
+    <system:String x:Key="OthersSummaryFormat">Others ({0}): {1} · {2}</system:String>
+    <system:String x:Key="SourceCountZero">No sources</system:String>
+    <system:String x:Key="SourceCountOne">1 source</system:String>
+    <system:String x:Key="SourceCountTwo">2 sources</system:String>
+    <system:String x:Key="SourceCountFew">{0} sources</system:String>
+    <system:String x:Key="SourceCountMany">{0} sources</system:String>
+    <system:String x:Key="SourceCountOther">{0} sources</system:String>
+    <system:String x:Key="DecayRemainingSubtitle">Remaining activity of the 5 most active sources, as a percentage of today</system:String>
+    <system:String x:Key="DecayHorizonHint">Range</system:String>
+    <system:String x:Key="DecayHorizon1Year">1 year</system:String>
+    <system:String x:Key="DecayHorizon5Years">5 years</system:String>
+    <system:String x:Key="DecayHorizon10Years">10 years</system:String>
+    <system:String x:Key="DecayHorizon30Years">30 years</system:String>
+    <system:String x:Key="MsgDrillDownOpenFailed">Could not open the sources window.</system:String>
     <system:String x:Key="DashboardWelcomeTitle">Overview Dashboard</system:String>
     <system:String x:Key="DashboardWelcomeSubtitle">Real-time radiological and operational monitoring</system:String>
     <system:String x:Key="DashboardSearchHint">Search by code or serial number...</system:String>

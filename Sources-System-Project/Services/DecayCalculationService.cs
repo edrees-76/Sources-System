@@ -506,6 +506,19 @@ public class DecayCalculationService : IDecayCalculationService
     /// </summary>
     public static bool IsSupportedHalfLifeUnit(string? unit) => TryGetSecondsPerUnit(unit, out _);
 
+    /// <summary>
+    /// تحويل نصف العمر إلى ثوانٍ دون رمي استثناء: يُرجع false للوحدة غير المعروفة أو القيمة غير الموجبة/غير المنتهية
+    /// (الجولة 212 — لرسم «النشاط المتبقي» في لوحة التحكم؛ نفس معاملات التحويل المعتمدة أعلاه).
+    /// </summary>
+    public static bool TryConvertHalfLifeToSeconds(double value, string? unit, out double seconds)
+    {
+        seconds = 0;
+        if (!double.IsFinite(value) || value <= 0) return false;
+        if (!TryGetSecondsPerUnit(unit, out var secondsPerUnit)) return false;
+        seconds = value * secondsPerUnit;
+        return double.IsFinite(seconds) && seconds > 0;
+    }
+
     private static bool TryGetSecondsPerUnit(string? unit, out double secondsPerUnit)
     {
         secondsPerUnit = unit?.Trim().ToLowerInvariant() switch
