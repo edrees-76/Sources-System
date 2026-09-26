@@ -1,0 +1,83 @@
+name: Build Installer
+
+# يبني مثبِّت Windows (SourcesSystemSetup.exe) على عدّاء ويندوز نظيف بنفس سكربت
+# deploy/build-installer.ps1 المستخدم محلياً، ويرفعه كـ artifact قابل للتنزيل من صفحة التشغيل.
+# الجولة 210. لا توقيع كود (خارج النطاق، كما في installer.iss).
+on:
+  workflow_dispatch:
+  push:
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'deploy/**'
+      - 'Sources-System-Project/Sources.csproj'
+      - '.github/workflows/build-installer.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-installer:
+    name: Build Installer
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # ملاحظة: نصوص الخطوات المضمَّنة ASCII فقط — Windows PowerShell 5.1 يقرأ ملف الخطوة
+      # المؤقت (UTF-8 بلا BOM) بترميز ANSI فتتلف أي نصوص عربية ويفشل التحليل. وكتابة
+      # GITHUB_OUTPUT بـ -Encoding ascii لأن utf8 في 5.1 يضيف BOM يُفسد اسم المتغير.
+      - name: Ensure Inno Setup 6
+        id: inno
+        shell: powershell
+        run: |
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            choco install innosetup -y --no-progress
+            if ($LASTEXITCODE -ne 0) { throw "choco install innosetup failed (exit $LASTEXITCODE)." }
+          }
+          if (-not (Test-Path $iscc)) { throw "ISCC.exe not found after install: $iscc" }
+          $arabic = Join-Path (Split-Path $iscc) "Languages\Arabic.isl"
+          if (-not (Test-Path $arabic)) { throw "Arabic.isl not found in Inno Setup: $arabic" }
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "iscc=$iscc" -Encoding ascii
+
+      - name: Build Installer
+        shell: powershell
+        run: |
+          & .\deploy\build-installer.ps1 -Configuration Release -InnoSetupCompiler "${{ steps.inno.outputs.iscc }}"
+
+      - name: Hash Installer
+        id: hash
+        shell: powershell
+        run: |
+          $file = Get-ChildItem -Path deploy\Release -Recurse -Filter "SourcesSystemSetup_v*.exe" | Select-Object -First 1
+          if (-not $file) { throw "Archived installer not found under deploy\Release." }
+          $hash = (Get-FileHash -Algorithm SHA256 -Path $file.FullName).Hash
+          $sizeMb = [math]::Round($file.Length / 1MB, 1)
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "name=$($file.BaseName)" -Encoding ascii
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "path=$($file.FullName)" -Encoding ascii
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "### $($file.Name)`n`n- Size: $sizeMb MB`n- SHA256: ``$hash``" -Encoding ascii
+          Set-Content -Path "$($file.FullName).sha256" -Value "$hash  $($file.Name)" -Encoding ascii
+          Write-Host "Installer: $($file.FullName) ($sizeMb MB) SHA256=$hash"
+
+      - name: Upload Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.hash.outputs.name }}
+          path: |
+            ${{ steps.hash.outputs.path }}
+            ${{ steps.hash.outputs.path }}.sha256
+          if-no-files-found: error
+          retention-days: 30
