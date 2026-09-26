@@ -20,7 +20,11 @@ public static class DatabasePaths
     /// <summary>مجلد بيانات البرنامج في LocalAppData — لا يحتاج صلاحيات مدير.</summary>
     public static string AppDataDirectory => AppDataDirectoryOverride ?? Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+#if DEBUG
+        "Sources-Dev");
+#else
         "Sources");
+#endif
 
     public static string DbPath => Path.Combine(AppDataDirectory, DatabaseFileName);
 
