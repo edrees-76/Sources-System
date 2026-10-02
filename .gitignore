@@ -33,3 +33,6 @@ deploy/Release/
 [Tt]est[Rr]esults/
 *.trx
 
+
+# Round 214: real activation code is injected at packaging time, never committed
+deploy/autorun/autorun.config

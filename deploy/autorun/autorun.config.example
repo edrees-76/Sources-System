@@ -1,0 +1,5 @@
+# Sources System AutoRun launcher settings (template).
+# Copy this file to autorun.config (git-ignored) and fill in the real activation code,
+# or pass -ActivationCode to deploy\build-autorun-package.ps1.
+# The real code is deliberately not committed: LicenseService stores only hashes of valid codes.
+ActivationCode=XXXX-XXXX-XXXX-XXXX-XXXX
