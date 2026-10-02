@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    الجولة 214: واجهة التشغيل التلقائي. net48 عمداً: تعمل قبل تثبيت المنظومة على جهاز قد لا يملك .NET 8،
+    و.NET Framework 4.8 مضمَّن في ويندوز 10/11 فيكون الناتج ملفاً صغيراً بلا اعتمادية على بيئة تشغيل.
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>Sources.AutoRun</RootNamespace>
+    <AssemblyName>SourcesAutoRun</AssemblyName>
+    <Version>1.0.0</Version>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>..\Sources-Brand-Kit\Logo\sources_icon.ico</ApplicationIcon>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="..\Sources-Brand-Kit\Logo\sources_logo.png" Link="Assets\sources_logo.png" />
+    <Resource Include="..\Sources-Brand-Kit\Logo\sources_icon.ico" Link="Assets\sources_icon.ico" />
+  </ItemGroup>
+
+</Project>

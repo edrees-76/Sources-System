@@ -1,0 +1,4 @@
+[AutoRun]
+open=SourcesAutoRun.exe
+icon=SourcesAutoRun.exe,0
+label=Sources System

@@ -1,0 +1,98 @@
+<Application x:Class="Sources.AutoRun.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+
+        <!-- ألوان هوية منظومة مصادر (كحلي وذهبي) — نفس قيم Colors.xaml في المنظومة -->
+        <Color x:Key="NavyColor">#0B1320</Color>
+        <Color x:Key="NavyLightColor">#1A2844</Color>
+        <Color x:Key="GoldColor">#D4AF37</Color>
+        <Color x:Key="GoldDarkColor">#C5A059</Color>
+        <Color x:Key="GemBlueColor">#7FC3E8</Color>
+        <Color x:Key="DangerColor">#EF4444</Color>
+        <Color x:Key="SuccessColor">#10B981</Color>
+
+        <SolidColorBrush x:Key="NavyBrush" Color="{StaticResource NavyColor}"/>
+        <SolidColorBrush x:Key="NavyLightBrush" Color="{StaticResource NavyLightColor}"/>
+        <SolidColorBrush x:Key="GoldBrush" Color="{StaticResource GoldColor}"/>
+        <SolidColorBrush x:Key="GoldDarkBrush" Color="{StaticResource GoldDarkColor}"/>
+        <SolidColorBrush x:Key="GemBlueBrush" Color="{StaticResource GemBlueColor}"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
+        <SolidColorBrush x:Key="TextBrush" Color="#F3F5F9"/>
+        <SolidColorBrush x:Key="MutedTextBrush" Color="#A9B4C8"/>
+        <SolidColorBrush x:Key="CardBorderBrush" Color="#2B3B5C"/>
+
+        <!-- زر رئيسي ذهبي -->
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{StaticResource NavyBrush}"/>
+            <Setter Property="Background" Value="{StaticResource GoldBrush}"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="MinWidth" Value="130"/>
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="Padding" Value="20,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="8"
+                                BorderBrush="Transparent" BorderThickness="2" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#E6C45A"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource GemBlueBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- زر ثانوي بحدّ ذهبي -->
+        <Style x:Key="OutlineButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Foreground" Value="{StaticResource GoldBrush}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="8"
+                                BorderBrush="{StaticResource GoldDarkBrush}" BorderThickness="1.5"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#26D4AF37"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource GemBlueBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- بطاقة -->
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource NavyLightBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="20,16"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+
+    </Application.Resources>
+</Application>
